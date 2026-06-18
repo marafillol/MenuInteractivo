@@ -101,3 +101,29 @@ textarea {
     line-height: 1.5;
     white-space: pre-wrap;
 }
+
+
+.oculto {
+    display: none;
+}
+
+.estado-formulario-ficha {
+    display: inline-block;
+    margin: 0 0 12px 0;
+    padding: 5px 10px;
+    color: #003366;
+    background: #e9eef5;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.boton-secundario {
+    background: #eeeeee;
+    border: 1px solid #b8c4d6;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

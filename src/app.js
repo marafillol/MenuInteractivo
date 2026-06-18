@@ -66,17 +66,34 @@ app.get("/saludo", (req, res) => {
     res.json({ mensaje: "Hola Museo Malvinas" });
 });
 
-app.post("/imagenes/upload", subirImagen.single("imagen"), (req, res) => {
-
-    if (!req.file) {
-        return res.status(400).json({
-            mensaje: "No se recibió ninguna imagen"
-        });
-    }
-
+app.get("/api/estado-admin", (req, res) => {
     res.json({
-        mensaje: "Imagen subida correctamente",
-        ruta: `/uploads/${req.file.filename}`
+        mensaje: "Servidor administrativo activo",
+        subidaImagenes: true
+    });
+});
+
+app.post("/imagenes/upload", (req, res) => {
+
+    subirImagen.single("imagen")(req, res, (err) => {
+
+        if (err) {
+            return res.status(400).json({
+                mensaje: err.message
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                mensaje: "No se recibió ninguna imagen"
+            });
+        }
+
+        res.json({
+            mensaje: "Imagen subida correctamente",
+            ruta: `/uploads/${req.file.filename}`
+        });
+
     });
 
 });
