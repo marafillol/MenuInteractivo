@@ -66,6 +66,13 @@ app.get("/saludo", (req, res) => {
     res.json({ mensaje: "Hola Museo Malvinas" });
 });
 
+app.get("/api/estado-admin", (req, res) => {
+    res.json({
+        mensaje: "Servidor administrativo activo",
+        subidaImagenes: true
+    });
+});
+
 app.post("/imagenes/upload", (req, res) => {
 
     subirImagen.single("imagen")(req, res, (err) => {

@@ -489,6 +489,29 @@ function subirImagenSeleccionada() {
 
 }
 
+function leerRespuestaApi(respuesta) {
+
+    return respuesta.text()
+        .then(textoRespuesta => {
+
+            let datosRespuesta = {};
+
+            try {
+                datosRespuesta = textoRespuesta ? JSON.parse(textoRespuesta) : {};
+            } catch (error) {
+                throw new Error("El servidor no respondio como API. Verifica que Express este iniciado en http://localhost:3000.");
+            }
+
+            if (!respuesta.ok) {
+                throw new Error(datosRespuesta.mensaje || datosRespuesta.error || "La operacion no se pudo completar");
+            }
+
+            return datosRespuesta;
+
+        });
+
+}
+
 document
     .getElementById("btnCrearFicha")
     .addEventListener("click", async () => {
@@ -545,12 +568,17 @@ document
             })
 
         })
-        .then(respuesta => respuesta.json())
+        .then(leerRespuestaApi)
         .then(() => {
 
             limpiarFormulario();
 
             cargarFichas(menuSeleccionadoId);
+
+        })
+        .catch(error => {
+
+            alert("No se pudo crear la ficha: " + error.message);
 
         });
 
@@ -610,7 +638,7 @@ document
 
             }
         )
-        .then(respuesta => respuesta.json())
+        .then(leerRespuestaApi)
         .then(() => {
 
             fichaEditandoId = null;
@@ -618,6 +646,13 @@ document
             limpiarFormulario();
 
             cargarFichas(menuSeleccionadoId);
+
+            alert("Ficha actualizada correctamente.");
+
+        })
+        .catch(error => {
+
+            alert("No se pudo guardar la ficha: " + error.message);
 
         });
 
