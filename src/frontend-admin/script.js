@@ -1,21 +1,56 @@
-fetch("http://localhost:3000/menus")
-    .then(respuesta => respuesta.json())
-    .then(menus => {
+cargarMenus();
 
-        const lista = document.getElementById("listaMenus");
+function cargarMenus() {
 
-        menus.forEach(menu => {
+    fetch("http://localhost:3000/menus")
+        .then(respuesta => respuesta.json())
+        .then(menus => {
 
-            const item = document.createElement("li");
+            const lista = document.getElementById("listaMenus");
 
-            item.textContent = menu.descripcion;
+            lista.innerHTML = "";
 
-            lista.appendChild(item);
+            menus.forEach(menu => {
+
+                const item = document.createElement("li");
+
+                item.textContent = menu.descripcion;
+
+                lista.appendChild(item);
+
+            });
 
         });
 
-    })
-    .catch(error => {
-        console.error(error);
+}
+
+document
+    .getElementById("btnCrearMenu")
+    .addEventListener("click", () => {
+
+        const descripcion =
+            document.getElementById("descripcionMenu").value;
+
+        fetch("http://localhost:3000/menus", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                descripcion
+            })
+
+        })
+        .then(respuesta => respuesta.json())
+        .then(() => {
+
+            document.getElementById("descripcionMenu").value = "";
+
+            cargarMenus();
+
+        });
+
     });
-    
