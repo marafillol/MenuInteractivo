@@ -1,9 +1,38 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path"); // Maneja las rutas de carpetas
+const fs = require("fs");
+const multer = require("multer");
 const db = require("./database");
 
 const app = express();
+const carpetaUploads = path.join(__dirname, "../public/uploads");
+
+if (!fs.existsSync(carpetaUploads)) {
+    fs.mkdirSync(carpetaUploads, { recursive: true });
+}
+
+const almacenamientoImagenes = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, carpetaUploads);
+    },
+    filename: (req, file, cb) => {
+        const extension = path.extname(file.originalname);
+        const nombreArchivo = `imagen-${Date.now()}${extension}`;
+        cb(null, nombreArchivo);
+    }
+});
+
+const subirImagen = multer({
+    storage: almacenamientoImagenes,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith("image/")) {
+            cb(null, true);
+        } else {
+            cb(new Error("Solo se permiten archivos de imagen"));
+        }
+    }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -35,6 +64,21 @@ app.get("/visita", (req, res) => {
 
 app.get("/saludo", (req, res) => {
     res.json({ mensaje: "Hola Museo Malvinas" });
+});
+
+app.post("/imagenes/upload", subirImagen.single("imagen"), (req, res) => {
+
+    if (!req.file) {
+        return res.status(400).json({
+            mensaje: "No se recibió ninguna imagen"
+        });
+    }
+
+    res.json({
+        mensaje: "Imagen subida correctamente",
+        ruta: `/uploads/${req.file.filename}`
+    });
+
 });
 
 /* --- MENUS --- */

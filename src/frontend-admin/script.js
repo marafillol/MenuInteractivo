@@ -288,6 +288,9 @@ function renderizarFichas() {
             document.getElementById("imagenFicha").value =
                 ficha.imagen || "";
 
+            document.getElementById("archivoImagenFicha").value =
+                "";
+
             document.getElementById("textoFicha").value =
                 ficha.texto || "";
 
@@ -434,9 +437,42 @@ function cerrarVistaPrevia() {
 
 }
 
+function subirImagenSeleccionada() {
+
+    const archivoImagen =
+        document.getElementById("archivoImagenFicha").files[0];
+
+    if (!archivoImagen) {
+        return Promise.resolve(document.getElementById("imagenFicha").value);
+    }
+
+    const datosImagen =
+        new FormData();
+
+    datosImagen.append("imagen", archivoImagen);
+
+    return fetch("http://localhost:3000/imagenes/upload", {
+
+        method: "POST",
+
+        body: datosImagen
+
+    })
+    .then(respuesta => respuesta.json())
+    .then(resultado => {
+
+        document.getElementById("imagenFicha").value =
+            resultado.ruta;
+
+        return resultado.ruta;
+
+    });
+
+}
+
 document
     .getElementById("btnCrearFicha")
-    .addEventListener("click", () => {
+    .addEventListener("click", async () => {
 
         if (!menuSeleccionadoId) {
 
@@ -455,7 +491,7 @@ document
             document.getElementById("resumenFicha").value;
 
         const imagen =
-            document.getElementById("imagenFicha").value;
+            await subirImagenSeleccionada();
 
         const texto =
             document.getElementById("textoFicha").value;
@@ -492,7 +528,7 @@ document
 
 document
     .getElementById("btnGuardarCambios")
-    .addEventListener("click", () => {
+    .addEventListener("click", async () => {
 
         if (!fichaEditandoId) {
 
@@ -509,7 +545,7 @@ document
             document.getElementById("resumenFicha").value;
 
         const imagen =
-            document.getElementById("imagenFicha").value;
+            await subirImagenSeleccionada();
 
         const texto =
             document.getElementById("textoFicha").value;
@@ -551,6 +587,7 @@ function limpiarFormulario() {
     document.getElementById("tituloFicha").value = "";
     document.getElementById("resumenFicha").value = "";
     document.getElementById("imagenFicha").value = "";
+    document.getElementById("archivoImagenFicha").value = "";
     document.getElementById("textoFicha").value = "";
 
 }
