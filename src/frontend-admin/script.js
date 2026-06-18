@@ -285,6 +285,9 @@ function renderizarFichas() {
             document.getElementById("resumenFicha").value =
                 ficha.resumen || "";
 
+            document.getElementById("imagenFicha").value =
+                ficha.imagen || "";
+
             document.getElementById("textoFicha").value =
                 ficha.texto || "";
 
@@ -393,6 +396,26 @@ function abrirVistaPrevia(ficha) {
     document.getElementById("vistaPreviaTitulo").textContent =
         ficha.titulo || "Sin título";
 
+    const imagen =
+        document.getElementById("vistaPreviaImagen");
+
+    if (ficha.imagen) {
+
+        imagen.src =
+            ficha.imagen;
+
+        imagen.style.display =
+            "block";
+
+    } else {
+
+        imagen.removeAttribute("src");
+
+        imagen.style.display =
+            "none";
+
+    }
+
     document.getElementById("vistaPreviaResumen").textContent =
         ficha.resumen || "Sin resumen cargado.";
 
@@ -431,6 +454,9 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
+        const imagen =
+            document.getElementById("imagenFicha").value;
+
         const texto =
             document.getElementById("textoFicha").value;
 
@@ -447,6 +473,7 @@ document
                 id_menu: menuSeleccionadoId,
                 titulo,
                 resumen,
+                imagen,
                 texto
 
             })
@@ -481,6 +508,9 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
+        const imagen =
+            document.getElementById("imagenFicha").value;
+
         const texto =
             document.getElementById("textoFicha").value;
 
@@ -497,6 +527,7 @@ document
                 body: JSON.stringify({
                     titulo,
                     resumen,
+                    imagen,
                     texto
                 })
 
@@ -519,6 +550,7 @@ function limpiarFormulario() {
 
     document.getElementById("tituloFicha").value = "";
     document.getElementById("resumenFicha").value = "";
+    document.getElementById("imagenFicha").value = "";
     document.getElementById("textoFicha").value = "";
 
 }
