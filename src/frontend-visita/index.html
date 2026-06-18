@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Museo Malvinas - Tótem Interactivo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Museo Malvinas Bariloche</h1>
+    <p>Toque la pantalla para explorar los contenidos</p>
+</header>
+
+<main>
+    <section id="grillaMenus" class="contenedor-grilla">
+    </section>
+
+    <section id="contenedorFichas">
+    </section>
+
+    <section id="vistaDetalleFicha" style="display: none;">
+    </section>
+
+    <div id="panel-lateral-detalle" class="panel-cerrado">
+        <button id="boton-cerrar" onclick="cerrarPanel()">X</button>
+        <div id="contenido-detalle">
+        </div>
+    </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

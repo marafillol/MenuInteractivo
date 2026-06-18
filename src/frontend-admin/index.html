@@ -7,34 +7,47 @@
 </head>
 <body>
 
-    <h1>MenuInteractivo - Administración</h1>
+<h1>MenuInteractivo - Administración</h1>
 
-    <section>
+<section>
 
-        <h2>Menús</h2>
+    <h2>Menús</h2>
 
-        <input
+    <input
             type="text"
             id="descripcionMenu"
             placeholder="Descripción del menú"
-        >
+    >
 
-        <button id="btnCrearMenu">
-            Crear Menú
+    <button id="btnCrearMenu">
+        Crear Menú
+    </button>
+
+    <hr>
+
+    <ul id="listaMenus"></ul>
+    <hr>
+
+    <h2>Fichas</h2>
+
+    <ul id="listaFichas"></ul>
+
+    <hr>
+
+    <h3>Crear Nueva Ficha (Selecciona un menú primero)</h3>
+    <div style="margin-top: 15px;">
+        <input type="text" id="tituloFicha" placeholder="Título de la ficha" style="display:block; margin-bottom:10px; width:300px;">
+        <input type="text" id="resumenFicha" placeholder="Resumen de la ficha" style="display:block; margin-bottom:10px; width:300px;">
+        <textarea id="textoFicha" placeholder="Texto completo de la ficha" style="display:block; margin-bottom:10px; width:300px; height:80px;"></textarea>
+
+        <button id="btnCrearFicha">
+            Crear Ficha
         </button>
+    </div>
 
-        <hr>
+</section>
 
-        <ul id="listaMenus"></ul>
-        <hr>
-
-        <h2>Fichas</h2>
-
-        <ul id="listaFichas"></ul>
-
-    </section>
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,96 @@
+/* =======================================================
+   ESTILOS GENERALES
+   ======================================================= */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #0e161f; /* Color base oscuro */
+    color: white;
+    transition: background 0.5s ease;
+}
+
+/* =======================================================
+   LAYOUT VETERANOS (GRID 4 COLUMNAS)
+   ======================================================= */
+.layout-veteranos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas fijas */
+    gap: 20px;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tarjeta de ficha con estilo de carta */
+.tarjeta-ficha.plantilla-veterano {
+    background-color: #1a252f;
+    border: 1px solid #334e68;
+    color: #ffffff;
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.tarjeta-ficha.plantilla-veterano:hover {
+    transform: scale(1.03);
+    border-color: #5d7fa2;
+}
+
+.tarjeta-ficha.plantilla-veterano h4 {
+    margin: 10px 0 5px 0;
+}
+
+/* =======================================================
+   PANEL LATERAL DESLIZANTE (VETERANOS)
+   ======================================================= */
+#panel-lateral-detalle {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Escondido a la derecha */
+    width: 350px;
+    height: 100%;
+    background: #1b2631;
+    border-left: 2px solid #334e68;
+    color: white;
+    padding: 30px;
+    z-index: 1000;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.7);
+    transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow-y: auto;
+}
+
+#panel-lateral-detalle.panel-abierto {
+    right: 0; /* Desliza hacia adentro */
+}
+
+#boton-cerrar {
+    background: #334e68;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* =======================================================
+   VISTA MODAL (Para otros menús)
+   ======================================================= */
+#vistaDetalleFicha {
+    background: rgba(0,0,0,0.9);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
