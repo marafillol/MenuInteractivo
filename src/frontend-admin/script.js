@@ -13,6 +13,24 @@ document
 
     });
 
+document
+    .getElementById("btnCerrarVistaPrevia")
+    .addEventListener("click", () => {
+
+        cerrarVistaPrevia();
+
+    });
+
+document
+    .getElementById("modalVistaPrevia")
+    .addEventListener("click", (evento) => {
+
+        if (evento.target.id === "modalVistaPrevia") {
+            cerrarVistaPrevia();
+        }
+
+    });
+
 function cargarMenus() {
 
     fetch("http://localhost:3000/menus")
@@ -333,15 +351,63 @@ function renderizarFichas() {
 
         });
 
+        const botonVistaPrevia =
+            document.createElement("button");
+
+        botonVistaPrevia.textContent =
+            "Vista previa";
+
+        botonVistaPrevia.addEventListener("click", () => {
+
+            abrirVistaPrevia(ficha);
+
+        });
+
         item.appendChild(titulo);
         item.appendChild(estado);
         item.appendChild(botonEditar);
+        item.appendChild(botonVistaPrevia);
         item.appendChild(botonVisible);
         item.appendChild(botonEliminar);
 
         lista.appendChild(item);
 
     });
+
+}
+
+function abrirVistaPrevia(ficha) {
+
+    const modal =
+        document.getElementById("modalVistaPrevia");
+
+    const estado =
+        document.getElementById("vistaPreviaEstado");
+
+    estado.textContent =
+        ficha.visible === 1 ? "Visible" : "Oculta";
+
+    estado.className =
+        ficha.visible === 1 ? "estado-visible" : "estado-oculta";
+
+    document.getElementById("vistaPreviaTitulo").textContent =
+        ficha.titulo || "Sin título";
+
+    document.getElementById("vistaPreviaResumen").textContent =
+        ficha.resumen || "Sin resumen cargado.";
+
+    document.getElementById("vistaPreviaTexto").textContent =
+        ficha.texto || "Sin texto cargado.";
+
+    modal.className =
+        "modal-visible";
+
+}
+
+function cerrarVistaPrevia() {
+
+    document.getElementById("modalVistaPrevia").className =
+        "modal-oculto";
 
 }
 
