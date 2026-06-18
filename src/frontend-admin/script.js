@@ -31,6 +31,15 @@ document
 
     });
 
+document
+    .getElementById("btnCancelarEdicion")
+    .addEventListener("click", () => {
+
+        fichaEditandoId = null;
+        limpiarFormulario();
+
+    });
+
 function cargarMenus() {
 
     fetch("http://localhost:3000/menus")
@@ -293,6 +302,8 @@ function renderizarFichas() {
 
             document.getElementById("textoFicha").value =
                 ficha.texto || "";
+
+            activarModoEdicionFicha(ficha);
 
         });
 
@@ -665,5 +676,43 @@ function limpiarFormulario() {
     document.getElementById("imagenFicha").value = "";
     document.getElementById("archivoImagenFicha").value = "";
     document.getElementById("textoFicha").value = "";
+
+    activarModoCreacionFicha();
+
+}
+
+function activarModoEdicionFicha(ficha) {
+
+    document.getElementById("tituloFormularioFicha").textContent =
+        "Editando ficha";
+
+    document.getElementById("estadoFormularioFicha").textContent =
+        `Editando: ${ficha.titulo || "Ficha sin titulo"}`;
+
+    document.getElementById("btnCrearFicha").disabled =
+        true;
+
+    document.getElementById("btnGuardarCambios").disabled =
+        false;
+
+    document.getElementById("btnCancelarEdicion").classList.remove("oculto");
+
+}
+
+function activarModoCreacionFicha() {
+
+    document.getElementById("tituloFormularioFicha").textContent =
+        "Crear Nueva Ficha (Selecciona un menú primero)";
+
+    document.getElementById("estadoFormularioFicha").textContent =
+        "Modo creación";
+
+    document.getElementById("btnCrearFicha").disabled =
+        false;
+
+    document.getElementById("btnGuardarCambios").disabled =
+        false;
+
+    document.getElementById("btnCancelarEdicion").classList.add("oculto");
 
 }

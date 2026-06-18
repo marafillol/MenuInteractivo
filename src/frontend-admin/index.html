@@ -44,7 +44,8 @@
 
     <hr>
 
-    <h3>Crear Nueva Ficha (Selecciona un menú primero)</h3>
+    <h3 id="tituloFormularioFicha">Crear Nueva Ficha (Selecciona un menú primero)</h3>
+    <p id="estadoFormularioFicha" class="estado-formulario-ficha">Modo creación</p>
     <div style="margin-top: 15px;">
         <input type="text" id="tituloFicha" placeholder="Título de la ficha" style="display:block; margin-bottom:10px; width:300px;">
         <input type="text" id="resumenFicha" placeholder="Resumen de la ficha" style="display:block; margin-bottom:10px; width:300px;">
@@ -58,6 +59,10 @@
 
         <button id="btnGuardarCambios">
             Guardar Cambios
+        </button>
+
+        <button id="btnCancelarEdicion" class="boton-secundario oculto">
+            Cancelar edición
         </button>
 
     </div>
