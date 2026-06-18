@@ -16,6 +16,12 @@ function cargarMenus() {
 
                 item.textContent = menu.descripcion;
 
+                item.style.cursor = "pointer";
+
+                item.addEventListener("click", () => {
+                    cargarFichas(menu.id_menu);
+                });
+
                 lista.appendChild(item);
 
             });
@@ -54,3 +60,30 @@ document
         });
 
     });
+
+function cargarFichas(id_menu) {
+
+    fetch(`http://localhost:3000/menus/${id_menu}/fichas`)
+        .then(respuesta => respuesta.json())
+        .then(fichas => {
+
+            const lista =
+                document.getElementById("listaFichas");
+
+            lista.innerHTML = "";
+
+            fichas.forEach(ficha => {
+
+                const item =
+                    document.createElement("li");
+
+                item.textContent =
+                    ficha.titulo;
+
+                lista.appendChild(item);
+
+            });
+
+        });
+
+}
