@@ -443,7 +443,7 @@ function subirImagenSeleccionada() {
         document.getElementById("archivoImagenFicha").files[0];
 
     if (!archivoImagen) {
-        return Promise.resolve(document.getElementById("imagenFicha").value);
+        return Promise.resolve(document.getElementById("imagenFicha").value.trim() || null);
     }
 
     const datosImagen =
@@ -458,7 +458,26 @@ function subirImagenSeleccionada() {
         body: datosImagen
 
     })
-    .then(respuesta => respuesta.json())
+    .then(async respuesta => {
+
+        const textoRespuesta =
+            await respuesta.text();
+
+        let datosRespuesta = {};
+
+        try {
+            datosRespuesta = textoRespuesta ? JSON.parse(textoRespuesta) : {};
+        } catch (error) {
+            throw new Error("El servidor no respondio como API. Verifica que Express este iniciado en http://localhost:3000 y abre la administracion desde esa direccion.");
+        }
+
+        if (!respuesta.ok) {
+            throw new Error(datosRespuesta.mensaje || "No se pudo subir la imagen");
+        }
+
+        return datosRespuesta;
+
+    })
     .then(resultado => {
 
         document.getElementById("imagenFicha").value =
@@ -490,8 +509,19 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
-        const imagen =
-            await subirImagenSeleccionada();
+        let imagen = null;
+
+        try {
+
+            imagen =
+                await subirImagenSeleccionada();
+
+        } catch (error) {
+
+            alert("No se pudo cargar la imagen: " + error.message);
+            return;
+
+        }
 
         const texto =
             document.getElementById("textoFicha").value;
@@ -544,8 +574,19 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
-        const imagen =
-            await subirImagenSeleccionada();
+        let imagen = null;
+
+        try {
+
+            imagen =
+                await subirImagenSeleccionada();
+
+        } catch (error) {
+
+            alert("No se pudo cargar la imagen: " + error.message);
+            return;
+
+        }
 
         const texto =
             document.getElementById("textoFicha").value;

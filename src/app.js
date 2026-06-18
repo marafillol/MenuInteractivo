@@ -66,17 +66,27 @@ app.get("/saludo", (req, res) => {
     res.json({ mensaje: "Hola Museo Malvinas" });
 });
 
-app.post("/imagenes/upload", subirImagen.single("imagen"), (req, res) => {
+app.post("/imagenes/upload", (req, res) => {
 
-    if (!req.file) {
-        return res.status(400).json({
-            mensaje: "No se recibió ninguna imagen"
+    subirImagen.single("imagen")(req, res, (err) => {
+
+        if (err) {
+            return res.status(400).json({
+                mensaje: err.message
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                mensaje: "No se recibió ninguna imagen"
+            });
+        }
+
+        res.json({
+            mensaje: "Imagen subida correctamente",
+            ruta: `/uploads/${req.file.filename}`
         });
-    }
 
-    res.json({
-        mensaje: "Imagen subida correctamente",
-        ruta: `/uploads/${req.file.filename}`
     });
 
 });
