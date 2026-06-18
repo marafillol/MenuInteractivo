@@ -48,14 +48,14 @@ app.get("/menus", (req, res) => {
 });
 
 app.post("/menus", (req, res) => {
-    // Agregamos soporte para 'Imagen' e 'interfaz_json' según tu diagrama
-    const { descripcion, Imagen, interfaz_json } = req.body;
+    // Agregamos soporte para 'imagen' e 'interfaz_json' según tu diagrama
+    const { descripcion, imagen, Imagen, interfaz_json } = req.body;
     db.run(
         `
-        INSERT INTO menu (descripcion, Imagen, interfaz_json)
+        INSERT INTO menu (descripcion, imagen, interfaz_json)
         VALUES (?, ?, ?)
         `,
-        [descripcion, Imagen || null, interfaz_json || null],
+        [descripcion, imagen || Imagen || null, interfaz_json || null],
         function (err) {
             if (err) {
                 return res.status(500).json(err);
@@ -113,6 +113,7 @@ app.post("/fichas", (req, res) => {
         titulo,
         resumen,
         texto,
+        imagen,
         Imagen,
         id_plantilla,
         datos_json,
@@ -127,7 +128,7 @@ app.post("/fichas", (req, res) => {
             titulo,
             resumen,
             texto,
-            Imagen,
+            imagen,
             id_plantilla,
             datos_json,
             visible
@@ -140,7 +141,7 @@ app.post("/fichas", (req, res) => {
             titulo,
             resumen,
             texto,
-            Imagen || null,
+            imagen || Imagen || null,
             id_plantilla || null,
             datos_json || null,
             visible !== undefined ? visible : 1
@@ -155,6 +156,49 @@ app.post("/fichas", (req, res) => {
             });
         }
     );
+});
+
+app.put("/fichas/:id", (req, res) => {
+
+    const id_ficha = req.params.id;
+
+    const {
+        titulo,
+        resumen,
+        texto,
+        imagen,
+        Imagen
+    } = req.body;
+
+    db.run(
+        `
+        UPDATE ficha
+        SET titulo = ?,
+            resumen = ?,
+            texto = ?,
+            imagen = COALESCE(?, imagen)
+        WHERE id_ficha = ?
+        `,
+        [
+            titulo,
+            resumen,
+            texto,
+            imagen || Imagen || null,
+            id_ficha
+        ],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Ficha actualizada"
+            });
+
+        }
+    );
+
 });
 
 // Obtener fichas filtradas por menú (Filtra solo las visibles si se requiere)
@@ -198,7 +242,7 @@ app.get("/api/estructura-pantalla/:id_menu", (req, res) => {
                 configuracionMenu: {
                     id: menu.id_menu,
                     descripcion: menu.descripcion,
-                    imagenFondo: menu.Imagen,
+                    imagenFondo: menu.imagen,
                     interfazConfig: menu.interfaz_json ? JSON.parse(menu.interfaz_json) : {}
                 },
                 elementosFichas: fichas.map(f => ({
@@ -206,7 +250,7 @@ app.get("/api/estructura-pantalla/:id_menu", (req, res) => {
                     titulo: f.titulo,
                     resumen: f.resumen,
                     texto: f.texto,
-                    imagen: f.Imagen,
+                    imagen: f.imagen,
                     plantillaId: f.id_plantilla,
                     datosEstructurales: f.datos_json ? JSON.parse(f.datos_json) : {},
                     visible: f.visible
@@ -326,34 +370,6 @@ app.delete("/menus/:id", (req, res) => {
 
             res.json({
                 mensaje: "Menú eliminado"
-            });
-
-        }
-    );
-
-});
-
-app.put("/fichas/:id/visible", (req, res) => {
-
-    const id_ficha = req.params.id;
-
-    const { visible } = req.body;
-
-    db.run(
-        `
-        UPDATE ficha
-        SET visible = ?
-        WHERE id_ficha = ?
-        `,
-        [visible, id_ficha],
-        function(err) {
-
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            res.json({
-                mensaje: "Visibilidad actualizada"
             });
 
         }

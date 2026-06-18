@@ -1,8 +1,17 @@
 let menuSeleccionadoId = null;
 let fichaEditandoId = null;
 let menuEditandoId = null;
+let fichasActuales = [];
 
 cargarMenus();
+
+document
+    .getElementById("buscadorFichas")
+    .addEventListener("input", () => {
+
+        renderizarFichas();
+
+    });
 
 function cargarMenus() {
 
@@ -179,115 +188,160 @@ function cargarFichas(id_menu) {
         .then(respuesta => respuesta.json())
         .then(fichas => {
 
-            const lista =
-                document.getElementById("listaFichas");
+            fichasActuales = fichas;
 
-            lista.innerHTML = "";
+            renderizarFichas();
 
-            fichas.forEach(ficha => {
+        });
 
-                const item =
-                    document.createElement("li");
+}
 
-                const titulo =
-                    document.createElement("span");
+function renderizarFichas() {
 
-                titulo.textContent =
-                    ficha.titulo + " ";
+    const lista =
+        document.getElementById("listaFichas");
 
-                const botonEditar =
-                    document.createElement("button");
+    const textoBuscado =
+        document.getElementById("buscadorFichas").value.toLowerCase();
 
-                botonEditar.textContent =
-                    "Editar";
+    lista.innerHTML = "";
 
-                botonEditar.addEventListener("click", () => {
+    const fichasFiltradas =
+        fichasActuales.filter(ficha => {
 
-                    fichaEditandoId =
-                        ficha.id_ficha;
+            const contenidoFicha =
+                `${ficha.titulo || ""} ${ficha.resumen || ""} ${ficha.texto || ""}`.toLowerCase();
 
-                    document.getElementById("tituloFicha").value =
-                        ficha.titulo || "";
+            return contenidoFicha.includes(textoBuscado);
 
-                    document.getElementById("resumenFicha").value =
-                        ficha.resumen || "";
+        });
 
-                    document.getElementById("textoFicha").value =
-                        ficha.texto || "";
+    if (fichasFiltradas.length === 0) {
 
-                });
+        const itemVacio =
+            document.createElement("li");
 
-                const botonEliminar =
-                    document.createElement("button");
+        itemVacio.textContent =
+            "No se encontraron fichas.";
 
-                botonEliminar.textContent =
-                    "Eliminar";
+        lista.appendChild(itemVacio);
 
-                botonEliminar.addEventListener("click", () => {
+        return;
 
-                    if (!confirm("¿Eliminar esta ficha?")) {
-                        return;
-                    }
+    }
 
-                    fetch(
-                        `http://localhost:3000/fichas/${ficha.id_ficha}`,
-                        {
-                            method: "DELETE"
-                        }
-                    )
-                    .then(() => {
+    fichasFiltradas.forEach(ficha => {
 
-                        cargarFichas(id_menu);
+        const item =
+            document.createElement("li");
 
-                    });
+        const titulo =
+            document.createElement("span");
 
-                });
+        titulo.textContent =
+            ficha.titulo + " ";
 
-                const botonVisible =
-                    document.createElement("button");
+        const estado =
+            document.createElement("span");
 
-                botonVisible.textContent =
-                    ficha.visible === 1 ? "Ocultar" : "Mostrar";
+        estado.textContent =
+            ficha.visible === 1 ? "Visible" : "Oculta";
 
-                botonVisible.addEventListener("click", () => {
+        estado.className =
+            ficha.visible === 1 ? "estado-visible" : "estado-oculta";
 
-                    const nuevoEstado =
-                        ficha.visible === 1 ? 0 : 1;
+        const botonEditar =
+            document.createElement("button");
 
-                    fetch(
-                        `http://localhost:3000/fichas/${ficha.id_ficha}/visible`,
-                        {
+        botonEditar.textContent =
+            "Editar";
 
-                            method: "PUT",
+        botonEditar.addEventListener("click", () => {
 
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
+            fichaEditandoId =
+                ficha.id_ficha;
 
-                            body: JSON.stringify({
-                                visible: nuevoEstado
-                            })
+            document.getElementById("tituloFicha").value =
+                ficha.titulo || "";
 
-                        }
-                    )
-                    .then(() => {
+            document.getElementById("resumenFicha").value =
+                ficha.resumen || "";
 
-                        cargarFichas(id_menu);
+            document.getElementById("textoFicha").value =
+                ficha.texto || "";
 
-                    });
+        });
 
-                });
+        const botonEliminar =
+            document.createElement("button");
 
-                item.appendChild(titulo);
-                item.appendChild(botonEditar);
-                item.appendChild(botonVisible);
-                item.appendChild(botonEliminar);
+        botonEliminar.textContent =
+            "Eliminar";
 
-                lista.appendChild(item);
+        botonEliminar.addEventListener("click", () => {
+
+            if (!confirm("¿Eliminar esta ficha?")) {
+                return;
+            }
+
+            fetch(
+                `http://localhost:3000/fichas/${ficha.id_ficha}`,
+                {
+                    method: "DELETE"
+                }
+            )
+            .then(() => {
+
+                cargarFichas(menuSeleccionadoId);
 
             });
 
         });
+
+        const botonVisible =
+            document.createElement("button");
+
+        botonVisible.textContent =
+            ficha.visible === 1 ? "Ocultar" : "Mostrar";
+
+        botonVisible.addEventListener("click", () => {
+
+            const nuevoEstado =
+                ficha.visible === 1 ? 0 : 1;
+
+            fetch(
+                `http://localhost:3000/fichas/${ficha.id_ficha}/visible`,
+                {
+
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        visible: nuevoEstado
+                    })
+
+                }
+            )
+            .then(() => {
+
+                cargarFichas(menuSeleccionadoId);
+
+            });
+
+        });
+
+        item.appendChild(titulo);
+        item.appendChild(estado);
+        item.appendChild(botonEditar);
+        item.appendChild(botonVisible);
+        item.appendChild(botonEliminar);
+
+        lista.appendChild(item);
+
+    });
 
 }
 

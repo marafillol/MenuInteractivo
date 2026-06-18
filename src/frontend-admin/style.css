@@ -20,3 +20,36 @@ li {
     background: #e9eef5;
     border-radius: 5px;
 }
+
+input,
+textarea {
+    padding: 8px;
+    border: 1px solid #b8c4d6;
+    border-radius: 4px;
+}
+
+#buscadorFichas {
+    width: 320px;
+    max-width: 100%;
+    margin-bottom: 10px;
+}
+
+.estado-visible,
+.estado-oculta {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.estado-visible {
+    color: #155724;
+    background: #d4edda;
+}
+
+.estado-oculta {
+    color: #721c24;
+    background: #f8d7da;
+}
