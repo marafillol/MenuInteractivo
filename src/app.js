@@ -68,6 +68,34 @@ app.post("/menus", (req, res) => {
     );
 });
 
+app.put("/menus/:id", (req, res) => {
+
+    const id_menu = req.params.id;
+
+    const { descripcion } = req.body;
+
+    db.run(
+        `
+        UPDATE menu
+        SET descripcion = ?
+        WHERE id_menu = ?
+        `,
+        [descripcion, id_menu],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Menú actualizado"
+            });
+
+        }
+    );
+
+});
+
 /* --- FICHAS --- */
 app.get("/fichas", (req, res) => {
     db.all("SELECT * FROM ficha", [], (err, filas) => {
@@ -131,21 +159,27 @@ app.post("/fichas", (req, res) => {
 
 // Obtener fichas filtradas por menú (Filtra solo las visibles si se requiere)
 app.get("/menus/:id/fichas", (req, res) => {
+
     const id_menu = req.params.id;
+
     db.all(
         `
         SELECT *
         FROM ficha
-        WHERE id_menu = ? AND (visible = 1 OR visible IS NULL)
+        WHERE id_menu = ?
         `,
         [id_menu],
         (err, filas) => {
+
             if (err) {
                 return res.status(500).json(err);
             }
+
             res.json(filas);
+
         }
     );
+
 });
 
 /* --- MOTOR ESTRUCTURAL DE INTERFAZ DINÁMICA --- */
@@ -218,6 +252,113 @@ app.post("/multimedia", (req, res) => {
             });
         }
     );
+});
+
+
+app.put("/fichas/:id/visible", (req, res) => {
+
+    const id_ficha = req.params.id;
+
+    const { visible } = req.body;
+
+    db.run(
+        `
+        UPDATE ficha
+        SET visible = ?
+        WHERE id_ficha = ?
+        `,
+        [visible, id_ficha],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Visibilidad actualizada"
+            });
+
+        }
+    );
+
+});
+
+app.delete("/fichas/:id", (req, res) => {
+
+    const id_ficha = req.params.id;
+
+    db.run(
+        `
+        DELETE FROM ficha
+        WHERE id_ficha = ?
+        `,
+        [id_ficha],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Ficha eliminada"
+            });
+
+        }
+    );
+
+});
+
+app.delete("/menus/:id", (req, res) => {
+
+    const id_menu = req.params.id;
+
+    db.run(
+        `
+        DELETE FROM menu
+        WHERE id_menu = ?
+        `,
+        [id_menu],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Menú eliminado"
+            });
+
+        }
+    );
+
+});
+
+app.put("/fichas/:id/visible", (req, res) => {
+
+    const id_ficha = req.params.id;
+
+    const { visible } = req.body;
+
+    db.run(
+        `
+        UPDATE ficha
+        SET visible = ?
+        WHERE id_ficha = ?
+        `,
+        [visible, id_ficha],
+        function(err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                mensaje: "Visibilidad actualizada"
+            });
+
+        }
+    );
+
 });
 
 /* =======================================================
