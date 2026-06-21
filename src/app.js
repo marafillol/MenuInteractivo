@@ -6,7 +6,12 @@ const multer = require("multer");
 const db = require("./database");
 
 const app = express();
-const carpetaUploads = path.join(__dirname, "../public/uploads");
+const PORT = process.env.PORT || 3000;
+const PROJECT_ROOT = path.resolve(__dirname, "..");
+const ADMIN_DIR = path.join(__dirname, "frontend-admin");
+const VISITA_DIR = path.join(__dirname, "frontend-visita");
+const PUBLIC_DIR = path.join(PROJECT_ROOT, "public");
+const carpetaUploads = path.join(PUBLIC_DIR, "uploads");
 
 if (!fs.existsSync(carpetaUploads)) {
     fs.mkdirSync(carpetaUploads, { recursive: true });
@@ -36,25 +41,26 @@ const subirImagen = multer({
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(carpetaUploads));
 
 /* =======================================================
    CONFIGURACIÓN DE PANTALLAS (FRONTEND)
    ======================================================= */
 
 // 1. Pantalla de ADMINISTRACIÓN (Cargador de datos)
-app.use(express.static(path.join(__dirname, "frontend-admin")));
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(ADMIN_DIR));
+app.use(express.static(PUBLIC_DIR));
 
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend-admin", "index.html"));
+    res.sendFile(path.join(ADMIN_DIR, "index.html"));
 });
 
 // 2. Pantalla del VISITANTE (Tótem interactivo del público)
-app.use("/visita", express.static(path.join(__dirname, "frontend-visita")));
+app.use("/visita", express.static(VISITA_DIR));
 
 app.get("/visita", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend-visita", "index.html"));
+    res.sendFile(path.join(VISITA_DIR, "index.html"));
 });
 
 
@@ -304,7 +310,7 @@ app.get("/api/estructura-pantalla/:id_menu", (req, res) => {
                     id: menu.id_menu,
                     descripcion: menu.descripcion,
                     imagenFondo: menu.imagen,
-                    interfazConfig: menu.interfaz_json ? JSON.parse(menu.interfaz_json) : {}
+                    interfazConfig: parseJsonSeguro(menu.interfaz_json)
                 },
                 elementosFichas: fichas.map(f => ({
                     id: f.id_ficha,
@@ -313,7 +319,7 @@ app.get("/api/estructura-pantalla/:id_menu", (req, res) => {
                     texto: f.texto,
                     imagen: f.imagen,
                     plantillaId: f.id_plantilla,
-                    datosEstructurales: f.datos_json ? JSON.parse(f.datos_json) : {},
+                    datosEstructurales: parseJsonSeguro(f.datos_json),
                     visible: f.visible
                 }))
             });
@@ -438,9 +444,40 @@ app.delete("/menus/:id", (req, res) => {
 
 });
 
+function parseJsonSeguro(valor) {
+    if (!valor) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(valor);
+    } catch (err) {
+        console.error("JSON invalido guardado en la base de datos:", err.message);
+        return {};
+    }
+}
+
+app.use((err, req, res, next) => {
+    console.error("Error no controlado en la solicitud:", err);
+    res.status(500).json({
+        mensaje: "Ocurrio un error interno en el servidor"
+    });
+});
+
+process.on("uncaughtException", (err) => {
+    console.error("Error critico no controlado:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+    console.error("Promesa rechazada sin manejar:", reason);
+});
+
 /* =======================================================
    ENCENDIDO DEL SERVIDOR
    ======================================================= */
-app.listen(3000, () => {
-    console.log("Servidor iniciado en puerto 3000 y adaptado al modelo relacional");
+app.listen(PORT, () => {
+    console.log(`Servidor iniciado en puerto ${PORT}`);
+    console.log(`Admin disponible en / -> ${path.join(ADMIN_DIR, "index.html")}`);
+    console.log(`Visita disponible en /visita -> ${path.join(VISITA_DIR, "index.html")}`);
+    console.log(`Uploads disponibles en /uploads -> ${carpetaUploads}`);
 });

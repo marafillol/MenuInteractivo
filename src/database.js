@@ -1,8 +1,8 @@
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
-// Corregimos la ruta: subimos un nivel (..) desde 'src' para llegar a la carpeta 'database'
-const dbPath = path.resolve(__dirname, "../database/museo.db");
+const PROJECT_ROOT = path.resolve(__dirname, "..");
+const dbPath = process.env.SQLITE_DB_PATH || path.join(PROJECT_ROOT, "database", "museo.db");
 
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
