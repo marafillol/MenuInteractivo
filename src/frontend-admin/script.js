@@ -99,6 +99,16 @@ function cargarMenus() {
 
                     menuEditandoId = menu.id_menu;
 
+                    document.getElementById("estadoFormularioMenu").textContent =
+                        "Modo edición";
+
+                    document.getElementById("btnCancelarEdicionMenu")
+                        .classList
+                        .remove("oculto");
+
+                    document.getElementById("btnCrearMenu").disabled =
+                        true;
+
                     document.getElementById("descripcionMenu").value =
                         menu.descripcion;
 
@@ -219,11 +229,21 @@ document
             }
         )
         .then(respuesta => respuesta.json())
-        .then(() => {
+       .then(() => {
 
             menuEditandoId = null;
 
             document.getElementById("descripcionMenu").value = "";
+
+            document.getElementById("estadoFormularioMenu").textContent =
+                "Modo creación";
+
+            document.getElementById("btnCancelarEdicionMenu")
+                .classList
+                .add("oculto");
+
+            document.getElementById("btnCrearMenu").disabled =
+                false;
 
             cargarMenus();
 
@@ -696,5 +716,25 @@ function limpiarFormulario() {
     document.getElementById("imagenFicha").value = "";
     document.getElementById("archivoImagenFicha").value = "";
     document.getElementById("textoFicha").value = "";
+
+    document
+        .getElementById("btnCancelarEdicionMenu")
+        .addEventListener("click", () => {
+
+            menuEditandoId = null;
+
+            document.getElementById("descripcionMenu").value = "";
+
+            document.getElementById("estadoFormularioMenu").textContent =
+                "Modo creación";
+
+            document.getElementById("btnCancelarEdicionMenu")
+                .classList
+                .add("oculto");
+
+            document.getElementById("btnCrearMenu").disabled =
+                false;
+
+        });
 
 }
