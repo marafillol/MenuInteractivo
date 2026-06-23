@@ -33,7 +33,7 @@ document
 
 function cargarMenus() {
 
-    fetch("http://localhost:3000/menus")
+    fetch("/menus")
         .then(respuesta => respuesta.json())
         .then(menus => {
 
@@ -98,7 +98,7 @@ function cargarMenus() {
                     }
 
                     fetch(
-                        `http://localhost:3000/menus/${menu.id_menu}`,
+                        `/menus/${menu.id_menu}`,
                         {
                             method: "DELETE"
                         }
@@ -132,7 +132,7 @@ document
         const descripcion =
             document.getElementById("descripcionMenu").value;
 
-        fetch("http://localhost:3000/menus", {
+        fetch("/menus", {
 
             method: "POST",
 
@@ -172,7 +172,7 @@ document
             document.getElementById("descripcionMenu").value;
 
         fetch(
-            `http://localhost:3000/menus/${menuEditandoId}`,
+            `/menus/${menuEditandoId}`,
             {
 
                 method: "PUT",
@@ -202,7 +202,7 @@ document
 
 function cargarFichas(id_menu) {
 
-    fetch(`http://localhost:3000/menus/${id_menu}/fichas`)
+    fetch(`/menus/${id_menu}/fichas`)
         .then(respuesta => respuesta.json())
         .then(fichas => {
 
@@ -309,7 +309,7 @@ function renderizarFichas() {
             }
 
             fetch(
-                `http://localhost:3000/fichas/${ficha.id_ficha}`,
+                `/fichas/${ficha.id_ficha}`,
                 {
                     method: "DELETE"
                 }
@@ -334,7 +334,7 @@ function renderizarFichas() {
                 ficha.visible === 1 ? 0 : 1;
 
             fetch(
-                `http://localhost:3000/fichas/${ficha.id_ficha}/visible`,
+                `/fichas/${ficha.id_ficha}/visible`,
                 {
 
                     method: "PUT",
@@ -451,7 +451,7 @@ function subirImagenSeleccionada() {
 
     datosImagen.append("imagen", archivoImagen);
 
-    return fetch("http://localhost:3000/imagenes/upload", {
+    return fetch("/imagenes/upload", {
 
         method: "POST",
 
@@ -496,7 +496,7 @@ document
         const texto =
             document.getElementById("textoFicha").value;
 
-        fetch("http://localhost:3000/fichas", {
+        fetch("/fichas", {
 
             method: "POST",
 
@@ -551,7 +551,7 @@ document
             document.getElementById("textoFicha").value;
 
         fetch(
-            `http://localhost:3000/fichas/${fichaEditandoId}`,
+            `/fichas/${fichaEditandoId}`,
             {
 
                 method: "PUT",
