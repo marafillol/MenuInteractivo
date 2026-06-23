@@ -330,6 +330,19 @@ function renderizarFichas() {
             fichaEditandoId =
                 ficha.id_ficha;
 
+            document.getElementById("estadoFormularioFicha").textContent =
+                "Modo edición";
+
+            document.getElementById("btnCancelarEdicion")
+                .classList
+                .remove("oculto");
+
+            document
+                .getElementById("tituloFormularioFicha")
+                .scrollIntoView({
+                    behavior: "smooth"
+                });
+
             document.getElementById("tituloFicha").value =
                 ficha.titulo || "";
 
@@ -696,6 +709,13 @@ document
 
             limpiarFormulario();
 
+            document.getElementById("estadoFormularioFicha").textContent =
+                "Modo creación";
+
+            document.getElementById("btnCancelarEdicion")
+                .classList
+                .add("oculto");
+
             cargarFichas(menuSeleccionadoId);
 
             alert("Ficha actualizada correctamente.");
@@ -736,5 +756,22 @@ document
 
         document.getElementById("btnCrearMenu").disabled =
             false;
+
+    });
+
+document
+    .getElementById("btnCancelarEdicion")
+    .addEventListener("click", () => {
+
+        fichaEditandoId = null;
+
+        limpiarFormulario();
+
+        document.getElementById("estadoFormularioFicha").textContent =
+            "Modo creación";
+
+        document.getElementById("btnCancelarEdicion")
+            .classList
+            .add("oculto");
 
     });
