@@ -19,7 +19,6 @@
             placeholder="Descripción del menú"
     >
 
-
     <button id="btnCrearMenu">
         Crear Menú
     </button>
@@ -36,48 +35,86 @@
         Menú seleccionado:
         <strong id="nombreMenuSeleccionado"></strong>
     </p>
-    <hr>
-
-    <div id="seccionFichas" class="oculto"></div>
-
-    <h2>Fichas</h2>
-
-    <input
-            type="text"
-            id="buscadorFichas"
-            placeholder="Buscar ficha por título, resumen o texto"
-    >
-
-    <ul id="listaFichas"></ul>
 
     <hr>
 
-    <h3 id="tituloFormularioFicha">Crear Nueva Ficha (Selecciona un menú primero)</h3>
-    <p id="estadoFormularioFicha" class="estado-formulario-ficha">Modo creación</p>
-    <div style="margin-top: 15px;">
-        <input type="text" id="tituloFicha" placeholder="Título de la ficha" style="display:block; margin-bottom:10px; width:300px;">
-        <input type="text" id="resumenFicha" placeholder="Resumen de la ficha" style="display:block; margin-bottom:10px; width:300px;">
-        <input type="text" id="imagenFicha" placeholder="URL o ruta de imagen" style="display:block; margin-bottom:10px; width:300px;">
-        <input type="file" id="archivoImagenFicha" accept="image/*" style="display:block; margin-bottom:10px; width:300px;">
-        <textarea id="textoFicha" placeholder="Texto completo de la ficha" style="display:block; margin-bottom:10px; width:300px; height:80px;"></textarea>
+    <div id="seccionFichas" class="oculto">
 
-        <button id="btnCrearFicha">
-            Crear Ficha
-        </button>
+        <h2>Fichas</h2>
 
-        <button id="btnGuardarCambios">
-            Guardar Cambios
-        </button>
+        <input
+                type="text"
+                id="buscadorFichas"
+                placeholder="Buscar ficha por título, resumen o texto"
+        >
 
-        <button id="btnCancelarEdicion" class="boton-secundario oculto">
-            Cancelar edición
-        </button>
+        <ul id="listaFichas"></ul>
+
+        <hr>
+
+        <h3 id="tituloFormularioFicha">
+            Crear Nueva Ficha (Selecciona un menú primero)
+        </h3>
+
+        <p id="estadoFormularioFicha" class="estado-formulario-ficha">
+            Modo creación
+        </p>
+
+        <div style="margin-top: 15px;">
+
+            <input
+                    type="text"
+                    id="tituloFicha"
+                    placeholder="Título de la ficha"
+                    style="display:block; margin-bottom:10px; width:300px;"
+            >
+
+            <input
+                    type="text"
+                    id="resumenFicha"
+                    placeholder="Resumen de la ficha"
+                    style="display:block; margin-bottom:10px; width:300px;"
+            >
+
+            <input
+                    type="text"
+                    id="imagenFicha"
+                    placeholder="URL o ruta de imagen"
+                    style="display:block; margin-bottom:10px; width:300px;"
+            >
+
+            <input
+                    type="file"
+                    id="archivoImagenFicha"
+                    accept="image/*"
+                    style="display:block; margin-bottom:10px; width:300px;"
+            >
+
+            <textarea
+                    id="textoFicha"
+                    placeholder="Texto completo de la ficha"
+                    style="display:block; margin-bottom:10px; width:300px; height:80px;"
+            ></textarea>
+
+            <button id="btnCrearFicha">
+                Crear Ficha
+            </button>
+
+            <button id="btnGuardarCambios">
+                Guardar Cambios
+            </button>
+
+            <button
+                    id="btnCancelarEdicion"
+                    class="boton-secundario oculto">
+                Cancelar edición
+            </button>
+
+        </div>
 
     </div>
 
 </section>
-
-</div>
 
 <div id="modalVistaPrevia" class="modal-oculto">
     <div class="modal-contenido">
