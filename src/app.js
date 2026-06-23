@@ -441,6 +441,8 @@ app.delete("/menus/:id", (req, res) => {
 /* =======================================================
    ENCENDIDO DEL SERVIDOR
    ======================================================= */
-app.listen(3000, () => {
-    console.log("Servidor iniciado en puerto 3000 y adaptado al modelo relacional");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Servidor iniciado en puerto ${PORT} y adaptado al modelo relacional`);
 });
