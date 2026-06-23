@@ -33,7 +33,7 @@ document
 
 function cargarMenus() {
 
-    fetch("/menus")
+    fetch("http://localhost:3000/menus")
         .then(respuesta => respuesta.json())
         .then(menus => {
 
@@ -62,7 +62,28 @@ function cargarMenus() {
 
                     menuSeleccionadoId = menu.id_menu;
 
+                    document
+                        .getElementById("seccionFichas")
+                        .classList
+                        .remove("oculto");
+
+                    document
+                        .getElementById("menuSeleccionadoTexto")
+                        .classList
+                        .remove("oculto");
+
+                    document
+                        .getElementById("nombreMenuSeleccionado")
+                        .textContent =
+                            menu.descripcion;
+
                     cargarFichas(menu.id_menu);
+
+                    document
+                        .getElementById("seccionFichas")
+                        .scrollIntoView({
+                            behavior: "smooth"
+                        });
 
                 });
 
@@ -98,7 +119,7 @@ function cargarMenus() {
                     }
 
                     fetch(
-                        `/menus/${menu.id_menu}`,
+                        `http://localhost:3000/menus/${menu.id_menu}`,
                         {
                             method: "DELETE"
                         }
@@ -108,6 +129,16 @@ function cargarMenus() {
                         cargarMenus();
 
                         document.getElementById("listaFichas").innerHTML = "";
+
+                        document
+                            .getElementById("seccionFichas")
+                            .classList
+                            .add("oculto");
+
+                        document
+                            .getElementById("menuSeleccionadoTexto")
+                            .classList
+                            .add("oculto");
 
                     });
 
@@ -132,7 +163,7 @@ document
         const descripcion =
             document.getElementById("descripcionMenu").value;
 
-        fetch("/menus", {
+        fetch("http://localhost:3000/menus", {
 
             method: "POST",
 
@@ -172,7 +203,7 @@ document
             document.getElementById("descripcionMenu").value;
 
         fetch(
-            `/menus/${menuEditandoId}`,
+            `http://localhost:3000/menus/${menuEditandoId}`,
             {
 
                 method: "PUT",
@@ -202,7 +233,7 @@ document
 
 function cargarFichas(id_menu) {
 
-    fetch(`/menus/${id_menu}/fichas`)
+    fetch(`http://localhost:3000/menus/${id_menu}/fichas`)
         .then(respuesta => respuesta.json())
         .then(fichas => {
 
@@ -309,7 +340,7 @@ function renderizarFichas() {
             }
 
             fetch(
-                `/fichas/${ficha.id_ficha}`,
+                `http://localhost:3000/fichas/${ficha.id_ficha}`,
                 {
                     method: "DELETE"
                 }
@@ -334,7 +365,7 @@ function renderizarFichas() {
                 ficha.visible === 1 ? 0 : 1;
 
             fetch(
-                `/fichas/${ficha.id_ficha}/visible`,
+                `http://localhost:3000/fichas/${ficha.id_ficha}/visible`,
                 {
 
                     method: "PUT",
@@ -443,7 +474,7 @@ function subirImagenSeleccionada() {
         document.getElementById("archivoImagenFicha").files[0];
 
     if (!archivoImagen) {
-        return Promise.resolve(document.getElementById("imagenFicha").value);
+        return Promise.resolve(document.getElementById("imagenFicha").value.trim() || null);
     }
 
     const datosImagen =
@@ -451,14 +482,33 @@ function subirImagenSeleccionada() {
 
     datosImagen.append("imagen", archivoImagen);
 
-    return fetch("/imagenes/upload", {
+    return fetch("http://localhost:3000/imagenes/upload", {
 
         method: "POST",
 
         body: datosImagen
 
     })
-    .then(respuesta => respuesta.json())
+    .then(async respuesta => {
+
+        const textoRespuesta =
+            await respuesta.text();
+
+        let datosRespuesta = {};
+
+        try {
+            datosRespuesta = textoRespuesta ? JSON.parse(textoRespuesta) : {};
+        } catch (error) {
+            throw new Error("El servidor no respondio como API. Verifica que Express este iniciado en http://localhost:3000 y abre la administracion desde esa direccion.");
+        }
+
+        if (!respuesta.ok) {
+            throw new Error(datosRespuesta.mensaje || "No se pudo subir la imagen");
+        }
+
+        return datosRespuesta;
+
+    })
     .then(resultado => {
 
         document.getElementById("imagenFicha").value =
@@ -467,6 +517,29 @@ function subirImagenSeleccionada() {
         return resultado.ruta;
 
     });
+
+}
+
+function leerRespuestaApi(respuesta) {
+
+    return respuesta.text()
+        .then(textoRespuesta => {
+
+            let datosRespuesta = {};
+
+            try {
+                datosRespuesta = textoRespuesta ? JSON.parse(textoRespuesta) : {};
+            } catch (error) {
+                throw new Error("El servidor no respondio como API. Verifica que Express este iniciado en http://localhost:3000.");
+            }
+
+            if (!respuesta.ok) {
+                throw new Error(datosRespuesta.mensaje || datosRespuesta.error || "La operacion no se pudo completar");
+            }
+
+            return datosRespuesta;
+
+        });
 
 }
 
@@ -490,13 +563,24 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
-        const imagen =
-            await subirImagenSeleccionada();
+        let imagen = null;
+
+        try {
+
+            imagen =
+                await subirImagenSeleccionada();
+
+        } catch (error) {
+
+            alert("No se pudo cargar la imagen: " + error.message);
+            return;
+
+        }
 
         const texto =
             document.getElementById("textoFicha").value;
 
-        fetch("/fichas", {
+        fetch("http://localhost:3000/fichas", {
 
             method: "POST",
 
@@ -515,12 +599,17 @@ document
             })
 
         })
-        .then(respuesta => respuesta.json())
+        .then(leerRespuestaApi)
         .then(() => {
 
             limpiarFormulario();
 
             cargarFichas(menuSeleccionadoId);
+
+        })
+        .catch(error => {
+
+            alert("No se pudo crear la ficha: " + error.message);
 
         });
 
@@ -544,14 +633,25 @@ document
         const resumen =
             document.getElementById("resumenFicha").value;
 
-        const imagen =
-            await subirImagenSeleccionada();
+        let imagen = null;
+
+        try {
+
+            imagen =
+                await subirImagenSeleccionada();
+
+        } catch (error) {
+
+            alert("No se pudo cargar la imagen: " + error.message);
+            return;
+
+        }
 
         const texto =
             document.getElementById("textoFicha").value;
 
         fetch(
-            `/fichas/${fichaEditandoId}`,
+            `http://localhost:3000/fichas/${fichaEditandoId}`,
             {
 
                 method: "PUT",
@@ -569,7 +669,7 @@ document
 
             }
         )
-        .then(respuesta => respuesta.json())
+        .then(leerRespuestaApi)
         .then(() => {
 
             fichaEditandoId = null;
@@ -577,6 +677,13 @@ document
             limpiarFormulario();
 
             cargarFichas(menuSeleccionadoId);
+
+            alert("Ficha actualizada correctamente.");
+
+        })
+        .catch(error => {
+
+            alert("No se pudo guardar la ficha: " + error.message);
 
         });
 
