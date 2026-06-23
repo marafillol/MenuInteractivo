@@ -717,24 +717,24 @@ function limpiarFormulario() {
     document.getElementById("archivoImagenFicha").value = "";
     document.getElementById("textoFicha").value = "";
 
-    document
-        .getElementById("btnCancelarEdicionMenu")
-        .addEventListener("click", () => {
-
-            menuEditandoId = null;
-
-            document.getElementById("descripcionMenu").value = "";
-
-            document.getElementById("estadoFormularioMenu").textContent =
-                "Modo creación";
-
-            document.getElementById("btnCancelarEdicionMenu")
-                .classList
-                .add("oculto");
-
-            document.getElementById("btnCrearMenu").disabled =
-                false;
-
-        });
-
 }
+
+document
+    .getElementById("btnCancelarEdicionMenu")
+    .addEventListener("click", () => {
+
+        menuEditandoId = null;
+
+        document.getElementById("descripcionMenu").value = "";
+
+        document.getElementById("estadoFormularioMenu").textContent =
+            "Modo creación";
+
+        document.getElementById("btnCancelarEdicionMenu")
+            .classList
+            .add("oculto");
+
+        document.getElementById("btnCrearMenu").disabled =
+            false;
+
+    });
