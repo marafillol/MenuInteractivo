@@ -153,6 +153,15 @@ function cargarMenus() {
 
                     cargarMenus();
 
+                    document
+                        .getElementById("descripcionMenu")
+                        .scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                    document.getElementById("descripcionMenu").focus();
+
                     document.getElementById("estadoFormularioMenu").textContent =
                         "Modo edición";
 
