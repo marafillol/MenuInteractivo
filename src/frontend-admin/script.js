@@ -1,5 +1,39 @@
 let menuSeleccionadoId = null;
 let fichaEditandoId = null;
+
+function actualizarModoFicha()
+{
+    const estado =
+        document.getElementById("estadoFormularioFicha");
+
+    const botonCancelar =
+        document.getElementById("btnCancelarEdicion");
+
+    if (fichaEditandoId)
+    {
+        estado.textContent = "Modo edición";
+
+        botonCancelar.classList.remove("oculto");
+    }
+    else
+    {
+        estado.textContent = "Modo creación";
+
+        botonCancelar.classList.add("oculto");
+    }
+}
+
+function cancelarEdicionFicha()
+{
+    fichaEditandoId = null;
+
+    limpiarFormulario();
+
+    actualizarModoFicha();
+
+    cargarFichas(menuSeleccionado);
+}
+
 let menuEditandoId = null;
 let fichasActuales = [];
 
