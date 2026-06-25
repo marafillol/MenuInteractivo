@@ -31,7 +31,7 @@ function cancelarEdicionFicha()
 
     actualizarModoFicha();
 
-    cargarFichas(menuSeleccionado);
+    cargarFichas(menuSeleccionadoId);
 }
 
 let menuEditandoId = null;
@@ -185,6 +185,8 @@ function cargarMenus() {
 
                     menuEditandoId = menu.id_menu;
 
+                    actualizarModoMenu();
+
                     cargarMenus();
 
                     document
@@ -196,18 +198,8 @@ function cargarMenus() {
 
                     document.getElementById("descripcionMenu").focus();
 
-                    document.getElementById("estadoFormularioMenu").textContent =
-                        "Modo edición";
-
-                    document.getElementById("btnCancelarEdicionMenu")
-                        .classList
-                        .remove("oculto");
-
-                    document.getElementById("btnCrearMenu").disabled =
-                        true;
-
                     document.getElementById("descripcionMenu").value =
-                        menu.descripcion;
+                    menu.descripcion;
 
                 });
 
@@ -328,21 +320,7 @@ document
         .then(respuesta => respuesta.json())
        .then(() => {
 
-            menuEditandoId = null;
-
-            document.getElementById("descripcionMenu").value = "";
-
-            document.getElementById("estadoFormularioMenu").textContent =
-                "Modo creación";
-
-            document.getElementById("btnCancelarEdicionMenu")
-                .classList
-                .add("oculto");
-
-            document.getElementById("btnCrearMenu").disabled =
-                false;
-
-            cargarMenus();
+            cancelarEdicionMenu();
 
         });
 
@@ -427,12 +405,7 @@ function renderizarFichas() {
             fichaEditandoId =
                 ficha.id_ficha;
 
-            document.getElementById("estadoFormularioFicha").textContent =
-                "Modo edición";
-
-            document.getElementById("btnCancelarEdicion")
-                .classList
-                .remove("oculto");
+            actualizarModoFicha();
 
             document
                 .getElementById("tituloFormularioFicha")
@@ -802,22 +775,12 @@ document
         .then(leerRespuestaApi)
         .then(() => {
 
-            fichaEditandoId = null;
-
-            limpiarFormulario();
-
-            document.getElementById("estadoFormularioFicha").textContent =
-                "Modo creación";
-
-            document.getElementById("btnCancelarEdicion")
-                .classList
-                .add("oculto");
-
-            cargarFichas(menuSeleccionadoId);
+            cancelarEdicionFicha();
 
             alert("Ficha actualizada correctamente.");
 
         })
+
         .catch(error => {
 
             alert("No se pudo guardar la ficha: " + error.message);
@@ -837,24 +800,11 @@ function limpiarFormulario() {
 }
 
 document
-    .getElementById("btnCancelarEdicionMenu")
-    .addEventListener("click", () => {
-
-        menuEditandoId = null;
-
-        document.getElementById("descripcionMenu").value = "";
-
-        document.getElementById("estadoFormularioMenu").textContent =
-            "Modo creación";
-
-        document.getElementById("btnCancelarEdicionMenu")
-            .classList
-            .add("oculto");
-
-        document.getElementById("btnCrearMenu").disabled =
-            false;
-
-    });
+    .getElementById("btnCancelarMenu")
+    .addEventListener(
+        "click",
+        cancelarEdicionMenu
+    );
 
 document
     .getElementById("btnCancelarEdicion")
