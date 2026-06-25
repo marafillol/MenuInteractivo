@@ -13,29 +13,29 @@
 
     <h2>Menús</h2>
 
-    <input
-            type="text"
-            id="descripcionMenu"
-            placeholder="Descripción del menú"
-    >
-
     <p id="estadoFormularioMenu" class="estado-formulario-ficha">
         Modo creación
     </p>
+
+    <input
+        type="text"
+        id="descripcionMenu"
+        placeholder="Descripción del menú"
+    >
 
     <button id="btnCrearMenu">
         Crear Menú
     </button>
 
-    <button id="btnGuardarMenu">
+    <button id="btnGuardarMenu" disabled>
         Guardar Menú
     </button>
 
     <button
-            id="btnCancelarEdicionMenu"
-            class="boton-secundario oculto">
+        id="btnCancelarMenu"
+        class="boton-secundario oculto">
         Cancelar edición
-</button>
+    </button>
 
     <hr>
 
@@ -53,9 +53,9 @@
         <h2>Fichas</h2>
 
         <input
-                type="text"
-                id="buscadorFichas"
-                placeholder="Buscar ficha por título, resumen o texto"
+            type="text"
+            id="buscadorFichas"
+            placeholder="Buscar ficha por título, resumen o texto"
         >
 
         <ul id="listaFichas"></ul>
@@ -70,40 +70,40 @@
             Modo creación
         </p>
 
-        <div style="margin-top: 15px;">
+        <div style="margin-top:15px;">
 
             <input
-                    type="text"
-                    id="tituloFicha"
-                    placeholder="Título de la ficha"
-                    style="display:block; margin-bottom:10px; width:300px;"
+                type="text"
+                id="tituloFicha"
+                placeholder="Título de la ficha"
+                style="display:block; margin-bottom:10px; width:300px;"
             >
 
             <input
-                    type="text"
-                    id="resumenFicha"
-                    placeholder="Resumen de la ficha"
-                    style="display:block; margin-bottom:10px; width:300px;"
+                type="text"
+                id="resumenFicha"
+                placeholder="Resumen de la ficha"
+                style="display:block; margin-bottom:10px; width:300px;"
             >
 
             <input
-                    type="text"
-                    id="imagenFicha"
-                    placeholder="URL o ruta de imagen"
-                    style="display:block; margin-bottom:10px; width:300px;"
+                type="text"
+                id="imagenFicha"
+                placeholder="URL o ruta de imagen"
+                style="display:block; margin-bottom:10px; width:300px;"
             >
 
             <input
-                    type="file"
-                    id="archivoImagenFicha"
-                    accept="image/*"
-                    style="display:block; margin-bottom:10px; width:300px;"
+                type="file"
+                id="archivoImagenFicha"
+                accept="image/*"
+                style="display:block; margin-bottom:10px; width:300px;"
             >
 
             <textarea
-                    id="textoFicha"
-                    placeholder="Texto completo de la ficha"
-                    style="display:block; margin-bottom:10px; width:300px; height:80px;"
+                id="textoFicha"
+                placeholder="Texto completo de la ficha"
+                style="display:block; margin-bottom:10px; width:300px; height:80px;"
             ></textarea>
 
             <button id="btnCrearFicha">
@@ -114,8 +114,9 @@
                 Guardar Cambios
             </button>
 
-            <button id="
-            ncelarEdicion" class="boton-secundario oculto">
+            <button
+                id="btnCancelarEdicion"
+                class="boton-secundario oculto">
                 Cancelar edición
             </button>
 
@@ -126,14 +127,28 @@
 </section>
 
 <div id="modalVistaPrevia" class="modal-oculto">
+
     <div class="modal-contenido">
-        <button id="btnCerrarVistaPrevia" class="boton-cerrar">Cerrar</button>
+
+        <button id="btnCerrarVistaPrevia" class="boton-cerrar">
+            Cerrar
+        </button>
+
         <span id="vistaPreviaEstado"></span>
+
         <h2 id="vistaPreviaTitulo"></h2>
-        <img id="vistaPreviaImagen" alt="Imagen de la ficha">
+
+        <img
+            id="vistaPreviaImagen"
+            alt="Imagen de la ficha"
+        >
+
         <p id="vistaPreviaResumen"></p>
+
         <div id="vistaPreviaTexto"></div>
+
     </div>
+
 </div>
 
 <script src="script.js"></script>
