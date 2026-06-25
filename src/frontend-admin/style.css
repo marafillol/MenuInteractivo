@@ -128,11 +128,6 @@ button:disabled {
     opacity: 0.6;
 }
 
-.item-editando {
-    border-left: 4px solid #003366;
-    background: #dbe7f7;
-}
-
 #menuSeleccionadoTexto {
 
     margin-top: 15px;
