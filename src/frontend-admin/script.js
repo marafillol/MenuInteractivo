@@ -3,6 +3,51 @@ let fichaEditandoId = null;
 let menuEditandoId = null;
 let fichasActuales = [];
 
+function actualizarModoMenu()
+{
+    const estado =
+        document.getElementById("estadoFormularioMenu");
+
+    const botonCrear =
+        document.getElementById("btnCrearMenu");
+
+    const botonGuardar =
+        document.getElementById("btnGuardarMenu");
+
+    const botonCancelar =
+        document.getElementById("btnCancelarMenu");
+
+    if (menuEditandoId)
+    {
+        estado.textContent = "Modo edición";
+
+        botonCrear.disabled = true;
+
+        botonGuardar.disabled = false;
+
+        botonCancelar.classList.remove("oculto");
+    }
+    else
+    {
+        estado.textContent = "Modo creación";
+
+        botonCrear.disabled = false;
+
+        botonGuardar.disabled = true;
+
+        botonCancelar.classList.add("oculto");
+    }
+}
+
+function cancelarEdicionMenu()
+{
+    menuEditandoId = null;
+
+    document.getElementById("descripcionMenu").value = "";
+
+    actualizarModoMenu();
+}
+
 cargarMenus();
 
 document
