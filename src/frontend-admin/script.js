@@ -46,6 +46,8 @@ function cancelarEdicionMenu()
     document.getElementById("descripcionMenu").value = "";
 
     actualizarModoMenu();
+
+    cargarMenus();
 }
 
 cargarMenus();
@@ -95,6 +97,11 @@ function cargarMenus() {
                 const item =
                     document.createElement("li");
 
+                if (menuEditandoId === menu.id_menu)
+                {
+                    item.classList.add("item-editando");
+                }
+
                 const texto =
                     document.createElement("span");
 
@@ -143,6 +150,8 @@ function cargarMenus() {
                     evento.stopPropagation();
 
                     menuEditandoId = menu.id_menu;
+
+                    cargarMenus();
 
                     document.getElementById("estadoFormularioMenu").textContent =
                         "Modo edición";
