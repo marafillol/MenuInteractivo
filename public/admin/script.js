@@ -1,7 +1,8 @@
-let menuSeleccionadoId = null;
+﻿let menuSeleccionadoId = null;
 let fichaEditandoId = null;
 let menuEditandoId = null;
 let fichasActuales = [];
+const API_URL = "";
 
 cargarMenus();
 
@@ -33,7 +34,7 @@ document
 
 function cargarMenus() {
 
-    fetch("http://localhost:3000/menus")
+    fetch(`${API_URL}/api/menus`)
         .then(respuesta => respuesta.json())
         .then(menus => {
 
@@ -93,12 +94,12 @@ function cargarMenus() {
 
                     evento.stopPropagation();
 
-                    if (!confirm("¿Eliminar este menú?")) {
+                    if (!confirm("Â¿Eliminar este menÃº?")) {
                         return;
                     }
 
                     fetch(
-                        `http://localhost:3000/menus/${menu.id_menu}`,
+                        `${API_URL}/api/menus/${menu.id_menu}`,
                         {
                             method: "DELETE"
                         }
@@ -132,7 +133,7 @@ document
         const descripcion =
             document.getElementById("descripcionMenu").value;
 
-        fetch("http://localhost:3000/menus", {
+        fetch(`${API_URL}/api/menus`, {
 
             method: "POST",
 
@@ -162,7 +163,7 @@ document
 
         if (!menuEditandoId) {
 
-            alert("Selecciona un menú para editar.");
+            alert("Selecciona un menÃº para editar.");
 
             return;
 
@@ -172,7 +173,7 @@ document
             document.getElementById("descripcionMenu").value;
 
         fetch(
-            `http://localhost:3000/menus/${menuEditandoId}`,
+            `${API_URL}/api/menus/${menuEditandoId}`,
             {
 
                 method: "PUT",
@@ -202,7 +203,7 @@ document
 
 function cargarFichas(id_menu) {
 
-    fetch(`http://localhost:3000/menus/${id_menu}/fichas`)
+    fetch(`${API_URL}/api/menus/${id_menu}/fichas`)
         .then(respuesta => respuesta.json())
         .then(fichas => {
 
@@ -304,12 +305,12 @@ function renderizarFichas() {
 
         botonEliminar.addEventListener("click", () => {
 
-            if (!confirm("¿Eliminar esta ficha?")) {
+            if (!confirm("Â¿Eliminar esta ficha?")) {
                 return;
             }
 
             fetch(
-                `http://localhost:3000/fichas/${ficha.id_ficha}`,
+                `${API_URL}/api/fichas/${ficha.id_ficha}`,
                 {
                     method: "DELETE"
                 }
@@ -334,7 +335,7 @@ function renderizarFichas() {
                 ficha.visible === 1 ? 0 : 1;
 
             fetch(
-                `http://localhost:3000/fichas/${ficha.id_ficha}/visible`,
+                `${API_URL}/api/fichas/${ficha.id_ficha}/visible`,
                 {
 
                     method: "PUT",
@@ -397,7 +398,7 @@ function abrirVistaPrevia(ficha) {
         ficha.visible === 1 ? "estado-visible" : "estado-oculta";
 
     document.getElementById("vistaPreviaTitulo").textContent =
-        ficha.titulo || "Sin título";
+        ficha.titulo || "Sin tÃ­tulo";
 
     const imagen =
         document.getElementById("vistaPreviaImagen");
@@ -451,7 +452,7 @@ function subirImagenSeleccionada() {
 
     datosImagen.append("imagen", archivoImagen);
 
-    return fetch("http://localhost:3000/imagenes/upload", {
+    return fetch(`${API_URL}/api/uploads/images`, {
 
         method: "POST",
 
@@ -477,7 +478,7 @@ document
         if (!menuSeleccionadoId) {
 
             alert(
-                "Por favor, selecciona un menú antes de crear una ficha."
+                "Por favor, selecciona un menÃº antes de crear una ficha."
             );
 
             return;
@@ -496,7 +497,7 @@ document
         const texto =
             document.getElementById("textoFicha").value;
 
-        fetch("http://localhost:3000/fichas", {
+        fetch(`${API_URL}/api/fichas`, {
 
             method: "POST",
 
@@ -551,7 +552,7 @@ document
             document.getElementById("textoFicha").value;
 
         fetch(
-            `http://localhost:3000/fichas/${fichaEditandoId}`,
+            `${API_URL}/api/fichas/${fichaEditandoId}`,
             {
 
                 method: "PUT",
@@ -591,3 +592,4 @@ function limpiarFormulario() {
     document.getElementById("textoFicha").value = "";
 
 }
+

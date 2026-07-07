@@ -1,6 +1,7 @@
-// Cargar Héroes Dinámicamente
+﻿const API_URL = "";
+// Cargar HÃ©roes DinÃ¡micamente
 function cargarPantallaDinamica(id_menu) {
-    fetch(`http://localhost:3000/api/estructura-pantalla/${id_menu}`)
+    fetch(`${API_URL}/api/estructura-pantalla/${id_menu}`)
         .then(res => res.json())
         .then(data => {
             const gridContainer = document.getElementById('listaFichasDinamica');
