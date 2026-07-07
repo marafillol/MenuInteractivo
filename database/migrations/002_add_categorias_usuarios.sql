@@ -1,0 +1,19 @@
+﻿CREATE TABLE IF NOT EXISTS categoria (
+    id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE,
+    descripcion TEXT,
+    activo INTEGER DEFAULT 1,
+    creado DATETIME DEFAULT CURRENT_TIMESTAMP,
+    actualizado DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS usuario (
+    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    rol TEXT NOT NULL DEFAULT 'editor',
+    activo INTEGER DEFAULT 1,
+    creado DATETIME DEFAULT CURRENT_TIMESTAMP,
+    actualizado DATETIME
+);
