@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Panel Administrativo | MenuInteractivo</title>
+
+    <link rel="stylesheet" href="css/panel.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/componentes.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h2>MENU</h2>
+
+            <span>INTERACTIVO</span>
+
+        </div>
+
+        <div class="separador"></div>
+
+        <nav>
+
+            <button class="item activo" data-ventana="dashboard">
+
+                <span>📊</span>
+
+                Dashboard
+
+            </button>
+
+            <button class="item" data-ventana="menus">
+
+                <span>📂</span>
+
+                Menús
+
+            </button>
+
+            <button class="item" data-ventana="fichas">
+
+                <span>📄</span>
+
+                Fichas
+
+            </button>
+
+            <button class="item" data-ventana="multimedia">
+
+                <span>🖼️</span>
+
+                Multimedia
+
+            </button>
+
+            <button class="item" data-ventana="etiquetas">
+
+                <span>🏷️</span>
+
+                Etiquetas
+
+            </button>
+
+            <button class="item" data-ventana="plantillas">
+
+                <span>📑</span>
+
+                Plantillas
+
+            </button>
+
+            <button class="item" data-ventana="usuarios">
+
+                <span>👤</span>
+
+                Usuarios
+
+            </button>
+
+            <button class="item" data-ventana="configuracion">
+
+                <span>⚙️</span>
+
+                Configuración
+
+            </button>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <button id="cerrarSesion">
+
+                🚪 Cerrar sesión
+
+            </button>
+
+        </div>
+
+    </aside>
+
+    <!-- ================= CONTENIDO ================= -->
+
+    <main>
+
+        <!-- Barra Superior -->
+
+        <header class="barra-superior">
+
+            <div class="titulo-panel">
+
+                <h1 id="tituloVentana">
+
+                    Dashboard
+
+                </h1>
+
+                <span class="subtitulo">
+
+                    Centro de Documentación Histórica
+
+                </span>
+
+            </div>
+
+            <div class="usuario">
+
+                <div class="usuario-info">
+
+                    <strong>Administrador</strong>
+
+                    <small id="fechaActual">
+
+                        28/07/2026
+
+                    </small>
+
+                </div>
+
+                <div class="avatar">
+
+                    👤
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- Área dinámica -->
+
+        <section id="contenido">
+
+            <!-- Aquí se cargan las ventanas -->
+
+        </section>
+
+    </main>
+
+</div>
+
+<link rel="stylesheet" href="/css/panel.css">
+<link rel="stylesheet" href="/css/sidebar.css">
+<link rel="stylesheet" href="/css/componentes.css">
+
+
+<script src="/js/panel.js"></script>
+
+</body>
+
+</html>

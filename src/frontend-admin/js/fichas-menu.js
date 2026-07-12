@@ -1,0 +1,1 @@
+cargarFichasMenu(id_menu)

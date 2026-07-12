@@ -1,0 +1,358 @@
+<section class="ventana">
+
+    <h2>Gestión de Menús</h2>
+
+    <button
+            class="btn-nuevo"
+            id="nuevoMenu">
+        + Nuevo menú
+    </button>
+
+    <!-- FORMULARIO CREAR / EDITAR MENÚ -->
+
+    <div id="ventanaEmergente" class="modal">
+
+        <div class="modal-contenido">
+
+            <button
+                    class="cerrar"
+                    id="cerrarModal">
+                ✖
+            </button>
+
+
+            <h3>
+                Crear nuevo menú
+            </h3>
+
+
+            <form id="formularioMenu">
+
+
+                <!-- ID oculto -->
+                <input
+                        type="hidden"
+                        id="id_menu">
+
+
+
+                <!-- NOMBRE -->
+
+                <label>
+                    Nombre del menú
+                </label>
+
+                <input
+                        type="text"
+                        id="nuevoNombre"
+                        placeholder="Ej: Veteranos"
+                        required>
+
+
+
+                <!-- DESCRIPCIÓN -->
+
+                <label>
+                    Descripción
+                </label>
+
+                <textarea
+                        id="nuevaDescripcion"
+                        placeholder="Descripción del menú"></textarea>
+
+
+
+                <!-- PLANTILLA -->
+
+                <label>
+                    Tipo de contenido
+                </label>
+
+                <select
+                        id="plantillaMenu"
+                        required>
+
+                    <option value="">
+                        Seleccione una plantilla
+                    </option>
+
+                </select>
+
+
+
+                <!-- IMAGEN -->
+
+                <div id="bloqueImagenActual">
+
+                    <label>Imagen actual</label>
+
+                    <div class="preview-imagen">
+
+                        <img
+                                id="previewImagen"
+                                src=""
+                                alt="Sin imagen">
+
+                    </div>
+
+                </div>
+
+                <label>
+                    Imagen del menú
+                </label>
+
+                <input
+                        type="file"
+                        id="nuevaImagen"
+                        accept="image/*">
+
+
+
+                <!-- VISIBLE -->
+
+                <label>
+
+                    <input
+                            type="checkbox"
+                            id="nuevoVisible"
+                            checked>
+
+                    Visible
+
+                </label>
+
+
+
+                <div class="acciones-modal">
+
+
+                    <button
+                            type="button"
+                            id="guardarMenu"
+                            onclick="guardarNuevoMenu()">
+
+                        Guardar
+
+                    </button>
+
+
+
+                    <button
+                            type="button"
+                            id="cancelarMenu">
+
+                        Cancelar
+
+                    </button>
+
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+     MODAL VISTA PREVIA
+=========================== -->
+
+    <div id="modalVistaPrevia" class="modal">
+
+        <div class="modal-contenido">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarVistaPrevia()">
+                ✖
+            </button>
+
+            <h3>Vista previa del menú</h3>
+
+            <div class="preview-menu">
+
+
+                <div class="preview-imagen-ficha">
+
+                    <img
+                            id="previewMenuImagen"
+                            src=""
+                            alt="Imagen del menú">
+
+                </div>
+
+
+
+                <h2 id="previewNombre">
+                </h2>
+
+
+
+                <p
+                        id="previewDescripcion"
+                        class="preview-descripcion">
+                </p>
+
+
+
+                <h3 class="titulo-datos">
+                    Datos del menú
+                </h3>
+
+
+
+                <div class="grid-datos-preview">
+
+
+                    <div class="dato-preview">
+
+                        <h4>Tipo de contenido</h4>
+
+                        <p id="previewPlantilla"></p>
+
+                    </div>
+
+
+
+                    <div class="dato-preview">
+
+                        <h4>Estado</h4>
+
+                        <p id="previewVisible"></p>
+
+                    </div>
+
+
+
+                    <div class="dato-preview">
+
+                        <h4>ID del menú</h4>
+
+                        <p id="previewId"></p>
+
+                    </div>
+
+
+
+                    <div class="dato-preview">
+
+                        <h4>Creado</h4>
+
+                        <p id="previewCreado"></p>
+
+                    </div>
+
+
+
+                    <div class="dato-preview">
+
+                        <h4>Actualizado</h4>
+
+                        <p id="previewActualizado"></p>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- LISTADO DE MENÚS -->
+
+    <h3>
+        Menús disponibles
+    </h3>
+
+
+    <div id="listaMenus" class="grid-menus">
+
+        <!--
+            JS generará cada tarjeta:
+
+            Imagen
+            Nombre
+            Descripción
+
+            Botones:
+            👁 Ver menú
+            ✏️ Editar
+            🗑 Eliminar
+
+        -->
+
+    </div>
+
+
+</section>
+
+
+<div id="modalConfirmarEliminar" class="modal">
+
+    <div class="modal-contenido modal-confirmacion">
+
+        <h3>Eliminar menú</h3>
+
+        <p id="mensajeEliminar">
+            ¿Está seguro de que desea eliminar este menú?
+        </p>
+
+        <div class="acciones-modal">
+
+            <button
+                    class="btn-eliminar"
+                    onclick="confirmarEliminarMenu()">
+
+                Eliminar
+
+            </button>
+
+            <button
+                    onclick="cerrarConfirmacion()">
+
+                Cancelar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="modalMensaje" class="modal">
+
+    <div class="modal-contenido">
+
+        <button
+                class="cerrar"
+                onclick="cerrarMensaje()">
+
+            ✖
+
+        </button>
+
+        <h3 id="tituloMensaje">Aviso</h3>
+
+        <p id="textoMensaje"></p>
+
+        <div class="acciones-modal">
+
+            <button onclick="cerrarMensaje()">
+                Aceptar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

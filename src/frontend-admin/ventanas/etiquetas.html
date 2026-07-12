@@ -1,0 +1,290 @@
+<section class="ventana">
+
+    <h2 class="titulo-seccion">
+        Gestión de Etiquetas
+    </h2>
+
+    <button
+            id="nuevaEtiqueta"
+            class="btn-nuevo"
+            type="button">
+
+        + Nueva etiqueta
+
+    </button>
+
+
+    <div
+            id="gridEtiquetas"
+            class="grid-etiquetas">
+
+    </div>
+
+
+
+    <!-- ==========================================
+                    MODAL CREAR / EDITAR
+    =========================================== -->
+
+    <div
+            id="modalEtiqueta"
+            class="modal">
+
+        <div class="modal-contenido">
+
+            <div class="encabezado-modal">
+
+                <h3 id="tituloModalEtiqueta">
+
+                    Nueva etiqueta
+
+                </h3>
+
+                <button
+                        id="cerrarModalEtiqueta"
+                        class="cerrar-modal"
+                        type="button">
+
+                    ✕
+
+                </button>
+
+            </div>
+
+
+
+            <label>
+
+                Nombre
+
+            </label>
+
+            <input
+                    id="nombreEtiqueta"
+                    type="text"
+                    placeholder="Ej: Batalla de Puerto Argentino">
+
+
+
+            <label>
+
+                Descripción
+
+            </label>
+
+            <textarea
+                    id="descripcionEtiqueta"
+                    rows="6"
+                    placeholder="Descripción de la etiqueta"></textarea>
+
+
+            <label class="checkbox-label">
+
+                <input
+                        id="activoEtiqueta"
+                        type="checkbox"
+                        checked>
+
+                Activa
+
+            </label>
+
+            <div class="acciones-modal">
+
+                <button
+                        id="guardarEtiqueta"
+                        class="btn-guardar"
+                        type="button">
+
+                    Guardar
+
+                </button>
+
+
+
+                <button
+                        id="cancelarEtiqueta"
+                        class="btn-cancelar"
+                        type="button">
+
+                    Cancelar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==========================================
+                    MODAL VISTA PREVIA
+    =========================================== -->
+
+    <div
+            id="modalVistaEtiqueta"
+            class="modal">
+
+        <div class="modal-contenido">
+
+            <div class="encabezado-modal">
+
+                <h3 id="tituloVistaEtiqueta">
+
+                    Vista previa de etiqueta
+
+                </h3>
+
+                <button
+                        id="cerrarVistaEtiqueta"
+                        class="cerrar-modal"
+                        type="button">
+
+                    ✕
+
+                </button>
+
+            </div>
+
+
+
+            <label>
+
+                ID
+
+            </label>
+
+            <input
+                    id="vistaIdEtiqueta"
+                    type="text"
+                    readonly>
+
+
+
+            <label>
+
+                Nombre
+
+            </label>
+
+            <input
+                    id="vistaNombreEtiqueta"
+                    type="text"
+                    readonly>
+
+
+
+            <label>
+
+                Descripción
+
+            </label>
+
+            <textarea
+                    id="vistaDescripcionEtiqueta"
+                    rows="6"
+                    readonly></textarea>
+
+
+
+            <label>
+                Estado
+            </label>
+
+            <input
+                    id="vistaActivoEtiqueta"
+                    type="text"
+                    readonly>
+
+
+
+            <div class="acciones-modal">
+
+                <button
+                        id="btnCerrarVistaEtiqueta"
+                        class="btn-cancelar"
+                        type="button">
+
+                    Cerrar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+
+
+    <!-- =========================
+     MODAL ELIMINAR
+========================== -->
+
+    <div
+            id="modalEliminarEtiqueta"
+            class="modal">
+
+        <div class="modal-contenido modal-confirmacion">
+
+            <div class="encabezado-modal">
+
+                <h3>
+
+                    Eliminar etiqueta
+
+                </h3>
+
+                <button
+                        id="cerrarEliminarEtiqueta"
+                        class="cerrar-modal"
+                        type="button">
+
+                    ✕
+
+                </button>
+
+            </div>
+
+            <p class="mensaje-confirmacion">
+
+                ¿Está seguro que desea eliminar esta etiqueta?
+
+                <br><br>
+
+                <strong id="nombreEliminarEtiqueta"></strong>
+
+            </p>
+
+            <div class="acciones-modal">
+
+                <button
+                        id="cancelarEliminarEtiqueta"
+                        class="btn-cancelar"
+                        type="button">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                        id="confirmarEliminarEtiqueta"
+                        class="btn-eliminar"
+                        type="button">
+
+                    Eliminar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

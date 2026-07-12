@@ -1,0 +1,38 @@
+{
+  "interfaz":{
+    "vista":"grid",
+    "columnas":4,
+    "mostrarImagen":true,
+    "mostrarResumen":true
+  },
+
+  "estructura":{
+    "campos":[
+      {
+        "nombre":"nombre_completo",
+        "tipo":"text",
+        "etiqueta":"Nombre completo"
+      },
+      {
+        "nombre":"fecha_nacimiento",
+        "tipo":"date",
+        "etiqueta":"Fecha de nacimiento"
+      },
+      {
+        "nombre":"fecha_fallecimiento",
+        "tipo":"date",
+        "etiqueta":"Fecha de fallecimiento"
+      },
+      {
+        "nombre":"grado",
+        "tipo":"text",
+        "etiqueta":"Grado militar"
+      },
+      {
+        "nombre":"unidad",
+        "tipo":"text",
+        "etiqueta":"Unidad"
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "interfaz":{
+    "vista":"grid",
+    "columnas":3,
+    "mostrarImagen":true,
+    "mostrarResumen":true
+  },
+
+  "estructura":{
+    "campos":[
+      {
+        "nombre":"nombre_comun",
+        "tipo":"text",
+        "etiqueta":"Nombre común"
+      },
+      {
+        "nombre":"nombre_cientifico",
+        "tipo":"text",
+        "etiqueta":"Nombre científico"
+      },
+      {
+        "nombre":"reino",
+        "tipo":"text",
+        "etiqueta":"Reino"
+      },
+      {
+        "nombre":"familia",
+        "tipo":"text",
+        "etiqueta":"Familia"
+      },
+      {
+        "nombre":"habitat",
+        "tipo":"text",
+        "etiqueta":"Hábitat"
+      },
+      {
+        "nombre":"distribucion",
+        "tipo":"text",
+        "etiqueta":"Distribución"
+      },
+      {
+        "nombre":"alimentacion",
+        "tipo":"text",
+        "etiqueta":"Alimentación"
+      },
+      {
+        "nombre":"estado_conservacion",
+        "tipo":"text",
+        "etiqueta":"Estado de conservación"
+      },
+      {
+        "nombre":"descripcion",
+        "tipo":"textarea",
+        "etiqueta":"Descripción"
+      }
+    ]
+  }
+}

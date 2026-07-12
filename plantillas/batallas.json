@@ -1,0 +1,63 @@
+{
+  "interfaz": {
+    "vista": "grid",
+    "columnas": 3,
+    "mostrarImagen": true,
+    "mostrarResumen": true
+  },
+
+  "estructura": {
+    "campos": [
+      {
+        "nombre": "nombre_batalla",
+        "tipo": "text",
+        "etiqueta": "Nombre de la batalla"
+      },
+      {
+        "nombre": "fecha_inicio",
+        "tipo": "date",
+        "etiqueta": "Fecha de inicio"
+      },
+      {
+        "nombre": "fecha_fin",
+        "tipo": "date",
+        "etiqueta": "Fecha de finalización"
+      },
+      {
+        "nombre": "lugar",
+        "tipo": "text",
+        "etiqueta": "Lugar"
+      },
+      {
+        "nombre": "operacion",
+        "tipo": "text",
+        "etiqueta": "Operación militar"
+      },
+      {
+        "nombre": "fuerzas_argentinas",
+        "tipo": "textarea",
+        "etiqueta": "Fuerzas argentinas"
+      },
+      {
+        "nombre": "fuerzas_britanicas",
+        "tipo": "textarea",
+        "etiqueta": "Fuerzas británicas"
+      },
+      {
+        "nombre": "resultado",
+        "tipo": "text",
+        "etiqueta": "Resultado"
+      },
+      {
+        "nombre": "descripcion",
+        "tipo": "textarea",
+        "etiqueta": "Descripción"
+      },
+      {
+        "nombre": "importancia_historica",
+        "tipo": "textarea",
+        "etiqueta": "Importancia histórica"
+      }
+    ]
+  }
+}

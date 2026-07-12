@@ -1,0 +1,310 @@
+<section class="ventana">
+
+    <div class="cabecera-multimedia">
+
+        <button
+                id="barraVolverFicha"
+                class="btn-ver btn-volver"
+                onclick="volverFicha()"
+                style="display:none;">
+
+            ← Volver a fichas
+
+        </button>
+
+        <div>
+
+            <h2 id="tituloMultimedia">
+                Gestión de Multimedia
+            </h2>
+
+            <p id="subtituloMultimedia"></p>
+
+        </div>
+
+    </div>
+
+
+    <button
+            id="nuevoMultimedia"
+            class="btn-nuevo"
+            onclick="nuevoMultimedia()">
+
+        + Nuevo archivo
+
+    </button>
+
+
+
+    <!-- =======================================
+         PANEL CUANDO VIENE DESDE UNA FICHA
+    ======================================== -->
+
+    <div
+            id="panelFichaMultimedia"
+            class="panel-ficha-multimedia"
+            style="display:none;">
+
+        <!-- Tarjeta de la ficha -->
+
+        <div
+                id="tarjetaFichaMultimedia"
+                class="tarjeta-ficha-resumen">
+
+        </div>
+
+
+        <!-- Multimedia asociada -->
+
+        <div class="contenedor-multimedia">
+
+            <h3>Multimedia asociada</h3>
+
+            <div
+                    id="listaMultimedia"
+                    class="grid-menus grid-multimedia">
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =======================================
+         VISTA GENERAL
+    ======================================== -->
+
+    <div id="vistaGeneralMultimedia">
+
+        <div
+                id="listaMultimediaGeneral"
+                class="grid-menus grid-multimedia">
+        </div>
+
+    </div>
+
+
+
+    <!-- =======================================
+         MODAL VISTA PREVIA
+    ======================================== -->
+
+    <div
+            id="modalVistaMultimedia"
+            class="modal">
+
+        <div class="modal-contenido modal-contenido-multimedia">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarVistaMultimedia()">
+
+                ✖
+
+            </button>
+
+            <h2>
+                Vista previa multimedia
+            </h2>
+
+            <div id="contenidoVistaMultimedia">
+
+                <!--
+                Aquí multimedia.js inserta:
+
+                - Imagen / Video / Audio / PDF
+                - ID Multimedia
+                - ID Ficha
+                - Descripción
+                - Ruta
+                - Tipo
+                - Miniatura
+                - Activo
+                - Creado
+                - Actualizado
+                -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =======================================
+         NUEVO MULTIMEDIA
+    ======================================== -->
+
+    <div
+            id="modalMultimediaNuevo"
+            class="modal">
+
+        <div class="modal-contenido">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarNuevoMultimedia()">
+
+                ✖
+
+            </button>
+
+            <h3>
+                Nuevo archivo
+            </h3>
+
+            <label>Ficha</label>
+
+            <select id="multiFicha"></select>
+
+            <label>Descripción</label>
+
+            <input
+                    type="text"
+                    id="multiDescripcion"
+                    placeholder="Descripción del archivo">
+
+            <label>Tipo</label>
+
+            <select id="multiTipo">
+
+                <option value="imagen">Imagen</option>
+
+                <option value="video">Video</option>
+
+                <option value="audio">Audio</option>
+
+                <option value="pdf">PDF</option>
+
+            </select>
+
+            <label>Archivo</label>
+
+            <input
+                    type="file"
+                    id="multiArchivo">
+
+            <div id="previewArchivoActual" class="preview-archivo-actual" style="display:none;">
+
+                <h4>Archivo actual</h4>
+
+                <div id="contenidoPreviewArchivo"></div>
+
+            </div>
+
+
+            <label class="checkbox-label">
+
+                <input
+                        type="checkbox"
+                        id="multiActivo"
+                        checked>
+
+                Activo
+
+            </label>
+
+            <div class="acciones-modal">
+
+                <button onclick="guardarMultimedia()">
+                    Guardar
+                </button>
+
+                <button onclick="cerrarNuevoMultimedia()">
+                    Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =======================================
+         ELIMINAR MULTIMEDIA
+    ======================================== -->
+
+    <div
+            id="modalEliminarMultimedia"
+            class="modal">
+
+        <div class="modal-contenido">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarEliminarMultimedia()">
+
+                ✖
+
+            </button>
+
+            <h3>
+                Eliminar multimedia
+            </h3>
+
+            <p>
+                ¿Desea eliminar este archivo multimedia?
+            </p>
+
+            <div class="acciones-modal">
+
+                <button
+                        class="btn-eliminar"
+                        onclick="confirmarEliminarMultimedia()">
+
+                    Eliminar
+
+                </button>
+
+                <button
+                        class="btn-ver"
+                        onclick="cerrarEliminarMultimedia()">
+
+                    Cancelar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =======================================
+     VISOR COMPLETO PDF
+======================================= -->
+
+    <div
+            id="modalDocumentoCompleto"
+            class="modal">
+
+        <div class="modal-contenido modal-documento-completo">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarDocumentoCompleto()">
+
+                ✖
+
+            </button>
+
+            <h2>
+                Documento completo
+            </h2>
+
+            <iframe
+                    id="visorDocumentoCompleto"
+                    class="visor-documento-completo">
+            </iframe>
+
+        </div>
+
+    </div>
+
+</section>

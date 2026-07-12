@@ -1,157 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>MenuInteractivo Admin</title>
-    <link rel="stylesheet" href="style.css">
+
+    <title>Panel Administrativo</title>
+
+    <link rel="stylesheet" href="css/login.css">
+
 </head>
+
 <body>
 
-<h1>MenuInteractivo - Administración</h1>
+<div class="fondo">
 
-<section>
+    <div class="login">
 
-    <h2>Menús</h2>
+        <div class="encabezado">
 
-    <p id="estadoFormularioMenu" class="estado-formulario-ficha">
-        Modo creación
-    </p>
+            <h1>MENU INTERACTIVO</h1>
 
-    <input
-        type="text"
-        id="descripcionMenu"
-        placeholder="Descripción del menú"
-    >
+            <h2>Centro de Documentación Histórica</h2>
 
-    <button id="btnCrearMenu">
-        Crear Menú
-    </button>
-
-    <button id="btnGuardarMenu" disabled>
-        Guardar Menú
-    </button>
-
-    <button
-        id="btnCancelarMenu"
-        class="boton-secundario oculto">
-        Cancelar edición
-    </button>
-
-    <hr>
-
-    <ul id="listaMenus"></ul>
-
-    <p id="menuSeleccionadoTexto" class="oculto">
-        Menú seleccionado:
-        <strong id="nombreMenuSeleccionado"></strong>
-    </p>
-
-    <hr>
-
-    <div id="seccionFichas" class="oculto">
-
-        <h2>Fichas</h2>
-
-        <input
-            type="text"
-            id="buscadorFichas"
-            placeholder="Buscar ficha por título, resumen o texto"
-        >
-
-        <ul id="listaFichas"></ul>
-
-        <hr>
-
-        <h3 id="tituloFormularioFicha">
-            Crear Nueva Ficha (Selecciona un menú primero)
-        </h3>
-
-        <p id="estadoFormularioFicha" class="estado-formulario-ficha">
-            Modo creación
-        </p>
-
-        <div style="margin-top:15px;">
-
-            <input
-                type="text"
-                id="tituloFicha"
-                placeholder="Título de la ficha"
-                style="display:block; margin-bottom:10px; width:300px;"
-            >
-
-            <input
-                type="text"
-                id="resumenFicha"
-                placeholder="Resumen de la ficha"
-                style="display:block; margin-bottom:10px; width:300px;"
-            >
-
-            <input
-                type="text"
-                id="imagenFicha"
-                placeholder="URL o ruta de imagen"
-                style="display:block; margin-bottom:10px; width:300px;"
-            >
-
-            <input
-                type="file"
-                id="archivoImagenFicha"
-                accept="image/*"
-                style="display:block; margin-bottom:10px; width:300px;"
-            >
-
-            <textarea
-                id="textoFicha"
-                placeholder="Texto completo de la ficha"
-                style="display:block; margin-bottom:10px; width:300px; height:80px;"
-            ></textarea>
-
-            <button id="btnCrearFicha">
-                Crear Ficha
-            </button>
-
-            <button id="btnGuardarCambios">
-                Guardar Cambios
-            </button>
-
-            <button
-                id="btnCancelarEdicion"
-                class="boton-secundario oculto">
-                Cancelar edición
-            </button>
+            <p>Panel Administrativo</p>
 
         </div>
 
-    </div>
+        <form id="formLogin">
 
-</section>
+            <label>Usuario</label>
 
-<div id="modalVistaPrevia" class="modal-oculto">
+            <input
+                    type="text"
+                    id="usuario"
+                    placeholder="Ingrese su usuario"
+                    required
+            >
 
-    <div class="modal-contenido">
+            <label>Contraseña</label>
 
-        <button id="btnCerrarVistaPrevia" class="boton-cerrar">
-            Cerrar
-        </button>
+            <input
+                    type="password"
+                    id="password"
+                    placeholder="Ingrese su contraseña"
+                    required
+            >
 
-        <span id="vistaPreviaEstado"></span>
+            <button type="submit">
 
-        <h2 id="vistaPreviaTitulo"></h2>
+                Ingresar
 
-        <img
-            id="vistaPreviaImagen"
-            alt="Imagen de la ficha"
-        >
+            </button>
 
-        <p id="vistaPreviaResumen"></p>
-
-        <div id="vistaPreviaTexto"></div>
+        </form>
 
     </div>
 
 </div>
 
-<script src="script.js"></script>
+<script src="js/login.js"></script>
 
 </body>
+
 </html>

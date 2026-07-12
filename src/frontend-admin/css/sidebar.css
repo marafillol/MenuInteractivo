@@ -1,0 +1,260 @@
+/* ==========================================================
+   SIDEBAR
+   Panel Administrativo - MenuInteractivo
+========================================================== */
+
+.sidebar{
+
+    width:280px;
+    min-width:280px;
+
+    background:linear-gradient(
+        180deg,
+        #2F4435 0%,
+        #425841 100%
+    );
+
+    color:white;
+
+    display:flex;
+    flex-direction:column;
+
+    border-right:5px solid #6C4F34;
+
+    box-shadow:5px 0 20px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================================
+LOGO
+========================================================== */
+
+.logo{
+
+    padding:35px 20px;
+
+    text-align:center;
+
+    border-bottom:1px solid rgba(255,255,255,.15);
+
+}
+
+.logo h2{
+
+    font-family:"Cinzel",serif;
+
+    color:#F3E8D1;
+
+    font-size:28px;
+
+    letter-spacing:4px;
+
+    margin-bottom:8px;
+
+}
+
+.logo span{
+
+    color:#D7C39A;
+
+    font-size:15px;
+
+    letter-spacing:5px;
+
+}
+
+/* ==========================================================
+SEPARADOR
+========================================================== */
+
+.separador{
+
+    height:25px;
+
+}
+
+/* ==========================================================
+MENÚ
+========================================================== */
+
+.sidebar nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    padding:0 15px;
+
+}
+
+/* ==========================================================
+BOTONES
+========================================================== */
+
+.sidebar .item{
+
+    width:100%;
+
+    border:none;
+
+    background:transparent;
+
+    color:#F3E8D1;
+
+    text-align:left;
+
+    cursor:pointer;
+
+    padding:14px 18px;
+
+    font-size:15px;
+
+    border-radius:8px;
+
+    transition:.25s;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+/* Hover */
+
+.sidebar .item:hover{
+
+    background:rgba(255,255,255,.08);
+
+    transform:translateX(5px);
+
+}
+
+/* Botón activo */
+
+.sidebar .item.activo{
+
+    background:#6C4F34;
+
+    color:white;
+
+    font-weight:bold;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================================
+FOOTER
+========================================================== */
+
+.sidebar-footer{
+
+    margin-top:auto;
+
+    padding:20px;
+
+    border-top:1px solid rgba(255,255,255,.15);
+
+}
+
+/* ==========================================================
+BOTÓN CERRAR SESIÓN
+========================================================== */
+
+#cerrarSesion{
+
+    width:100%;
+
+    border:none;
+
+    background:#7A2F2F;
+
+    color:white;
+
+    cursor:pointer;
+
+    padding:14px;
+
+    border-radius:8px;
+
+    font-size:15px;
+
+    transition:.25s;
+
+}
+
+#cerrarSesion:hover{
+
+    background:#9B3E3E;
+
+}
+
+/* ==========================================================
+ICONOS
+========================================================== */
+
+.sidebar .item span{
+
+    font-size:18px;
+
+}
+
+/* ==========================================================
+RESPONSIVE
+========================================================== */
+
+@media(max-width:900px){
+
+    .sidebar{
+
+        width:90px;
+
+        min-width:90px;
+
+    }
+
+    .logo span{
+
+        display:none;
+
+    }
+
+    .logo h2{
+
+        font-size:18px;
+
+        letter-spacing:2px;
+
+    }
+
+    .sidebar .item{
+
+        justify-content:center;
+
+        font-size:0;
+
+        padding:16px;
+
+    }
+
+    .sidebar .item span{
+
+        font-size:22px;
+
+        margin:0;
+
+    }
+
+    #cerrarSesion{
+
+        font-size:0;
+
+        padding:16px;
+
+    }
+
+}

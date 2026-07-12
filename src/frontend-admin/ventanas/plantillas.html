@@ -1,0 +1,514 @@
+<section class="ventana">
+
+    <h2 class="titulo-seccion">
+        Gestión de Plantillas
+    </h2>
+
+    <p class="subtitulo-seccion">
+        Administrá la estructura y la interfaz de las fichas.
+    </p>
+
+    <button
+            id="nuevaPlantilla"
+            class="btn-nuevo">
+
+        + Nueva plantilla
+
+    </button>
+
+
+    <!-- ===========================
+         LISTADO
+    ============================ -->
+
+    <div
+            id="gridPlantillas"
+            class="grid-menus">
+
+    </div>
+
+
+
+    <!-- ===========================
+         MODAL PLANTILLA
+    ============================ -->
+
+    <div
+            id="modalPlantilla"
+            class="modal">
+
+        <div class="modal-contenido modal-grande">
+
+            <button
+                    class="cerrar"
+                    onclick="cerrarPlantilla()">
+
+                ✖
+
+            </button>
+
+            <h2 id="tituloModalPlantilla">
+
+                Nueva plantilla
+
+            </h2>
+
+
+
+            <!-- ===========================
+                 DATOS GENERALES
+            ============================ -->
+
+            <fieldset>
+
+                <legend>
+
+                    Datos generales
+
+                </legend>
+
+                <label>
+
+                    Nombre
+
+                </label>
+
+                <input
+                        type="text"
+                        id="nombrePlantilla">
+
+                <label>
+
+                    Descripción
+
+                </label>
+
+                <textarea
+                        id="descripcionPlantilla">
+
+                </textarea>
+
+                <label class="checkbox">
+
+                    <input
+                            type="checkbox"
+                            id="activoPlantilla"
+                            checked>
+
+                    Activa
+
+                </label>
+
+            </fieldset>
+
+
+
+            <!-- ===========================
+                 INTERFAZ
+            ============================ -->
+
+            <fieldset>
+
+                <legend>
+
+                    Configuración de la interfaz
+
+                </legend>
+
+                <label>
+
+                    Vista
+
+                </label>
+
+                <select id="vistaPlantilla">
+
+                    <option value="grid">
+
+                        Grid
+
+                    </option>
+
+                    <option value="lista">
+
+                        Lista
+
+                    </option>
+
+                </select>
+
+                <label>
+
+                    Columnas
+
+                </label>
+
+                <input
+                        type="number"
+                        id="columnasPlantilla"
+                        min="1"
+                        max="6"
+                        value="4">
+
+                <label class="checkbox">
+
+                    <input
+                            type="checkbox"
+                            id="mostrarImagenPlantilla"
+                            checked>
+
+                    Mostrar imagen
+
+                </label>
+
+                <label class="checkbox">
+
+                    <input
+                            type="checkbox"
+                            id="mostrarResumenPlantilla"
+                            checked>
+
+                    Mostrar resumen
+
+                </label>
+
+            </fieldset>
+
+
+
+            <!-- ===========================
+                 CAMPOS
+            ============================ -->
+
+            <fieldset>
+
+                <legend>
+
+                    Campos de la ficha
+
+                </legend>
+
+                <button
+                        type="button"
+                        id="btnNuevoCampo"
+                        class="btn-nuevo">
+
+                    + Agregar campo
+
+                </button>
+
+                <div
+                        id="listaCamposPlantilla">
+
+                </div>
+
+            </fieldset>
+
+
+
+            <!-- ===========================
+                 VISTA PREVIA
+            ============================ -->
+
+            <fieldset>
+
+                <legend>
+
+                    Vista previa
+
+                </legend>
+
+                <div
+                        id="vistaPreviaPlantilla">
+
+                </div>
+
+            </fieldset>
+
+
+
+            <button
+                    id="btnGuardarPlantilla"
+                    class="btn-guardar">
+
+                Guardar plantilla
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ===========================
+         MODAL CAMPO
+    ============================ -->
+
+    <div
+            id="modalCampo"
+            class="modal">
+
+
+        <div
+                class="modal-contenido">
+
+
+            <h2>
+
+                Nuevo campo
+
+            </h2>
+
+
+            <label>
+
+                Etiqueta
+
+            </label>
+
+            <input
+                    id="etiquetaCampo"
+                    type="text">
+
+
+
+            <label>
+
+                Nombre interno
+
+            </label>
+
+            <input
+                    id="nombreCampo"
+                    type="text">
+
+
+
+            <label>
+
+                Tipo
+
+            </label>
+
+
+            <select id="tipoCampo">
+
+                <option value="text">
+                    Texto
+                </option>
+
+                <option value="textarea">
+                    Área de texto
+                </option>
+
+                <option value="date">
+                    Fecha
+                </option>
+
+                <option value="number">
+                    Número
+                </option>
+
+                <option value="checkbox">
+                    Checkbox
+                </option>
+
+            </select>
+
+
+
+            <div class="acciones-modal">
+
+
+                <button
+                        id="btnGuardarCampo"
+                        class="btn-guardar">
+
+                    Guardar
+
+                </button>
+
+
+                <button
+                        onclick="cerrarCampo()"
+                        class="btn-cancelar">
+
+                    Cancelar
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <!-- MODAL ELIMINAR CAMPO -->
+
+    <div
+            id="modalEliminarCampo"
+            class="modal">
+
+
+        <div class="modal-contenido">
+
+
+            <h3>
+                Eliminar campo
+            </h3>
+
+
+            <p>
+                ¿Está seguro que desea eliminar este campo?
+            </p>
+
+
+            <div class="acciones-modal">
+
+
+                <button
+                        class="btn-cancelar"
+                        onclick="cerrarEliminarCampo()">
+
+                    Cancelar
+
+                </button>
+
+
+
+                <button
+                        class="btn-eliminar"
+                        onclick="confirmarEliminarCampo()">
+
+                    Eliminar
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- MODAL VISTA PREVIA PLANTILLA -->
+
+    <div
+            id="modalVistaPlantilla"
+            class="modal">
+
+
+        <div class="modal-contenido">
+
+
+            <button
+                    class="cerrar-modal"
+                    onclick="cerrarVistaPlantilla()">
+
+                ✖
+
+            </button>
+
+
+            <h2>
+                Vista previa plantilla
+            </h2>
+
+
+
+            <div id="contenidoVistaPlantilla">
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- MODAL ELIMINAR PLANTILLA -->
+
+    <div id="modalEliminarPlantilla" class="modal">
+
+        <div class="ventana modal-eliminar">
+
+            <h2 class="titulo-seccion">
+                Eliminar plantilla
+            </h2>
+
+
+            <p id="mensajeEliminarPlantilla">
+                ¿Seguro que desea eliminar esta plantilla?
+            </p>
+
+
+            <div class="acciones-modal">
+
+                <button
+                        class="btn-cancelar"
+                        onclick="cerrarEliminarPlantilla()">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                        class="btn-eliminar"
+                        onclick="confirmarEliminarPlantilla()">
+
+                    Eliminar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MODAL MENSAJE -->
+
+    <div id="modalMensajePlantilla" class="modal">
+
+        <div class="modal-eliminar">
+
+            <h2 id="tituloMensajePlantilla">
+                Aviso
+            </h2>
+
+
+            <p id="textoMensajePlantilla"></p>
+
+
+            <div class="acciones-modal">
+
+                <button
+                        class="btn-editar"
+                        onclick="cerrarMensajePlantilla()">
+
+                    Aceptar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
