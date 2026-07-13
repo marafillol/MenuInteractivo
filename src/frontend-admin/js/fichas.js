@@ -261,7 +261,7 @@ async function vistaPreviaFicha(id_ficha){
                 : {};
 
             const campos =
-            plantilla.estructura?.campos || [];
+                plantilla.plantilla_json?.estructura?.campos || [];
 
             campos.forEach(campo=>{
 
@@ -557,7 +557,8 @@ async function editarFicha(id_ficha){
 
 
 
-
+        document.getElementById("labelImagenFicha").textContent =
+        "Cambiar imagen";
 
 
         // limpiar archivo nuevo
@@ -670,7 +671,7 @@ async function editarFicha(id_ficha){
 
 
         const campos =
-        plantilla.estructura?.campos || [];
+            plantilla.plantilla_json?.estructura?.campos || [];
 
 
 
@@ -1153,7 +1154,7 @@ async function(e){
         window.plantillaActual = plantilla;
 
         const campos =
-            plantilla.estructura?.campos || [];
+            plantilla.plantilla_json?.estructura?.campos || [];
 
         generarCampos(campos);
 
@@ -1180,6 +1181,9 @@ async function(e){
         document.getElementById("textoFicha").value = "";
 
         document.getElementById("imagenFicha").value = "";
+
+        document.getElementById("labelImagenFicha").textContent =
+        "Seleccionar imagen";
 
 
         // borrar modo edición

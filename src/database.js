@@ -59,15 +59,15 @@ db.serialize(() => {
     // Guarda información de autenticación, permisos y estado del usuario.
 
     db.run(`
-        CREATE TABLE IF NOT EXISTS usuario (
+        CREATE TABLE IF NOT EXISTS usuario(
 
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
 
+            firebase_uid TEXT UNIQUE NOT NULL,
+
             nombre TEXT NOT NULL,
 
-            email TEXT NOT NULL UNIQUE,
-
-            contraseña TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
 
             rol TEXT NOT NULL,
 
@@ -75,8 +75,9 @@ db.serialize(() => {
 
             creado DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-            actualizado DATETIME
-        )
+            actualizado DATETIME DEFAULT CURRENT_TIMESTAMP
+
+        );
     `);
 
 

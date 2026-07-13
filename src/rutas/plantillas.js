@@ -17,6 +17,15 @@ router.get(
 
 
 // =================================
+// OBTENER PLANTILLA DE UN MENÚ
+// =================================
+
+router.get(
+    "/menu/:id_menu",
+    plantillaController.obtenerPlantillaPorMenu
+);
+
+// =================================
 // OBTENER PLANTILLA POR ID
 // =================================
 

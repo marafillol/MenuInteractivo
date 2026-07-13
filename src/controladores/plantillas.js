@@ -1,6 +1,5 @@
 const Plantilla = require("../modelos/plantilla");
 
-
 // ======================================
 // LISTAR PLANTILLAS
 // ======================================
@@ -74,6 +73,7 @@ const obtenerPlantilla = async(req,res)=>{
 // OBTENER PLANTILLA POR MENÚ
 // ======================================
 
+
 const obtenerPlantillaPorMenu = async(req,res)=>{
 
     try{
@@ -87,7 +87,7 @@ const obtenerPlantillaPorMenu = async(req,res)=>{
 
             return res.status(404).json({
 
-                error:"No existe plantilla para este menú"
+                error:"Plantilla no encontrada"
 
             });
 
@@ -96,10 +96,12 @@ const obtenerPlantillaPorMenu = async(req,res)=>{
         plantilla.plantilla_json =
         JSON.parse(plantilla.plantilla_json);
 
-        res.json(plantilla.plantilla_json);
+        res.json(plantilla);
 
     }
     catch(error){
+
+        console.error(error);
 
         res.status(500).json({
 
@@ -231,6 +233,7 @@ const eliminarPlantilla = async(req,res)=>{
     }
 
 };
+
 
 module.exports = {
 
