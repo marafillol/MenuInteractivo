@@ -1,5 +1,6 @@
 const Ficha = require("../modelos/ficha");
-
+const RelacionFicha = require("../modelos/relacionFichaModelo");
+const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 
 const listarFichas = async(req,res)=>{
 
@@ -120,6 +121,16 @@ const obtenerFicha = async(req,res)=>{
 
 const crearFicha = async(req,res)=>{
 
+    const titulo = req.body.titulo?.trim();
+
+    if(!titulo){
+
+        return res.status(400).json({
+            error:"Debe ingresar un título para la ficha."
+        });
+
+    }
+
     try{
 
 
@@ -127,7 +138,7 @@ const crearFicha = async(req,res)=>{
 
             id_menu: req.body.id_menu,
 
-            titulo: req.body.titulo,
+            titulo,
 
             resumen: req.body.resumen,
 
@@ -181,6 +192,16 @@ const crearFicha = async(req,res)=>{
 
 const actualizarFicha = async(req,res)=>{
 
+    const titulo = req.body.titulo?.trim();
+
+    if(!titulo){
+
+        return res.status(400).json({
+            error:"Debe ingresar un título para la ficha."
+        });
+
+    }
+
     try{
 
 
@@ -188,7 +209,7 @@ const actualizarFicha = async(req,res)=>{
 
             id_menu: req.body.id_menu,
 
-            titulo: req.body.titulo,
+            titulo,
 
             resumen: req.body.resumen,
 
@@ -255,6 +276,11 @@ const actualizarFicha = async(req,res)=>{
 
 const eliminarFicha = async(req,res)=>{
 
+
+    console.log("ENTRO A ELIMINAR FICHA");
+    console.log("PARAMETROS:", req.params);
+
+
     try{
 
         const id = req.params.id_ficha;
@@ -272,6 +298,15 @@ const eliminarFicha = async(req,res)=>{
 
         }
 
+        // Eliminar relaciones ficha-ficha
+        await RelacionFicha.eliminarRelacionesFicha(id);
+
+
+        // Eliminar relaciones ficha-etiqueta
+        await FichaEtiqueta.eliminarRelacionesFicha(id);
+
+
+        // Eliminar la ficha
         await Ficha.eliminar(id);
 
         res.json({

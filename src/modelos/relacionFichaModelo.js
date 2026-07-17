@@ -99,31 +99,84 @@ class RelacionFicha {
 
                 `
                 SELECT
+
                     rf.id_relacion,
-                    rf.id_ficha_destino,
+
+                    CASE
+
+                        WHEN rf.id_ficha_origen = ?
+
+                        THEN rf.id_ficha_destino
+
+                        ELSE rf.id_ficha_origen
+
+                    END AS id_ficha_destino,
+
+
                     rf.tipo_relacion,
-                    f.titulo
+
+
+                    CASE
+
+                        WHEN rf.id_ficha_origen = ?
+
+                        THEN ficha_destino.titulo
+
+                        ELSE ficha_origen.titulo
+
+                    END AS titulo
+
+
                 FROM relacion_ficha rf
-                INNER JOIN ficha f
-                    ON f.id_ficha = rf.id_ficha_destino
-                WHERE rf.id_ficha_origen = ?
-                ORDER BY f.titulo
+
+
+
+                LEFT JOIN ficha AS ficha_origen
+
+                ON ficha_origen.id_ficha = rf.id_ficha_origen
+
+
+
+                LEFT JOIN ficha AS ficha_destino
+
+                ON ficha_destino.id_ficha = rf.id_ficha_destino
+
+
+
+                WHERE
+
+                    rf.id_ficha_origen = ?
+
+                    OR rf.id_ficha_destino = ?
+
+
+
+                ORDER BY titulo
+
                 `,
 
 
-                [idFicha],
+                [
+                    idFicha,
+                    idFicha,
+                    idFicha,
+                    idFicha
+                ],
+
 
 
                 (error,filas)=>{
 
 
-                    if(error)
+                    if(error){
 
                         reject(error);
 
-                    else
+                    }else{
 
                         resolve(filas);
+
+                    }
 
 
                 }
@@ -138,7 +191,44 @@ class RelacionFicha {
 
 
 
+    static eliminarRelacionesFicha(idFicha){
 
+        console.log("BORRANDO RELACIONES DE:", idFicha);
+
+        return new Promise((resolve,reject)=>{
+
+            db.run(
+
+                `
+                DELETE FROM relacion_ficha
+                WHERE id_ficha_origen = ?
+                OR id_ficha_destino = ?
+                `,
+
+                [
+                    idFicha,
+                    idFicha
+                ],
+
+                function(error){
+
+                    if(error){
+
+                        reject(error);
+
+                    }else{
+
+                        resolve();
+
+                    }
+
+                }
+
+            );
+
+        });
+
+    }
 
 
 
@@ -354,38 +444,91 @@ class RelacionFicha {
         return new Promise((resolve,reject)=>{
 
 
-            db.run(
-
+            db.get(
 
                 `
-                DELETE FROM relacion_ficha
+                SELECT
+                    id_ficha_origen,
+                    id_ficha_destino
+                FROM relacion_ficha
                 WHERE id_relacion = ?
                 `,
-
 
                 [idRelacion],
 
 
-                function(error){
+                (error, relacion)=>{
 
 
                     if(error){
 
-
                         reject(error);
 
-
-                    }else{
-
-
-                        resolve();
-
+                        return;
 
                     }
 
 
-                }
+                    if(!relacion){
 
+                        resolve();
+
+                        return;
+
+                    }
+
+
+
+                    db.run(
+
+                        `
+                        DELETE FROM relacion_ficha
+                        WHERE
+                        (
+                            id_ficha_origen = ?
+                            AND
+                            id_ficha_destino = ?
+                        )
+                        OR
+                        (
+                            id_ficha_origen = ?
+                            AND
+                            id_ficha_destino = ?
+                        )
+                        `,
+
+
+                        [
+
+                            relacion.id_ficha_origen,
+                            relacion.id_ficha_destino,
+
+                            relacion.id_ficha_destino,
+                            relacion.id_ficha_origen
+
+                        ],
+
+
+                        function(error){
+
+
+                            if(error){
+
+                                reject(error);
+
+                            }else{
+
+                                resolve();
+
+                            }
+
+
+                        }
+
+                    );
+
+
+                }
 
             );
 
@@ -393,16 +536,7 @@ class RelacionFicha {
         });
 
     }
-
-
-
 }
-
-
-
-
-
-
 
 
 // =======================================================

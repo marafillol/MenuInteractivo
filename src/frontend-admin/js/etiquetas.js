@@ -104,13 +104,30 @@ async function cargarEtiquetas(){
 async function guardarEtiqueta(){
 
 
+    const nombre =
+    document.getElementById("nombreEtiqueta").value.trim();
+
+
+    if(nombre === ""){
+
+        mostrarMensaje(
+            "Campo obligatorio",
+            "Debe ingresar un nombre para la etiqueta."
+        );
+
+        document.getElementById("nombreEtiqueta").focus();
+
+        return;
+
+    }
+
+
     const datos = {
 
-        nombre:
-        document.getElementById("nombreEtiqueta").value,
+        nombre: nombre,
 
         descripcion:
-        document.getElementById("descripcionEtiqueta").value,
+        document.getElementById("descripcionEtiqueta").value.trim(),
 
         activo:
         document.getElementById("activoEtiqueta").checked ? 1 : 0
@@ -302,19 +319,55 @@ async function vistaPreviaEtiqueta(id){
 
 async function eliminarEtiqueta(){
 
-    await window.fetchProtegido(
-        `/api/etiquetas/${etiquetaEliminar}`,
-        {
-            method:"DELETE"
+    if(!etiquetaEliminar){
+        return;
+    }
+
+    try{
+
+        const respuesta =
+        await window.fetchProtegido(
+
+            `/api/etiquetas/${etiquetaEliminar}`,
+
+            {
+                method:"DELETE"
+            }
+
+        );
+
+        const resultado =
+        await respuesta.json();
+
+        if(!respuesta.ok){
+
+            mostrarMensaje(
+                "Error",
+                resultado.error
+            );
+
+            return;
+
         }
-    );
 
-    etiquetaEliminar = null;
+        etiquetaEliminar = null;
 
-    document.getElementById("modalEliminarEtiqueta")
-    .style.display = "none";
+        document.getElementById(
+            "modalEliminarEtiqueta"
+        ).style.display = "none";
 
-    cargarEtiquetas();
+        cargarEtiquetas();
+
+    }catch(error){
+
+        console.error(error);
+
+        mostrarMensaje(
+            "Error",
+            "No se pudo eliminar la etiqueta."
+        );
+
+    }
 
 }
 
@@ -370,5 +423,41 @@ function confirmarEliminarEtiqueta(id,nombre){
 
     document.getElementById("modalEliminarEtiqueta")
     .style.display = "flex";
+
+}
+
+
+function cerrarMensaje(){
+
+    document
+    .getElementById("modalMensaje")
+    .style.display="none";
+
+}
+
+
+function mostrarMensaje(titulo, mensaje){
+
+    const modal =
+    document.getElementById("modalMensaje");
+
+
+    if(!modal){
+
+        alert(`${titulo}\n\n${mensaje}`);
+        return;
+
+    }
+
+
+    document.getElementById("tituloMensaje")
+    .textContent = titulo;
+
+
+    document.getElementById("textoMensaje")
+    .textContent = mensaje;
+
+
+    modal.style.display = "flex";
 
 }

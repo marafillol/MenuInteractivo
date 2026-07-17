@@ -2,6 +2,7 @@ const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 
 
 
+
 class FichaEtiquetaControlador{
 
 

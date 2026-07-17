@@ -533,6 +533,39 @@ const contarMultimedia = (id)=>{
 };
 
 
+const eliminarRelaciones = (id_ficha)=>{
+
+    return new Promise((resolve,reject)=>{
+
+        db.run(
+
+            `
+            DELETE FROM relacion_ficha
+            WHERE id_ficha_origen = ?
+               OR id_ficha_destino = ?
+            `,
+
+            [id_ficha, id_ficha],
+
+            function(error){
+
+                if(error){
+
+                    reject(error);
+
+                }else{
+
+                    resolve();
+
+                }
+
+            }
+
+        );
+
+    });
+
+};
 
 
 
@@ -559,6 +592,8 @@ module.exports = {
 
     obtenerPorId,
 
-    contarMultimedia
+    contarMultimedia,
+
+    eliminarRelaciones
 
 };

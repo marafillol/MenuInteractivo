@@ -599,33 +599,30 @@ function cerrarVistaMultimedia(){
 
 async function nuevoMultimedia(){
 
+    multimediaEditando = null;
+
     await cargarFichasMultimedia();
 
-    // ==========================
-    // Limpiar formulario
-    // ==========================
-
     document.getElementById("multiDescripcion").value = "";
-
     document.getElementById("multiTipo").selectedIndex = 0;
-
     document.getElementById("multiArchivo").value = "";
+    document.getElementById("multiActivo").checked = true;
 
-    const ficha =
-    document.getElementById("multiFicha");
-
+    const ficha = document.getElementById("multiFicha");
     if(ficha.options.length > 0){
-
         ficha.selectedIndex = 0;
-
     }
 
-    // Abrir modal
+    const preview = document.getElementById("previewArchivoActual");
+    if(preview){
+        preview.remove();
+    }
 
-    document
-    .getElementById("modalMultimediaNuevo")
-    .style.display = "flex";
+    document.querySelector(
+        "#modalMultimediaNuevo h3"
+    ).textContent = "Nuevo archivo";
 
+    document.getElementById("modalMultimediaNuevo").style.display = "flex";
 }
 
 async function cargarFichasMultimedia(){
@@ -656,7 +653,30 @@ async function cargarFichasMultimedia(){
     });
 
 }
+
+
+
 async function guardarMultimedia(){
+
+    const archivo =
+    document.getElementById("multiArchivo").files[0];
+
+    // ==========================
+    // Validación de archivo
+    // ==========================
+
+    if(!multimediaEditando && !archivo){
+
+        mostrarMensaje(
+            "Campo obligatorio",
+            "Debe seleccionar un archivo multimedia."
+        );
+
+        document.getElementById("multiArchivo").focus();
+
+        return;
+
+    }
 
     const formulario = new FormData();
 
@@ -680,9 +700,6 @@ async function guardarMultimedia(){
         document.getElementById("multiActivo").checked ? 1 : 0
     );
 
-    const archivo =
-    document.getElementById("multiArchivo").files[0];
-
     if(archivo){
 
         formulario.append(
@@ -704,7 +721,8 @@ async function guardarMultimedia(){
                 ? "PUT"
                 : "POST";
 
-        const respuesta = await window.fetchProtegido(
+        const respuesta =
+        await window.fetchProtegido(
             url,
             {
                 method: metodo,
@@ -714,6 +732,17 @@ async function guardarMultimedia(){
 
         const resultado =
         await respuesta.json();
+
+        if(!respuesta.ok){
+
+            mostrarMensaje(
+                "Error",
+                resultado.error || "No se pudo guardar la multimedia."
+            );
+
+            return;
+
+        }
 
         console.log(resultado);
 
@@ -734,7 +763,23 @@ async function guardarMultimedia(){
             error
         );
 
+        mostrarMensaje(
+            "Error",
+            "Ocurrió un error al guardar la multimedia."
+        );
+
     }
+
+}
+
+
+
+
+function cerrarMensaje(){
+
+    document
+        .getElementById("modalMensaje")
+        .style.display = "none";
 
 }
 
@@ -864,6 +909,35 @@ function cerrarDocumentoCompleto(){
     ).style.display = "none";
 
 }
+
+
+
+function mostrarMensaje(titulo, mensaje){
+
+    const modal =
+    document.getElementById("modalMensaje");
+
+
+    if(!modal){
+
+        alert(`${titulo}\n\n${mensaje}`);
+        return;
+
+    }
+
+
+    document.getElementById("tituloMensaje")
+    .textContent = titulo;
+
+
+    document.getElementById("textoMensaje")
+    .textContent = mensaje;
+
+
+    modal.style.display = "flex";
+
+}
+
 
 async function editarMultimedia(id){
 

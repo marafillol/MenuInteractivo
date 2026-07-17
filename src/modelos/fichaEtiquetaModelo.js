@@ -283,8 +283,84 @@ class FichaEtiqueta {
     }
 
 
+    // ===================================================
+    // ELIMINAR TODAS LAS ETIQUETAS DE UNA FICHA
+    // ===================================================
+
+    static eliminarRelacionesFicha(idFicha){
+
+        return new Promise((resolve,reject)=>{
+
+
+            db.run(
+
+                `
+                DELETE FROM ficha_etiqueta
+                WHERE id_ficha = ?
+                `,
+
+                [idFicha],
+
+                function(error){
+
+                    if(error){
+
+                        reject(error);
+
+                    }else{
+
+                        resolve(true);
+
+                    }
+
+                }
+
+            );
+
+
+        });
+
+    }
+
+
+    // ===================================================
+    // ELIMINAR TODAS LAS RELACIONES DE UNA ETIQUETA
+    // ===================================================
+
+    static eliminarEtiquetasRelacionadas(idEtiqueta){
+
+        return new Promise((resolve,reject)=>{
+
+            db.run(
+                `
+                DELETE
+                FROM ficha_etiqueta
+                WHERE id_etiqueta = ?
+                `,
+                [idEtiqueta],
+                function(error){
+
+                    if(error){
+
+                        reject(error);
+
+                    }else{
+
+                        resolve();
+
+                    }
+
+                }
+            );
+
+        });
+
+    }
 
 }
+
+
+
 
 
 

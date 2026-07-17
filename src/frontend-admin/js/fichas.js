@@ -83,9 +83,9 @@ async function cargarFichas(){
 
             contenedor.innerHTML += `
 
-            <article class="tarjeta-menu">
+            <article class="tarjeta-ficha ${ficha.visible == 0 ? "ficha-desactivada" : ""}">
 
-                <div class="imagen-menu">
+                <div class="imagen-ficha">
 
                 <img
                     src="/${(ficha.imagen || "").replace("public/","")}"
@@ -95,10 +95,16 @@ async function cargarFichas(){
                 </div>
 
 
-                <div class="info-menu">
+                <div class="info-ficha">
+
+
+                    <span class="campo-titulo-ficha">
+                        Título
+                    </span>
+
 
                     <h3>
-                        ${ficha.titulo}
+                        ${ficha.titulo || "Sin título"}
                     </h3>
 
 
@@ -112,7 +118,7 @@ async function cargarFichas(){
                     </small>
 
 
-                    <div class="acciones-menu">
+                    <div class="acciones-ficha">
 
 
                     <button
@@ -633,9 +639,13 @@ async function editarFicha(id_ficha){
 
         relacionesPendientes = relaciones.map(r=>({
 
-            id_ficha_destino:r.id_ficha_destino,
+            id_relacion: r.id_relacion,
 
-            tipo_relacion:r.tipo_relacion
+            id_ficha_destino: r.id_ficha_destino,
+
+            tipo_relacion: r.tipo_relacion,
+
+            titulo: r.titulo
 
         }));
 
@@ -868,6 +878,22 @@ async function guardarFicha(){
     .getElementById("modalFicha")
     .dataset.idFicha;
 
+    const titulo =
+    document.getElementById("tituloFicha").value.trim();
+
+    if(titulo === ""){
+
+        mostrarMensaje(
+            "Campos obligatorios",
+            "Debe ingresar un título para la ficha."
+        );
+
+        document.getElementById("tituloFicha").focus();
+
+        return;
+
+    }
+
     const formulario = new FormData();
 
     // ===============================
@@ -900,15 +926,9 @@ async function guardarFicha(){
 
     }
 
-    formulario.append(
-        "id_menu",
-        id_menu
-    );
+    formulario.append("id_menu", id_menu);
 
-    formulario.append(
-        "titulo",
-        document.getElementById("tituloFicha").value
-    );
+    formulario.append("titulo", titulo);
 
     formulario.append(
         "resumen",
@@ -930,19 +950,12 @@ async function guardarFicha(){
         JSON.stringify(datos)
     );
 
-    // ===============================
-    // Imagen
-    // ===============================
-
     const imagen =
     document.getElementById("imagenFicha").files[0];
 
     if(imagen){
 
-        formulario.append(
-            "imagen",
-            imagen
-        );
+        formulario.append("imagen", imagen);
 
     }
 
@@ -961,31 +974,32 @@ async function guardarFicha(){
         const respuesta =
         await window.fetchProtegido(url,{
 
-            method:metodo,
+            method: metodo,
 
-            body:formulario
+            body: formulario
 
         });
 
         const resultado =
         await respuesta.json();
 
-        console.log(resultado);
+        if(!respuesta.ok){
+
+            mostrarMensaje(
+                "No se pudo guardar",
+                resultado.error
+            );
+
+            return;
+
+        }
 
         const idGuardado =
         id_ficha || resultado.id_ficha;
 
         fichaEditando = idGuardado;
 
-        // ===============================
-        // Guardar etiquetas
-        // ===============================
-
         await guardarEtiquetasFicha(idGuardado);
-
-        // ===============================
-        // Guardar relaciones
-        // ===============================
 
         await window.fetchProtegido(
 
@@ -1004,11 +1018,9 @@ async function guardarFicha(){
                     relaciones:
                     relacionesPendientes.map(r=>({
 
-                        id_ficha_destino:
-                        r.id_ficha_destino,
+                        id_ficha_destino:r.id_ficha_destino,
 
-                        tipo_relacion:
-                        r.tipo_relacion
+                        tipo_relacion:r.tipo_relacion
 
                     }))
 
@@ -1039,6 +1051,11 @@ async function guardarFicha(){
             error
         );
 
+        mostrarMensaje(
+            "Error",
+            "Ocurrió un error al guardar la ficha."
+        );
+
     }
 
 }
@@ -1047,6 +1064,8 @@ async function guardarFicha(){
 // ELIMINAR FICHA
 // ===================================
 async function eliminarFicha(id_ficha){
+
+    console.log("BOTON ELIMINAR PRESIONADO:", id_ficha);
 
     const confirmar =
     confirm(
@@ -1729,7 +1748,10 @@ async function agregarRelacionFicha(){
 
     if(!destino){
 
-        alert("Seleccione una ficha");
+        mostrarMensaje(
+            "Ficha requerida",
+            "Debe seleccionar una ficha para crear la relación."
+        );
 
         return;
 
@@ -1739,7 +1761,10 @@ async function agregarRelacionFicha(){
 
     if(!tipo){
 
-        alert("Seleccione el tipo de relación");
+        mostrarMensaje(
+            "Tipo de relación requerido",
+            "Debe seleccionar qué relación existe entre las fichas antes de agregarla."
+        );
 
         return;
 
@@ -1846,7 +1871,7 @@ function mostrarRelacionesPendientes(){
 
             <button
                 class="btn-eliminar"
-                onclick="eliminarRelacionPendiente(${index})">
+                onclick="eliminarRelacionFichaEditar(${index})">
 
                 ✖
 
@@ -1857,6 +1882,65 @@ function mostrarRelacionesPendientes(){
         `;
 
     });
+
+}
+
+
+async function eliminarRelacionFichaEditar(index){
+
+    const relacion = relacionesPendientes[index];
+
+
+    if(!relacion){
+        return;
+    }
+
+
+    // Si la relación ya existe en la BD
+    if(relacion.id_relacion){
+
+        try{
+
+            const respuesta =
+            await window.fetchProtegido(
+                `/api/relacion-ficha/${relacion.id_relacion}`,
+                {
+                    method:"DELETE"
+                }
+            );
+
+
+            if(!respuesta.ok){
+
+                const error =
+                await respuesta.json();
+
+                alert(error.error);
+
+                return;
+
+            }
+
+
+        }catch(error){
+
+            console.error(
+                "Error eliminando relación:",
+                error
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    // quitarla del arreglo temporal
+    relacionesPendientes.splice(index,1);
+
+
+    mostrarRelacionesPendientes();
 
 }
 
@@ -1881,5 +1965,31 @@ function mostrarFechaArgentina(fecha){
     const partes = fecha.split(" ");
 
     return `${partes[0]} ${partes[1]}`;
+
+}
+
+function mostrarMensaje(titulo, mensaje){
+
+    const modal =
+    document.getElementById("modalMensaje");
+
+
+    if(!modal){
+
+        alert(`${titulo}\n\n${mensaje}`);
+        return;
+
+    }
+
+
+    document.getElementById("tituloMensaje")
+    .textContent = titulo;
+
+
+    document.getElementById("textoMensaje")
+    .textContent = mensaje;
+
+
+    modal.style.display = "flex";
 
 }
