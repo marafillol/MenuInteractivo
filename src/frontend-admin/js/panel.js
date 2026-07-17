@@ -290,25 +290,15 @@ async function iniciarPanel(){
 
     actualizarFecha();
 
-
-    const usuarioValido =
     await cargarUsuarioActual();
-
-
-    if(!usuarioValido){
-
-        window.location.href="index.html";
-
-        return;
-
-    }
-
 
     activarNavegacion();
 
-
     cargarVentana("dashboard");
 
+    console.log(
+        "Panel Administrativo iniciado correctamente."
+    );
 
 }
 
@@ -363,6 +353,10 @@ window.addEventListener("click", function(e){
 // CARGAR USUARIO LOGUEADO
 // ==========================================================
 
+// ==========================================================
+// CARGAR USUARIO LOGUEADO
+// ==========================================================
+
 async function cargarUsuarioActual(){
 
     try{
@@ -372,9 +366,9 @@ async function cargarUsuarioActual(){
 
 
         const respuesta =
-            await window.fetchProtegido(
-                "/api/usuarios/me"
-            );
+        await window.fetchProtegido(
+            "/api/usuarios/me"
+        );
 
 
 
@@ -385,21 +379,42 @@ async function cargarUsuarioActual(){
 
         if(!respuesta.ok){
 
+
             mostrarMensaje(
+
                 "Acceso denegado",
+
                 usuario.error
+
             );
+
 
             return false;
 
         }
 
 
-        return true;
 
-
+        // Guardar usuario globalmente
 
         window.usuarioActual = usuario;
+
+
+
+        console.log(
+            "USUARIO SQL:",
+            usuario
+        );
+
+
+        console.log(
+            "ROL:",
+            usuario.rol
+        );
+
+
+
+        // Aplicar permisos
 
         if(window.Permisos){
 
@@ -408,12 +423,14 @@ async function cargarUsuarioActual(){
         }
 
 
+
         console.log(
-            "Usuario cargado:",
-            usuario
+            "Permisos aplicados"
         );
 
 
+
+        // Mostrar nombre arriba
 
         const nombre =
         document.getElementById(
@@ -428,23 +445,28 @@ async function cargarUsuarioActual(){
 
         }
 
+
+
         return true;
+
 
 
     }catch(error){
 
 
-         console.error(
-             "ERROR USUARIO:",
-             error
-         );
+        console.error(
+            "ERROR USUARIO:",
+            error
+        );
 
 
-         return false;
+        return false;
 
-     }
+
+    }
 
 }
+
 function abrirModalCerrarSesion(){
 
 
