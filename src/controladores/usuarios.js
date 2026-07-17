@@ -124,23 +124,24 @@ const crearUsuario = async(req,res)=>{
             });
 
 
-        }
-        catch(error){
+        }catch(error){
 
 
-            if(error.code === "auth/email-already-exists"){
+             if(error.code === "auth/email-already-exists"){
 
 
-                usuarioFirebase =
-                await getAuth().getUserByEmail(email);
+                 return res.status(400).json({
+
+                     error:
+                     "El correo electrónico ya está registrado. No se puede crear otro usuario con el mismo email."
+
+                 });
 
 
-            }
-            else{
+             }
 
-                throw error;
 
-            }
+             throw error;
 
 
         }
@@ -175,16 +176,31 @@ const crearUsuario = async(req,res)=>{
 
     }catch(error){
 
-        console.error(
-            "ERROR CREANDO USUARIO:",
-            error
-        );
+         console.error(
+             "ERROR CREANDO USUARIO:",
+             error
+         );
 
-        res.status(500).json({
 
-            error:error.message
+         if(error.code === "auth/email-already-exists"){
 
-        });
+             return res.status(400).json({
+
+                 error:
+                 "No se pudo crear el usuario porque ese correo electrónico ya está registrado. Ingrese un correo diferente o revise los usuarios existentes."
+
+             });
+
+         }
+
+
+         res.status(500).json({
+
+             error:
+             "Ocurrió un error inesperado al crear el usuario."
+
+         });
+
 
     }
 
@@ -197,9 +213,7 @@ const actualizarUsuario = async(req,res)=>{
     try{
 
 
-        const id =
-        req.params.id;
-
+        const id = req.params.id;
 
 
         const usuario =
@@ -211,8 +225,7 @@ const actualizarUsuario = async(req,res)=>{
 
             return res.status(404).json({
 
-                error:
-                "Usuario no encontrado"
+                error:"Usuario no encontrado"
 
             });
 
@@ -220,7 +233,9 @@ const actualizarUsuario = async(req,res)=>{
 
 
 
-        // Actualizar email solamente si cambió
+        // ==============================
+        // CAMBIO DE EMAIL EN FIREBASE
+        // ==============================
 
         if(usuario.email !== req.body.email){
 
@@ -243,6 +258,80 @@ const actualizarUsuario = async(req,res)=>{
 
 
 
+
+        // ==============================
+        // NO DESACTIVAR ÚLTIMO ADMIN
+        // ==============================
+
+        if(
+
+            usuario.rol === "admin" &&
+            usuario.activo == 1 &&
+            req.body.activo == 0
+
+        ){
+
+
+            const cantidadAdmins =
+            await Usuario.contarAdministradoresActivos();
+
+
+
+            if(cantidadAdmins <= 1){
+
+
+                return res.status(400).json({
+
+                    error:
+                    "No se puede desactivar el último administrador activo del sistema."
+
+                });
+
+
+            }
+
+
+        }
+
+
+        // ==============================
+        // NO CAMBIAR ROL DEL ÚLTIMO ADMIN
+        // ==============================
+
+        if(
+
+            usuario.rol === "admin" &&
+            usuario.activo == 1 &&
+            req.body.rol !== "admin"
+
+        ){
+
+            const cantidadAdmins =
+            await Usuario.contarAdministradoresActivos();
+
+
+
+            if(cantidadAdmins <= 1){
+
+
+                return res.status(400).json({
+
+                    error:
+                    "No se puede cambiar el rol del último administrador activo. Debe existir al menos un administrador en el sistema."
+
+                });
+
+
+            }
+
+        }
+
+
+        // ==============================
+        // ACTUALIZAR SQLITE
+        // ==============================
+
+
         await Usuario.actualizarUsuario(
 
             id,
@@ -250,6 +339,8 @@ const actualizarUsuario = async(req,res)=>{
             req.body
 
         );
+
+
 
 
 
@@ -266,6 +357,7 @@ const actualizarUsuario = async(req,res)=>{
 
 
         console.error(
+            "ERROR ACTUALIZANDO USUARIO:",
             error
         );
 
@@ -286,20 +378,97 @@ const eliminarUsuario = async(req,res)=>{
 
     try{
 
-        await Usuario.eliminarUsuario(
-            req.params.id
-        );
+        const id = req.params.id;
+
+        const usuario =
+        await Usuario.obtenerPorId(id);
+
+        console.log(usuario);
+        if(!usuario){
+
+            return res.status(404).json({
+
+                error:"Usuario no encontrado"
+
+            });
+
+        }
+
+
+        // No permitir eliminarse a sí mismo
+
+        if(req.usuario.id_usuario == usuario.id_usuario){
+
+            return res.status(400).json({
+
+                error:"No podés eliminar tu propio usuario porque perderías el acceso al sistema. Si necesitás eliminar esta cuenta, iniciá sesión con otro administrador."
+
+            });
+
+        }
+
+
+        // Si es administrador, verificar que no sea el último
+        if(
+
+            usuario.rol === "admin"
+            &&
+            usuario.activo
+
+        ){
+
+            const cantidadAdmins =
+
+            await Usuario.contarAdministradoresActivos();
+
+
+            if(cantidadAdmins <= 1){
+
+                return res.status(400).json({
+
+                    error:
+                    "No se puede eliminar el último administrador."
+
+                });
+
+            }
+
+        }
+
+
+        // Eliminar Firebase
+        if(usuario.firebase_uid){
+
+            await getAuth().deleteUser(
+
+                usuario.firebase_uid
+
+            );
+
+        }
+
+
+        // Eliminar SQLite
+
+        await Usuario.eliminarUsuario(id);
 
 
         res.json({
-            mensaje:"Usuario eliminado correctamente"
+
+            mensaje:
+            "Usuario eliminado correctamente"
+
         });
 
 
     }catch(error){
 
+        console.error(error);
+
         res.status(500).json({
+
             error:error.message
+
         });
 
     }
@@ -348,11 +517,34 @@ const cambiarPassword = async(req,res)=>{
     }catch(error){
 
 
-        res.status(500).json({
+         console.error(
+             "ERROR CAMBIANDO CONTRASEÑA:",
+             error
+         );
 
-        error:error.message
 
-        });
+         if(
+             error.code === "auth/password-does-not-meet-requirements" ||
+             error.code === "auth/invalid-password"
+         ){
+
+             return res.status(400).json({
+
+                 error:
+                 "La contraseña debe tener al menos 6 caracteres. Ingrese una contraseña más segura."
+
+             });
+
+         }
+
+
+
+         res.status(500).json({
+
+             error:
+             error.message
+
+         });
 
 
     }

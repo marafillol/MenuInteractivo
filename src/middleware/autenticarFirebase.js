@@ -112,13 +112,27 @@ const autenticarFirebase = async(req,res,next)=>{
 
 
 
+        // Verificar si el usuario está activo
+
+        if(usuario.activo !== 1){
+
+            return res.status(403).json({
+
+                error:
+                "Usuario desactivado. Contacte al administrador del sistema."
+
+            });
+
+        }
+
+
+
         // Guardar datos disponibles
 
         req.firebase = decoded;
 
 
         req.usuario = usuario;
-
 
 
         next();

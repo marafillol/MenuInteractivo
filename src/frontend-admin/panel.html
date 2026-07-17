@@ -139,7 +139,10 @@
 
         <div class="sidebar-footer">
 
-            <button id="cerrarSesion">
+            <button
+                    id="cerrarSesion"
+                    onclick="abrirModalCerrarSesion()"
+            >
 
                 🚪 Cerrar sesión
 
@@ -234,7 +237,66 @@ Centro de Documentación Histórica
 </div>
 
 
+<!-- ==========================
+     MODAL CERRAR SESIÓN
+=========================== -->
 
+
+<div
+        id="modalCerrarSesion"
+        class="modal"
+        style="display:none;"
+>
+
+
+    <div class="modal-contenido modal-mensaje">
+
+
+        <h2>
+            Cerrar sesión
+        </h2>
+
+
+
+        <p>
+            ¿Está seguro que desea cerrar la sesión?
+            <br><br>
+            Tendrá que ingresar nuevamente sus credenciales
+            para acceder al panel administrativo.
+        </p>
+
+
+
+        <div class="acciones-modal">
+
+
+            <button
+                    onclick="cerrarModalCerrarSesion()"
+            >
+
+                Cancelar
+
+            </button>
+
+
+
+            <button
+                    class="boton-principal"
+                    onclick="confirmarCerrarSesion()"
+            >
+
+                Cerrar sesión
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
 
 <script type="module" src="js/firebase.js"></script>
 <script type="module" src="js/authFirebase.js"></script>

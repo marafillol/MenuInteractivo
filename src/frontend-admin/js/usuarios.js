@@ -5,6 +5,8 @@ let usuarioEditando = null;
 
 let usuarioPassword = null;
 
+let idUsuarioEliminar = null;
+
 
 
 async function cargarUsuarios(){
@@ -39,9 +41,21 @@ async function cargarUsuarios(){
 
     if(!respuesta.ok){
 
-        console.error(
-            usuarios.error
+        const datos =
+        await respuesta.json();
+
+
+        cerrarModalUsuario();
+
+
+        mostrarMensaje(
+
+            "Acción no permitida",
+
+            datos.error
+
         );
+
 
         return;
 
@@ -88,6 +102,10 @@ async function cargarUsuarios(){
                     Cambiar contraseña
                 </button>
 
+                <button onclick="abrirModalEliminar(${usuario.id_usuario}, '${usuario.nombre}')">
+                    Eliminar
+                </button>
+
 
             </td>
 
@@ -103,10 +121,134 @@ async function cargarUsuarios(){
 }
 
 
+function abrirModalEliminar(id, nombre){
+
+    idUsuarioEliminar = id;
+
+    document.getElementById("textoEliminar").innerHTML =
+
+        `¿Estás seguro de que querés eliminar al usuario <strong>${nombre}</strong>?<br><br>
+        Esta acción eliminará el usuario del sistema y de Firebase.`;
+
+    document.getElementById("modalEliminar").style.display = "flex";
+
+}
+
+function cerrarModalEliminar(){
+
+    idUsuarioEliminar = null;
+
+    document.getElementById("modalEliminar").style.display = "none";
+
+}
+
+async function eliminarUsuario(id){
+
+    if(!confirm("¿Seguro que querés eliminar este usuario?"))
+        return;
+
+
+    const respuesta =
+    await fetchProtegido(
+        `/api/usuarios/${id}`,
+        {
+            method:"DELETE"
+        }
+    );
+
+
+    const datos =
+    await respuesta.json();
+
+    if(!respuesta.ok){
+
+        mostrarMensaje(
+
+                "Operación no permitida",
+
+                datos.error
+
+            );
+
+        return;
+
+    }
+
+
+    mostrarMensaje(
+
+        "Usuario eliminado",
+
+        "El usuario fue eliminado correctamente del sistema."
+
+    );
+
+
+    cargarUsuarios();
+
+}
+
+async function confirmarEliminarUsuario(){
+
+    if(!idUsuarioEliminar){
+
+        return;
+
+    }
+
+
+    const respuesta = await fetchProtegido(
+
+        `/api/usuarios/${idUsuarioEliminar}`,
+
+        {
+
+            method:"DELETE"
+
+        }
+
+    );
+
+
+    const datos = await respuesta.json();
 
 
 
+    cerrarModalEliminar();
 
+
+
+    if(!respuesta.ok){
+
+
+        mostrarMensaje(
+
+            "No se puede eliminar",
+
+            datos.error
+
+        );
+
+
+        return;
+
+    }
+
+
+
+    mostrarMensaje(
+
+        "Usuario eliminado",
+
+        "El usuario fue eliminado correctamente del sistema."
+
+    );
+
+
+    cargarUsuarios();
+
+
+}
 
 function abrirModalUsuario(){
 
@@ -324,12 +466,20 @@ async function guardarUsuario(){
     if(respuesta.ok){
 
 
-        alert(
+        mostrarMensaje(
+
             usuarioEditando
             ?
-            "Usuario actualizado correctamente"
+            "Usuario actualizado"
             :
-            "Usuario creado correctamente"
+            "Usuario creado",
+
+            usuarioEditando
+            ?
+            "Los datos del usuario fueron modificados correctamente."
+            :
+            "El usuario fue creado correctamente en el sistema."
+
         );
 
 
@@ -343,7 +493,13 @@ async function guardarUsuario(){
     }else{
 
 
-        alert(resultado.error);
+         mostrarMensaje(
+
+             "No se pudo crear el usuario",
+
+             resultado.error
+
+         );
 
 
     }
@@ -451,7 +607,30 @@ async function editarUsuario(id){
 }
 
 
+// ======================================
+// MODAL MENSAJES
+// ======================================
 
+function mostrarMensaje(titulo, mensaje){
+
+    document.getElementById("tituloMensaje").textContent = titulo;
+
+    document.getElementById("textoMensaje").textContent = mensaje;
+
+    document
+        .getElementById("modalMensaje")
+        .style.display = "flex";
+
+}
+
+
+function cerrarMensaje(){
+
+    document
+        .getElementById("modalMensaje")
+        .style.display = "none";
+
+}
 
 
 
@@ -519,11 +698,57 @@ const datos =
 await respuesta.json();
 
 
-alert(datos.mensaje);
+if(respuesta.ok){
+
+
+    mostrarMensaje(
+
+        "Contraseña modificada",
+
+        "La contraseña fue actualizada correctamente."
+
+    );
+
+
+    cerrarModalPassword();
+
+
+    document.getElementById(
+        "nuevaPassword"
+    ).value = "";
+
+
+}else{
+
+
+    mostrarMensaje(
+
+        "Error",
+
+        datos.error
+
+    );
+
+}
 
 
 }
 
+
+document
+.getElementById("btnAceptarMensaje")
+.addEventListener("click", cerrarMensaje);
+
+document
+    .getElementById("btnCancelarEliminar")
+    .addEventListener("click", cerrarModalEliminar);
+
+document
+.getElementById("btnConfirmarEliminar")
+.addEventListener(
+    "click",
+    confirmarEliminarUsuario
+);
 
 function cerrarModalPassword(){
 

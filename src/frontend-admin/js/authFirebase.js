@@ -19,7 +19,7 @@ let firebaseListo =
 new Promise((resolve)=>{
 
 
-    onAuthStateChanged(auth,(usuario)=>{
+    onAuthStateChanged(auth, async (usuario)=>{
 
 
         usuarioFirebaseActual = usuario;
@@ -31,6 +31,75 @@ new Promise((resolve)=>{
                 "Usuario Firebase conectado:",
                 usuario.email
             );
+
+
+            try{
+
+
+                const token =
+                await usuario.getIdToken();
+
+
+
+                const respuesta =
+                await fetch(
+
+                    "/api/usuarios/me",
+
+                    {
+
+                        headers:{
+
+                            Authorization:
+                            "Bearer " + token
+
+                        }
+
+                    }
+
+                );
+
+
+
+                const datos =
+                await respuesta.json();
+
+
+
+                if(!respuesta.ok){
+
+
+                    alert(datos.error);
+
+
+                    await signOut(auth);
+
+
+                    window.location.href =
+                    "index.html";
+
+
+                    return;
+
+                }
+
+
+
+            }catch(error){
+
+                 console.error(
+                     "Error verificando usuario:",
+                     error
+                 );
+
+
+                 await signOut(auth);
+
+
+                 window.location.href="index.html";
+
+            }
+
 
         }
         else{

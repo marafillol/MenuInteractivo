@@ -357,6 +357,44 @@ const obtenerPorFirebaseUID = (firebase_uid)=>{
 
 };
 
+
+const contarAdministradoresActivos = ()=>{
+
+    return new Promise((resolve,reject)=>{
+
+
+        db.get(
+
+            `
+            SELECT COUNT(*) AS cantidad
+            FROM usuario
+            WHERE rol = 'admin'
+            AND activo = 1
+            `,
+
+            [],
+
+            (error,fila)=>{
+
+                if(error){
+
+                    reject(error);
+
+                }else{
+
+                    resolve(fila.cantidad);
+
+                }
+
+            }
+
+        );
+
+
+    });
+
+};
+
 module.exports = {
 
     obtenerPorEmail,
@@ -367,5 +405,6 @@ module.exports = {
     actualizarUsuario,
     eliminarUsuario,
     existeFirebaseUID,
-    obtenerPorFirebaseUID
+    obtenerPorFirebaseUID,
+    contarAdministradoresActivos
 };

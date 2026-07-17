@@ -585,3 +585,127 @@ button:hover{
 
 
 }
+
+
+/* =====================================
+   MODAL MENSAJE LOGIN
+===================================== */
+
+
+.modal{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:rgba(0,0,0,0.55);
+
+    z-index:9999;
+
+}
+
+
+
+.modal-contenido{
+
+
+    width:420px;
+
+    padding:30px;
+
+    background:#f4eddb;
+
+    border:3px solid #705438;
+
+    border-radius:12px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+
+    text-align:center;
+
+
+}
+
+
+
+.modal-contenido h2{
+
+
+    margin-top:0;
+
+    color:#263c32;
+
+    font-family:serif;
+
+    font-size:28px;
+
+
+}
+
+
+
+.modal-contenido p{
+
+
+    color:#4b3825;
+
+    font-size:17px;
+
+    line-height:1.5;
+
+}
+
+
+
+.acciones-modal{
+
+
+    margin-top:25px;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+
+
+.boton-principal{
+
+
+    background:#263c32;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 28px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+
+}
+
+
+
+.boton-principal:hover{
+
+
+    opacity:0.85;
+
+
+}

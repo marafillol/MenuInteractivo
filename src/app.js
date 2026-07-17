@@ -40,10 +40,18 @@ if(!fs.existsSync(carpetaUploads)){
 // ARCHIVOS ESTÁTICOS
 // =======================================================
 
-// PANEL ADMINISTRATIVO
+// =======================================================
+// FRONTEND ADMINISTRATIVO
+// =======================================================
+
+// Archivos públicos del login
+
 app.use(
     express.static(
-        path.join(__dirname,"frontend-admin")
+        path.join(__dirname,"frontend-admin"),
+        {
+            index:false
+        }
     )
 );
 
@@ -82,6 +90,21 @@ app.get("/",(req,res)=>{
 
 });
 
+// =======================================================
+// PANEL ADMINISTRATIVO PROTEGIDO
+// =======================================================
+
+app.get("/panel.html",(req,res)=>{
+
+    res.sendFile(
+        path.join(
+            __dirname,
+            "frontend-admin",
+            "panel.html"
+        )
+    );
+
+});
 
 // Frontend visitante
 app.get("/visita",(req,res)=>{

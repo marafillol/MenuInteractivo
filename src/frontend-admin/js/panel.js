@@ -41,24 +41,6 @@ function actualizarFecha() {
 }
 
 
-// ==========================================================
-// CERRAR SESIÓN
-// ==========================================================
-
-async function cerrarSesion(){
-
-    const confirmar =
-    confirm("¿Desea cerrar la sesión?");
-
-    if(!confirmar){
-        return;
-    }
-
-    await window.cerrarSesionFirebase();
-
-    window.location.href="index.html";
-
-}
 
 
 
@@ -297,9 +279,8 @@ function activarNavegacion() {
 
 botonCerrarSesion.addEventListener(
     "click",
-    cerrarSesion
+    abrirModalCerrarSesion
 );
-
 
 // ==========================================================
 // INICIALIZACIÓN
@@ -309,15 +290,25 @@ async function iniciarPanel(){
 
     actualizarFecha();
 
+
+    const usuarioValido =
     await cargarUsuarioActual();
+
+
+    if(!usuarioValido){
+
+        window.location.href="index.html";
+
+        return;
+
+    }
+
 
     activarNavegacion();
 
+
     cargarVentana("dashboard");
 
-    console.log(
-        "Panel Administrativo iniciado correctamente."
-    );
 
 }
 
@@ -394,11 +385,17 @@ async function cargarUsuarioActual(){
 
         if(!respuesta.ok){
 
-            throw new Error(
+            mostrarMensaje(
+                "Acceso denegado",
                 usuario.error
             );
 
+            return false;
+
         }
+
+
+        return true;
 
 
 
@@ -431,22 +428,56 @@ async function cargarUsuarioActual(){
 
         }
 
+        return true;
 
 
-
-    }
-    catch(error){
+    }catch(error){
 
 
-        console.error(
-            "ERROR USUARIO:",
-            error
-        );
+         console.error(
+             "ERROR USUARIO:",
+             error
+         );
 
 
-    }
+         return false;
+
+     }
+
+}
+function abrirModalCerrarSesion(){
+
+
+    document
+    .getElementById("modalCerrarSesion")
+    .style.display="flex";
+
 
 }
 
+
+
+function cerrarModalCerrarSesion(){
+
+
+    document
+    .getElementById("modalCerrarSesion")
+    .style.display="none";
+
+
+}
+
+
+
+async function confirmarCerrarSesion(){
+
+
+    await window.cerrarSesionFirebase();
+
+
+    window.location.href="index.html";
+
+
+}
 
 iniciarPanel();
