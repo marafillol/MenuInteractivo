@@ -1,66 +1,177 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <title>Panel Administrativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Panel Administrativo - Museo Malvinas
+    </title>
+
 
     <link rel="stylesheet" href="css/login.css">
 
+
 </head>
+
 
 <body>
 
+
 <div class="fondo">
 
-    <div class="login">
 
-        <div class="encabezado">
+    <!-- LOGO / ESCUDO -->
 
-            <h1>MENU INTERACTIVO</h1>
+    <div class="contenedor-login">
 
-            <h2>Centro de Documentación Histórica</h2>
 
-            <p>Panel Administrativo</p>
+        <div class="logo-museo">
+
+            <img
+                    src="imagenes/logo-museo.png"
+                    alt="Museo Malvinas">
 
         </div>
 
-        <form id="formLogin">
 
-            <label>Usuario</label>
 
-            <input
-                    type="text"
-                    id="usuario"
-                    placeholder="Ingrese su usuario"
-                    required
-            >
+        <div class="login">
 
-            <label>Contraseña</label>
 
-            <input
-                    type="password"
-                    id="password"
-                    placeholder="Ingrese su contraseña"
-                    required
-            >
+            <div class="encabezado">
 
-            <button type="submit">
 
-                Ingresar
+                <h1>
+                    MENU INTERACTIVO
+                </h1>
 
-            </button>
 
-        </form>
+                <h2>
+                    Centro de Documentación Histórica
+                </h2>
+
+
+                <div class="linea"></div>
+
+
+                <p>
+                    Panel Administrativo
+                </p>
+
+
+            </div>
+
+
+
+
+
+            <form id="formLogin">
+
+
+
+                <div class="campo">
+
+
+                    <label>
+                        Usuario
+                    </label>
+
+
+                    <input
+
+                            type="text"
+
+                            id="usuario"
+
+                            placeholder="Ingrese su usuario"
+
+                            required
+
+                    >
+
+
+                </div>
+
+
+
+
+
+
+                <div class="campo">
+
+
+                    <label>
+                        Contraseña
+                    </label>
+
+
+                    <input
+
+                            type="password"
+
+                            id="password"
+
+                            placeholder="Ingrese su contraseña"
+
+                            required
+
+                    >
+
+
+                </div>
+
+
+
+
+
+                <button type="submit">
+
+
+                    Ingresar
+
+
+                    <span>
+                        →
+                    </span>
+
+
+                </button>
+
+
+
+            </form>
+
+
+
+            <div class="pie-login">
+
+                Sistema de Gestión Histórica
+
+            </div>
+
+
+
+        </div>
+
 
     </div>
 
+
 </div>
 
-<script src="js/login.js"></script>
+
+
+
+
+<script type="module" src="js/login.js"></script>
+
 
 </body>
+
 
 </html>

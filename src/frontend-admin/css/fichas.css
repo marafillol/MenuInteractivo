@@ -1,0 +1,2188 @@
+/* ======================================================
+   FICHAS
+   Estilo archivo histórico militar
+====================================================== */
+
+
+/* ===========================
+   CABECERA
+=========================== */
+
+
+.cabecera-fichas{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+
+}
+
+
+.titulo-fichas h2{
+
+    margin:0;
+
+    font-family:"Cinzel",serif;
+
+    font-size:32px;
+
+    color:#314734;
+
+}
+
+
+#subtituloFichas{
+
+    margin:5px 0 0;
+
+    color:#705438;
+
+    font-style:italic;
+
+}
+
+
+
+
+.btn-volver{
+
+    padding:10px 16px;
+
+}
+
+
+
+
+
+/* ===========================
+   GRID FICHAS
+=========================== */
+
+
+#listaFichas{
+
+    display:grid !important;
+
+    grid-template-columns:
+    repeat(auto-fill,260px) !important;
+
+    gap:25px;
+
+    justify-content:start;
+
+    width:100%;
+
+    overflow:visible;
+
+}
+
+
+
+
+
+/* ===========================
+   TARJETA FICHA
+=========================== */
+
+
+#listaFichas .tarjeta-menu{
+
+
+    width:260px !important;
+
+    height:370px !important;
+
+
+    background:#f5edda;
+
+
+    border:2px solid #705438;
+
+
+    border-radius:15px;
+
+
+    overflow:hidden;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+
+    box-shadow:
+
+    0 5px 15px rgba(0,0,0,.18);
+
+
+    transition:.25s;
+
+
+}
+
+
+
+#listaFichas .tarjeta-menu:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:
+
+    0 12px 25px rgba(0,0,0,.25);
+
+}
+
+
+
+
+
+/* ===========================
+   IMAGEN
+=========================== */
+
+
+#listaFichas .imagen-menu{
+
+
+    height:150px;
+
+    width:100%;
+
+
+}
+
+
+
+#listaFichas .imagen-menu img{
+
+
+    width:100%;
+
+    height:100%;
+
+
+    object-fit:cover;
+
+
+}
+
+
+
+
+
+
+
+/* ===========================
+   INFORMACION
+=========================== */
+
+
+#listaFichas .info-menu{
+
+
+    padding:15px;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+
+    height:220px;
+
+
+}
+
+
+
+#listaFichas .info-menu h3{
+
+
+    margin:0 0 8px;
+
+
+    color:#314734;
+
+
+    font-family:"Cinzel",serif;
+
+
+    font-size:19px;
+
+
+}
+
+
+
+
+
+#listaFichas .info-menu p{
+
+
+    color:#594936;
+
+
+    font-size:14px;
+
+
+    line-height:1.4;
+
+
+    display:-webkit-box;
+
+    -webkit-line-clamp:3;
+
+    -webkit-box-orient:vertical;
+
+    overflow:hidden;
+
+
+}
+
+
+
+#listaFichas .info-menu small{
+
+
+    color:#705438;
+
+    margin-top:5px;
+
+
+}
+
+
+
+
+
+
+/* ===========================
+   BOTONES TARJETA
+=========================== */
+
+
+#listaFichas .acciones-menu{
+
+
+    margin-top:auto;
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:7px;
+
+
+}
+
+
+
+#listaFichas .acciones-menu button{
+
+
+    padding:8px;
+
+
+    border-radius:7px;
+
+
+    border:none;
+
+
+    color:white;
+
+
+    cursor:pointer;
+
+
+    font-size:12px;
+
+
+}
+
+
+
+
+
+
+
+/* ===========================
+   MODAL GENERAL
+=========================== */
+
+
+.modal{
+
+
+    display:none;
+
+
+    position:fixed;
+
+
+    inset:0;
+
+
+    background:rgba(0,0,0,.55);
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    z-index:1000;
+
+
+}
+
+
+
+
+
+.modal-contenido{
+
+
+    width:600px;
+
+
+    max-height:90vh;
+
+
+    overflow-y:auto;
+
+
+    background:#f8f1df;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:18px;
+
+
+    padding:30px;
+
+
+}
+
+
+
+
+
+
+
+/* ===========================
+   EDICION FICHA
+=========================== */
+
+
+#modalFicha label{
+
+
+    display:block;
+
+
+    margin-top:15px;
+
+
+    margin-bottom:5px;
+
+
+    color:#5b4227;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+#modalFicha input,
+#modalFicha textarea,
+#modalFicha select{
+
+
+    width:100%;
+
+
+    padding:10px;
+
+
+    border-radius:8px;
+
+
+    border:1px solid #bca47c;
+
+
+    background:#fffdf5;
+
+
+}
+
+
+
+#modalFicha textarea{
+
+
+    min-height:100px;
+
+
+    resize:vertical;
+
+
+}
+
+
+
+
+
+.tipo-ficha{
+
+
+    background:#e8dcc1;
+
+
+    padding:12px;
+
+
+    border-left:5px solid #556b2f;
+
+
+    border-radius:8px;
+
+
+}
+
+
+
+
+
+/* CAMPOS DINAMICOS */
+
+
+#camposDinamicos{
+
+
+    background:#eee2cb;
+
+
+    padding:15px;
+
+
+    border-radius:12px;
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+
+.campo-dinamico-item{
+
+
+    background:#f8f1df;
+
+
+    padding:12px;
+
+
+    border-radius:8px;
+
+
+}
+
+
+
+
+
+
+
+
+/* ===========================
+   ETIQUETAS
+=========================== */
+
+
+.lista-etiquetas-ficha{
+
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+
+}
+
+
+
+.item-etiqueta{
+
+
+    background:#eee2cb;
+
+
+    padding:10px 14px;
+
+
+    border-radius:20px;
+
+
+    border:1px solid #b69a73;
+
+
+}
+
+
+
+
+
+
+
+/* ===========================
+   RELACIONES
+=========================== */
+
+
+.lista-relaciones-ficha{
+
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+
+}
+
+
+
+.item-relacion-ficha{
+
+
+    background:#eee2cb;
+
+
+    padding:12px;
+
+
+    border-radius:10px;
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ===========================
+   VISTA PREVIA FICHA
+=========================== */
+
+
+.preview-menu{
+
+
+    background:#f5edda;
+
+
+    border-radius:15px;
+
+
+    padding:25px;
+
+
+}
+
+
+
+
+
+.preview-imagen{
+
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+
+
+.preview-imagen img{
+
+
+    width:260px;
+
+    height:260px;
+
+
+    object-fit:cover;
+
+
+    border-radius:15px;
+
+
+    border:4px solid #705438;
+
+
+}
+
+
+
+
+
+#vpFichaTitulo{
+
+
+    text-align:center;
+
+
+    color:#314734;
+
+
+    font-family:"Cinzel",serif;
+
+
+    font-size:28px;
+
+
+}
+
+
+
+
+
+.preview-resumen{
+
+
+    text-align:center;
+
+
+    font-size:16px;
+
+
+    color:#594936;
+
+
+}
+
+
+
+
+#vpCamposDinamicos{
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+
+.campo-preview{
+
+
+    background:#eee2cb;
+
+
+    padding:15px;
+
+
+    border-radius:10px;
+
+
+    border:1px solid #c5ad85;
+
+
+}
+
+
+
+.titulo-preview{
+
+
+    font-weight:bold;
+
+
+    color:#705438;
+
+
+}
+
+
+
+.valor-preview{
+
+
+    display:block;
+
+
+    margin-top:8px;
+
+
+}
+
+
+
+
+
+
+/* INFORMACION GENERAL */
+
+
+.preview-info{
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:15px;
+
+
+}
+
+
+
+.preview-info p{
+
+
+    background:#eee2cb;
+
+
+    padding:12px;
+
+
+    border-radius:8px;
+
+
+}
+
+
+
+
+
+
+/* ETIQUETAS VISTA */
+
+
+.etiqueta-vista{
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+    padding:7px 14px;
+
+
+    border-radius:20px;
+
+
+}
+
+
+
+
+
+/* ===========================
+   ACCIONES MODAL
+=========================== */
+
+
+.acciones-modal{
+
+
+    display:flex;
+
+
+    justify-content:flex-end;
+
+
+    gap:15px;
+
+
+    margin-top:25px;
+
+
+}
+
+
+
+.acciones-modal button{
+
+
+    padding:10px 20px;
+
+
+    border-radius:8px;
+
+
+    border:none;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+
+
+
+/* RESPONSIVE */
+
+
+@media(max-width:700px){
+
+
+#listaFichas{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+.modal-contenido{
+
+    width:90%;
+
+}
+
+
+
+#vpCamposDinamicos,
+.preview-info,
+#camposDinamicos{
+
+    grid-template-columns:1fr;
+
+}
+
+
+}
+
+/* ==========================================
+   CORRECCION CONTENEDOR FICHAS
+   Evita rectangulo con scroll interno
+========================================== */
+
+
+.ventana{
+
+    width:100%;
+
+    height:auto !important;
+
+    overflow:visible !important;
+
+}
+
+
+
+
+#listaFichas{
+
+
+    display:grid !important;
+
+
+    grid-template-columns:
+    repeat(auto-fill,260px) !important;
+
+
+    gap:25px !important;
+
+
+    justify-content:start !important;
+
+
+    align-items:start !important;
+
+
+    width:100% !important;
+
+
+    height:auto !important;
+
+
+    max-height:none !important;
+
+
+    overflow:visible !important;
+
+
+}
+
+
+
+
+
+#contenido{
+
+
+    height:auto !important;
+
+
+    min-height:100vh;
+
+
+    overflow-y:visible !important;
+
+
+}
+
+
+
+
+
+/* Evitar que el bloque de fichas cree una caja */
+
+
+.grid-menus{
+
+
+    height:auto !important;
+
+
+    max-height:none !important;
+
+
+    overflow:visible !important;
+
+
+}
+
+
+/* =====================================
+   ESPACIO ENTRE BOTON Y LISTADO FICHAS
+===================================== */
+
+
+#nuevaFicha{
+
+    margin-bottom:30px;
+
+}
+
+
+
+#listaFichas{
+
+    margin-top:20px !important;
+
+}
+
+
+/* ==================================================
+   VISTA PREVIA FICHA - ESTILO EXPEDIENTE
+================================================== */
+
+
+#modalVistaFicha .modal-contenido{
+
+    width:750px;
+
+    max-width:95%;
+
+}
+
+
+
+#modalVistaFicha h3{
+
+    color:#314734;
+
+    font-family:"Cinzel",serif;
+
+    font-size:25px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+}
+
+
+
+
+.preview-menu{
+
+    background:#efe3c8;
+
+    border:2px solid #705438;
+
+    border-radius:18px;
+
+    padding:30px;
+
+}
+
+
+
+
+
+/* FOTO PRINCIPAL */
+
+.preview-imagen{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.preview-imagen img{
+
+    width:280px;
+
+    height:280px;
+
+    object-fit:cover;
+
+    border-radius:15px;
+
+    border:4px solid #705438;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+
+}
+
+
+
+
+
+
+/* TITULO */
+
+#vpFichaTitulo{
+
+    text-align:center;
+
+    color:#263c32;
+
+    font-family:"Cinzel",serif;
+
+    font-size:32px;
+
+    margin:15px 0;
+
+}
+
+
+
+
+
+
+/* RESUMEN */
+
+.preview-resumen{
+
+
+    background:#f8f1df;
+
+    border-left:5px solid #556b2f;
+
+    padding:15px;
+
+    border-radius:10px;
+
+
+    color:#594936;
+
+    line-height:1.6;
+
+    text-align:center;
+
+}
+
+
+
+
+
+
+/* TITULOS INTERNOS */
+
+.preview-menu h4{
+
+
+    margin-top:30px;
+
+    margin-bottom:15px;
+
+    color:#705438;
+
+    font-family:"Cinzel",serif;
+
+    border-bottom:2px solid #cbb693;
+
+    padding-bottom:8px;
+
+}
+
+
+
+
+
+
+/* DATOS DINAMICOS */
+
+#vpCamposDinamicos{
+
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:15px;
+
+
+}
+
+
+
+
+
+.campo-preview{
+
+
+    background:#f8f1df;
+
+    border:1px solid #cbb693;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    min-height:70px;
+
+
+}
+
+
+
+
+.titulo-preview{
+
+
+    display:block;
+
+    font-weight:bold;
+
+    color:#705438;
+
+    font-size:14px;
+
+}
+
+
+
+.valor-preview{
+
+
+    display:block;
+
+    margin-top:8px;
+
+    color:#263c32;
+
+    font-size:16px;
+
+}
+
+
+
+
+
+
+
+/* TEXTO HISTORICO */
+
+
+.preview-texto{
+
+
+    background:#f8f1df;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    border:1px solid #cbb693;
+
+}
+
+
+
+.preview-texto p{
+
+
+    color:#3d3327;
+
+    line-height:1.8;
+
+    text-align:justify;
+
+}
+
+
+
+
+
+
+
+/* INFORMACION GENERAL */
+
+
+.preview-info{
+
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:15px;
+
+}
+
+
+
+
+.preview-info p{
+
+
+    background:#f8f1df;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    border:1px solid #cbb693;
+
+    margin:0;
+
+
+}
+
+
+
+
+
+
+
+/* ETIQUETAS */
+
+
+.contenedor-etiquetas-vista{
+
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+
+}
+
+
+
+
+.etiqueta-vista{
+
+
+    background:#556b2f;
+
+    color:white;
+
+
+    padding:8px 15px;
+
+
+    border-radius:20px;
+
+
+    font-size:14px;
+
+    box-shadow:0 3px 8px rgba(0,0,0,.2);
+
+
+}
+
+
+
+
+
+
+
+/* RELACIONES */
+
+
+#vistaRelacionesFicha .relacion-vista{
+
+
+    background:#f8f1df;
+
+    border:1px solid #cbb693;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.relacion-vista strong{
+
+
+    display:block;
+
+    color:#314734;
+
+    font-size:17px;
+
+
+}
+
+
+
+.relacion-vista span{
+
+
+    color:#705438;
+
+}
+
+
+
+
+
+/* RESPONSIVE */
+
+
+@media(max-width:700px){
+
+
+    #vpCamposDinamicos,
+    .preview-info{
+
+
+        grid-template-columns:1fr;
+
+    }
+
+
+}
+
+
+
+/* ==================================================
+   EDITAR FICHA - FORMULARIO EXPEDIENTE
+================================================== */
+
+
+/* MODAL EDITAR */
+
+#modalFicha .modal-contenido{
+
+
+    width:750px;
+
+    max-width:95%;
+
+
+    background:#f8f1df;
+
+
+    padding:35px;
+
+
+}
+
+
+
+
+
+#tituloModalFicha{
+
+
+    text-align:center;
+
+
+    font-family:"Cinzel",serif;
+
+
+    color:#314734;
+
+
+    font-size:28px;
+
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+
+
+
+
+/* TIPO DE FICHA */
+
+
+.tipo-ficha{
+
+
+    background:#e8dcc1;
+
+
+    border-left:6px solid #556b2f;
+
+
+    padding:15px;
+
+
+    border-radius:10px;
+
+
+    color:#314734;
+
+
+    margin-bottom:25px;
+
+
+}
+
+
+
+
+
+
+
+/* SECCIONES */
+
+
+.titulo-subseccion{
+
+
+    margin-top:30px;
+
+
+    margin-bottom:15px;
+
+
+    color:#705438;
+
+
+    font-family:"Cinzel",serif;
+
+
+    font-size:20px;
+
+
+    border-bottom:2px solid #cbb693;
+
+
+    padding-bottom:8px;
+
+
+}
+
+
+
+
+
+
+/* CAMPOS DINAMICOS */
+
+
+#modalFicha #camposDinamicos{
+
+
+    background:#eee2cb;
+
+
+    padding:20px;
+
+
+    border-radius:15px;
+
+
+    border:1px solid #cbb693;
+
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+
+
+.campo-dinamico-item{
+
+
+    background:#f8f1df;
+
+
+    padding:15px;
+
+
+    border-radius:10px;
+
+
+}
+
+
+
+
+
+
+
+
+/* INPUTS */
+
+
+#modalFicha input[type="text"],
+#modalFicha textarea,
+#modalFicha select{
+
+
+    background:#fffdf7;
+
+
+    border:1px solid #b69a73;
+
+
+    border-radius:10px;
+
+
+    padding:12px;
+
+
+    font-size:15px;
+
+
+}
+
+
+
+#modalFicha textarea{
+
+
+    min-height:120px;
+
+
+}
+
+
+
+
+
+#modalFicha input:focus,
+#modalFicha textarea:focus,
+#modalFicha select:focus{
+
+
+    outline:none;
+
+
+    border-color:#556b2f;
+
+
+    box-shadow:0 0 0 2px rgba(85,107,47,.2);
+
+
+}
+
+
+
+
+
+
+
+/* IMAGEN ACTUAL */
+
+
+#contenedorImagenActual{
+
+
+    background:#eee2cb;
+
+
+    padding:20px;
+
+
+    border-radius:15px;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+.imagen-actual-ficha{
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+}
+
+
+
+.imagen-actual-ficha img{
+
+
+    width:220px !important;
+
+
+    height:220px !important;
+
+
+    object-fit:cover;
+
+
+    border-radius:15px;
+
+
+    border:4px solid #705438;
+
+
+}
+
+
+
+
+
+
+
+/* CHECK VISIBLE */
+
+
+.check-visible{
+
+
+    display:flex !important;
+
+
+    align-items:center;
+
+
+    gap:10px;
+
+
+    margin-top:20px;
+
+
+    background:#eee2cb;
+
+
+    padding:12px;
+
+
+    border-radius:10px;
+
+
+}
+
+
+
+
+
+.check-visible input{
+
+
+    width:auto !important;
+
+
+}
+
+
+
+
+
+
+
+/* ETIQUETAS */
+
+
+.lista-etiquetas-ficha{
+
+
+    background:#eee2cb;
+
+
+    padding:15px;
+
+
+    border-radius:12px;
+
+
+}
+
+
+
+
+
+.item-etiqueta{
+
+
+    cursor:pointer;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+
+
+.item-etiqueta:hover{
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+
+
+
+/* RELACIONES */
+
+
+.relacion-ficha-form{
+
+
+    background:#eee2cb;
+
+
+    padding:20px;
+
+
+    border-radius:15px;
+
+
+}
+
+
+
+.relacion-ficha-form button{
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+
+
+
+
+.item-relacion-ficha{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+    background:#f8f1df;
+
+
+    border:1px solid #cbb693;
+
+
+}
+
+
+
+
+
+
+
+
+/* BOTONES FINALES */
+
+
+#modalFicha .acciones-modal{
+
+
+    position:sticky;
+
+
+    bottom:0;
+
+
+    background:#f8f1df;
+
+
+    padding-top:20px;
+
+
+    margin-top:30px;
+
+
+    border-top:2px solid #cbb693;
+
+
+}
+
+
+
+#btnGuardarFicha{
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+#modalFicha .acciones-modal button{
+
+
+    padding:12px 25px;
+
+
+    border-radius:10px;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+
+
+
+@media(max-width:700px){
+
+
+#modalFicha .modal-contenido{
+
+
+    padding:20px;
+
+}
+
+
+
+}
+
+
+#listaFichas{
+
+
+display:grid;
+
+
+grid-template-columns:
+repeat(auto-fill,260px);
+
+
+gap:25px;
+
+
+align-items:start;
+
+
+}
+
+
+#listaFichas .tarjeta-menu{
+
+
+width:260px;
+
+height:360px;
+
+
+background:#f5edda;
+
+
+border:2px solid #705438;
+
+
+border-radius:15px;
+
+
+overflow:hidden;
+
+
+display:flex;
+
+flex-direction:column;
+
+
+}
+
+
+
+
+/* =====================================================
+   MEJORAS VISUALES / Ultima version
+===================================================== */
+
+/* =====================================================
+   FICHAS - EFECTOS VISUALES (IGUAL A MENÚS)
+===================================================== */
+
+#listaFichas .tarjeta-menu{
+
+    border:1px solid #9d835d;
+
+    border-radius:18px;
+
+    background:linear-gradient(
+        to bottom,
+        #f9f3e5,
+        #f2e6cc
+    );
+
+    box-shadow:
+        0 8px 18px rgba(0,0,0,.12);
+
+}
+
+
+#listaFichas .tarjeta-menu:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:
+        0 18px 35px rgba(0,0,0,.22);
+
+}
+
+
+#listaFichas .imagen-menu{
+
+    border-bottom:2px solid #c7b28f;
+
+}
+
+
+#listaFichas .imagen-menu img{
+
+    transition:.35s;
+
+}
+
+
+#listaFichas .tarjeta-menu:hover img{
+
+    transform:scale(1.05);
+
+}
+
+
+#listaFichas .info-menu h3{
+
+    text-align:center;
+
+    letter-spacing:1px;
+
+    padding-bottom:8px;
+
+    border-bottom:1px solid #d8c5a5;
+
+}
+
+
+#listaFichas .acciones-menu{
+
+    border-top:1px solid #ccb58f;
+
+    padding:12px;
+
+}
+
+
+#listaFichas .acciones-menu button{
+
+    font-weight:bold;
+
+    transition:.25s;
+
+}
+
+
+#listaFichas .acciones-menu button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+/* BOTONES */
+
+#listaFichas .btn-vista{
+
+    background:#556b2f;
+
+}
+
+
+#listaFichas .btn-vista:hover{
+
+    background:#425323;
+
+}
+
+
+#listaFichas .btn-editar{
+
+    background:#b8860b;
+
+}
+
+
+#listaFichas .btn-editar:hover{
+
+    background:#987008;
+
+}
+
+
+#listaFichas .btn-eliminar{
+
+    background:#8b0000;
+
+}
+
+
+#listaFichas .btn-eliminar:hover{
+
+    background:#6f0000;
+
+}
+
+
+/* FRANJA VERDE SUPERIOR */
+
+#listaFichas .tarjeta-menu::before{
+
+    content:"";
+
+    display:block;
+
+    height:8px;
+
+    background:#556b2f;
+
+}
+
+
+/* ANIMACIÓN DEL MODAL */
+
+#modalFicha .modal-contenido,
+#modalVistaFicha .modal-contenido,
+#modalVistaPrevia .modal-contenido{
+
+    animation:aparecer .25s ease;
+
+}
+
+
+@keyframes aparecer{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}

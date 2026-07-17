@@ -6,7 +6,7 @@ async function cargarDashboard(){
     try{
 
         const respuesta =
-        await fetch("/api/dashboard");
+        await window.fetchProtegido("/api/dashboard");
 
 
         const datos =

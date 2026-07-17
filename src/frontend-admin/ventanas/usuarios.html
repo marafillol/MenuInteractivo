@@ -1,7 +1,340 @@
-<h2>Usuarios</h2>
+<section class="ventana">
 
-<p>
 
-    Administración de usuarios.
+    <!-- ==========================
+         ENCABEZADO
+    =========================== -->
 
-</p>
+    <div class="encabezado-ventana">
+
+        <div>
+
+            <h2>
+                Gestión de Usuarios
+            </h2>
+
+            <p>
+                Administración de usuarios y permisos del sistema
+            </p>
+
+        </div>
+
+
+        <button
+                class="boton-principal"
+                onclick="abrirModalUsuario()"
+        >
+
+            + Nuevo Usuario
+
+        </button>
+
+
+    </div>
+
+
+
+
+    <!-- ==========================
+         TABLA USUARIOS
+    =========================== -->
+
+
+    <div class="contenedor-tabla">
+
+
+        <table class="tabla">
+
+
+            <thead>
+
+            <tr>
+
+                <th>
+                    Nombre
+                </th>
+
+
+                <th>
+                    Email
+                </th>
+
+
+                <th>
+                    Rol
+                </th>
+
+
+                <th>
+                    Estado
+                </th>
+
+
+                <th>
+                    Acciones
+                </th>
+
+            </tr>
+
+
+            </thead>
+
+
+
+            <tbody id="tablaUsuarios">
+
+            </tbody>
+
+
+
+        </table>
+
+
+    </div>
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- ==========================
+     MODAL USUARIO
+=========================== -->
+
+
+<div
+        id="modalUsuario"
+        class="modal"
+        style="display:none;"
+>
+
+
+    <div class="modal-contenido">
+
+
+        <h2 id="tituloModalUsuario">
+            Nuevo Usuario
+        </h2>
+
+
+
+        <!-- NOMBRE -->
+
+        <label>
+            Nombre
+        </label>
+
+        <input
+                id="nombreUsuarioNuevo"
+                type="text"
+                placeholder="Nombre completo"
+        >
+
+
+
+
+        <!-- EMAIL -->
+
+        <label>
+            Email
+        </label>
+
+        <input
+                id="emailUsuarioNuevo"
+                type="email"
+                placeholder="correo@ejemplo.com"
+        >
+
+
+
+
+        <!-- PASSWORD -->
+
+        <div id="contenedorPassword">
+
+
+            <label>
+                Contraseña
+            </label>
+
+
+            <input
+                    id="passwordUsuarioNuevo"
+                    type="password"
+                    placeholder="Contraseña"
+            >
+
+
+        </div>
+
+
+
+
+
+        <!-- ROL -->
+
+        <label>
+            Rol
+        </label>
+
+
+        <select id="rolUsuarioNuevo">
+
+
+            <option value="admin">
+                Administrador
+            </option>
+
+
+            <option value="editor">
+                Editor
+            </option>
+
+
+            <option value="consulta">
+                Consulta
+            </option>
+
+
+        </select>
+
+
+
+
+
+
+        <!-- ACTIVO -->
+
+
+        <label>
+
+            <input
+                    type="checkbox"
+                    id="activoUsuarioNuevo"
+                    checked
+            >
+
+            Usuario activo
+
+        </label>
+
+
+
+
+
+
+
+        <div class="acciones-modal">
+
+
+
+            <button
+                    onclick="cerrarModalUsuario()"
+            >
+
+                Cancelar
+
+            </button>
+
+
+
+
+
+            <button
+                    onclick="guardarUsuario()"
+                    class="boton-principal"
+            >
+
+                Guardar
+
+            </button>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- ==========================
+     MODAL CAMBIO PASSWORD
+=========================== -->
+
+
+<div
+        id="modalPassword"
+        class="modal"
+        style="display:none;"
+>
+
+
+    <div class="modal-contenido">
+
+
+        <h2>
+            Cambiar contraseña
+        </h2>
+
+
+
+        <label>
+            Nueva contraseña
+        </label>
+
+
+        <input
+                id="nuevaPassword"
+                type="password"
+                placeholder="Nueva contraseña"
+        >
+
+
+
+
+        <div class="acciones-modal">
+
+
+            <button
+                    onclick="cerrarModalPassword()"
+            >
+
+                Cancelar
+
+            </button>
+
+
+
+            <button
+                    onclick="guardarPassword()"
+                    class="boton-principal"
+            >
+
+                Guardar
+
+            </button>
+
+
+
+        </div>
+
+
+    </div>
+
+
+</div>

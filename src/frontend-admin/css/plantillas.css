@@ -1,0 +1,752 @@
+/* ======================================================
+   PLANTILLAS CSS
+   Gestión de estructuras de fichas
+====================================================== */
+
+
+/* ===========================
+   TITULOS
+=========================== */
+
+
+.titulo-seccion{
+
+    margin:0;
+
+    font-size:34px;
+
+    color:#263c32;
+
+    font-family:serif;
+
+}
+
+
+
+.subtitulo-seccion{
+
+    color:#705438;
+
+    font-size:16px;
+
+    margin-top:8px;
+
+    margin-bottom:20px;
+
+}
+
+
+
+
+/* ===========================
+   GRID PLANTILLAS
+=========================== */
+
+
+.grid-plantillas{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fill,minmax(280px,1fr));
+
+    gap:25px;
+
+    margin-top:25px;
+
+}
+
+
+
+
+/* ===========================
+   TARJETA PLANTILLA
+=========================== */
+
+
+.tarjeta-plantilla{
+
+
+    background:#f4eddb;
+
+
+    border:2px solid #705438;
+
+
+    border-radius:12px;
+
+
+    padding:20px;
+
+
+    box-shadow:
+    0 5px 12px rgba(0,0,0,.2);
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:12px;
+
+
+}
+
+
+
+.tarjeta-plantilla h3{
+
+
+    margin:0;
+
+
+    color:#263c32;
+
+
+    font-size:24px;
+
+
+    font-family:serif;
+
+
+}
+
+
+
+
+.tarjeta-plantilla p{
+
+
+    color:#555;
+
+
+    line-height:1.5;
+
+
+}
+
+
+
+
+.info-plantilla{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:8px;
+
+
+}
+
+
+
+
+
+/* ===========================
+   MODAL GRANDE PLANTILLA
+=========================== */
+
+
+.modal-grande{
+
+
+    width:min(900px,95vw);
+
+
+    max-height:90vh;
+
+
+    overflow-y:auto;
+
+
+}
+
+
+
+
+.modal-grande h2{
+
+
+    color:#263c32;
+
+
+    font-family:serif;
+
+
+}
+
+
+
+
+/* ===========================
+   FIELDSET
+=========================== */
+
+
+.modal-contenido fieldset{
+
+
+    border:2px solid #c8b68c;
+
+
+    border-radius:10px;
+
+
+    padding:18px;
+
+
+    margin-bottom:20px;
+
+
+    background:#f8f3e8;
+
+
+}
+
+
+
+.modal-contenido legend{
+
+
+    color:#705438;
+
+
+    font-weight:bold;
+
+
+    font-size:18px;
+
+
+    padding:0 10px;
+
+
+}
+
+
+
+
+
+/* ===========================
+   CHECKBOX
+=========================== */
+
+
+.checkbox{
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:8px;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+.checkbox input{
+
+
+    width:auto;
+
+
+}
+
+
+
+/* ===========================
+   CAMPOS PLANTILLA
+=========================== */
+
+
+#listaCamposPlantilla{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:12px;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+
+.campo-plantilla{
+
+
+    background:#f4eddb;
+
+
+    border:1px solid #c8b68c;
+
+
+    border-radius:8px;
+
+
+    padding:15px;
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+}
+
+
+
+
+.campo-plantilla strong{
+
+
+    color:#263c32;
+
+
+}
+
+
+
+
+
+.campo-plantilla span{
+
+
+    color:#705438;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+.acciones-campo{
+
+
+    display:flex;
+
+
+    gap:8px;
+
+
+}
+
+
+
+
+/* ===========================
+   VISTA PREVIA PLANTILLA
+=========================== */
+
+
+#vistaPreviaPlantilla{
+
+
+    background:#f4eddb;
+
+
+    border:2px solid #705438;
+
+
+    border-radius:10px;
+
+
+    min-height:150px;
+
+
+    padding:20px;
+
+
+}
+
+
+
+
+.preview-plantilla{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+.preview-plantilla h3{
+
+
+    margin:0;
+
+
+    color:#263c32;
+
+
+    font-family:serif;
+
+
+}
+
+
+
+
+.preview-campo{
+
+
+    background:#f8f3e8;
+
+
+    border:1px solid #c8b68c;
+
+
+    border-radius:8px;
+
+
+    padding:12px;
+
+
+}
+
+
+
+
+.preview-campo strong{
+
+
+    display:block;
+
+
+    color:#705438;
+
+
+    margin-bottom:5px;
+
+
+}
+
+
+
+
+/* ===========================
+   MODAL CAMPO
+=========================== */
+
+
+#modalCampo .modal-contenido{
+
+
+    width:450px;
+
+
+}
+
+
+
+
+#modalCampo h2{
+
+
+    margin-top:0;
+
+
+    color:#263c32;
+
+
+}
+
+
+
+
+/* ===========================
+   VISTA PREVIA COMPLETA
+=========================== */
+
+
+#contenidoVistaPlantilla{
+
+
+    background:#f4eddb;
+
+
+    border-radius:12px;
+
+
+    padding:20px;
+
+
+}
+
+
+
+
+.vista-plantilla-completa{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:15px;
+
+
+}
+
+
+
+.vista-plantilla-completa h2{
+
+
+    color:#263c32;
+
+
+}
+
+
+
+
+.vista-bloque{
+
+
+    background:#f8f3e8;
+
+
+    border:1px solid #c8b68c;
+
+
+    border-radius:8px;
+
+
+    padding:15px;
+
+
+}
+
+
+
+.vista-bloque h4{
+
+
+    color:#705438;
+
+
+    margin:0 0 8px;
+
+
+}
+
+
+
+
+/* ===========================
+   MODAL ELIMINAR PLANTILLA
+=========================== */
+
+
+.modal-eliminar{
+
+
+    background:#f4eddb;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:12px;
+
+
+    padding:30px;
+
+
+    width:380px;
+
+
+    text-align:center;
+
+
+    box-shadow:
+    0 8px 25px rgba(0,0,0,.4);
+
+
+}
+
+
+
+.modal-eliminar h2{
+
+
+    color:#263c32;
+
+
+    font-family:serif;
+
+
+}
+
+
+
+.modal-eliminar p{
+
+
+    color:#555;
+
+
+    line-height:1.5;
+
+
+    margin:25px 0;
+
+
+}
+
+
+
+
+/* ===========================
+   BOTON GUARDAR
+=========================== */
+
+
+.btn-guardar{
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+    border:none;
+
+
+    padding:10px 18px;
+
+
+    border-radius:6px;
+
+
+    cursor:pointer;
+
+
+    font-weight:bold;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+.btn-guardar:hover{
+
+
+    transform:scale(1.05);
+
+
+    opacity:.9;
+
+
+}
+
+
+
+
+/* ===========================
+   ESTADO PLANTILLA
+=========================== */
+
+
+.estado-activa{
+
+
+    color:#263c32;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+.estado-inactiva{
+
+
+    color:#8b3a3a;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+
+@media(max-width:700px){
+
+
+    .grid-plantillas{
+
+
+        grid-template-columns:1fr;
+
+
+    }
+
+
+    .campo-plantilla{
+
+
+        flex-direction:column;
+
+
+        align-items:flex-start;
+
+
+        gap:10px;
+
+
+    }
+
+
+}

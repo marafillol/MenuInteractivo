@@ -5,11 +5,12 @@ async function cargarEtiquetas(){
 
 
     const respuesta =
-    await fetch("/api/etiquetas");
+    await window.fetchProtegido("/api/etiquetas");
 
 
     const etiquetas =
     await respuesta.json();
+    const esConsulta = window.usuarioActual?.rol === "consulta";
 
 
 
@@ -61,24 +62,25 @@ async function cargarEtiquetas(){
                 </button>
 
 
+                ${!esConsulta ? `
+                    <button
+                    class="btn-editar"
+                    onclick="editarEtiqueta(${etiqueta.id_etiqueta})">
 
-                <button
-                class="btn-editar"
-                onclick="editarEtiqueta(${etiqueta.id_etiqueta})">
+                        Editar
 
-                    Editar
-
-                </button>
+                    </button>
 
 
 
-                <button
-                class="btn-eliminar"
-                onclick="confirmarEliminarEtiqueta(${etiqueta.id_etiqueta},'${etiqueta.nombre}')">
+                    <button
+                    class="btn-eliminar"
+                    onclick="confirmarEliminarEtiqueta(${etiqueta.id_etiqueta},'${etiqueta.nombre}')">
 
-                    Eliminar
+                        Eliminar
 
-                </button>
+                    </button>
+                ` : ""}
 
 
             </div>
@@ -135,7 +137,7 @@ async function guardarEtiqueta(){
 
 
 
-    await fetch(url,{
+    await window.fetchProtegido(url,{
 
         method:metodo,
 
@@ -274,7 +276,7 @@ function iniciarEtiquetas(){
 async function vistaPreviaEtiqueta(id){
 
     const respuesta =
-    await fetch(`/api/etiquetas/${id}`);
+    await window.fetchProtegido(`/api/etiquetas/${id}`);
 
     const etiqueta =
     await respuesta.json();
@@ -300,7 +302,7 @@ async function vistaPreviaEtiqueta(id){
 
 async function eliminarEtiqueta(){
 
-    await fetch(
+    await window.fetchProtegido(
         `/api/etiquetas/${etiquetaEliminar}`,
         {
             method:"DELETE"
@@ -324,12 +326,11 @@ async function editarEtiqueta(id){
 
 
     const respuesta =
-    await fetch(`/api/etiquetas/${id}`);
+    await window.fetchProtegido(`/api/etiquetas/${id}`);
 
 
 
-    const etiqueta =
-    await respuesta.json();
+    const etiqueta = await respuesta.json();
 
 
 

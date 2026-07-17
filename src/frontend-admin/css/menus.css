@@ -1,0 +1,2004 @@
+/* =====================================================
+   MENÚS
+   Tarjetas tipo archivo histórico
+===================================================== */
+
+
+/* =====================================================
+   CONTENEDOR GENERAL
+===================================================== */
+
+.ventana{
+
+    width:100%;
+
+}
+
+
+
+.ventana h2{
+
+    font-family:"Cinzel",serif;
+
+    color:#314734;
+
+    font-size:28px;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.ventana h3{
+
+    color:#705438;
+
+    margin:25px 0 15px;
+
+}
+
+
+
+/* =====================================================
+   BOTON NUEVO
+===================================================== */
+
+
+.btn-nuevo{
+
+
+    background:#556b2f;
+
+    color:white;
+
+
+    border:none;
+
+
+    padding:12px 22px;
+
+
+    border-radius:8px;
+
+
+    cursor:pointer;
+
+
+    font-size:15px;
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.btn-nuevo:hover{
+
+
+    background:#3f5223;
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+/* =====================================================
+   GRID DE MENÚS
+===================================================== */
+
+
+#listaMenus.grid-menus{
+
+
+    display:grid !important;
+
+
+    grid-template-columns:
+
+    repeat(auto-fill,260px) !important;
+
+
+    gap:25px !important;
+
+
+    justify-content:start !important;
+
+
+    align-items:start !important;
+
+
+    width:100% !important;
+
+
+    height:auto !important;
+
+
+    overflow:visible !important;
+
+
+}
+
+
+
+
+/* =====================================================
+   TARJETA MENU
+===================================================== */
+
+
+#listaMenus .tarjeta-menu{
+
+
+    width:260px !important;
+
+
+    height:360px !important;
+
+
+    min-width:260px !important;
+
+
+    max-width:260px !important;
+
+
+
+    background:#f5edda !important;
+
+
+
+    border:2px solid #705438 !important;
+
+
+
+    border-radius:15px !important;
+
+
+
+    overflow:hidden !important;
+
+
+
+    display:flex !important;
+
+
+
+    flex-direction:column !important;
+
+
+
+    box-shadow:
+
+    0 5px 15px rgba(0,0,0,.15);
+
+
+
+    transition:.25s;
+
+
+
+}
+
+
+
+
+#listaMenus .tarjeta-menu:hover{
+
+
+    transform:translateY(-6px);
+
+
+    box-shadow:
+
+    0 12px 25px rgba(0,0,0,.25);
+
+
+}
+
+
+
+
+
+/* =====================================================
+   IMAGEN
+===================================================== */
+
+
+#listaMenus .imagen-menu{
+
+
+    width:100% !important;
+
+
+    height:150px !important;
+
+
+    flex-shrink:0 !important;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+#listaMenus .imagen-menu img{
+
+
+    width:100% !important;
+
+
+    height:100% !important;
+
+
+    object-fit:cover !important;
+
+
+}
+
+
+
+
+/* =====================================================
+   INFORMACION
+===================================================== */
+
+
+#listaMenus .info-menu{
+
+
+    padding:15px !important;
+
+
+    height:210px !important;
+
+
+    display:flex !important;
+
+
+    flex-direction:column !important;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+#listaMenus .info-menu h3{
+
+
+    margin:0 0 10px 0 !important;
+
+
+    color:#314734 !important;
+
+
+    font-family:"Cinzel",serif;
+
+
+    font-size:20px !important;
+
+
+}
+
+
+
+#listaMenus .info-menu p{
+
+
+    margin:0;
+
+
+    color:#594936;
+
+
+    font-size:14px;
+
+
+    line-height:1.4;
+
+
+    overflow:hidden !important;
+
+
+    display:-webkit-box !important;
+
+
+    -webkit-line-clamp:4 !important;
+
+
+    -webkit-box-orient:vertical !important;
+
+
+}
+
+
+
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+
+#listaMenus .acciones-menu{
+
+
+    margin-top:auto !important;
+
+
+    padding:10px;
+
+
+    display:grid !important;
+
+
+    grid-template-columns:repeat(2,1fr) !important;
+
+
+    gap:7px;
+
+
+    background:#eee2cb;
+
+
+}
+
+
+
+
+
+#listaMenus .acciones-menu button{
+
+
+    padding:7px;
+
+
+    border:none;
+
+
+    border-radius:7px;
+
+
+    cursor:pointer;
+
+
+    font-size:12px;
+
+
+    color:white;
+
+
+}
+
+
+
+#listaMenus .acciones-menu button:hover{
+
+
+    opacity:.85;
+
+
+}
+
+
+
+
+.btn-vista{
+
+
+    background:#556b2f;
+
+
+}
+
+
+
+.btn-ver{
+
+
+    background:#314734;
+
+
+}
+
+
+
+.btn-editar{
+
+
+    background:#b8860b;
+
+
+}
+
+
+
+.btn-eliminar{
+
+
+    background:#8b0000;
+
+
+}
+
+
+
+
+/* =====================================================
+   EVITAR RECTANGULO INTERNO
+===================================================== */
+
+
+#listaMenus{
+
+
+    overflow:visible !important;
+
+
+    height:auto !important;
+
+
+    max-height:none !important;
+
+
+}
+
+
+
+#contenido{
+
+
+    overflow-y:auto !important;
+
+
+}
+
+
+
+
+/* =====================================================
+   MODALES
+===================================================== */
+
+
+.modal{
+
+
+    display:none;
+
+
+    position:fixed;
+
+
+    inset:0;
+
+
+    background:rgba(0,0,0,.55);
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    z-index:999;
+
+
+}
+
+
+
+.modal-contenido{
+
+
+    width:450px;
+
+
+    max-height:90vh;
+
+
+    overflow:auto;
+
+
+    background:#f8f1df;
+
+
+    padding:25px;
+
+
+    border-radius:15px;
+
+
+    border:3px solid #705438;
+
+
+}
+
+
+
+.cerrar{
+
+
+    float:right;
+
+
+    border:none;
+
+
+    background:none;
+
+
+    font-size:22px;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+/* =====================================================
+   VISTA PREVIA MENU
+   Estilo ficha histórica
+===================================================== */
+
+
+#modalVistaPrevia .modal-contenido{
+
+
+    width:550px;
+
+
+    max-width:90%;
+
+
+    background:#f5edda;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:18px;
+
+
+    padding:30px;
+
+
+}
+
+
+
+
+#modalVistaPrevia .cerrar{
+
+
+    color:#705438;
+
+
+    font-size:24px;
+
+
+}
+
+
+
+
+/* CONTENIDO */
+
+.preview-menu{
+
+
+    text-align:center;
+
+
+}
+
+
+
+
+/* IMAGEN PRINCIPAL */
+
+
+.preview-imagen-ficha{
+
+
+    width:100%;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+.preview-imagen-ficha img{
+
+
+    width:260px;
+
+
+    height:260px;
+
+
+    object-fit:cover;
+
+
+    border-radius:15px;
+
+
+    border:4px solid #705438;
+
+
+    box-shadow:
+
+    0 8px 18px rgba(0,0,0,.25);
+
+
+}
+
+
+
+
+
+/* TITULO */
+
+
+#previewNombre{
+
+
+    font-family:"Cinzel",serif;
+
+
+    font-size:32px;
+
+
+    color:#314734;
+
+
+    margin:10px 0;
+
+
+}
+
+
+
+
+
+/* DESCRIPCIÓN */
+
+
+.preview-descripcion{
+
+
+    background:#eee2cb;
+
+
+    border-left:5px solid #705438;
+
+
+    padding:15px;
+
+
+    border-radius:8px;
+
+
+    text-align:left;
+
+
+    color:#594936;
+
+
+    margin:20px 0;
+
+
+    font-size:15px;
+
+
+}
+
+
+
+
+
+/* TITULO DATOS */
+
+
+.titulo-datos{
+
+
+    text-align:left;
+
+
+    font-family:"Cinzel",serif;
+
+
+    color:#314734;
+
+
+    margin-top:25px;
+
+
+}
+
+
+
+
+
+/* GRID DATOS */
+
+
+.grid-datos-preview{
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:15px;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+
+
+/* TARJETITAS DATOS */
+
+
+.dato-preview{
+
+
+    background:#faf4e6;
+
+
+    border:1px solid #b69a73;
+
+
+    border-radius:12px;
+
+
+    padding:15px;
+
+
+    text-align:left;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+
+.dato-preview:hover{
+
+
+    transform:translateY(-3px);
+
+
+    box-shadow:
+
+    0 5px 12px rgba(0,0,0,.15);
+
+
+}
+
+
+
+
+.dato-preview h4{
+
+
+    color:#705438;
+
+
+    font-size:13px;
+
+
+    text-transform:uppercase;
+
+
+    letter-spacing:1px;
+
+
+    margin-bottom:8px;
+
+
+}
+
+
+
+.dato-preview p{
+
+
+    color:#314734;
+
+
+    font-size:16px;
+
+
+    font-weight:bold;
+
+
+    margin:0;
+
+
+}
+
+
+
+/* RESPONSIVE */
+
+
+@media(max-width:600px){
+
+
+    #modalVistaPrevia .modal-contenido{
+
+
+        width:95%;
+
+
+        padding:20px;
+
+
+    }
+
+
+
+    .grid-datos-preview{
+
+
+        grid-template-columns:1fr;
+
+
+    }
+
+
+
+    .preview-imagen-ficha img{
+
+
+        width:200px;
+
+
+        height:200px;
+
+
+    }
+
+
+}
+
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+
+@media(max-width:700px){
+
+
+    #listaMenus.grid-menus{
+
+
+        grid-template-columns:1fr !important;
+
+
+    }
+
+
+    #listaMenus .tarjeta-menu{
+
+
+        width:100% !important;
+
+
+        max-width:100% !important;
+
+
+    }
+
+
+}
+
+
+/* =====================================================
+   MODAL CREAR / EDITAR MENU
+===================================================== */
+
+
+#ventanaEmergente .modal-contenido{
+
+
+    width:520px;
+
+
+    max-width:95%;
+
+
+    background:#f5edda;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:18px;
+
+
+    padding:30px;
+
+
+    box-shadow:
+
+    0 15px 35px rgba(0,0,0,.35);
+
+
+}
+
+
+
+/* TITULO */
+
+#ventanaEmergente .modal-contenido h3{
+
+
+    font-family:"Cinzel",serif;
+
+
+    color:#314734;
+
+
+    font-size:25px;
+
+
+    text-align:center;
+
+
+    margin-bottom:25px;
+
+
+}
+
+
+
+
+
+/* CERRAR */
+
+
+#ventanaEmergente .cerrar{
+
+
+    color:#705438;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+#ventanaEmergente .cerrar:hover{
+
+
+    transform:scale(1.2);
+
+
+    color:#8b0000;
+
+
+}
+
+
+
+
+
+/* LABELS */
+
+
+#ventanaEmergente label{
+
+
+    display:block;
+
+
+    color:#705438;
+
+
+    font-weight:bold;
+
+
+    margin-top:15px;
+
+
+    margin-bottom:6px;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+/* INPUTS */
+
+
+#ventanaEmergente input[type="text"],
+
+#ventanaEmergente textarea,
+
+#ventanaEmergente select{
+
+
+    width:100%;
+
+
+    padding:12px;
+
+
+    border-radius:10px;
+
+
+    border:1px solid #b69a73;
+
+
+    background:#fffaf0;
+
+
+    color:#314734;
+
+
+    font-size:14px;
+
+
+    outline:none;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+#ventanaEmergente textarea{
+
+
+    height:100px;
+
+
+    resize:none;
+
+
+}
+
+
+
+#ventanaEmergente input:focus,
+
+#ventanaEmergente textarea:focus,
+
+#ventanaEmergente select:focus{
+
+
+    border-color:#556b2f;
+
+
+    box-shadow:
+
+    0 0 0 3px rgba(85,107,47,.15);
+
+
+}
+
+
+
+
+
+/* =====================================================
+   IMAGEN ACTUAL
+===================================================== */
+
+
+#bloqueImagenActual{
+
+
+    margin-top:20px;
+
+
+    background:#eee2cb;
+
+
+    padding:15px;
+
+
+    border-radius:12px;
+
+
+    border:1px solid #b69a73;
+
+
+}
+
+
+
+#bloqueImagenActual label{
+
+
+    margin-top:0;
+
+
+}
+
+
+
+.preview-imagen{
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    margin-top:10px;
+
+
+}
+
+
+
+
+.preview-imagen img{
+
+
+    width:180px;
+
+
+    height:180px;
+
+
+    object-fit:cover;
+
+
+    border-radius:12px;
+
+
+    border:3px solid #705438;
+
+
+    box-shadow:
+
+    0 5px 12px rgba(0,0,0,.2);
+
+
+}
+
+
+
+
+/* NUEVA IMAGEN */
+
+
+#ventanaEmergente input[type="file"]{
+
+
+    background:#fffaf0;
+
+
+    padding:10px;
+
+
+    border-radius:10px;
+
+
+    border:1px dashed #705438;
+
+
+}
+
+
+
+
+
+/* =====================================================
+   CHECKBOX VISIBLE
+===================================================== */
+
+
+#ventanaEmergente label:has(input[type="checkbox"]){
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:10px;
+
+
+    margin-top:20px;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+#nuevoVisible{
+
+
+    width:18px;
+
+
+    height:18px;
+
+
+    accent-color:#556b2f;
+
+
+}
+
+
+
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+
+#ventanaEmergente .acciones-modal{
+
+
+    display:flex;
+
+
+    justify-content:flex-end;
+
+
+    gap:12px;
+
+
+    margin-top:30px;
+
+
+}
+
+
+
+#ventanaEmergente .acciones-modal button{
+
+
+    padding:11px 22px;
+
+
+    border-radius:10px;
+
+
+    border:none;
+
+
+    cursor:pointer;
+
+
+    font-weight:bold;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+#guardarMenu{
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+}
+
+
+
+#guardarMenu:hover{
+
+
+    background:#3f5223;
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+#cancelarMenu{
+
+
+    background:#777;
+
+
+    color:white;
+
+
+}
+
+
+
+#cancelarMenu:hover{
+
+
+    background:#555;
+
+
+}
+
+
+
+
+/* =====================================================
+   SCROLL MODAL
+===================================================== */
+
+
+#ventanaEmergente .modal-contenido::-webkit-scrollbar{
+
+
+    width:8px;
+
+
+}
+
+
+
+#ventanaEmergente .modal-contenido::-webkit-scrollbar-thumb{
+
+
+    background:#705438;
+
+
+    border-radius:20px;
+
+
+}
+
+
+/* =====================================================
+   FICHAS - TARJETAS ARCHIVO HISTÓRICO
+===================================================== */
+
+
+.grid-fichas{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+
+    repeat(auto-fill,260px);
+
+
+    gap:25px;
+
+
+    justify-content:start;
+
+
+}
+
+
+
+
+/* TARJETA */
+
+
+.tarjeta-ficha{
+
+
+    width:260px;
+
+
+    height:380px;
+
+
+    background:#f5edda;
+
+
+    border:2px solid #705438;
+
+
+    border-radius:15px;
+
+
+    overflow:hidden;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    box-shadow:
+
+    0 5px 15px rgba(0,0,0,.15);
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+.tarjeta-ficha:hover{
+
+
+    transform:translateY(-6px);
+
+
+    box-shadow:
+
+    0 12px 25px rgba(0,0,0,.25);
+
+
+}
+
+
+
+
+
+/* IMAGEN */
+
+
+.imagen-ficha{
+
+
+    height:160px;
+
+
+    width:100%;
+
+
+}
+
+
+
+.imagen-ficha img{
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    object-fit:cover;
+
+
+}
+
+
+
+
+
+/* INFORMACION */
+
+
+.info-ficha{
+
+
+    padding:15px;
+
+
+    flex:1;
+
+
+}
+
+
+
+.info-ficha h3{
+
+
+    font-family:"Cinzel",serif;
+
+
+    color:#314734;
+
+
+    font-size:20px;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.info-ficha p{
+
+
+    font-size:14px;
+
+
+    color:#594936;
+
+
+}
+
+
+
+
+/* BOTONES */
+
+
+.acciones-ficha{
+
+
+    padding:10px;
+
+
+    background:#eee2cb;
+
+
+    display:flex;
+
+
+    gap:8px;
+
+
+}
+
+
+
+.acciones-ficha button{
+
+
+    flex:1;
+
+
+    border:none;
+
+
+    border-radius:7px;
+
+
+    padding:8px;
+
+
+    color:white;
+
+
+    cursor:pointer;
+
+
+}
+
+/* =====================================================
+   MODAL CONFIRMAR ELIMINAR
+===================================================== */
+
+
+#modalConfirmarEliminar .modal-contenido{
+
+
+    width:400px;
+
+
+    max-width:90%;
+
+
+    background:#f5edda;
+
+
+    border:3px solid #8b0000;
+
+
+    border-radius:18px;
+
+
+    padding:30px;
+
+
+    text-align:center;
+
+
+    box-shadow:
+
+    0 15px 35px rgba(0,0,0,.35);
+
+
+}
+
+
+
+
+/* TITULO */
+
+
+#modalConfirmarEliminar h3{
+
+
+    font-family:"Cinzel",serif;
+
+
+    color:#8b0000;
+
+
+    font-size:25px;
+
+
+    margin-bottom:15px;
+
+
+}
+
+
+
+
+/* ICONO ANTES DEL TEXTO */
+
+
+#modalConfirmarEliminar h3::before{
+
+
+    content:"⚠️";
+
+
+    display:block;
+
+
+    font-size:45px;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+
+
+/* MENSAJE */
+
+
+#modalConfirmarEliminar p{
+
+
+    color:#594936;
+
+
+    font-size:15px;
+
+
+    line-height:1.5;
+
+
+    margin-bottom:25px;
+
+
+}
+
+
+
+
+
+/* BOTONES */
+
+
+#modalConfirmarEliminar .acciones-modal{
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+#modalConfirmarEliminar button{
+
+
+    padding:12px 25px;
+
+
+    border:none;
+
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    font-weight:bold;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+
+/* ELIMINAR */
+
+
+#modalConfirmarEliminar .btn-eliminar{
+
+
+    background:#8b0000;
+
+
+    color:white;
+
+
+}
+
+
+
+#modalConfirmarEliminar .btn-eliminar:hover{
+
+
+    background:#b22222;
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+
+/* CANCELAR */
+
+
+#modalConfirmarEliminar button:not(.btn-eliminar){
+
+
+    background:#777;
+
+
+    color:white;
+
+
+}
+
+
+
+#modalConfirmarEliminar button:not(.btn-eliminar):hover{
+
+
+    background:#555;
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+/* =====================================================
+   MEJORAS VISUALES / Ultima version
+===================================================== */
+
+#listaMenus .tarjeta-menu{
+
+    border:1px solid #9d835d;
+
+    border-radius:18px;
+
+    background:linear-gradient(
+        to bottom,
+        #f9f3e5,
+        #f2e6cc
+    );
+
+    box-shadow:
+        0 8px 18px rgba(0,0,0,.12);
+
+}
+
+
+#listaMenus .tarjeta-menu:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:
+        0 18px 35px rgba(0,0,0,.22);
+
+}
+
+#listaMenus .imagen-menu{
+
+    border-bottom:2px solid #c7b28f;
+
+}
+
+#listaMenus .imagen-menu img{
+
+    transition:.35s;
+
+}
+
+#listaMenus .tarjeta-menu:hover img{
+
+    transform:scale(1.05);
+
+}
+
+#listaMenus .info-menu h3{
+
+    text-align:center;
+
+    letter-spacing:1px;
+
+    padding-bottom:8px;
+
+    border-bottom:1px solid #d8c5a5;
+
+}
+
+
+#listaMenus .acciones-menu{
+
+    border-top:1px solid #ccb58f;
+
+    padding:12px;
+
+}
+
+
+#listaMenus .acciones-menu button{
+
+    font-weight:bold;
+
+    transition:.25s;
+
+}
+
+#listaMenus .acciones-menu button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.btn-vista{
+
+    background:#556b2f;
+
+}
+
+.btn-vista:hover{
+
+    background:#425323;
+
+}
+
+.btn-editar{
+
+    background:#b8860b;
+
+}
+
+.btn-editar:hover{
+
+    background:#987008;
+
+}
+
+
+.btn-eliminar{
+
+    background:#8b0000;
+
+}
+
+.btn-eliminar:hover{
+
+    background:#6f0000;
+
+}
+
+
+#listaMenus .tarjeta-menu::before{
+
+    content:"";
+
+    display:block;
+
+    height:8px;
+
+    background:#556b2f;
+
+}
+
+.modal-contenido{
+
+    animation:aparecer .25s ease;
+
+}
+
+
+@keyframes aparecer{
+
+    from{
+
+        opacity:0;
+        transform:translateY(-20px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:none;
+
+    }
+
+}

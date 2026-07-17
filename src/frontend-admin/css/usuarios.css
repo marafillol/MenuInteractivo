@@ -1,0 +1,480 @@
+/* =====================================
+   USUARIOS
+===================================== */
+
+
+/* ===============================
+   ENCABEZADO
+=============================== */
+
+
+.encabezado-ventana{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+
+.encabezado-ventana h2{
+
+    margin:0;
+
+    color:#263c32;
+
+    font-family:serif;
+
+    font-size:32px;
+
+}
+
+
+.encabezado-ventana p{
+
+    margin-top:8px;
+
+    color:#555;
+
+    font-size:16px;
+
+}
+
+
+
+
+
+/* ===============================
+   BOTON PRINCIPAL
+=============================== */
+
+
+.boton-principal{
+
+    background:#263c32;
+
+    color:#f4eddb;
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    transition:.25s;
+
+}
+
+
+
+.boton-principal:hover{
+
+    background:#345343;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 6px 14px rgba(0,0,0,.25);
+
+}
+
+
+
+
+/* ===============================
+   TABLA USUARIOS
+=============================== */
+
+
+.contenedor-tabla{
+
+    background:#f4eddb;
+
+    border:2px solid #705438;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    box-shadow:0 5px 12px rgba(0,0,0,.15);
+
+    overflow-x:auto;
+
+}
+
+
+
+
+.tabla{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+.tabla th{
+
+    background:#263c32;
+
+    color:white;
+
+    padding:14px;
+
+    text-align:left;
+
+    font-size:15px;
+
+}
+
+
+
+.tabla td{
+
+    padding:14px;
+
+    border-bottom:1px solid #d5c4a8;
+
+    color:#444;
+
+}
+
+
+
+.tabla tr:hover{
+
+    background:#eee5d2;
+
+}
+
+
+
+.tabla th:first-child{
+
+    border-radius:8px 0 0 0;
+
+}
+
+
+
+.tabla th:last-child{
+
+    border-radius:0 8px 0 0;
+
+}
+
+
+
+
+
+/* ===============================
+   ESTADOS
+=============================== */
+
+
+.estado-activo{
+
+    color:#263c32;
+
+    font-weight:bold;
+
+}
+
+
+
+.estado-inactivo{
+
+    color:#8b3a3a;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+/* ===============================
+   ACCIONES TABLA
+=============================== */
+
+
+.acciones-usuario{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+}
+
+
+
+.acciones-usuario button{
+
+    border:none;
+
+    padding:8px 14px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-weight:bold;
+
+}
+
+
+
+.btn-editar-usuario{
+
+    background:#705438;
+
+}
+
+
+
+.btn-password-usuario{
+
+    background:#556b2f;
+
+}
+
+
+
+.btn-eliminar-usuario{
+
+    background:#8b3a3a;
+
+}
+
+
+
+
+.acciones-usuario button:hover{
+
+    transform:translateY(-2px);
+
+    opacity:.9;
+
+}
+
+
+
+
+
+/* ===============================
+   MODAL USUARIO
+=============================== */
+
+
+#modalUsuario .modal-contenido,
+#modalPassword .modal-contenido{
+
+
+    width:min(550px,90vw);
+
+}
+
+
+
+#modalUsuario h2,
+#modalPassword h2{
+
+
+    margin-top:0;
+
+    color:#263c32;
+
+    font-family:serif;
+
+    font-size:26px;
+
+}
+
+
+
+
+
+/* ===============================
+   FORMULARIO
+=============================== */
+
+
+#modalUsuario label,
+#modalPassword label{
+
+    display:block;
+
+    margin-top:15px;
+
+    margin-bottom:5px;
+
+    color:#263c32;
+
+    font-weight:bold;
+
+}
+
+
+
+
+#modalUsuario input,
+#modalUsuario select,
+#modalPassword input{
+
+
+    width:100%;
+
+    padding:10px;
+
+    border:1px solid #705438;
+
+    border-radius:6px;
+
+    box-sizing:border-box;
+
+}
+
+
+
+
+
+#modalUsuario input:focus,
+#modalUsuario select:focus,
+#modalPassword input:focus{
+
+
+    outline:none;
+
+    border-color:#263c32;
+
+}
+
+
+
+
+
+/* ===============================
+   CHECKBOX
+=============================== */
+
+
+#modalUsuario label:has(input[type="checkbox"]){
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-top:20px;
+
+}
+
+
+
+#modalUsuario input[type="checkbox"]{
+
+    width:auto;
+
+}
+
+
+
+
+
+/* ===============================
+   BOTONES MODAL
+=============================== */
+
+
+#modalUsuario .acciones-modal,
+#modalPassword .acciones-modal{
+
+
+    margin-top:25px;
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+}
+
+
+
+#modalUsuario .acciones-modal button:first-child,
+#modalPassword .acciones-modal button:first-child{
+
+
+    background:#705438;
+
+    color:white;
+
+}
+
+
+
+#modalUsuario .acciones-modal button,
+#modalPassword .acciones-modal button{
+
+
+    border:none;
+
+    padding:10px 18px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+
+
+@media(max-width:700px){
+
+
+    .encabezado-ventana{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:15px;
+
+    }
+
+
+    .tabla{
+
+        font-size:14px;
+
+    }
+
+
+}

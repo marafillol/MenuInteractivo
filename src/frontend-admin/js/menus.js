@@ -6,9 +6,11 @@ async function cargarMenus(){
 
     try{
 
-        const respuesta = await fetch("/api/menus");
+        const respuesta = await window.fetchProtegido("/api/menus");
 
         const menus = await respuesta.json();
+
+        const esConsulta = window.usuarioActual?.rol === "consulta";
 
 
         const contenedor = document.getElementById("listaMenus");
@@ -81,17 +83,19 @@ async function cargarMenus(){
 
                         </button>
 
-                        <button
-                            class="btn-editar"
-                            onclick="editarMenu(${menu.id_menu})">
-                            Editar
-                        </button>
+                        ${!esConsulta ? `
+                            <button
+                                class="btn-editar"
+                                onclick="editarMenu(${menu.id_menu})">
+                                Editar
+                            </button>
 
-                        <button
-                            class="btn-eliminar"
-                            onclick="eliminarMenu(${menu.id_menu})">
-                            Eliminar
-                        </button>
+                            <button
+                                class="btn-eliminar"
+                                onclick="abrirEliminarMenu(${menu.id_menu})">
+                                Eliminar
+                            </button>
+                        ` : ""}
 
                     </div>
 
@@ -143,7 +147,7 @@ async function crearMenu(datos){
 
     try{
 
-        const respuesta = await fetch("/api/menus",{
+        const respuesta = await window.fetchProtegido("/api/menus",{
 
             method:"POST",
 
@@ -244,7 +248,7 @@ async function guardarNuevoMenu(){
             : "POST";
 
 
-        const respuesta = await fetch(url,{
+        const respuesta = await window.fetchProtegido(url,{
 
             method: metodo,
 
@@ -270,11 +274,49 @@ async function guardarNuevoMenu(){
 
 }
 
+
+async function cargarSelectPlantillas(){
+
+    try{
+
+        const respuesta = await window.fetchProtegido("/api/plantillas");
+        const plantillas = await respuesta.json();
+
+        const select = document.getElementById("plantillaMenu");
+
+        if(!select){
+            return;
+        }
+
+        select.innerHTML = `
+            <option value="">
+                Seleccione una plantilla
+            </option>
+        `;
+
+        plantillas.forEach(plantilla=>{
+
+            select.innerHTML += `
+                <option value="${plantilla.id_plantilla}">
+                    ${plantilla.nombre}
+                </option>
+            `;
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
 async function cargarPlantillas(){
 
     try{
 
-        const respuesta = await fetch("/api/plantillas");
+        const respuesta = await window.fetchProtegido("/api/plantillas");
 
         const plantillas = await respuesta.json();
 
@@ -392,7 +434,7 @@ async function editarMenu(id_menu){
 
     try{
 
-        const respuesta = await fetch(`/api/menus/${id_menu}`);
+        const respuesta = await window.fetchProtegido(`/api/menus/${id_menu}`);
 
         const menu = await respuesta.json();
 
@@ -451,7 +493,7 @@ async function confirmarEliminarMenu(){
     try{
 
         const respuesta =
-        await fetch(`/api/menus/${idMenuEliminar}`,{
+        await window.fetchProtegido(`/api/menus/${idMenuEliminar}`,{
             method:"DELETE"
         });
 
@@ -515,7 +557,7 @@ async function vistaPreviaMenu(id_menu){
 
     try{
 
-        const respuesta = await fetch(`/api/menus/${id_menu}`);
+        const respuesta = await window.fetchProtegido(`/api/menus/${id_menu}`);
 
         const menu = await respuesta.json();
 

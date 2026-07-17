@@ -5,7 +5,6 @@ MenuInteractivo
 ==========================================================
 */
 
-
 // ==========================================================
 // ELEMENTOS
 // ==========================================================
@@ -46,17 +45,18 @@ function actualizarFecha() {
 // CERRAR SESIÓN
 // ==========================================================
 
-function cerrarSesion() {
+async function cerrarSesion(){
 
-    const confirmar = confirm(
-        "¿Desea cerrar la sesión?"
-    );
+    const confirmar =
+    confirm("¿Desea cerrar la sesión?");
 
-    if (!confirmar) return;
+    if(!confirmar){
+        return;
+    }
 
-    localStorage.removeItem("usuario");
+    await window.cerrarSesionFirebase();
 
-    window.location.href = "index.html";
+    window.location.href="index.html";
 
 }
 
@@ -154,13 +154,28 @@ async function cargarVentana(nombre, mantenerMenu=false){
         // Cargar el script de la ventana
         await cargarScriptVentana(nombre);
 
+        const aplicarPermisosConsulta = ()=>{
+
+            if(
+                window.Permisos &&
+                window.usuarioActual?.rol === "consulta"
+            ){
+
+                Permisos.ocultarBotonesEdicion();
+
+            }
+
+        };
+
         // Ejecutar función correspondiente
 
         if(nombre === "menus"){
 
             cargarMenus();
 
-            cargarPlantillas();
+            cargarSelectPlantillas();
+
+            aplicarPermisosConsulta();
 
         }
 
@@ -171,6 +186,8 @@ async function cargarVentana(nombre, mantenerMenu=false){
             }
 
             cargarFichas();
+
+            aplicarPermisosConsulta();
 
         }
 
@@ -190,15 +207,19 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
             cargarMultimedia();
 
+            aplicarPermisosConsulta();
+
         }
 
         if(nombre === "etiquetas"){
             iniciarEtiquetas();
+            aplicarPermisosConsulta();
         }
 
         if(nombre === "plantillas"){
 
             cargarPlantillas();
+            aplicarPermisosConsulta();
 
         }
 
@@ -206,11 +227,21 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
             cargarDashboard();
 
+            aplicarPermisosConsulta();
+
         }
 
-        //if(nombre === "usuarios"){
-        //    cargarUsuarios();
-        //}
+        if(nombre === "usuarios"){
+
+            setTimeout(()=>{
+
+                cargarUsuarios();
+
+            },100);
+
+            aplicarPermisosConsulta();
+
+        }
 
     }
 
@@ -274,15 +305,15 @@ botonCerrarSesion.addEventListener(
 // INICIALIZACIÓN
 // ==========================================================
 
-function iniciarPanel(){
+async function iniciarPanel(){
 
     actualizarFecha();
 
+    await cargarUsuarioActual();
+
     activarNavegacion();
 
-    cargarVentana(
-        "dashboard"
-    );
+    cargarVentana("dashboard");
 
     console.log(
         "Panel Administrativo iniciado correctamente."
@@ -296,16 +327,126 @@ window.addEventListener("click", function(e){
         return;
     }
 
-    // Si es el modal de vista previa multimedia,
-    // usar su función de cierre
-    if(e.target.id === "modalVistaMultimedia"){
+    switch(e.target.id){
 
-        cerrarVistaMultimedia();
-        return;
+        case "modalVistaMultimedia":
+            cerrarVistaMultimedia();
+            break;
+
+        case "modalEliminarPlantilla":
+            cerrarEliminarPlantilla();
+            break;
+
+        case "modalMensajePlantilla":
+            cerrarMensajePlantilla();
+            break;
+
+        case "modalPlantilla":
+            cerrarPlantilla();
+            break;
+
+        case "modalCampo":
+            cerrarCampo();
+            break;
+
+        case "modalEliminarCampo":
+            cerrarEliminarCampo();
+            break;
+
+        case "modalVistaPlantilla":
+            cerrarVistaPlantilla();
+            break;
+
+        default:
+            e.target.style.display = "none";
+    }
+
+});
+
+
+
+
+
+
+// ==========================================================
+// CARGAR USUARIO LOGUEADO
+// ==========================================================
+
+async function cargarUsuarioActual(){
+
+    try{
+
+
+        console.log("Cargando usuario actual...");
+
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/usuarios/me"
+            );
+
+
+
+        const usuario =
+        await respuesta.json();
+
+
+
+        if(!respuesta.ok){
+
+            throw new Error(
+                usuario.error
+            );
+
+        }
+
+
+
+        window.usuarioActual = usuario;
+
+        if(window.Permisos){
+
+            Permisos.ocultarSecciones();
+
+        }
+
+
+        console.log(
+            "Usuario cargado:",
+            usuario
+        );
+
+
+
+        const nombre =
+        document.getElementById(
+            "nombreUsuario"
+        );
+
+
+        if(nombre){
+
+            nombre.textContent =
+            usuario.nombre;
+
+        }
+
+
+
+
+    }
+    catch(error){
+
+
+        console.error(
+            "ERROR USUARIO:",
+            error
+        );
+
 
     }
 
-    e.target.style.display = "none";
+}
 
-});
+
 iniciarPanel();

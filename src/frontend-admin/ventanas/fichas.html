@@ -1,16 +1,24 @@
 <section class="ventana">
 
+
+    <!-- =========================
+         CABECERA
+    ========================= -->
+
     <div class="cabecera-fichas">
+
 
         <button
                 id="barraVolver"
                 class="btn-ver btn-volver"
                 onclick="volverMenus()"
-                style="display:none;">
+                style="display:none">
 
-            ← Menús
+            ← Volver a menús
 
         </button>
+
+
 
         <div class="titulo-fichas">
 
@@ -18,11 +26,15 @@
                 Gestión de Fichas
             </h2>
 
+
             <p id="subtituloFichas"></p>
 
         </div>
 
+
     </div>
+
+
 
     <button
             class="btn-nuevo"
@@ -33,9 +45,13 @@
     </button>
 
 
-    <!-- ======================
-         SELECCIONAR TIPO
-    ======================= -->
+
+
+
+    <!-- =================================================
+         MODAL SELECCION TIPO
+    ================================================= -->
+
 
     <div id="modalTipoFicha" class="modal">
 
@@ -52,14 +68,17 @@
             </button>
 
 
+
             <h3>
                 Seleccionar tipo de ficha
             </h3>
 
 
+
             <label>
-                Tipo:
+                Tipo de contenido
             </label>
+
 
 
             <select id="tipoFicha">
@@ -68,7 +87,9 @@
                     Seleccionar...
                 </option>
 
+
             </select>
+
 
 
         </div>
@@ -78,9 +99,21 @@
 
 
 
+
+
+
+
+
+    <!-- =================================================
+         MODAL CREAR / EDITAR FICHA
+    ================================================= -->
+
+
     <div id="modalFicha" class="modal">
 
-        <div class="modal-contenido">
+
+        <div class="modal-contenido modal-ficha">
+
 
 
             <button
@@ -92,78 +125,170 @@
             </button>
 
 
+
+
             <h3 id="tituloModalFicha">
+
                 Nueva ficha
+
             </h3>
 
-            <p class="tipo-ficha">
-                <strong>Tipo de ficha:</strong>
+
+
+
+
+            <div class="tipo-ficha">
+
+
+                <strong>
+                    Tipo:
+                </strong>
+
+
                 <span id="nombreTipoFicha"></span>
-            </p>
 
 
-            <input
-                    type="hidden"
-                    id="id_ficha">
+            </div>
 
 
-            <h4 id="tituloDatosEspecificos">
+
+
+
+
+
+
+            <!-- DATOS DINAMICOS -->
+
+
+            <h4
+                    id="tituloDatosEspecificos"
+                    class="titulo-subseccion">
+
                 Datos específicos
+
             </h4>
 
-            <div id="camposDinamicos"></div>
+
+
+            <div id="camposDinamicos">
+
+            </div>
+
+
+
+
+
+
+
+
+            <!-- DATOS GENERALES -->
+
+
+            <h4 class="titulo-subseccion">
+
+                Información general
+
+            </h4>
+
+
 
 
             <label>
                 Título
             </label>
 
+
             <input
                     type="text"
                     id="tituloFicha"
-                    placeholder="Ej: Juan Pérez">
+                    placeholder="Nombre de la ficha">
+
+
+
 
 
             <label>
                 Resumen
             </label>
 
+
             <textarea
                     id="resumenFicha"
-                    placeholder="Breve descripción de la ficha"></textarea>
+                    placeholder="Descripción breve">
+
+</textarea>
+
+
+
+
 
 
             <label>
                 Texto completo
             </label>
 
+
             <textarea
                     id="textoFicha"
-                    placeholder="Ingrese aquí el contenido completo de la ficha"></textarea>
+                    placeholder="Contenido completo">
+
+</textarea>
 
 
 
-            <div id="contenedorImagenActual">
+
+
+
+
+
+
+            <!-- IMAGEN -->
+
+
+            <h4 class="titulo-subseccion">
+
+                Imagen
+
+            </h4>
+
+
+
+            <div
+                    id="contenedorImagenActual">
+
 
                 <label>
+
                     Imagen actual
+
                 </label>
 
+
+
                 <div class="imagen-actual-ficha">
+
 
                     <img
                             id="imagenActualFicha"
                             src=""
-                            style="width:150px; display:none;">
+                            style="display:none">
+
 
                 </div>
+
 
             </div>
 
 
+
+
             <label id="labelImagenFicha">
+
                 Seleccionar imagen
+
             </label>
+
+
 
             <input
                     type="file"
@@ -172,16 +297,33 @@
 
 
 
-            <label>
+
+
+
+
+            <label class="check-visible">
+
 
                 <input
                         type="checkbox"
                         id="visibleFicha"
                         checked>
 
+
                 Visible
 
+
             </label>
+
+
+
+
+
+
+
+
+
+            <!-- ETIQUETAS -->
 
 
             <h4 class="titulo-subseccion">
@@ -190,15 +332,23 @@
 
             </h4>
 
+
+
             <div
                     id="listaEtiquetasFicha"
                     class="lista-etiquetas-ficha">
 
             </div>
 
-            <!-- ======================
-     RELACIONES ENTRE FICHAS
-======================= -->
+
+
+
+
+
+
+
+
+            <!-- RELACIONES -->
 
 
             <h4 class="titulo-subseccion">
@@ -208,34 +358,52 @@
             </h4>
 
 
+
             <div class="relacion-ficha-form">
 
 
+
                 <label>
-                    Seleccionar ficha relacionada
+
+                    Ficha relacionada
+
                 </label>
+
 
 
                 <select id="fichaRelacion">
 
+
                     <option value="">
+
                         Seleccionar ficha...
+
                     </option>
+
 
                 </select>
 
 
 
+
+
+
                 <label>
+
                     Tipo de relación
+
                 </label>
+
+
 
 
                 <select id="tipoRelacion">
 
 
                     <option value="">
+
                         Seleccionar tipo...
+
                     </option>
 
 
@@ -253,6 +421,7 @@
                     </option>
 
 
+
                     <option value="Participó en">
 
                         Participó en
@@ -260,11 +429,13 @@
                     </option>
 
 
+
                     <option value="Mismo evento">
 
                         Mismo evento
 
                     </option>
+
 
 
                     <option value="Otro">
@@ -278,17 +449,27 @@
 
 
 
+
+
+
+
                 <button
                         type="button"
                         class="btn-ver"
                         onclick="agregarRelacionFicha()">
 
+
                     + Agregar relación
+
 
                 </button>
 
 
+
             </div>
+
+
+
 
 
 
@@ -296,28 +477,44 @@
                     id="listaRelacionesFicha"
                     class="lista-relaciones-ficha">
 
-
             </div>
 
 
 
 
+
+
+
+
+            <!-- BOTONES -->
 
 
             <div class="acciones-modal">
 
+
                 <button
                         id="btnGuardarFicha"
                         onclick="guardarFicha()">
+
                     Guardar ficha
+
                 </button>
 
 
-                <button onclick="cerrarFicha()">
+
+
+                <button
+                        onclick="cerrarFicha()">
+
                     Cancelar
+
                 </button>
+
 
             </div>
+
+
+
 
 
         </div>
@@ -325,22 +522,43 @@
     </div>
 
 
-    <div id="listaFichas" class="grid-menus">
+
+
+
+
+
+
+
+    <!-- =================================================
+         LISTADO
+    ================================================= -->
+
+
+    <div
+            id="listaFichas"
+            class="grid-menus">
 
     </div>
 
 
 
 
-    <!-- ======================
-        MODAL VISTA PREVIA
-    ======================= -->
+
+
+
+
+
+    <!-- =================================================
+         VISTA PREVIA
+    ================================================= -->
 
 
     <div id="modalVistaFicha" class="modal">
 
 
+
         <div class="modal-contenido">
+
 
 
             <button
@@ -352,81 +570,211 @@
             </button>
 
 
+
+
+
+
             <h3>
-                Vista previa ficha
+
+                Expediente de ficha
+
             </h3>
+
+
+
 
 
 
             <div class="preview-menu">
 
+
+
+
+
                 <div class="preview-imagen">
+
 
                     <img
                             id="vpFichaImagen"
-                            src=""
-                            alt="Imagen de ficha">
+                            src="">
+
 
                 </div>
 
-                <h3 id="vpFichaTitulo"></h3>
 
-                <p class="preview-resumen"
-                   id="vpFichaResumen">
+
+
+
+
+
+                <h2 id="vpFichaTitulo">
+
+                </h2>
+
+
+
+
+
+
+                <p
+                        id="vpFichaResumen"
+                        class="preview-resumen">
+
                 </p>
 
-                <h4>Datos específicos de la ficha</h4>
 
-                <div id="vpCamposDinamicos"></div>
 
-                <h4>Texto completo</h4>
+
+
+
+
+
+
+                <h4>
+
+                    Datos específicos
+
+                </h4>
+
+
+
+                <div
+                        id="vpCamposDinamicos">
+
+                </div>
+
+
+
+
+
+
+
+                <h4>
+
+                    Historia
+
+                </h4>
+
+
 
                 <div class="preview-texto">
 
-                    <p id="vpFichaTexto"></p>
+
+                    <p id="vpFichaTexto">
+
+                    </p>
+
 
                 </div>
 
-                <h4>Información general</h4>
+
+
+
+
+
+
+
+                <h4>
+
+                    Información administrativa
+
+                </h4>
+
+
+
+
 
                 <div class="preview-info">
 
+
+
                     <p>
+
                         <strong>ID:</strong>
+
                         <span id="vpFichaId"></span>
+
                     </p>
 
+
+
+
                     <p>
+
                         <strong>Menú:</strong>
+
                         <span id="vpFichaMenu"></span>
+
                     </p>
 
+
+
+
+
                     <p>
+
                         <strong>Visible:</strong>
+
                         <span id="vpFichaVisible"></span>
+
                     </p>
 
+
+
+
+
+
                     <p>
+
                         <strong>Usuario:</strong>
+
                         <span id="vpFichaUsuario"></span>
+
                     </p>
 
+
+
+
+
+
                     <p>
+
                         <strong>Creado:</strong>
+
                         <span id="vpFichaCreado"></span>
+
                     </p>
 
+
+
+
+
                     <p>
+
                         <strong>Actualizado:</strong>
+
                         <span id="vpFichaActualizado"></span>
+
                     </p>
+
+
 
                 </div>
 
 
-                <label>
+
+
+
+
+
+
+                <h4>
+
                     Etiquetas
-                </label>
+
+                </h4>
+
+
 
                 <div
                         id="vistaEtiquetasFicha"
@@ -435,9 +783,20 @@
                 </div>
 
 
-                <label>
+
+
+
+
+
+
+
+                <h4>
+
                     Fichas relacionadas
-                </label>
+
+                </h4>
+
+
 
 
                 <div
@@ -446,7 +805,14 @@
 
                 </div>
 
+
+
+
+
             </div>
+
+
+
 
 
         </div>
@@ -458,46 +824,21 @@
 
 
 
-    <!-- ======================
-        MODAL MULTIMEDIA
-    ======================= -->
-
-
-    <div id="modalMultimedia" class="modal">
-
-
-        <div class="modal-contenido">
-
-
-            <button
-                    class="cerrar"
-                    onclick="cerrarMultimedia()">
-
-                ✖
-
-            </button>
-
-
-            <h3>
-                Multimedia asociada
-            </h3>
 
 
 
-            <div id="listaMultimedia" class="lista-multimedia">
 
-            </div>
-
-
-        </div>
-
-
-    </div>
+    <!-- =================================================
+         ELIMINAR
+    ================================================= -->
 
 
     <div id="modalEliminarFicha" class="modal">
 
+
         <div class="modal-contenido">
+
+
 
             <button
                     class="cerrar"
@@ -507,20 +848,41 @@
 
             </button>
 
-            <h3>Eliminar ficha</h3>
+
+
+
+            <h3>
+
+                Eliminar ficha
+
+            </h3>
+
+
+
 
             <p id="mensajeEliminarFicha">
+
                 ¿Desea eliminar esta ficha?
+
             </p>
+
+
+
+
 
             <div class="acciones-modal">
 
+
                 <button
-                class="btn-eliminar"
-                onclick="confirmarEliminarFicha()">
-                Eliminar
+                        class="btn-eliminar"
+                        onclick="confirmarEliminarFicha()">
+
+                    Eliminar
 
                 </button>
+
+
+
 
                 <button
                         class="btn-ver"
@@ -530,20 +892,36 @@
 
                 </button>
 
+
+
             </div>
 
+
+
         </div>
+
+
 
     </div>
 
 
-    <!-- ======================
-     MODAL MENSAJE
-======================= -->
+
+
+
+
+
+
+
+    <!-- =================================================
+         MENSAJE
+    ================================================= -->
+
 
     <div id="modalMensaje" class="modal">
 
+
         <div class="modal-contenido">
+
 
             <button
                     class="cerrar"
@@ -553,11 +931,24 @@
 
             </button>
 
-            <h3 id="tituloMensaje"></h3>
 
-            <p id="textoMensaje"></p>
+
+
+            <h3 id="tituloMensaje">
+
+            </h3>
+
+
+
+
+            <p id="textoMensaje">
+
+            </p>
+
+
 
             <div class="acciones-modal">
+
 
                 <button
                         class="btn-ver"
@@ -567,11 +958,18 @@
 
                 </button>
 
+
+
             </div>
+
+
 
         </div>
 
+
     </div>
+
+
 
 
 </section>

@@ -8,25 +8,38 @@
 
     <title>Panel Administrativo | MenuInteractivo</title>
 
+
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/sidebar.css">
-    <link rel="stylesheet" href="css/componentes.css">
 
-    <!-- Google Fonts -->
+
+    <link rel="stylesheet" href="css/menus.css">
+    <link rel="stylesheet" href="css/fichas.css">
+    <link rel="stylesheet" href="css/multimedia.css">
+    <link rel="stylesheet" href="css/plantillas.css">
+    <link rel="stylesheet" href="css/usuarios.css">
+    <link rel="stylesheet" href="css/etiquetas.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
+
 </head>
+
 
 <body>
 
-<div class="contenedor">
+
+<div class="panel-admin">
+
 
     <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar">
+
 
         <div class="logo">
 
@@ -36,75 +49,93 @@
 
         </div>
 
+
+
         <div class="separador"></div>
 
+
+
         <nav>
+
 
             <button class="item activo" data-ventana="dashboard">
 
                 <span>📊</span>
-
                 Dashboard
 
             </button>
 
+
             <button class="item" data-ventana="menus">
 
                 <span>📂</span>
-
                 Menús
 
             </button>
 
+
             <button class="item" data-ventana="fichas">
 
                 <span>📄</span>
-
                 Fichas
 
             </button>
 
+
             <button class="item" data-ventana="multimedia">
 
                 <span>🖼️</span>
-
                 Multimedia
 
             </button>
 
+
+
             <button class="item" data-ventana="etiquetas">
 
                 <span>🏷️</span>
-
                 Etiquetas
 
             </button>
 
-            <button class="item" data-ventana="plantillas">
+
+
+            <button id="menuPlantillas"
+                    class="item"
+                    data-ventana="plantillas">
 
                 <span>📑</span>
-
                 Plantillas
 
             </button>
 
-            <button class="item" data-ventana="usuarios">
+
+
+            <button id="menuUsuarios"
+                    class="item"
+                    data-ventana="usuarios">
 
                 <span>👤</span>
-
                 Usuarios
 
             </button>
 
-            <button class="item" data-ventana="configuracion">
+
+
+            <button id="menuConfiguracion"
+                    class="item"
+                    data-ventana="configuracion">
 
                 <span>⚙️</span>
-
                 Configuración
 
             </button>
 
+
+
         </nav>
+
+
 
         <div class="sidebar-footer">
 
@@ -116,17 +147,24 @@
 
         </div>
 
+
     </aside>
+
+
+
 
     <!-- ================= CONTENIDO ================= -->
 
-    <main>
 
-        <!-- Barra Superior -->
+    <main class="panel-main">
+
+
 
         <header class="barra-superior">
 
+
             <div class="titulo-panel">
+
 
                 <h1 id="tituloVentana">
 
@@ -134,27 +172,39 @@
 
                 </h1>
 
+
                 <span class="subtitulo">
 
-                    Centro de Documentación Histórica
+Centro de Documentación Histórica
 
-                </span>
+</span>
+
 
             </div>
 
+
+
             <div class="usuario">
+
 
                 <div class="usuario-info">
 
-                    <strong>Administrador</strong>
+
+                    <strong id="nombreUsuario">
+
+                        Usuario
+
+                    </strong>
+
 
                     <small id="fechaActual">
 
-                        28/07/2026
-
                     </small>
 
+
                 </div>
+
+
 
                 <div class="avatar">
 
@@ -162,28 +212,37 @@
 
                 </div>
 
+
             </div>
+
 
         </header>
 
-        <!-- Área dinámica -->
+
+
 
         <section id="contenido">
 
-            <!-- Aquí se cargan las ventanas -->
 
         </section>
 
+
+
     </main>
+
 
 </div>
 
-<link rel="stylesheet" href="/css/panel.css">
-<link rel="stylesheet" href="/css/sidebar.css">
-<link rel="stylesheet" href="/css/componentes.css">
 
 
-<script src="/js/panel.js"></script>
+
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/authFirebase.js"></script>
+
+<script src="js/apiFirebase.js"></script>
+<script src="js/permisos.js"></script>
+<script src="js/panel.js"></script>
+
 
 </body>
 

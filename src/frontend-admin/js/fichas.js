@@ -50,9 +50,12 @@ async function cargarFichas(){
         }
 
 
-        const respuesta = await fetch(url);
+        const respuesta = await window.fetchProtegido(url);
 
         const fichas = await respuesta.json();
+
+        const esConsulta = window.usuarioActual?.rol === "consulta";
+
 
         if(menuSeleccionado){
 
@@ -132,23 +135,15 @@ async function cargarFichas(){
 
 
 
-                    <button
-                    class="btn-editar"
-                    onclick="editarFicha(${ficha.id_ficha})">
-
-                    Editar
-
+                    ${!esConsulta ? `
+                    <button class="btn-editar" onclick="editarFicha(${ficha.id_ficha})">
+                        Editar
                     </button>
 
-
-
-                    <button
-                    class="btn-eliminar"
-                    onclick="abrirEliminarFicha(${ficha.id_ficha})">
-
-                    Eliminar
-
+                    <button class="btn-eliminar" onclick="abrirEliminarFicha(${ficha.id_ficha})">
+                        Eliminar
                     </button>
+                    ` : ""}
 
 
                     </div>
@@ -184,7 +179,7 @@ async function vistaPreviaFicha(id_ficha){
         // ===============================
 
         const respuesta =
-        await fetch(`/api/fichas/${id_ficha}`);
+        await window.fetchProtegido(`/api/fichas/${id_ficha}`);
 
         const ficha =
         await respuesta.json();
@@ -248,7 +243,7 @@ async function vistaPreviaFicha(id_ficha){
         contenedor.innerHTML = "";
 
         const respuestaPlantilla =
-        await fetch(`/api/plantillas/menu/${ficha.id_menu}`);
+        await window.fetchProtegido(`/api/plantillas/menu/${ficha.id_menu}`);
 
         if(respuestaPlantilla.ok){
 
@@ -293,7 +288,7 @@ async function vistaPreviaFicha(id_ficha){
         // ===============================
 
         const respuestaEtiquetas =
-        await fetch(`/api/fichas/${id_ficha}/etiquetas`);
+        await window.fetchProtegido(`/api/fichas/${id_ficha}/etiquetas`);
 
         const etiquetas =
         await respuestaEtiquetas.json();
@@ -329,7 +324,7 @@ async function vistaPreviaFicha(id_ficha){
         // ===============================
 
         const respuestaRelaciones =
-        await fetch(`/api/relacion-ficha/${id_ficha}`);
+        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
 
 
         const relaciones =
@@ -416,7 +411,7 @@ async function editarFicha(id_ficha){
 
 
 
-        const respuesta = await fetch(
+        const respuesta = await window.fetchProtegido(
             `/api/fichas/${id_ficha}`
         );
 
@@ -622,7 +617,7 @@ async function editarFicha(id_ficha){
 
 
         const respuestaRelaciones =
-        await fetch(`/api/relacion-ficha/${id_ficha}`);
+        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
 
         relacionesPendientes =
         await respuestaRelaciones.json();
@@ -630,7 +625,7 @@ async function editarFicha(id_ficha){
         mostrarRelacionesPendientes();
 
         const respuestaRel =
-        await fetch(`/api/relacion-ficha/${id_ficha}`);
+        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
 
         const relaciones =
         await respuestaRel.json();
@@ -658,7 +653,7 @@ async function editarFicha(id_ficha){
 
 
         const plantillaRespuesta =
-        await fetch(
+        await window.fetchProtegido(
             `/api/plantillas/menu/${ficha.id_menu}`
         );
 
@@ -964,7 +959,7 @@ async function guardarFicha(){
         }
 
         const respuesta =
-        await fetch(url,{
+        await window.fetchProtegido(url,{
 
             method:metodo,
 
@@ -992,7 +987,7 @@ async function guardarFicha(){
         // Guardar relaciones
         // ===============================
 
-        await fetch(
+        await window.fetchProtegido(
 
             `/api/relacion-ficha/${idGuardado}`,
 
@@ -1065,7 +1060,7 @@ async function eliminarFicha(id_ficha){
     try{
 
         const respuesta =
-        await fetch(
+        await window.fetchProtegido(
             `/api/fichas/${id_ficha}`,
             {
                 method:"DELETE"
@@ -1147,7 +1142,7 @@ async function(e){
 
     try{
 
-        const respuesta = await fetch(`/api/plantillas/menu/${id_menu}`);
+        const respuesta = await window.fetchProtegido(`/api/plantillas/menu/${id_menu}`);
 
         const plantilla = await respuesta.json();
 
@@ -1278,7 +1273,7 @@ async function cargarTiposFicha(){
     try{
 
         const respuesta =
-        await fetch("/api/menus");
+        await window.fetchProtegido("/api/menus");
 
 
         const menus =
@@ -1428,7 +1423,7 @@ async function confirmarEliminarFicha(){
 
     try{
 
-        const respuesta = await fetch(
+        const respuesta = await window.fetchProtegido(
 
             `/api/fichas/${fichaEliminar}`,
 
@@ -1481,7 +1476,7 @@ function cerrarMensaje(){
 async function cargarEtiquetasFicha(seleccionadas = []){
 
     const respuesta =
-    await fetch("/api/etiquetas");
+    await window.fetchProtegido("/api/etiquetas");
 
     const etiquetas =
     await respuesta.json();
@@ -1518,7 +1513,7 @@ async function cargarEtiquetasFicha(seleccionadas = []){
 async function obtenerEtiquetasFicha(idFicha){
 
     const respuesta =
-    await fetch(`/api/fichas/${idFicha}/etiquetas`);
+    await window.fetchProtegido(`/api/fichas/${idFicha}/etiquetas`);
 
     const etiquetas =
     await respuesta.json();
@@ -1542,7 +1537,7 @@ async function guardarEtiquetasFicha(idFicha){
     const etiquetas =
     obtenerEtiquetasSeleccionadas();
 
-    await fetch(
+    await window.fetchProtegido(
 
         `/api/fichas/${idFicha}/etiquetas`,
 
@@ -1570,7 +1565,7 @@ async function cargarFichasDisponibles(idActual){
 
 
     const respuesta =
-    await fetch("/api/fichas");
+    await window.fetchProtegido("/api/fichas");
 
 
     const fichas =
@@ -1629,7 +1624,7 @@ async function cargarRelacionesFicha(id_ficha){
 
 
     const respuesta =
-    await fetch(`/api/relacion-ficha/${id_ficha}`);
+    await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
 
 
 

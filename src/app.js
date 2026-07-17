@@ -2,55 +2,30 @@
 // IMPORTACIÓN DE LIBRERÍAS
 // =======================================================
 
-// Express permite crear el servidor web y manejar rutas HTTP.
 const express = require("express");
-
-// CORS permite aceptar solicitudes desde otros orígenes.
-// Es necesario cuando frontend y backend están separados.
 const cors = require("cors");
-
-// Path permite trabajar con rutas de archivos de manera segura.
 const path = require("path");
-
-// File System permite manejar archivos y carpetas del sistema.
 const fs = require("fs");
 
-
-// Creación de la aplicación Express.
 const app = express();
-
-
 
 
 // =======================================================
 // CONFIGURACIÓN GENERAL DEL SERVIDOR
 // =======================================================
 
-// Habilita solicitudes desde otros dominios/orígenes.
 app.use(cors());
 
-
-// Permite recibir información enviada en formato JSON
-// desde las solicitudes POST, PUT, PATCH, etc.
 app.use(express.json());
-
-
-
 
 
 // =======================================================
 // CONFIGURACIÓN DE CARPETAS
 // =======================================================
 
-
-// Define la carpeta donde se almacenarán los archivos subidos
-// por los usuarios (imágenes, multimedia, etc.).
 const carpetaUploads =
 path.join(__dirname,"../public/uploads");
 
-
-// Comprueba si la carpeta uploads existe.
-// Si no existe, la crea automáticamente.
 if(!fs.existsSync(carpetaUploads)){
 
     fs.mkdirSync(
@@ -61,71 +36,40 @@ if(!fs.existsSync(carpetaUploads)){
 }
 
 
-
-
-
 // =======================================================
 // ARCHIVOS ESTÁTICOS
 // =======================================================
 
-
-// -------------------------------
 // PANEL ADMINISTRATIVO
-// -------------------------------
-
-// Sirve todos los archivos del frontend administrativo.
-// Incluye HTML, CSS, JavaScript e imágenes del panel.
 app.use(
-express.static(
-path.join(__dirname,"frontend-admin")
-)
+    express.static(
+        path.join(__dirname,"frontend-admin")
+    )
 );
 
 
-
-// -------------------------------
 // RECURSOS PÚBLICOS
-// -------------------------------
-
-// Sirve archivos públicos utilizados por el sistema.
-// Ejemplo:
-// imágenes subidas, archivos multimedia, etc.
 app.use(
-express.static(
-path.join(__dirname,"../public")
-)
+    express.static(
+        path.join(__dirname,"../public")
+    )
 );
 
 
-
-// -------------------------------
-// INTERFAZ DEL VISITANTE
-// -------------------------------
-
-// Sirve la aplicación pública del museo.
-// Se accede mediante:
-// localhost:3000/visita
+// FRONTEND VISITANTE
 app.use(
-"/visita",
-express.static(
-path.join(__dirname,"frontend-visita")
-)
+    "/visita",
+    express.static(
+        path.join(__dirname,"frontend-visita")
+    )
 );
-
-
-
 
 
 // =======================================================
 // PÁGINAS PRINCIPALES
 // =======================================================
 
-
-// Página inicial del panel administrativo.
-// Cuando alguien entra a:
-// localhost:3000
-// carga el login del administrador.
-
+// Login administrador
 app.get("/",(req,res)=>{
 
     res.sendFile(
@@ -139,13 +83,7 @@ app.get("/",(req,res)=>{
 });
 
 
-
-
-// Página principal del visitante.
-// Cuando alguien entra a:
-// localhost:3000/visita
-// carga la interfaz pública.
-
+// Frontend visitante
 app.get("/visita",(req,res)=>{
 
     res.sendFile(
@@ -159,127 +97,97 @@ app.get("/visita",(req,res)=>{
 });
 
 
-
-
-
 // =======================================================
-// CARGA DE RUTAS API
+// IMPORTACIÓN DE RUTAS ADMIN
 // =======================================================
 
+const menuRuta =
+require("./rutas/admin/menus");
 
-// Importación de controladores de rutas.
-// Cada archivo administra un módulo del sistema.
-
-const menuRuta = require("./rutas/menus");
-
-const plantillaRuta = require("./rutas/plantillas");
+const plantillaRuta =
+require("./rutas/admin/plantillas");
 
 const rutasFichas =
-require("./rutas/fichas");
+require("./rutas/admin/fichas");
 
 const rutasMultimedia =
-require("./rutas/multimedia");
+require("./rutas/admin/multimedia");
 
 const etiquetasRouter =
-require("./rutas/etiquetas");
+require("./rutas/admin/etiquetas");
 
 const fichaEtiquetaRutas =
-require("./rutas/fichaEtiquetaRutas");
+require("./rutas/admin/fichaEtiquetaRutas");
 
 const relacionFichaRutas =
-require("./rutas/relacionFichaRutas");
+require("./rutas/admin/relacionFichaRutas");
 
 const dashboardRoutes =
-require("./rutas/dashboard");
+require("./rutas/admin/dashboard");
 
-
-
+const usuarioRoutes =
+require("./rutas/admin/usuarios");
 
 // =======================================================
-// REGISTRO DE ENDPOINTS API
+// ENDPOINTS API ADMIN
 // =======================================================
 
 
-// Dashboard administrativo.
 app.use(
     "/api/dashboard",
     dashboardRoutes
 );
-
-
-// Sirve la carpeta de imágenes.
-// Permite acceder a archivos mediante:
-// /imagenes/nombre_archivo
 
 app.use(
     "/imagenes",
     express.static("imagenes")
 );
 
-
-
-// Gestión de menús.
 app.use(
-"/api/menus",
-menuRuta
+    "/api/menus",
+    menuRuta
 );
 
-
-// Gestión de plantillas.
 app.use(
-"/api/plantillas",
-plantillaRuta
+    "/api/plantillas",
+    plantillaRuta
 );
 
-
-// Gestión de etiquetas.
 app.use(
-"/api/etiquetas",
-etiquetasRouter
+    "/api/etiquetas",
+    etiquetasRouter
 );
 
-
-// Gestión de fichas.
 app.use(
-"/api/fichas",
-rutasFichas
+    "/api/fichas",
+    rutasFichas
 );
 
-
-// Gestión de archivos multimedia.
 app.use(
-"/api/multimedia",
-rutasMultimedia
+    "/api/multimedia",
+    rutasMultimedia
 );
 
-
-// Relación entre fichas y etiquetas.
 app.use(
-"/api",
-fichaEtiquetaRutas
+    "/api",
+    fichaEtiquetaRutas
 );
 
-
-// Relación entre fichas.
 app.use(
-"/api/relacion-ficha",
-relacionFichaRutas
+    "/api/relacion-ficha",
+    relacionFichaRutas
 );
 
-
-
-
+app.use(
+    "/api/usuarios",
+    usuarioRoutes
+);
 
 // =======================================================
 // ESTADO DEL SERVIDOR
 // =======================================================
 
-
-// Endpoint utilizado para comprobar si el backend
-// está funcionando correctamente.
-
 app.get("/api/estado-admin",(req,res)=>{
-
 
     res.json({
 
@@ -290,35 +198,24 @@ app.get("/api/estado-admin",(req,res)=>{
 
     });
 
-
 });
-
-
-
 
 
 // =======================================================
 // INICIO DEL SERVIDOR
 // =======================================================
 
-
-// Define el puerto donde escuchará el servidor.
-// Si existe una variable de entorno PORT la utiliza,
-// si no utiliza el puerto 3000.
-
 const PORT =
 process.env.PORT || 3000;
 
-
-
-// Inicia el servidor Express.
 app.listen(
-PORT,
-"0.0.0.0",
-()=>{
+    PORT,
+    "0.0.0.0",
+    ()=>{
 
-console.log(
-`Servidor iniciado en puerto ${PORT}`
+        console.log(
+            `Servidor iniciado en puerto ${PORT}`
+        );
+
+    }
 );
-
-});

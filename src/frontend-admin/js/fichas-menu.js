@@ -1,1 +1,0 @@
-cargarFichasMenu(id_menu)

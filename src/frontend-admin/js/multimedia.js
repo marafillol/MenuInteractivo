@@ -73,10 +73,10 @@ async function cargarMultimedia(){
 
 
         const respuesta =
-        await fetch(url);
+        await window.fetchProtegido(url);
 
-        const multimedia =
-        await respuesta.json();
+        const multimedia = await respuesta.json();
+        const esConsulta = window.usuarioActual?.rol === "consulta";
 
         let contenedor;
 
@@ -217,21 +217,24 @@ async function cargarMultimedia(){
 
                             </button>
 
-                            <button
-                                class="btn-editar"
-                                onclick="editarMultimedia(${item.id_multi})">
+                            ${!esConsulta ? `
+                                <button
+                                    class="btn-editar"
+                                    onclick="editarMultimedia(${item.id_multi})">
 
-                                Editar
+                                    Editar
 
-                            </button>
+                                </button>
 
-                            <button
-                                class="btn-eliminar"
-                                onclick="eliminarMultimedia(${item.id_multi})">
+                                <button
+                                    class="btn-eliminar"
+                                    onclick="eliminarMultimedia(${item.id_multi})">
 
-                                Eliminar
+                                    Eliminar
 
-                            </button>
+                                </button>
+
+                            ` : ""}
 
                         </div>
 
@@ -268,7 +271,7 @@ async function cargarResumenFicha(){
     try{
 
         const respuesta =
-        await fetch(`/api/fichas/${fichaSeleccionada}`);
+        await window.fetchProtegido(`/api/fichas/${fichaSeleccionada}`);
 
         const ficha =
         await respuesta.json();
@@ -339,7 +342,7 @@ async function vistaPreviaMultimedia(id_multi){
     try{
 
         const respuesta =
-        await fetch(`/api/multimedia/${id_multi}`);
+        await window.fetchProtegido(`/api/multimedia/${id_multi}`);
 
         const item =
         await respuesta.json();
@@ -628,7 +631,7 @@ async function nuevoMultimedia(){
 async function cargarFichasMultimedia(){
 
     const respuesta=
-    await fetch("/api/fichas");
+    await window.fetchProtegido("/api/fichas");
 
     const fichas=
     await respuesta.json();
@@ -701,7 +704,7 @@ async function guardarMultimedia(){
                 ? "PUT"
                 : "POST";
 
-        const respuesta = await fetch(
+        const respuesta = await window.fetchProtegido(
             url,
             {
                 method: metodo,
@@ -802,7 +805,7 @@ async function confirmarEliminarMultimedia(){
     try{
 
         const respuesta =
-        await fetch(
+        await window.fetchProtegido(
 
             `/api/multimedia/${multimediaEliminar}`,
 
@@ -869,7 +872,7 @@ async function editarMultimedia(id){
         multimediaEditando = id;
 
         const respuesta =
-        await fetch(`/api/multimedia/${id}`);
+        await window.fetchProtegido(`/api/multimedia/${id}`);
 
         const item =
         await respuesta.json();

@@ -565,7 +565,7 @@ async function guardarPlantilla(){
 
         }
 
-        const respuesta = await fetch(url,{
+        const respuesta = await window.fetchProtegido(url,{
 
             method:metodo,
 
@@ -618,7 +618,7 @@ async function cargarPlantillas(){
     try{
 
         const respuesta =
-        await fetch("/api/plantillas");
+        await window.fetchProtegido("/api/plantillas");
 
         const plantillas =
         await respuesta.json();
@@ -717,6 +717,8 @@ async function cargarPlantillas(){
 
 }
 
+
+
 async function vistaPreviaPlantilla(id){
 
 
@@ -724,7 +726,7 @@ async function vistaPreviaPlantilla(id){
 
 
         const respuesta =
-        await fetch(`/api/plantillas/${id}`);
+        await window.fetchProtegido(`/api/plantillas/${id}`);
 
 
         const plantilla =
@@ -926,7 +928,7 @@ async function editarPlantilla(id){
     try{
 
         const respuesta =
-        await fetch(`/api/plantillas/${id}`);
+        await window.fetchProtegido(`/api/plantillas/${id}`);
 
         const plantilla =
         await respuesta.json();
@@ -978,13 +980,9 @@ async function editarPlantilla(id){
 
 function abrirEliminarPlantilla(id){
 
-    console.log("FUNCION abrirEliminarPlantilla ejecutada:", id);
-
     plantillaEliminar = id;
 
-    document
-    .getElementById("modalEliminarPlantilla")
-    .classList.add("mostrar");
+    document.getElementById("modalEliminarPlantilla").style.display = "flex";
 
 }
 
@@ -992,44 +990,50 @@ function cerrarEliminarPlantilla(){
 
     plantillaEliminar = null;
 
-    document
-    .getElementById("modalEliminarPlantilla")
-    .classList.remove("mostrar");
+    document.getElementById("modalEliminarPlantilla").style.display = "none";
 
 }
 
 async function confirmarEliminarPlantilla(){
 
+    console.log("confirmarEliminarPlantilla()", plantillaEliminar);
+
     if(!plantillaEliminar){
         return;
     }
 
+    try{
 
-    const respuesta =
-    await fetch(
-        `/api/plantillas/${plantillaEliminar}`,
-        {
-            method:"DELETE"
+        const respuesta = await window.fetchProtegido(
+            `/api/plantillas/${plantillaEliminar}`,
+            {
+                method:"DELETE"
+            }
+        );
+
+        console.log("status:", respuesta.status);
+
+        const datos = await respuesta.json();
+
+        console.log(datos);
+
+        if(!respuesta.ok){
+
+            mostrarMensajePlantilla(datos.error);
+
+            return;
+
         }
-    );
 
+        cerrarEliminarPlantilla();
 
-    const datos =
-    await respuesta.json();
+        cargarPlantillas();
 
+    }catch(error){
 
-    if(!respuesta.ok){
-
-        mostrarMensajePlantilla(datos.error);
-
-        return;
+        console.error("ERROR FETCH", error);
 
     }
-
-
-    cerrarEliminarPlantilla();
-
-    cargarPlantillas();
 
 }
 
