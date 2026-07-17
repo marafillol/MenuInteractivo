@@ -1,2 +1,7 @@
 node_modules/
 public/uploads/
+
+# Claves privadas Firebase
+src/firebase/serviceAccountKey.json
+museo-malvinas-firebase-adminsdk-*.json
+
