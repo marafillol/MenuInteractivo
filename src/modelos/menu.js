@@ -448,5 +448,4 @@ module.exports = {
     eliminar,
 
     contarFichas
-
 };

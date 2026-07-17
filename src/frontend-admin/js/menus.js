@@ -187,43 +187,73 @@ async function guardarNuevoMenu(){
 
     const id_menu = document.getElementById("id_menu").value;
 
+    const nombre =
+        document.getElementById("nuevoNombre").value.trim();
+
+    const descripcion =
+        document.getElementById("nuevaDescripcion").value.trim();
+
+    const id_plantilla =
+        document.getElementById("plantillaMenu").value;
+
+    // ==========================
+    // VALIDACIONES
+    // ==========================
+
+    if(nombre === ""){
+
+        mostrarMensaje(
+            "Campos obligatorios",
+            "Debe ingresar un nombre para el menú."
+        );
+
+        document.getElementById("nuevoNombre").focus();
+
+        return;
+
+        document.getElementById("nuevoNombre").focus();
+
+        return;
+
+    }
+
+    if(id_plantilla === ""){
+
+        mostrarMensaje(
+            "Campos obligatorios",
+            "Debe seleccionar una plantilla."
+        );
+
+        document.getElementById("plantillaMenu").focus();
+
+        return;
+
+        document.getElementById("plantillaMenu").focus();
+
+        return;
+
+    }
+
     const formulario = new FormData();
 
+    formulario.append("nombre", nombre);
 
-    formulario.append(
-        "nombre",
-        document.getElementById("nuevoNombre").value
-    );
+    formulario.append("descripcion", descripcion);
 
-
-    formulario.append(
-        "descripcion",
-        document.getElementById("nuevaDescripcion").value
-    );
-
-
-    formulario.append(
-        "id_plantilla",
-        document.getElementById("plantillaMenu").value
-    );
-
+    formulario.append("id_plantilla", id_plantilla);
 
     formulario.append(
         "visible",
         document.getElementById("nuevoVisible").checked ? 1 : 0
     );
 
-
-
-
     const imagen =
-    document.getElementById("nuevaImagen").files[0];
+        document.getElementById("nuevaImagen").files[0];
 
     console.log(
         "Imagen seleccionada:",
         imagen ? imagen.name : "ninguna"
     );
-
 
     if(imagen){
 
@@ -234,19 +264,15 @@ async function guardarNuevoMenu(){
 
     }
 
-
-
     try{
 
         const url = id_menu
             ? `/api/menus/${id_menu}`
             : "/api/menus";
 
-
         const metodo = id_menu
             ? "PUT"
             : "POST";
-
 
         const respuesta = await window.fetchProtegido(url,{
 
@@ -256,8 +282,20 @@ async function guardarNuevoMenu(){
 
         });
 
-
         const resultado = await respuesta.json();
+
+        if(!respuesta.ok){
+
+            mostrarMensaje(
+                "No se pudo guardar",
+                resultado.error || "Ocurrió un error al guardar el menú."
+            );
+
+            return;
+
+            return;
+
+        }
 
         console.log("Menú guardado:", resultado);
 
@@ -265,10 +303,14 @@ async function guardarNuevoMenu(){
 
         cargarMenus();
 
-    }
-    catch(error){
+    }catch(error){
 
         console.error("Error guardando menú:", error);
+
+        mostrarMensaje(
+            "Error",
+            "Ocurrió un error al guardar el menú."
+        );
 
     }
 
@@ -478,7 +520,7 @@ async function editarMenu(id_menu){
 
 }
 
-async function eliminarMenu(id_menu){
+function abrirEliminarMenu(id_menu){
 
     idMenuEliminar = id_menu;
 

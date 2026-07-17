@@ -30,11 +30,30 @@ const crearMenu = async(req,res)=>{
 
     try{
 
+        const nombre = req.body.nombre?.trim();
+        const id_plantilla = req.body.id_plantilla;
+
+        if(!nombre){
+
+            return res.status(400).json({
+                error:"Debe ingresar un nombre para el menú."
+            });
+
+        }
+
+        if(!id_plantilla){
+
+            return res.status(400).json({
+                error:"Debe seleccionar una plantilla."
+            });
+
+        }
+
         const datosMenu = {
 
-            nombre: req.body.nombre,
-            descripcion: req.body.descripcion,
-            id_plantilla: req.body.id_plantilla,
+            nombre,
+            descripcion: req.body.descripcion?.trim() || null,
+            id_plantilla,
             visible: req.body.visible,
 
             imagen: req.file
@@ -90,11 +109,30 @@ const actualizarMenu = async(req,res)=>{
 
     try{
 
+        const nombre = req.body.nombre?.trim();
+        const id_plantilla = req.body.id_plantilla;
+
+        if(!nombre){
+
+            return res.status(400).json({
+                error:"Debe ingresar un nombre para el menú."
+            });
+
+        }
+
+        if(!id_plantilla){
+
+            return res.status(400).json({
+                error:"Debe seleccionar una plantilla."
+            });
+
+        }
+
         const datos = {
 
-            nombre: req.body.nombre,
-            descripcion: req.body.descripcion,
-            id_plantilla: req.body.id_plantilla,
+            nombre,
+            descripcion: req.body.descripcion?.trim() || null,
+            id_plantilla,
             visible: req.body.visible
 
         };
