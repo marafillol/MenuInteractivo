@@ -1,8 +1,16 @@
-*{
+/* =====================================================
+   LOGIN ADMINISTRATIVO
+   ESTILO ARCHIVO MILITAR
+   TOTALMENTE ENCAPSULADO
+===================================================== */
 
-    margin:0;
 
-    padding:0;
+/* =====================================================
+   BASE LOGIN
+===================================================== */
+
+
+.login-page *{
 
     box-sizing:border-box;
 
@@ -10,16 +18,16 @@
 
 
 
-body{
+.login-page{
 
 
-    font-family:
-
-    "Georgia",
-    serif;
+    width:100%;
 
 
     min-height:100vh;
+
+
+    font-family:Georgia,serif;
 
 
 }
@@ -27,12 +35,15 @@ body{
 
 
 
-/* =================================
-        FONDO MALVINAS
-================================= */
 
 
-.fondo{
+
+/* =====================================================
+   FONDO MALVINAS
+===================================================== */
+
+
+.login-page .fondo{
 
 
     min-height:100vh;
@@ -55,15 +66,14 @@ body{
 
     linear-gradient(
 
-        rgba(5,22,43,.85),
+        rgba(5,22,43,.88),
 
-        rgba(5,22,43,.90)
+        rgba(5,22,43,.92)
 
     ),
 
 
     url("../imagenes/malvinas.jpg");
-
 
 
     background-size:cover;
@@ -72,6 +82,8 @@ body{
     background-position:center;
 
 
+    position:relative;
+
 
 }
 
@@ -79,12 +91,60 @@ body{
 
 
 
-/* =================================
-        CONTENEDOR
-================================= */
+
+/* efecto película */
 
 
-.contenedor-login{
+.login-page .fondo::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    inset:0;
+
+
+    background:
+
+
+    repeating-linear-gradient(
+
+        45deg,
+
+        rgba(255,255,255,.02),
+
+        rgba(255,255,255,.02) 2px,
+
+        transparent 2px,
+
+        transparent 6px
+
+    );
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+
+.login-page .contenedor-login{
+
+
+    position:relative;
+
+
+    z-index:2;
 
 
     display:flex;
@@ -99,7 +159,6 @@ body{
     gap:25px;
 
 
-
 }
 
 
@@ -107,28 +166,26 @@ body{
 
 
 
-/* =================================
-        LOGO
-================================= */
+
+/* =====================================================
+   LOGO MUSEO
+===================================================== */
 
 
-.logo-museo img{
+.login-page .logo-museo img{
 
 
     width:150px;
 
 
-    height:auto;
-
-
     filter:
+
 
     drop-shadow(
 
-    0 10px 20px rgba(0,0,0,.6)
+        0 15px 25px rgba(0,0,0,.7)
 
     );
-
 
 
     transition:.4s;
@@ -138,7 +195,7 @@ body{
 
 
 
-.logo-museo img:hover{
+.login-page .logo-museo img:hover{
 
 
     transform:scale(1.05);
@@ -151,12 +208,13 @@ body{
 
 
 
-/* =================================
-        TARJETA LOGIN
-================================= */
+
+/* =====================================================
+   TARJETA LOGIN
+===================================================== */
 
 
-.login{
+.login-page .login{
 
 
     width:420px;
@@ -165,36 +223,31 @@ body{
     padding:45px;
 
 
-
     background:
 
 
     rgba(10,38,71,.92);
 
 
-
-    backdrop-filter:
-
-    blur(10px);
-
+    backdrop-filter:blur(12px);
 
 
     border:
 
 
-    1px solid rgba(255,255,255,.15);
+    1px solid rgba(255,255,255,.2);
 
 
-
-    border-radius:14px;
-
+    border-radius:15px;
 
 
     box-shadow:
 
 
-    0 25px 50px rgba(0,0,0,.6);
+    0 30px 60px rgba(0,0,0,.65);
 
+
+    position:relative;
 
 
 }
@@ -204,12 +257,47 @@ body{
 
 
 
-/* =================================
-        ENCABEZADO
-================================= */
+/* borde interno */
 
 
-.encabezado{
+.login-page .login::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    inset:10px;
+
+
+    border:
+
+
+    1px solid rgba(216,198,161,.25);
+
+
+    border-radius:10px;
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   ENCABEZADO
+===================================================== */
+
+
+.login-page .encabezado{
 
 
     text-align:center;
@@ -222,41 +310,42 @@ body{
 
 
 
-.encabezado h1{
 
 
-    color:white;
+.login-page .encabezado h1{
+
+
+    color:#fff;
 
 
     font-size:28px;
 
 
-    letter-spacing:4px;
-
-
-
-}
-
-
-
-
-.encabezado h2{
-
-
-    margin-top:12px;
-
-
-    color:#cbd5e1;
-
-
-    font-size:16px;
+    letter-spacing:5px;
 
 
     text-transform:uppercase;
 
 
-    letter-spacing:2px;
+}
 
+
+
+
+
+.login-page .encabezado h2{
+
+
+    margin-top:12px;
+
+
+    color:#d8c6a1;
+
+
+    font-size:15px;
+
+
+    letter-spacing:3px;
 
 
 }
@@ -264,16 +353,17 @@ body{
 
 
 
-.linea{
+
+.login-page .linea{
 
 
     width:120px;
 
 
-    height:1px;
+    height:2px;
 
 
-    background:#2c74b3;
+    background:#705438;
 
 
     margin:20px auto;
@@ -285,7 +375,7 @@ body{
 
 
 
-.encabezado p{
+.login-page .encabezado p{
 
 
     color:#e1e9f0;
@@ -300,12 +390,14 @@ body{
 
 
 
-/* =================================
-        CAMPOS
-================================= */
 
 
-.campo{
+/* =====================================================
+   CAMPOS
+===================================================== */
+
+
+.login-page .campo{
 
 
     margin-bottom:25px;
@@ -315,13 +407,15 @@ body{
 
 
 
-label{
+
+
+.login-page label{
 
 
     display:block;
 
 
-    color:#e1e9f0;
+    color:#f4eddb;
 
 
     margin-bottom:8px;
@@ -330,13 +424,16 @@ label{
     font-weight:bold;
 
 
+    letter-spacing:.5px;
+
+
 }
 
 
 
 
 
-input{
+.login-page input{
 
 
     width:100%;
@@ -348,12 +445,10 @@ input{
     border-radius:8px;
 
 
-
     border:
 
 
-    1px solid rgba(255,255,255,.3);
-
+    1px solid rgba(216,198,161,.4);
 
 
     background:
@@ -362,20 +457,16 @@ input{
     rgba(255,255,255,.08);
 
 
-
     color:white;
 
 
     font-size:15px;
 
 
-
     outline:none;
 
 
-
     transition:.3s;
-
 
 
 }
@@ -383,7 +474,8 @@ input{
 
 
 
-input::placeholder{
+
+.login-page input::placeholder{
 
 
     color:#cbd5e1;
@@ -395,11 +487,10 @@ input::placeholder{
 
 
 
-input:focus{
+.login-page input:focus{
 
 
-    border-color:#2c74b3;
-
+    border-color:#d8c6a1;
 
 
     background:
@@ -408,12 +499,10 @@ input:focus{
     rgba(255,255,255,.15);
 
 
-
     box-shadow:
 
 
-    0 0 10px rgba(44,116,179,.5);
-
+    0 0 12px rgba(216,198,161,.35);
 
 
 }
@@ -423,12 +512,13 @@ input:focus{
 
 
 
-/* =================================
-        BOTON
-================================= */
+
+/* =====================================================
+   BOTON ACCESO
+===================================================== */
 
 
-button{
+.login-page button{
 
 
     width:100%;
@@ -446,67 +536,54 @@ button{
     cursor:pointer;
 
 
+    background:
 
-    background:#2c74b3;
 
+    linear-gradient(
+
+        135deg,
+
+        #705438,
+
+        #4d3722
+
+    );
 
 
     color:white;
 
 
-
     font-size:16px;
-
 
 
     font-weight:bold;
 
 
-
     letter-spacing:2px;
-
 
 
     transition:.3s;
 
 
-
-}
-
-
-
-
-button span{
-
-
-    margin-left:10px;
-
-
 }
 
 
 
 
 
-button:hover{
-
-
-    background:#205295;
-
+.login-page button:hover{
 
 
     transform:
 
 
-    translateY(-2px);
-
+    translateY(-3px);
 
 
     box-shadow:
 
 
-    0 10px 20px rgba(44,116,179,.35);
-
+    0 10px 25px rgba(0,0,0,.4);
 
 
 }
@@ -516,12 +593,13 @@ button:hover{
 
 
 
-/* =================================
-        PIE
-================================= */
+
+/* =====================================================
+   PIE LOGIN
+===================================================== */
 
 
-.pie-login{
+.login-page .pie-login{
 
 
     margin-top:30px;
@@ -533,12 +611,10 @@ button:hover{
     border-top:
 
 
-    1px solid rgba(255,255,255,.15);
-
+    1px solid rgba(216,198,161,.25);
 
 
     text-align:center;
-
 
 
     color:#cbd5e1;
@@ -547,21 +623,199 @@ button:hover{
     font-size:13px;
 
 
+}
+
+
+
+
+
+
+
+/* =====================================================
+   MODAL LOGIN
+===================================================== */
+
+
+.login-page .modal{
+
+
+    position:fixed;
+
+
+    inset:0;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    background:
+
+
+    rgba(0,0,0,.65);
+
+
+    z-index:9999;
+
 
 }
 
 
 
 
-/* =================================
-        RESPONSIVE
-================================= */
+
+.login-page .modal-contenido{
+
+
+    width:420px;
+
+
+    max-width:90%;
+
+
+    padding:30px;
+
+
+    background:#f4eddb;
+
+
+    border:
+
+
+    3px solid #705438;
+
+
+    border-radius:15px;
+
+
+    box-shadow:
+
+
+    0 20px 50px rgba(0,0,0,.5);
+
+
+    text-align:center;
+
+
+}
+
+
+
+
+
+.login-page .modal-contenido h2{
+
+
+    margin-top:0;
+
+
+    color:#263c32;
+
+
+    font-family:Georgia,serif;
+
+
+    font-size:28px;
+
+
+}
+
+
+
+
+
+.login-page .modal-contenido p{
+
+
+    color:#4b3825;
+
+
+    font-size:17px;
+
+
+    line-height:1.5;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   BOTON MODAL
+===================================================== */
+
+
+.login-page .acciones-modal{
+
+
+    margin-top:25px;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+}
+
+
+
+
+
+.login-page .boton-principal{
+
+
+    background:#263c32;
+
+
+    color:white;
+
+
+    padding:12px 30px;
+
+
+    border-radius:8px;
+
+
+}
+
+
+
+
+
+.login-page .boton-principal:hover{
+
+
+    background:#1b2c24;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
 
 
 @media(max-width:500px){
 
 
-    .login{
+    .login-page .login{
 
 
         width:100%;
@@ -574,138 +828,13 @@ button:hover{
 
 
 
-    .encabezado h1{
+    .login-page .encabezado h1{
 
 
         font-size:22px;
 
 
     }
-
-
-
-}
-
-
-/* =====================================
-   MODAL MENSAJE LOGIN
-===================================== */
-
-
-.modal{
-
-    position:fixed;
-
-    top:0;
-    left:0;
-
-    width:100%;
-    height:100%;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    background:rgba(0,0,0,0.55);
-
-    z-index:9999;
-
-}
-
-
-
-.modal-contenido{
-
-
-    width:420px;
-
-    padding:30px;
-
-    background:#f4eddb;
-
-    border:3px solid #705438;
-
-    border-radius:12px;
-
-    box-shadow:0 10px 30px rgba(0,0,0,0.4);
-
-    text-align:center;
-
-
-}
-
-
-
-.modal-contenido h2{
-
-
-    margin-top:0;
-
-    color:#263c32;
-
-    font-family:serif;
-
-    font-size:28px;
-
-
-}
-
-
-
-.modal-contenido p{
-
-
-    color:#4b3825;
-
-    font-size:17px;
-
-    line-height:1.5;
-
-}
-
-
-
-.acciones-modal{
-
-
-    margin-top:25px;
-
-    display:flex;
-
-    justify-content:center;
-
-}
-
-
-
-.boton-principal{
-
-
-    background:#263c32;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 28px;
-
-    border-radius:6px;
-
-    cursor:pointer;
-
-    font-size:16px;
-
-
-}
-
-
-
-.boton-principal:hover{
-
-
-    opacity:0.85;
 
 
 }

@@ -1,183 +1,621 @@
-.sidebar{
+/* =====================================================
+   SIDEBAR ADMIN
+   ESTILO ARCHIVO MILITAR
+   ENCAPSULADO
+===================================================== */
 
 
-width:280px;
-
-min-width:280px;
-
-
-height:100vh;
+/* =====================================================
+   CONTENEDOR SIDEBAR
+===================================================== */
 
 
-display:flex;
-
-flex-direction:column;
+.panel-admin .sidebar{
 
 
-background:#314734;
+    width:280px;
 
 
-border-right:4px solid #705438;
+    min-width:280px;
 
 
-overflow:hidden;
+    height:100vh;
 
 
-}
+    display:flex;
 
 
-
-.sidebar .logo{
-
-
-padding:30px 20px;
-
-text-align:center;
+    flex-direction:column;
 
 
-}
+    overflow:hidden;
 
 
-
-.sidebar .logo h2{
-
-
-font-family:"Cinzel",serif;
-
-letter-spacing:3px;
-
-margin:0;
+    position:relative;
 
 
-}
+    background:
 
 
+    linear-gradient(
+        180deg,
+        #314734,
+        #1d291f
+    );
 
-.sidebar .logo span{
+
+    border-right:
+
+    4px solid #705438;
 
 
-font-size:12px;
+    box-shadow:
 
-color:#d8c6a1;
+    6px 0 20px rgba(0,0,0,.35);
 
 
 }
 
 
 
-.sidebar nav{
 
 
-flex:1;
+/* textura militar */
 
 
-padding:20px 12px;
+.panel-admin .sidebar::before{
 
 
-overflow-y:auto;
+    content:"";
 
 
-}
+    position:absolute;
 
 
-
-.sidebar .item{
-
-
-width:100%;
+    inset:0;
 
 
-display:flex;
+    background:
 
-align-items:center;
-
-
-gap:15px;
-
-
-padding:14px;
-
-
-margin-bottom:8px;
+    repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,.025) 0px,
+        rgba(255,255,255,.025) 2px,
+        transparent 2px,
+        transparent 7px
+    );
 
 
-border:none;
-
-
-border-radius:10px;
-
-
-background:none;
-
-
-color:white;
-
-
-cursor:pointer;
-
-
-font-size:15px;
+    pointer-events:none;
 
 
 }
 
 
 
-.sidebar .item:hover{
 
 
-background:rgba(255,255,255,.1);
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+
+.panel-admin .sidebar .logo{
+
+
+    padding:
+
+    35px 20px;
+
+
+    text-align:center;
+
+
+    position:relative;
+
+
+    border-bottom:
+
+    2px solid rgba(216,198,161,.35);
+
+
+}
+
+
+
+
+
+.panel-admin .sidebar .logo h2{
+
+
+    margin:0;
+
+
+    font-family:"Cinzel",Georgia,serif;
+
+
+    color:#f4eddb;
+
+
+    letter-spacing:3px;
+
+
+    font-size:25px;
+
+
+    text-transform:uppercase;
 
 
 }
 
 
 
-.sidebar .item.activo{
 
 
-background:#705438;
+.panel-admin .sidebar .logo span{
 
 
-font-weight:bold;
+    display:block;
+
+
+    margin-top:8px;
+
+
+    font-size:12px;
+
+
+    letter-spacing:2px;
+
+
+    color:#d8c6a1;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   MENU NAVEGACION
+===================================================== */
+
+
+.panel-admin .sidebar nav{
+
+
+    flex:1;
+
+
+    padding:20px 12px;
+
+
+    overflow-y:auto;
 
 
 }
 
 
 
-.sidebar-footer{
 
 
-padding:20px;
+.panel-admin .sidebar nav::-webkit-scrollbar{
+
+
+    width:8px;
+
+
+}
+
+
+
+.panel-admin .sidebar nav::-webkit-scrollbar-thumb{
+
+
+    background:#705438;
+
+
+    border-radius:10px;
 
 
 }
 
 
 
-#cerrarSesion{
 
 
-width:100%;
 
 
-padding:13px;
+/* =====================================================
+   ITEMS MENU
+===================================================== */
 
 
-border:none;
+.panel-admin .sidebar .item{
 
 
-border-radius:10px;
+    width:100%;
 
 
-background:#7f3535;
+    display:flex;
 
 
-color:white;
+    align-items:center;
 
 
-cursor:pointer;
+    gap:15px;
+
+
+    padding:14px 16px;
+
+
+    margin-bottom:8px;
+
+
+    border:none;
+
+
+    border-radius:10px;
+
+
+    background:transparent;
+
+
+    color:#f4eddb;
+
+
+    cursor:pointer;
+
+
+    font-size:15px;
+
+
+    letter-spacing:.5px;
+
+
+    transition:.25s ease;
+
+
+    position:relative;
+
+
+    overflow:hidden;
 
 
 }
+
+
+
+
+
+/* linea lateral */
+
+
+.panel-admin .sidebar .item::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    left:0;
+
+
+    top:0;
+
+
+    width:4px;
+
+
+    height:100%;
+
+
+    background:#c5a46d;
+
+
+    transform:scaleY(0);
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+
+.panel-admin .sidebar .item:hover{
+
+
+    background:
+
+    rgba(255,255,255,.08);
+
+
+    transform:
+
+    translateX(5px);
+
+
+}
+
+
+
+
+
+.panel-admin .sidebar .item:hover::before{
+
+
+    transform:scaleY(1);
+
+
+}
+
+
+
+
+
+
+
+/* ITEM ACTIVO */
+
+
+.panel-admin .sidebar .item.activo{
+
+
+    background:#705438;
+
+
+    color:#fff;
+
+
+    font-weight:bold;
+
+
+    box-shadow:
+
+
+    0 5px 15px rgba(0,0,0,.25);
+
+
+}
+
+
+
+
+
+.panel-admin .sidebar .item.activo::before{
+
+
+    transform:scaleY(1);
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   ICONOS
+===================================================== */
+
+
+.panel-admin .sidebar .item i{
+
+
+    width:22px;
+
+
+    text-align:center;
+
+
+    color:#d8c6a1;
+
+
+}
+
+
+
+
+
+.panel-admin .sidebar .item.activo i{
+
+
+    color:#fff;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   FOOTER SIDEBAR
+===================================================== */
+
+
+.panel-admin .sidebar-footer{
+
+
+    padding:20px;
+
+
+    border-top:
+
+    2px solid rgba(216,198,161,.25);
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   BOTON CERRAR SESION
+===================================================== */
+
+
+.panel-admin #cerrarSesion{
+
+
+    width:100%;
+
+
+    padding:13px;
+
+
+    border:none;
+
+
+    border-radius:10px;
+
+
+    background:
+
+
+    linear-gradient(
+        135deg,
+        #8b3a3a,
+        #5c2424
+    );
+
+
+    color:white;
+
+
+    cursor:pointer;
+
+
+    font-weight:bold;
+
+
+    letter-spacing:1px;
+
+
+    transition:.25s;
+
+
+    border:
+
+    1px solid rgba(255,255,255,.2);
+
+
+}
+
+
+
+
+
+.panel-admin #cerrarSesion:hover{
+
+
+    transform:
+
+    translateY(-3px);
+
+
+    box-shadow:
+
+
+    0 8px 20px rgba(0,0,0,.35);
+
+
+    background:
+
+
+    linear-gradient(
+        135deg,
+        #a44747,
+        #6e2929
+    );
+
+
+}
+
+
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+
+@media(max-width:900px){
+
+
+    .panel-admin .sidebar{
+
+
+        width:220px;
+
+
+        min-width:220px;
+
+
+    }
+
+
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .panel-admin .sidebar{
+
+
+        width:100%;
+
+
+        min-width:100%;
+
+
+        height:auto;
+
+
+    }
+
+
+
+    .panel-admin .sidebar nav{
+
+
+        display:flex;
+
+
+        overflow-x:auto;
+
+
+    }
+
+
+
+    .panel-admin .sidebar .item{
+
+
+        min-width:180px;
+
+
+    }
+
+
+}}

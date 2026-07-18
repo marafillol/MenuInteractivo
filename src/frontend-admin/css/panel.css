@@ -1,27 +1,13 @@
-/* =========================================
+/* =====================================================
    PANEL ADMINISTRATIVO
-========================================= */
+   ESTILO ARCHIVO MILITAR
+   TOTALMENTE ENCAPSULADO
+===================================================== */
 
 
-*{
-    box-sizing:border-box;
-}
-
-
-html,
-body{
-
-    margin:0;
-
-    width:100%;
-
-    height:100%;
-
-    overflow:hidden;
-
-}
-
-
+/* =====================================================
+   CONTENEDOR PRINCIPAL
+===================================================== */
 
 
 .panel-admin{
@@ -29,125 +15,34 @@ body{
 
     display:flex;
 
+
     width:100%;
 
+
     height:100vh;
+
 
     overflow:hidden;
 
 
-}
+    background:#1f2923;
 
 
-
-
-/* ===============================
- SIDEBAR
-================================ */
-
-
-.sidebar{
-
-
-    width:280px;
-
-    flex-shrink:0;
-
-
-    height:100vh;
+    color:#263c32;
 
 
 }
 
 
 
-/* ===============================
- CABECERA
-================================ */
 
 
-.barra-superior{
-
-    height:100px;
-
-    flex-shrink:0;
+/* =====================================================
+   ZONA PRINCIPAL
+===================================================== */
 
 
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-
-    padding:18px 35px;
-
-
-    background:#f7f2e8;
-
-    border-bottom:4px solid #705438;
-
-}
-
-
-
-/* ===============================
- CONTENIDO DINÁMICO
-================================ */
-
-
-#contenido{
-
-
-    flex:1 1 auto;
-
-
-    height:calc(100vh - 100px);
-
-
-    min-height:0;
-
-
-    overflow-y:auto;
-
-
-    overflow-x:hidden;
-
-
-    padding:30px;
-
-
-}
-
-
-
-html,
-body{
-
-    height:100%;
-
-}
-
-
-body{
-
-    overflow:hidden;
-
-}
-
-
-
-.panel-admin{
-
-    height:100vh;
-
-    display:flex;
-
-}
-
-
-
-.panel-main{
+.panel-admin .panel-main{
 
 
     flex:1;
@@ -165,6 +60,16 @@ body{
     overflow:hidden;
 
 
+    background:
+
+
+    linear-gradient(
+        135deg,
+        #ebe1ca,
+        #f7f2e8
+    );
+
+
 }
 
 
@@ -172,65 +77,641 @@ body{
 
 
 
-.ventana{
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+
+.panel-admin .sidebar{
+
+
+    width:280px;
+
+
+    flex-shrink:0;
+
+
+    height:100vh;
+
+
+    background:
+
+
+    linear-gradient(
+        180deg,
+        #263c32,
+        #18231e
+    );
+
+
+    border-right:
+
+    4px solid #705438;
+
+
+    box-shadow:
+
+    5px 0 20px rgba(0,0,0,.35);
+
+
+    position:relative;
+
+
+}
+
+
+
+
+
+/* textura militar */
+
+
+.panel-admin .sidebar::after{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    inset:0;
+
+
+    background:
+
+    repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,.03) 0px,
+        rgba(255,255,255,.03) 2px,
+        transparent 2px,
+        transparent 6px
+    );
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   CABECERA SUPERIOR
+===================================================== */
+
+
+.panel-admin .barra-superior{
+
+
+    height:100px;
+
+
+    flex:0 0 100px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    justify-content:space-between;
+
+
+    padding:18px 35px;
+
+
+    background:
+
+
+    linear-gradient(
+        90deg,
+        #f7f2e8,
+        #e9ddc2
+    );
+
+
+    border-bottom:
+
+    4px solid #705438;
+
+
+    box-shadow:
+
+    0 5px 15px rgba(0,0,0,.18);
+
+
+}
+
+
+
+
+
+/* titulo cabecera */
+
+
+.panel-admin .barra-superior h1{
+
+
+    margin:0;
+
+
+    font-family:Georgia,serif;
+
+
+    color:#263c32;
+
+
+    letter-spacing:1px;
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   BOTONES CABECERA
+===================================================== */
+
+
+.panel-admin .barra-superior button{
+
+
+    background:#263c32;
+
+
+    color:#f4eddb;
+
+
+    border:none;
+
+
+    padding:10px 18px;
+
+
+    border-radius:8px;
+
+
+    cursor:pointer;
+
+
+    transition:.25s;
+
+
+    border:
+
+    1px solid #705438;
+
+
+}
+
+
+
+
+
+.panel-admin .barra-superior button:hover{
+
+
+    transform:
+
+    translateY(-2px);
+
+
+    box-shadow:
+
+    0 5px 12px rgba(0,0,0,.3);
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   CONTENIDO DINAMICO
+===================================================== */
+
+
+.panel-admin #contenido{
+
+
+    flex:1;
+
+
+    min-height:0;
+
+
+    height:auto;
+
+
+    overflow-y:auto;
+
+
+    overflow-x:hidden;
+
+
+    padding:30px;
+
+
+    background:
+
+
+    linear-gradient(
+        135deg,
+        #efe6d1,
+        #f8f3e8
+    );
+
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   VENTANAS INTERNAS
+===================================================== */
+
+
+.panel-admin .ventana{
+
+
+    width:100%;
+
 
     min-height:100%;
 
-    height:auto !important;
 
-    overflow:visible !important;
+    height:auto;
+
+
+    overflow:visible;
+
 
 }
 
 
 
-/* =========================================
-   CORRECCION FINAL ALTURA PANEL
-========================================= */
 
 
-.panel-admin{
+/* =====================================================
+   SCROLL ESTILO ARCHIVO
+===================================================== */
 
-    height:100vh !important;
+
+.panel-admin #contenido::-webkit-scrollbar{
+
+
+    width:12px;
+
 
 }
 
 
 
-.panel-main{
+.panel-admin #contenido::-webkit-scrollbar-track{
 
-    height:100vh !important;
 
-    display:flex !important;
+    background:#ddd0ad;
 
-    flex-direction:column !important;
-
-    overflow:hidden !important;
 
 }
 
 
 
-.barra-superior{
+.panel-admin #contenido::-webkit-scrollbar-thumb{
 
-    flex:0 0 100px !important;
 
-    height:100px !important;
+    background:#705438;
+
+
+    border-radius:10px;
+
+
+    border:
+
+    3px solid #ddd0ad;
+
 
 }
 
 
 
-#contenido{
+.panel-admin #contenido::-webkit-scrollbar-thumb:hover{
 
-    flex:1 1 auto !important;
 
-    height:auto !important;
+    background:#263c32;
 
-    min-height:0 !important;
 
-    overflow-y:auto !important;
+}
 
-    overflow-x:hidden !important;
+
+
+
+
+
+
+/* =====================================================
+   EFECTO PAPEL PARA VENTANAS
+===================================================== */
+
+
+.panel-admin .ventana{
+
+
+    background:#f7f2e8;
+
+
+    border:
+
+    1px solid rgba(112,84,56,.4);
+
+
+    border-radius:15px;
+
+
+    padding:30px;
+
+
+    box-shadow:
+
+
+    0 10px 25px rgba(0,0,0,.15);
+
+
+}
+
+
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+
+@media(max-width:900px){
+
+
+    .panel-admin .sidebar{
+
+
+        width:220px;
+
+
+    }
+
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .panel-admin{
+
+
+        flex-direction:column;
+
+
+    }
+
+
+
+    .panel-admin .sidebar{
+
+
+        width:100%;
+
+
+        height:80px;
+
+
+    }
+
+
+
+    .panel-admin .barra-superior{
+
+
+        height:80px;
+
+
+        flex-basis:80px;
+
+
+        padding:15px;
+
+
+    }
+
+
+
+    .panel-admin #contenido{
+
+
+        padding:15px;
+
+
+    }
+
+
+}
+
+
+/* =====================================================
+   MODAL CERRAR SESION
+===================================================== */
+
+
+.modal-cerrar-sesion{
+
+
+    position:fixed;
+
+
+    inset:0;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    background:rgba(0,0,0,.65);
+
+
+    z-index:99999;
+
+
+}
+
+
+
+.modal-cerrar-contenido{
+
+
+    width:420px;
+
+
+    padding:35px;
+
+
+    background:#f4eddb;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:15px;
+
+
+    text-align:center;
+
+
+    box-shadow:
+
+    0 20px 50px rgba(0,0,0,.5);
+
+
+    animation:
+
+    aparecerModal .25s ease;
+
+
+}
+
+
+
+.modal-cerrar-contenido h2{
+
+
+    color:#263c32;
+
+
+    font-family:Georgia,serif;
+
+
+}
+
+
+
+.modal-cerrar-contenido p{
+
+
+    color:#4b3825;
+
+
+    line-height:1.6;
+
+
+}
+
+
+
+.acciones-cerrar{
+
+
+    margin-top:25px;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    gap:15px;
+
+
+}
+
+
+
+.acciones-cerrar button{
+
+
+    padding:12px 25px;
+
+
+    border:none;
+
+
+    border-radius:8px;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+.boton-cerrar-confirmar{
+
+
+    background:#7b2222;
+
+
+    color:white;
+
+
+}
+
+
+
+.acciones-cerrar button:first-child{
+
+
+    background:#705438;
+
+
+    color:white;
+
+
+}
+
+
+
+@keyframes aparecerModal{
+
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.8);
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
 
 }

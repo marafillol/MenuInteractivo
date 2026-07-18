@@ -469,11 +469,9 @@ async function cargarUsuarioActual(){
 
 function abrirModalCerrarSesion(){
 
-
-    document
-    .getElementById("modalCerrarSesion")
-    .style.display="flex";
-
+    document.getElementById(
+        "modalCerrarSesion"
+    ).style.display="flex";
 
 }
 

@@ -1,4 +1,4 @@
-<section class="ventana">
+<section class="ventana ventana-fichas">
 
 
     <!-- =========================
@@ -216,7 +216,7 @@
                     id="resumenFicha"
                     placeholder="Descripción breve">
 
-</textarea>
+            </textarea>
 
 
 
@@ -232,7 +232,7 @@
                     id="textoFicha"
                     placeholder="Contenido completo">
 
-</textarea>
+            </textarea>
 
 
 
@@ -494,11 +494,8 @@
 
                 <button
                         id="btnGuardarFicha"
+                        class="btn-guardar-ficha"
                         onclick="guardarFicha()">
-
-                    Guardar ficha
-
-                </button>
 
 
 
@@ -510,13 +507,7 @@
 
                 </button>
 
-
             </div>
-
-
-
-
-
         </div>
 
     </div>
@@ -536,8 +527,7 @@
 
     <div
             id="listaFichas"
-            class="grid-menus">
-
+            class="grid-fichas">
     </div>
 
 
@@ -585,13 +575,13 @@
 
 
 
-            <div class="preview-menu">
+            <div class="preview-ficha">
 
 
 
 
 
-                <div class="preview-imagen">
+                <div class="preview-imagen-ficha">
 
 
                     <img
@@ -917,7 +907,7 @@
     ================================================= -->
 
 
-    <div id="modalMensaje" class="modal">
+    <div id="modalMensajeFicha" class="modal">
 
 
         <div class="modal-contenido">

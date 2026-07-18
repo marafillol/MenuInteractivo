@@ -207,7 +207,7 @@ async function cargarMultimedia(){
 
                         </div>
 
-                        <div class="acciones-menu">
+                        <div class="acciones-multimedia">
 
                             <button
                                 class="btn-vista"
@@ -471,75 +471,185 @@ async function vistaPreviaMultimedia(id_multi){
         }
 
 
-        document.getElementById("contenidoVistaMultimedia").innerHTML = `
+        document.getElementById(
+        "contenidoVistaMultimedia"
+        ).innerHTML = `
 
-            <div class="vista-previa-multi">
+        <div class="vista-previa-multimedia-panel">
 
-                <div class="visor-simple-multi">
+
+            <!-- VISOR -->
+
+            <section class="visor-multimedia-panel">
+
+
+                <div class="titulo-visor-multimedia">
+
+                    <span>
+                        ${item.tipo_multi.toUpperCase()}
+                    </span>
+
+                </div>
+
+
+                <div class="visor-contenido-multimedia">
 
                     ${visor}
 
                 </div>
 
 
-                <div class="info-simple-multi">
+            </section>
 
-                    <h2>
-                        ${item.descripcion || "Sin descripción"}
-                    </h2>
 
-                    <div class="datos-simple-multi">
 
-                        <div class="dato-multi">
-                            <span>ID Multimedia</span>
-                            <strong>${item.id_multi}</strong>
-                        </div>
 
-                        <div class="dato-multi">
-                            <span>ID Ficha</span>
-                            <strong>${item.id_ficha}</strong>
-                        </div>
 
-                        <div class="dato-multi">
-                            <span>Descripción</span>
-                            <strong>${item.descripcion || "-"}</strong>
-                        </div>
+            <!-- INFORMACION -->
 
-                        <div class="dato-multi">
-                            <span>Ruta del archivo</span>
-                            <strong>${item.ruta_archivo || "-"}</strong>
-                        </div>
+            <section class="informacion-multimedia-panel">
 
-                        <div class="dato-multi">
-                            <span>Tipo</span>
-                            <strong>${item.tipo_multi || "-"}</strong>
-                        </div>
 
-                        <div class="dato-multi">
-                            <span>Miniatura</span>
-                            <strong>${item.miniatura || "Sin miniatura"}</strong>
-                        </div>
+                <h3>
+                    Información del archivo
+                </h3>
 
-                        <div class="dato-multi">
-                            <span>Activo</span>
-                            <strong>${item.activo == 1 ? "Sí" : "No"}</strong>
-                        </div>
 
-                        <div class="dato-multi">
-                            <span>Creado</span>
-                            <strong>${item.creado || "-"}</strong>
-                        </div>
 
-                        <div class="dato-multi">
-                            <span>Actualizado</span>
-                            <strong>${item.actualizado || "-"}</strong>
-                        </div>
+                <div class="datos-multimedia-grid">
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            ID Multimedia
+                        </span>
+
+                        <strong>
+                            ${item.id_multi}
+                        </strong>
 
                     </div>
 
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Ficha asociada
+                        </span>
+
+                        <strong>
+                            ${item.id_ficha}
+                        </strong>
+
+                    </div>
+
+
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Tipo
+                        </span>
+
+                        <strong>
+                            ${item.tipo_multi}
+                        </strong>
+
+                    </div>
+
+
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Descripción
+                        </span>
+
+                        <strong>
+                            ${item.descripcion || "-"}
+                        </strong>
+
+                    </div>
+
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Estado
+                        </span>
+
+                        <strong>
+                            ${item.activo == 1 ? "Activo" : "Inactivo"}
+                        </strong>
+
+                    </div>
+
+
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Creado
+                        </span>
+
+                        <strong>
+                            ${item.creado || "-"}
+                        </strong>
+
+                    </div>
+
+
+
+
+
+                    <div class="dato-multimedia">
+
+                        <span>
+                            Actualizado
+                        </span>
+
+                        <strong>
+                            ${item.actualizado || "-"}
+                        </strong>
+
+                    </div>
+
+
                 </div>
 
-            </div>
+
+
+                <div class="ruta-multimedia">
+
+                    <span>
+                        Ubicación del archivo
+                    </span>
+
+
+                    <code>
+                        ${item.ruta_archivo}
+                    </code>
+
+                </div>
+
+
+
+            </section>
+
+
+        </div>
 
         `;
 

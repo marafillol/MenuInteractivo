@@ -1064,3 +1064,425 @@
 
 
 }
+
+
+
+
+/* ==================================================
+   DASHBOARD - ELEMENTOS ENCAPSULADOS
+   Evita conflictos con Menús/Fichas/Multimedia
+================================================== */
+
+
+/* ===============================
+   CONTENEDOR GENERAL
+================================ */
+
+
+.dashboard .ventana{
+
+    width:100%;
+
+}
+
+
+/* ===============================
+   TITULOS GENERALES
+================================ */
+
+
+.dashboard .ventana h2{
+
+    font-family:"Cinzel",serif;
+
+    color:#314734;
+
+    font-size:28px;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.dashboard .ventana h3{
+
+    color:#705438;
+
+    margin:25px 0 15px;
+
+}
+
+
+
+/* ===============================
+   BOTON NUEVO DASHBOARD
+================================ */
+
+
+.dashboard .btn-nuevo{
+
+
+    background:#556b2f;
+
+    color:white;
+
+
+    border:none;
+
+
+    padding:12px 22px;
+
+
+    border-radius:8px;
+
+
+    cursor:pointer;
+
+
+    font-size:15px;
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.dashboard .btn-nuevo:hover{
+
+
+    background:#3f5223;
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+/* ===============================
+   PANELES DASHBOARD
+================================ */
+
+
+.dashboard .panel-dashboard{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(auto-fit,minmax(300px,1fr));
+
+
+    gap:25px;
+
+
+}
+
+
+
+
+/* ===============================
+   LISTADOS
+================================ */
+
+
+.dashboard .item-dashboard{
+
+
+    padding:12px 15px;
+
+
+    background:#eee2cb;
+
+
+    border-left:4px solid #556b2f;
+
+
+    border-radius:8px;
+
+
+    color:#314734;
+
+
+}
+
+
+
+.dashboard .item-dashboard:hover{
+
+
+    background:#e3d3b3;
+
+
+}
+
+
+
+/* ===============================
+   GRAFICOS
+================================ */
+
+
+.dashboard .grafico-barras{
+
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+
+}
+
+
+
+.dashboard .barra-grafico{
+
+
+    height:28px;
+
+
+    background:#ddd0b5;
+
+
+    border-radius:6px;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+.dashboard .barra-grafico span{
+
+
+    height:100%;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    padding-left:10px;
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+/* ===============================
+   ESTADOS
+================================ */
+
+
+.dashboard #estadoContenido{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(auto-fit,minmax(200px,1fr));
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+.dashboard .estado-card{
+
+
+    padding:18px;
+
+
+    background:#f4eddb;
+
+
+    border:1px solid #b69a73;
+
+
+    border-radius:10px;
+
+
+}
+
+
+
+
+.dashboard .estado-card strong{
+
+
+    color:#705438;
+
+
+}
+
+
+
+.dashboard .estado-card span{
+
+
+    color:#314734;
+
+
+    font-size:28px;
+
+
+}
+
+
+
+/* ===============================
+   TARJETAS ESTADISTICAS
+================================ */
+
+
+.dashboard .tarjeta-dashboard{
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:20px;
+
+
+    padding:22px;
+
+
+    min-height:120px;
+
+
+    background:#314734;
+
+
+    border-radius:12px;
+
+
+    border:2px solid #705438;
+
+
+    box-shadow:
+
+    0 6px 18px rgba(0,0,0,.2);
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.dashboard .tarjeta-dashboard:hover{
+
+
+    transform:translateY(-5px);
+
+
+}
+
+
+
+
+.dashboard .icono-dashboard{
+
+
+    width:65px;
+
+    height:65px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    justify-content:center;
+
+
+    font-size:30px;
+
+
+    background:#556b2f;
+
+
+    color:white;
+
+
+    border-radius:10px;
+
+
+}
+
+
+.dashboard .dashboard-barra-item{
+
+    margin-bottom:15px;
+
+}
+
+
+.dashboard .dashboard-barra-titulo{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    color:#314734;
+
+    margin-bottom:8px;
+
+}
+
+
+.dashboard .dashboard-barra-fondo{
+
+    height:25px;
+
+    background:#ddd0b5;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+}
+
+
+.dashboard .dashboard-barra-progreso{
+
+    height:100%;
+
+    background:#556b2f;
+
+    border-radius:10px;
+
+}

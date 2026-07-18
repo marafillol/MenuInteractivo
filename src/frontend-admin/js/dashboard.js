@@ -46,7 +46,7 @@ async function cargarDashboard(){
             listaFichas.innerHTML =
             datos.fichas.map(f=>`
 
-                <div class="dashboard-item">
+                <div class="item-dashboard"
 
                     <strong>
                         📄 ${f.titulo}
@@ -73,7 +73,7 @@ async function cargarDashboard(){
             listaMenus.innerHTML =
             datos.menus.map(m=>`
 
-                <div class="dashboard-item">
+                <div class="item-dashboard"
 
                     <strong>
                         ${m.nombre}
@@ -100,7 +100,7 @@ async function cargarDashboard(){
             listaMulti.innerHTML =
             datos.multimedia.map(m=>`
 
-                <div class="dashboard-item">
+                <div class="item-dashboard"
 
                     <strong>
                         ${m.tipo_multi}
@@ -247,7 +247,7 @@ function mostrarEstadoContenido(datos){
 
         return `
 
-        <div class="dashboard-item">
+        <div class="item-dashboard"
 
 
             <strong>

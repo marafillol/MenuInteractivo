@@ -22,46 +22,30 @@
 <body>
 
 
-<div class="fondo">
+<section class="login-page">
 
 
-    <!-- LOGO / ESCUDO -->
-
-    <div class="contenedor-login">
+    <div class="fondo">
 
 
-        <div class="logo-museo">
+        <!-- =========================
+             CONTENEDOR LOGIN
+        ========================== -->
 
-            <img
-                    src="imagenes/logo-museo.png"
-                    alt="Museo Malvinas">
 
-        </div>
+        <div class="contenedor-login">
 
 
 
-        <div class="login">
+            <!-- LOGO MUSEO -->
 
 
-            <div class="encabezado">
+            <div class="logo-museo">
 
 
-                <h1>
-                    MENU INTERACTIVO
-                </h1>
-
-
-                <h2>
-                    Centro de Documentación Histórica
-                </h2>
-
-
-                <div class="linea"></div>
-
-
-                <p>
-                    Panel Administrativo
-                </p>
+                <img
+                        src="imagenes/logo-museo.png"
+                        alt="Museo Malvinas">
 
 
             </div>
@@ -70,29 +54,40 @@
 
 
 
-            <form id="formLogin">
 
 
 
-                <div class="campo">
+            <!-- TARJETA LOGIN -->
 
 
-                    <label>
-                        Usuario
-                    </label>
+            <div class="login">
 
 
-                    <input
 
-                            type="text"
+                <div class="encabezado">
 
-                            id="usuario"
 
-                            placeholder="Ingrese su usuario"
 
-                            required
+                    <h1>
+                        MENU INTERACTIVO
+                    </h1>
 
-                    >
+
+
+                    <h2>
+                        Centro de Documentación Histórica
+                    </h2>
+
+
+
+                    <div class="linea"></div>
+
+
+
+                    <p>
+                        Panel Administrativo
+                    </p>
+
 
 
                 </div>
@@ -102,25 +97,106 @@
 
 
 
-                <div class="campo">
+
+                <form id="formLogin">
 
 
-                    <label>
-                        Contraseña
-                    </label>
 
 
-                    <input
 
-                            type="password"
+                    <div class="campo">
 
-                            id="password"
 
-                            placeholder="Ingrese su contraseña"
+                        <label>
+                            Usuario
+                        </label>
 
-                            required
 
-                    >
+
+                        <input
+
+                                type="text"
+
+                                id="usuario"
+
+                                placeholder="Ingrese su usuario"
+
+                                autocomplete="username"
+
+                                required>
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    <div class="campo">
+
+
+                        <label>
+                            Contraseña
+                        </label>
+
+
+
+                        <input
+
+                                type="password"
+
+                                id="password"
+
+                                placeholder="Ingrese su contraseña"
+
+                                autocomplete="current-password"
+
+                                required>
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    <button type="submit">
+
+
+                        Ingresar
+
+
+                        <span>
+                            →
+                        </span>
+
+
+                    </button>
+
+
+
+
+                </form>
+
+
+
+
+
+
+
+
+                <div class="pie-login">
+
+
+                    Sistema de Gestión Histórica
 
 
                 </div>
@@ -129,80 +205,129 @@
 
 
 
-                <button type="submit">
+            </div>
 
 
-                    Ingresar
 
 
-                    <span>
-                        →
-                    </span>
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+    <!-- =========================
+         MODAL MENSAJE LOGIN
+    ========================== -->
+
+
+    <div
+
+            id="modalLoginMensaje"
+
+            class="modal"
+
+            style="display:none;">
+
+
+
+
+
+        <div class="modal-contenido modal-mensaje">
+
+
+
+
+
+            <h2 id="tituloLoginMensaje">
+
+
+            </h2>
+
+
+
+
+
+
+            <p id="textoLoginMensaje">
+
+
+            </p>
+
+
+
+
+
+
+
+
+            <div class="acciones-modal">
+
+
+
+
+
+                <button
+
+                        id="btnAceptarLogin"
+
+                        class="boton-principal">
+
+
+                    Aceptar
 
 
                 </button>
 
 
 
-            </form>
 
-
-
-            <div class="pie-login">
-
-                Sistema de Gestión Histórica
 
             </div>
 
 
 
+
+
+
+
         </div>
+
+
+
 
 
     </div>
 
 
-</div>
 
 
 
 
-<!-- MODAL MENSAJE LOGIN -->
-
-<div id="modalLoginMensaje" class="modal" style="display:none;">
-
-    <div class="modal-contenido modal-mensaje">
-
-        <h2 id="tituloLoginMensaje">
-
-        </h2>
+</section>
 
 
-        <p id="textoLoginMensaje">
-
-        </p>
 
 
-        <div class="acciones-modal">
-
-            <button
-                    id="btnAceptarLogin"
-                    class="boton-principal"
-            >
-
-                Aceptar
-
-            </button>
-
-        </div>
 
 
-    </div>
+<script
 
-</div>
+        type="module"
+
+        src="js/login.js">
 
 
-<script type="module" src="js/login.js"></script>
+</script>
+
 
 </body>
 

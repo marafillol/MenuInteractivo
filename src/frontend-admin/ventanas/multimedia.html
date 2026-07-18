@@ -1,6 +1,6 @@
-<section class="ventana">
+<section class="ventana ventana-multimedia">
 
-    <div class="cabecera-multimedia">
+    <div class="cabecera-multimedia-panel">
 
         <button
                 id="barraVolverFicha"
@@ -27,7 +27,7 @@
 
     <button
             id="nuevoMultimedia"
-            class="btn-nuevo"
+            class="btn-nuevo-multimedia"
             onclick="nuevoMultimedia()">
 
         + Nuevo archivo
@@ -42,27 +42,27 @@
 
     <div
             id="panelFichaMultimedia"
-            class="panel-ficha-multimedia"
+            class="panel-ficha-multimedia-contenedor"
             style="display:none;">
 
         <!-- Tarjeta de la ficha -->
 
         <div
                 id="tarjetaFichaMultimedia"
-                class="tarjeta-ficha-resumen">
+                class="tarjeta-resumen-multimedia">
 
         </div>
 
 
         <!-- Multimedia asociada -->
 
-        <div class="contenedor-multimedia">
+        <div class="contenedor-listado-multimedia">
 
             <h3>Multimedia asociada</h3>
 
             <div
                     id="listaMultimedia"
-                    class="grid-menus grid-multimedia">
+                    class="grid-multimedia">
             </div>
 
         </div>
@@ -79,7 +79,7 @@
 
         <div
                 id="listaMultimediaGeneral"
-                class="grid-menus grid-multimedia">
+                class="grid-multimedia">
         </div>
 
     </div>
@@ -87,50 +87,47 @@
 
 
     <!-- =======================================
-         MODAL VISTA PREVIA
-    ======================================== -->
+     MODAL VISTA PREVIA MULTIMEDIA
+======================================== -->
 
     <div
             id="modalVistaMultimedia"
-            class="modal">
+            class="modal-multimedia">
 
-        <div class="modal-contenido modal-contenido-multimedia">
+        <div class="contenido-modal-multimedia vista-modal">
+
 
             <button
-                    class="cerrar"
+                    class="cerrar-multimedia"
                     onclick="cerrarVistaMultimedia()">
 
                 ✖
 
             </button>
 
-            <h2>
-                Vista previa multimedia
-            </h2>
+
+            <div class="cabecera-vista-multimedia">
+
+                <h2>
+                    🎞 Vista previa multimedia
+                </h2>
+
+                <p>
+                    Información detallada del archivo
+                </p>
+
+            </div>
+
+
 
             <div id="contenidoVistaMultimedia">
 
-                <!--
-                Aquí multimedia.js inserta:
-
-                - Imagen / Video / Audio / PDF
-                - ID Multimedia
-                - ID Ficha
-                - Descripción
-                - Ruta
-                - Tipo
-                - Miniatura
-                - Activo
-                - Creado
-                - Actualizado
-                -->
-
             </div>
+
 
         </div>
 
     </div>
-
 
 
     <!-- =======================================
@@ -139,12 +136,12 @@
 
     <div
             id="modalMultimediaNuevo"
-            class="modal">
+            class="modal-multimedia">
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-multimedia">
 
             <button
-                    class="cerrar"
+                    class="cerrar-multimedia"
                     onclick="cerrarNuevoMultimedia()">
 
                 ✖
@@ -206,7 +203,7 @@
 
             </label>
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-multimedia">
 
                 <button onclick="guardarMultimedia()">
                     Guardar
@@ -230,12 +227,12 @@
 
     <div
             id="modalEliminarMultimedia"
-            class="modal">
+            class="modal-multimedia">
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-multimedia">
 
             <button
-                    class="cerrar"
+                    class="cerrar-multimedia"
                     onclick="cerrarEliminarMultimedia()">
 
                 ✖
@@ -250,10 +247,10 @@
                 ¿Desea eliminar este archivo multimedia?
             </p>
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-multimedia">
 
                 <button
-                        class="btn-eliminar"
+                        class="btn-eliminar-multimedia"
                         onclick="confirmarEliminarMultimedia()">
 
                     Eliminar
@@ -261,7 +258,7 @@
                 </button>
 
                 <button
-                        class="btn-ver"
+                        class="btn-ver-multimedia"
                         onclick="cerrarEliminarMultimedia()">
 
                     Cancelar
@@ -281,9 +278,9 @@
 
     <div
             id="modalMensaje"
-            class="modal">
+            class="modal-multimedia">
 
-        <div class="modal-contenido modal-confirmacion">
+        <div class="contenido-modal-multimedia">
 
             <div class="encabezado-modal">
 
@@ -306,10 +303,10 @@
                     class="mensaje-confirmacion">
             </p>
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-multimedia">
 
                 <button
-                        class="btn-ver"
+                        class="btn-ver-multimedia"
                         onclick="cerrarMensaje()">
 
                     Aceptar
@@ -330,12 +327,12 @@
 
     <div
             id="modalDocumentoCompleto"
-            class="modal">
+            class="modal-multimedia">
 
-        <div class="modal-contenido modal-documento-completo">
+        <div class="contenido-modal-multimedia documento-completo-multimedia">
 
             <button
-                    class="cerrar"
+                    class="cerrar-multimedia"
                     onclick="cerrarDocumentoCompleto()">
 
                 ✖

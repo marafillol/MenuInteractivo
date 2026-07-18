@@ -106,45 +106,26 @@ document.addEventListener("change",function(e){
 });
 
 
-document.addEventListener("click",function(e){
+document
+.getElementById("moduloPlantillas")
+.addEventListener("click",function(e){
 
-    if(e.target.id!=="nuevaPlantilla"){
-        return;
+
+    if(e.target.id==="nuevaPlantilla"){
+
+        limpiarFormularioPlantilla();
+
+        document
+            .getElementById("modalPlantilla")
+            .style.display = "flex";
+
     }
 
-    plantillaEditando = null;
-
-    indiceCampoEditando = null;
-
-    nuevaPlantillaActual();
-
-    document.getElementById("tituloModalPlantilla").textContent =
-    "Nueva plantilla";
-
-    document.getElementById("nombrePlantilla").value="";
-
-    document.getElementById("descripcionPlantilla").value="";
-
-    document.getElementById("activoPlantilla").checked=true;
-
-    document.getElementById("vistaPlantilla").value="grid";
-
-    document.getElementById("columnasPlantilla").value=4;
-
-    document.getElementById("mostrarImagenPlantilla").checked=true;
-
-    document.getElementById("mostrarResumenPlantilla").checked=true;
-
-    document.getElementById("listaCamposPlantilla").innerHTML="";
-
-    actualizarVistaPreviaPlantilla();
-
-    document.getElementById("modalPlantilla").style.display="flex";
 
 });
 
 
-function cerrarPlantilla(){
+function cerrarModalPlantilla(){
 
     document.getElementById("modalPlantilla").style.display="none";
     plantillaEditando = null;
@@ -163,14 +144,14 @@ function abrirNuevoCampo(){
 
     document.getElementById("tipoCampo").value = "text";
 
-    document.getElementById("modalCampo").style.display = "flex";
+    document.getElementById("modalCampoPlantilla").style.display = "flex";
 
 }
 
 
-function cerrarCampo(){
+function cerrarCampoPlantilla(){
 
-    document.getElementById("modalCampo").style.display = "none";
+    document.getElementById("modalCampoPlantilla").style.display = "none";
 
 }
 
@@ -199,7 +180,9 @@ function guardarCampo(){
 
     if(!etiqueta || !nombre){
 
-        alert("Complete todos los campos.");
+        mostrarMensajePlantilla(
+                "Debes completar la etiqueta y el nombre interno del campo antes de guardar."
+            );
 
         return;
 
@@ -225,7 +208,7 @@ function guardarCampo(){
 
     }
 
-    cerrarCampo();
+    cerrarCampoPlantilla();
 
     mostrarCamposPlantilla();
 
@@ -283,7 +266,7 @@ function mostrarCamposPlantilla(){
             <div>
 
                 <button
-                    class="btn-editar"
+                    class="btn-editar-plantilla"
                     onclick="editarCampo(${indice})">
 
                     Editar
@@ -291,7 +274,7 @@ function mostrarCamposPlantilla(){
                 </button>
 
                 <button
-                    class="btn-eliminar"
+                    class="btn-eliminar-plantilla"
                     onclick="eliminarCampo(${indice})">
 
                     Eliminar
@@ -308,6 +291,36 @@ function mostrarCamposPlantilla(){
 
 }
 
+function limpiarFormularioPlantilla(){
+
+    plantillaEditando = null;
+
+    indiceCampoEditando = null;
+
+    nuevaPlantillaActual();
+
+    document.getElementById("tituloModalPlantilla").textContent =
+    "Nueva plantilla";
+
+    document.getElementById("nombrePlantilla").value = "";
+
+    document.getElementById("descripcionPlantilla").value = "";
+
+    document.getElementById("activoPlantilla").checked = true;
+
+    document.getElementById("vistaPlantilla").value = "grid";
+
+    document.getElementById("columnasPlantilla").value = 4;
+
+    document.getElementById("mostrarImagenPlantilla").checked = true;
+
+    document.getElementById("mostrarResumenPlantilla").checked = true;
+
+    mostrarCamposPlantilla();
+
+    actualizarVistaPreviaPlantilla();
+
+}
 
 
 function editarCampo(indice){
@@ -326,7 +339,7 @@ function editarCampo(indice){
     document.getElementById("tipoCampo").value =
     campo.tipo;
 
-    document.getElementById("modalCampo").style.display = "flex";
+    document.getElementById("modalCampoPlantilla").style.display = "flex";
 
 }
 
@@ -343,7 +356,7 @@ function eliminarCampo(indice){
 
 }
 
-function cerrarEliminarCampo(){
+function cerrarEliminarCampoPlantilla(){
 
     campoEliminar = null;
 
@@ -376,7 +389,7 @@ function confirmarEliminarCampo(){
     actualizarVistaPreviaPlantilla();
 
 
-    cerrarEliminarCampo();
+    cerrarEliminarCampoPlantilla();
 
 }
 
@@ -530,77 +543,191 @@ function actualizarVistaPreviaPlantilla(){
 
 
 
-
 async function guardarPlantilla(){
+
+    console.log("BOTÓN GUARDAR PLANTILLA DETECTADO");
 
     leerConfiguracionInterfaz();
 
+
+    const nombre =
+    document.getElementById("nombrePlantilla")
+    .value
+    .trim();
+
+
+    const descripcion =
+    document.getElementById("descripcionPlantilla")
+    .value
+    .trim();
+
+
+
+    // ==========================
+    // VALIDACIONES
+    // ==========================
+
+    if(!nombre){
+
+        mostrarMensajePlantilla(
+            "Debes completar el nombre de la plantilla antes de guardar."
+        );
+
+        return;
+
+    }
+
+
+
     const datos = {
 
-        nombre:
-        document.getElementById("nombrePlantilla").value,
 
-        descripcion:
-        document.getElementById("descripcionPlantilla").value,
+        nombre:nombre,
+
+
+        descripcion:descripcion,
+
 
         activo:
-        document.getElementById("activoPlantilla").checked ? 1 : 0,
+        document.getElementById("activoPlantilla")
+        .checked
+        ? 1
+        : 0,
+
 
         plantilla_json:
         JSON.stringify(plantillaActual)
 
+
     };
+
+
 
     try{
 
-        let url = "/api/plantillas";
 
-        let metodo = "POST";
+        let url =
+        "/api/plantillas";
+
+
+        let metodo =
+        "POST";
+
+
 
         if(plantillaEditando){
 
-            url = `/api/plantillas/${plantillaEditando}`;
 
-            metodo = "PUT";
+            url =
+            `/api/plantillas/${plantillaEditando}`;
+
+
+            metodo =
+            "PUT";
+
 
         }
 
-        const respuesta = await window.fetchProtegido(url,{
 
-            method:metodo,
 
-            headers:{
-                "Content-Type":"application/json"
-            },
 
-            body:JSON.stringify(datos)
+        const respuesta =
+        await window.fetchProtegido(
 
-        });
+            url,
+
+            {
+
+
+                method:metodo,
+
+
+                headers:{
+
+
+                    "Content-Type":
+                    "application/json"
+
+
+                },
+
+
+                body:
+                JSON.stringify(datos)
+
+
+            }
+
+        );
+
+
+
 
         const resultado =
         await respuesta.json();
 
+
+
+
+
         if(!respuesta.ok){
 
-            alert(resultado.error);
+
+            mostrarMensajePlantilla(
+
+                resultado.error ||
+                "No se pudo guardar la plantilla."
+
+            );
+
 
             return;
 
+
         }
 
-        cerrarPlantilla();
+
+
+
+
+        mostrarMensajePlantilla(
+
+            plantillaEditando
+            ?
+            "Plantilla actualizada correctamente."
+            :
+            "Plantilla creada correctamente."
+
+        );
+
+
+
+        cerrarModalPlantilla();
+
+
 
         cargarPlantillas();
+
+
 
     }
     catch(error){
 
-        console.error(error);
+
+        console.error(
+            "Error guardando plantilla:",
+            error
+        );
+
+
+        mostrarMensajePlantilla(
+            "Ocurrió un error al guardar la plantilla."
+        );
+
 
     }
 
 }
-
 
 document.addEventListener("click",function(e){
 
@@ -638,9 +765,9 @@ async function cargarPlantillas(){
 
             contenedor.innerHTML += `
 
-            <article class="tarjeta-menu">
+            <article class="tarjeta-plantilla">
 
-                <div class="info-menu">
+                <div class="info-plantilla">
 
                     <h3>
 
@@ -668,11 +795,11 @@ async function cargarPlantillas(){
 
                     </small>
 
-                    <div class="acciones-menu">
+                    <div class="acciones-plantilla">
 
                         <button
 
-                            class="btn-vista"
+                            class="btn-vista-plantilla"
 
                             onclick="vistaPreviaPlantilla(${plantilla.id_plantilla})">
 
@@ -682,7 +809,7 @@ async function cargarPlantillas(){
 
                         <button
 
-                            class="btn-editar"
+                            class="btn-editar-plantilla"
 
                             onclick="editarPlantilla(${plantilla.id_plantilla})">
 
@@ -691,7 +818,7 @@ async function cargarPlantillas(){
                         </button>
 
                         <button
-                            class="btn-eliminar"
+                            class="btn-eliminar-plantilla"
                             onclick="abrirEliminarPlantilla(${plantilla.id_plantilla})">
 
                             Eliminar
@@ -915,7 +1042,7 @@ async function vistaPreviaPlantilla(id){
 
 }
 
-function cerrarVistaPlantilla(){
+function cerrarPreviewPlantilla(){
 
     document
     .getElementById("modalVistaPlantilla")
@@ -1040,14 +1167,29 @@ async function confirmarEliminarPlantilla(){
 
 function mostrarMensajePlantilla(mensaje){
 
-    document.getElementById(
-        "textoMensajePlantilla"
-    ).textContent = mensaje;
+    const modal =
+    document.getElementById("modalMensajePlantilla");
 
 
-    document.getElementById(
-        "modalMensajePlantilla"
-    ).classList.add("mostrar");
+    const texto =
+    document.getElementById("textoMensajePlantilla");
+
+
+    if(!modal || !texto){
+
+        console.error(
+            "No existe el modal de mensaje de plantillas"
+        );
+
+        return;
+
+    }
+
+
+    texto.textContent = mensaje;
+
+
+    modal.style.display = "flex";
 
 }
 
@@ -1055,19 +1197,17 @@ function mostrarMensajePlantilla(mensaje){
 
 function cerrarMensajePlantilla(){
 
-    // cerrar aviso
-    document
-    .getElementById("modalMensajePlantilla")
-    .classList.remove("mostrar");
+    const modal =
+    document.getElementById("modalMensajePlantilla");
 
 
-    // cerrar también ventana de eliminar
-    document
-    .getElementById("modalEliminarPlantilla")
-    .classList.remove("mostrar");
+    if(modal){
+
+        modal.style.display="none";
+
+    }
 
 
-    // limpiar selección
     plantillaEliminar = null;
 
 }

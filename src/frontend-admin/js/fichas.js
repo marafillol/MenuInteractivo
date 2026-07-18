@@ -132,7 +132,7 @@ async function cargarFichas(){
 
 
                     <button
-                        class="btn-ver"
+                        class="btn-cancelar-ficha"
                         onclick="verMultimediaFicha(${ficha.id_ficha}, '${ficha.titulo}')">
 
                         Ver multimedia
@@ -1485,7 +1485,7 @@ async function confirmarEliminarFicha(){
 function cerrarMensaje(){
 
     document
-        .getElementById("modalMensaje")
+        .getElementById("modalMensajeFicha")
         .style.display = "none";
 
 }
@@ -1971,7 +1971,7 @@ function mostrarFechaArgentina(fecha){
 function mostrarMensaje(titulo, mensaje){
 
     const modal =
-    document.getElementById("modalMensaje");
+    document.getElementById("modalMensajeFicha");
 
 
     if(!modal){

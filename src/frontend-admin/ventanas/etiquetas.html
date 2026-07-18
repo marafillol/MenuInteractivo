@@ -1,12 +1,17 @@
-<section class="ventana">
+<section class="ventana ventana-etiquetas">
 
-    <h2 class="titulo-seccion">
-        Gestión de Etiquetas
-    </h2>
+    <div class="cabecera-etiquetas">
+
+        <h2 class="titulo-etiquetas">
+            Gestión de Etiquetas
+        </h2>
+
+    </div>
+
 
     <button
             id="nuevaEtiqueta"
-            class="btn-nuevo"
+            class="btn-nuevo-etiqueta"
             type="button">
 
         + Nueva etiqueta
@@ -16,7 +21,7 @@
 
     <div
             id="gridEtiquetas"
-            class="grid-etiquetas">
+            class="grid-etiquetas-panel">
 
     </div>
 
@@ -28,11 +33,11 @@
 
     <div
             id="modalEtiqueta"
-            class="modal">
+            class="modal-etiqueta">
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-etiqueta">
 
-            <div class="encabezado-modal">
+            <div class="encabezado-modal-etiqueta">
 
                 <h3 id="tituloModalEtiqueta">
 
@@ -42,7 +47,7 @@
 
                 <button
                         id="cerrarModalEtiqueta"
-                        class="cerrar-modal"
+                        class="cerrar-modal-etiqueta"
                         type="button">
 
                     ✕
@@ -78,7 +83,7 @@
                     placeholder="Descripción de la etiqueta"></textarea>
 
 
-            <label class="checkbox-label">
+            <label class="checkbox-etiqueta">
 
                 <input
                         id="activoEtiqueta"
@@ -89,7 +94,7 @@
 
             </label>
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-etiqueta">
 
                 <button
                         id="guardarEtiqueta"
@@ -125,11 +130,11 @@
 
     <div
             id="modalVistaEtiqueta"
-            class="modal">
+            class="modal-etiqueta">
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-etiqueta">
 
-            <div class="encabezado-modal">
+            <div class="encabezado-modal-etiqueta">
 
                 <h3 id="tituloVistaEtiqueta">
 
@@ -139,7 +144,7 @@
 
                 <button
                         id="cerrarVistaEtiqueta"
-                        class="cerrar-modal"
+                        class="cerrar-modal-etiqueta"
                         type="button">
 
                     ✕
@@ -200,7 +205,7 @@
 
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-etiqueta">
 
                 <button
                         id="btnCerrarVistaEtiqueta"
@@ -228,11 +233,11 @@
 
     <div
             id="modalEliminarEtiqueta"
-            class="modal">
+            class="modal-etiqueta">
 
-        <div class="modal-contenido modal-confirmacion">
+        <div class="contenido-modal-etiqueta confirmacion-etiqueta">
 
-            <div class="encabezado-modal">
+            <div class="encabezado-modal-etiqueta">
 
                 <h3>
 
@@ -242,7 +247,7 @@
 
                 <button
                         id="cerrarEliminarEtiqueta"
-                        class="cerrar-modal"
+                        class="cerrar-modal-etiqueta"
                         type="button">
 
                     ✕
@@ -251,7 +256,7 @@
 
             </div>
 
-            <p class="mensaje-confirmacion">
+            <p class="mensaje-confirmacion-etiqueta">
 
                 ¿Está seguro que desea eliminar esta etiqueta?
 
@@ -261,7 +266,7 @@
 
             </p>
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-etiqueta">
 
                 <button
                         id="cancelarEliminarEtiqueta"
@@ -294,12 +299,12 @@
 
     <div
             id="modalMensaje"
-            class="modal">
+            class="modal-etiqueta">
 
-        <div class="modal-contenido modal-confirmacion">
+        <div class="contenido-modal-etiqueta confirmacion-etiqueta">
 
 
-            <div class="encabezado-modal">
+            <div class="encabezado-modal-etiqueta">
 
                 <h3 id="tituloMensaje">
                     Mensaje
@@ -307,7 +312,7 @@
 
 
                 <button
-                        class="cerrar-modal"
+                        class="cerrar-modal-etiqueta"
                         type="button"
                         onclick="cerrarMensaje()">
 
@@ -321,13 +326,13 @@
 
             <p
                     id="textoMensaje"
-                    class="mensaje-confirmacion">
+                    class="mensaje-confirmacion-etiqueta">
 
             </p>
 
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-etiqueta">
 
                 <button
                         class="btn-guardar"

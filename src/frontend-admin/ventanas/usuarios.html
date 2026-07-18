@@ -1,19 +1,19 @@
-<section class="ventana">
+<section class="ventana ventana-usuarios">
 
 
     <!-- ==========================
          ENCABEZADO
     =========================== -->
 
-    <div class="encabezado-ventana">
+    <div class="encabezado-usuarios">
 
         <div>
 
-            <h2>
+            <h2 class="titulo-usuarios">
                 Gestión de Usuarios
             </h2>
 
-            <p>
+            <p class="subtitulo-usuarios">
                 Administración de usuarios y permisos del sistema
             </p>
 
@@ -21,8 +21,8 @@
 
 
         <button
-                class="boton-principal"
-                onclick="abrirModalUsuario()"
+                class="btn-nuevo-usuario"
+                onclick="abrirModalUsuarioUsuarios()"
         >
 
             + Nuevo Usuario
@@ -40,10 +40,10 @@
     =========================== -->
 
 
-    <div class="contenedor-tabla">
+    <div class="contenedor-tabla-usuarios">
 
 
-        <table class="tabla">
+        <table class="tabla-usuarios">
 
 
             <thead>
@@ -108,16 +108,16 @@
 
 
 <div
-        id="modalUsuario"
-        class="modal"
+        id="modalUsuarioUsuarios"
+        class="modal-usuarios"
         style="display:none;"
 >
 
 
-    <div class="modal-contenido">
+    <div class="contenido-modal-usuarios">
 
 
-        <h2 id="tituloModalUsuario">
+        <h2 id="tituloModalUsuarioUsuarios">
             Nuevo Usuario
         </h2>
 
@@ -229,12 +229,12 @@
 
 
 
-        <div class="acciones-modal">
+        <div class="acciones-modal-usuarios">
 
 
 
             <button
-                    onclick="cerrarModalUsuario()"
+                    onclick="cerrarModalUsuarioUsuarios()"
             >
 
                 Cancelar
@@ -246,8 +246,8 @@
 
 
             <button
-                    onclick="guardarUsuario()"
-                    class="boton-principal"
+                    onclick="guardarUsuarioUsuarios()"
+                    class="btn-nuevo-usuario"
             >
 
                 Guardar
@@ -278,13 +278,13 @@
 
 
 <div
-        id="modalPassword"
-        class="modal"
+        id="modalPasswordUsuarios"
+        class="modal-usuarios"
         style="display:none;"
 >
 
 
-    <div class="modal-contenido">
+    <div class="contenido-modal-usuarios">
 
 
         <h2>
@@ -307,11 +307,11 @@
 
 
 
-        <div class="acciones-modal">
+        <div class="acciones-modal-usuarios">
 
 
             <button
-                    onclick="cerrarModalPassword()"
+                    onclick="cerrarModalPasswordUsuarios()"
             >
 
                 Cancelar
@@ -321,8 +321,8 @@
 
 
             <button
-                    onclick="guardarPassword()"
-                    class="boton-principal"
+                    onclick="guardarPasswordUsuarios()"
+                    class="btn-nuevo-usuario"
             >
 
                 Guardar
@@ -342,22 +342,22 @@
 =========================== -->
 
 <div
-        id="modalMensaje"
-        class="modal"
+        id="modalMensajeUsuarios"
+        class="modal-usuarios"
         style="display:none;"
 >
 
-    <div class="modal-contenido modal-mensaje">
+    <div class="contenido-modal-mensaje-usuarios">
 
-        <h2 id="tituloMensaje"></h2>
+        <h2 id="tituloMensajeUsuarios"></h2>
 
-        <p id="textoMensaje"></p>
+        <p id="textoMensajeUsuarios"></p>
 
-        <div class="acciones-modal">
+        <div class="acciones-modal-usuarios">
 
             <button
-                    id="btnAceptarMensaje"
-                    class="boton-principal">
+                    id="btnAceptarMensajeUsuarios"
+                    class="btn-nuevo-usuario">
 
                 Aceptar
 
@@ -376,31 +376,31 @@
 =========================== -->
 
 <div
-        id="modalEliminar"
-        class="modal"
+        id="modalEliminarUsuarios"
+        class="modal-usuarios"
         style="display:none;"
 >
 
-    <div class="modal-contenido modal-mensaje">
+    <div class="contenido-modal-eliminar-usuarios">
 
         <h2>
             Confirmar eliminación
         </h2>
 
-        <p id="textoEliminar"></p>
+        <p id="textoEliminarUsuarios"></p>
 
-        <div class="acciones-modal">
+        <div class="acciones-modal-usuarios">
 
             <button
-                    id="btnCancelarEliminar">
+                    id="btnCancelarEliminarUsuarios">
 
                 Cancelar
 
             </button>
 
             <button
-                    id="btnConfirmarEliminar"
-                    class="boton-principal">
+                    id="btnConfirmarEliminarUsuarios"
+                    class="btn-nuevo-usuario">
 
                 Eliminar
 

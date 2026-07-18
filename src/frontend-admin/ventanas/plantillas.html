@@ -1,16 +1,16 @@
-<section class="ventana">
+<section id="moduloPlantillas" class="ventana ventana-plantillas">
 
-    <h2 class="titulo-seccion">
+    <h2 class="titulo-plantillas">
         Gestión de Plantillas
     </h2>
 
-    <p class="subtitulo-seccion">
+    <p class="subtitulo-plantillas">
         Administrá la estructura y la interfaz de las fichas.
     </p>
 
     <button
             id="nuevaPlantilla"
-            class="btn-nuevo">
+            class="btn-nueva-plantilla">
 
         + Nueva plantilla
 
@@ -23,8 +23,7 @@
 
     <div
             id="gridPlantillas"
-            class="grid-menus">
-
+            class="grid-plantillas">
     </div>
 
 
@@ -35,13 +34,13 @@
 
     <div
             id="modalPlantilla"
-            class="modal">
+            class="modal-plantilla">
 
-        <div class="modal-contenido modal-grande">
+        <div class="contenido-modal-plantilla">
 
             <button
-                    class="cerrar"
-                    onclick="cerrarPlantilla()">
+                    class="cerrar-modal-plantilla"
+                    onclick="cerrarModalPlantilla()">
 
                 ✖
 
@@ -59,7 +58,7 @@
                  DATOS GENERALES
             ============================ -->
 
-            <fieldset>
+            <fieldset class="grupo-plantilla">
 
                 <legend>
 
@@ -88,7 +87,7 @@
 
                 </textarea>
 
-                <label class="checkbox">
+                <label class="checkbox-plantilla">
 
                     <input
                             type="checkbox"
@@ -107,7 +106,7 @@
                  INTERFAZ
             ============================ -->
 
-            <fieldset>
+            <fieldset class="grupo-plantilla">
 
                 <legend>
 
@@ -150,7 +149,7 @@
                         max="6"
                         value="4">
 
-                <label class="checkbox">
+                <label class="checkbox-plantilla">
 
                     <input
                             type="checkbox"
@@ -161,7 +160,7 @@
 
                 </label>
 
-                <label class="checkbox">
+                <label class="checkbox-plantilla">
 
                     <input
                             type="checkbox"
@@ -180,7 +179,7 @@
                  CAMPOS
             ============================ -->
 
-            <fieldset>
+            <fieldset class="grupo-plantilla">
 
                 <legend>
 
@@ -191,14 +190,15 @@
                 <button
                         type="button"
                         id="btnNuevoCampo"
-                        class="btn-nuevo">
+                        class="btn-nueva-plantilla">
 
                     + Agregar campo
 
                 </button>
 
                 <div
-                        id="listaCamposPlantilla">
+                        id="listaCamposPlantilla"
+                        class="lista-campos-plantilla">
 
                 </div>
 
@@ -210,7 +210,7 @@
                  VISTA PREVIA
             ============================ -->
 
-            <fieldset>
+            <fieldset class="grupo-plantilla">
 
                 <legend>
 
@@ -219,7 +219,8 @@
                 </legend>
 
                 <div
-                        id="vistaPreviaPlantilla">
+                        id="vistaPreviaPlantilla"
+                        class="preview-plantilla">
 
                 </div>
 
@@ -229,7 +230,7 @@
 
             <button
                     id="btnGuardarPlantilla"
-                    class="btn-guardar">
+                    class="btn-guardar-plantilla">
 
                 Guardar plantilla
 
@@ -246,12 +247,12 @@
     ============================ -->
 
     <div
-            id="modalCampo"
-            class="modal">
+            id="modalCampoPlantilla"
+            class="modal-plantilla">
 
 
         <div
-                class="modal-contenido">
+                class="contenido-modal-plantilla-pequeno">
 
 
             <h2>
@@ -311,19 +312,19 @@
                 </option>
 
                 <option value="checkbox">
-                    Checkbox
+                    checkbox
                 </option>
 
             </select>
 
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-plantilla">
 
 
                 <button
                         id="btnGuardarCampo"
-                        class="btn-guardar">
+                        class="btn-guardar-plantilla">
 
                     Guardar
 
@@ -331,8 +332,8 @@
 
 
                 <button
-                        onclick="cerrarCampo()"
-                        class="btn-cancelar">
+                        onclick="cerrarCampoPlantilla()"
+                        class="btn-cancelar-plantilla">
 
                     Cancelar
 
@@ -354,10 +355,10 @@
 
     <div
             id="modalEliminarCampo"
-            class="modal">
+            class="modal-plantilla">
 
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-confirmacion">
 
 
             <h3>
@@ -370,12 +371,12 @@
             </p>
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-plantilla">
 
 
                 <button
-                        class="btn-cancelar"
-                        onclick="cerrarEliminarCampo()">
+                        class="btn-cancelar-plantilla"
+                        onclick="cerrarEliminarCampoPlantilla()">
 
                     Cancelar
 
@@ -384,7 +385,7 @@
 
 
                 <button
-                        class="btn-eliminar"
+                        class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarCampo()">
 
                     Eliminar
@@ -405,15 +406,15 @@
 
     <div
             id="modalVistaPlantilla"
-            class="modal">
+            class="modal-plantilla">
 
 
-        <div class="modal-contenido">
+        <div class="contenido-modal-preview">
 
 
             <button
-                    class="cerrar-modal"
-                    onclick="cerrarVistaPlantilla()">
+                    class="cerrar-preview-plantilla"
+                    onclick="cerrarPreviewPlantilla()">
 
                 ✖
 
@@ -441,11 +442,11 @@
 
     <!-- MODAL ELIMINAR PLANTILLA -->
 
-    <div id="modalEliminarPlantilla" class="modal">
+    <div id="modalEliminarPlantilla" class="modal-plantilla">
 
-        <div class="ventana modal-eliminar">
+        <div class="contenido-modal-eliminar-plantilla">
 
-            <h2 class="titulo-seccion">
+            <h2 class="titulo-plantillas">
                 Eliminar plantilla
             </h2>
 
@@ -455,10 +456,10 @@
             </p>
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-plantilla">
 
                 <button
-                        class="btn-cancelar"
+                        class="btn-cancelar-plantilla"
                         onclick="cerrarEliminarPlantilla()">
 
                     Cancelar
@@ -467,7 +468,7 @@
 
 
                 <button
-                        class="btn-eliminar"
+                        class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarPlantilla()">
 
                     Eliminar
@@ -483,9 +484,9 @@
 
     <!-- MODAL MENSAJE -->
 
-    <div id="modalMensajePlantilla" class="modal">
+    <div id="modalMensajePlantilla" class="modal-plantilla">
 
-        <div class="modal-eliminar">
+        <div class="contenido-modal-mensaje-plantilla">
 
             <h2 id="tituloMensajePlantilla">
                 Aviso
@@ -495,10 +496,10 @@
             <p id="textoMensajePlantilla"></p>
 
 
-            <div class="acciones-modal">
+            <div class="acciones-modal-plantilla">
 
                 <button
-                        class="btn-editar"
+                        class="btn-aceptar-plantilla"
                         onclick="cerrarMensajePlantilla()">
 
                     Aceptar

@@ -38,10 +38,10 @@ async function cargarMenus(){
             contenedor.innerHTML += `
 
 
-            <article class="tarjeta-menu">
+            <article class="menu-tarjeta">
 
 
-                <div class="imagen-menu">
+                <div class="menu-imagen">
 
                     <img
                     src="/${menu.imagen ? menu.imagen : "imagenes/default.png"}"
@@ -52,7 +52,7 @@ async function cargarMenus(){
 
 
 
-                <div class="info-menu">
+                <div class="menu-info">
 
 
                     <h3>
@@ -67,17 +67,17 @@ async function cargarMenus(){
 
 
 
-                    <div class="acciones-menu">
+                    <div class="menu-acciones">
 
                         <button
-                            class="btn-vista"
+                            class="menu-btn-vista"
                             onclick="vistaPreviaMenu(${menu.id_menu})">
                             Vista previa
                         </button>
 
                         <button
-                            class="btn-ver"
-                            onclick="verMenu(${menu.id_menu}, '${menu.nombre}')">
+                            class="menu-btn-ver"
+                            onclick='verMenu(${menu.id_menu}, ${JSON.stringify(menu.nombre)})'>
 
                             Ver Fichas
 
@@ -85,13 +85,13 @@ async function cargarMenus(){
 
                         ${!esConsulta ? `
                             <button
-                                class="btn-editar"
+                                class="menu-btn-editar"
                                 onclick="editarMenu(${menu.id_menu})">
                                 Editar
                             </button>
 
                             <button
-                                class="btn-eliminar"
+                                class="menu-btn-eliminar"
                                 onclick="abrirEliminarMenu(${menu.id_menu})">
                                 Eliminar
                             </button>
@@ -211,10 +211,6 @@ async function guardarNuevoMenu(){
 
         return;
 
-        document.getElementById("nuevoNombre").focus();
-
-        return;
-
     }
 
     if(id_plantilla === ""){
@@ -227,11 +223,6 @@ async function guardarNuevoMenu(){
         document.getElementById("plantillaMenu").focus();
 
         return;
-
-        document.getElementById("plantillaMenu").focus();
-
-        return;
-
     }
 
     const formulario = new FormData();
@@ -416,7 +407,9 @@ document.addEventListener("click", function(e){
 
             modal.style.display = "flex";
 
-            document.querySelector(".modal-contenido h3").textContent =
+            document.querySelector(
+            "#ventanaEmergente .modal-contenido h3"
+            ).textContent =
                 "Crear nuevo menú";
 
             document.getElementById("bloqueImagenActual").style.display = "none";
@@ -492,7 +485,9 @@ async function editarMenu(id_menu){
 
         document.getElementById("nuevaImagen").value = "";
 
-        document.querySelector(".modal-contenido h3").textContent =
+        document.querySelector(
+        "#ventanaEmergente .modal-contenido h3"
+        ).textContent =
             "Editar menú";
 
         document.getElementById("bloqueImagenActual").style.display = "block";

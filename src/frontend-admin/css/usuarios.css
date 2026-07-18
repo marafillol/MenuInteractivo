@@ -1,14 +1,34 @@
-/* =====================================
-   USUARIOS
-===================================== */
+/* =====================================================
+        USUARIOS - ESTILO ADMINISTRACIÓN
+        CSS ENCAPSULADO
+===================================================== */
 
 
-/* ===============================
-   ENCABEZADO
-=============================== */
+/* =====================================================
+        CONTENEDOR PRINCIPAL
+===================================================== */
 
 
-.encabezado-ventana{
+.ventana-usuarios{
+
+    width:100%;
+
+    padding:30px;
+
+    box-sizing:border-box;
+
+    color:#2b241c;
+
+}
+
+
+
+/* =====================================================
+        ENCABEZADO
+===================================================== */
+
+
+.ventana-usuarios .encabezado-usuarios{
 
     display:flex;
 
@@ -16,514 +36,1130 @@
 
     align-items:center;
 
-    margin-bottom:25px;
+    margin-bottom:30px;
+
+    padding-bottom:20px;
+
+    border-bottom:2px solid #705438;
 
 }
 
 
-.encabezado-ventana h2{
+
+.ventana-usuarios .titulo-usuarios{
 
     margin:0;
 
-    color:#263c32;
-
     font-family:serif;
 
-    font-size:32px;
+    font-size:34px;
+
+    letter-spacing:1px;
+
+    color:#263c32;
 
 }
 
 
-.encabezado-ventana p{
+
+.ventana-usuarios .subtitulo-usuarios{
 
     margin-top:8px;
 
-    color:#555;
-
     font-size:16px;
+
+    color:#705438;
+
+    font-style:italic;
 
 }
 
 
 
 
+/* =====================================================
+        BOTÓN NUEVO USUARIO
+===================================================== */
 
-/* ===============================
-   BOTON PRINCIPAL
-=============================== */
 
+.ventana-usuarios .btn-nuevo-usuario{
 
-.boton-principal{
 
     background:#263c32;
 
-    color:#f4eddb;
+
+    color:white;
+
 
     border:none;
 
-    padding:12px 22px;
+
+    padding:13px 22px;
+
 
     border-radius:8px;
 
-    cursor:pointer;
 
     font-size:15px;
 
+
+    cursor:pointer;
+
+
     font-weight:bold;
 
-    transition:.25s;
+
+    transition:.3s;
+
+
+    box-shadow:0 4px 10px rgba(0,0,0,.25);
+
 
 }
 
 
 
-.boton-principal:hover{
+.ventana-usuarios .btn-nuevo-usuario:hover{
 
-    background:#345343;
+
+    background:#405b4d;
+
 
     transform:translateY(-2px);
 
-    box-shadow:0 6px 14px rgba(0,0,0,.25);
 
 }
 
 
+/* =====================================================
+        TABLA USUARIOS
+===================================================== */
 
 
-/* ===============================
-   TABLA USUARIOS
-=============================== */
+.ventana-usuarios .contenedor-tabla-usuarios{
 
-
-.contenedor-tabla{
 
     background:#f4eddb;
 
+
     border:2px solid #705438;
 
-    border-radius:12px;
 
-    padding:20px;
+    border-radius:14px;
 
-    box-shadow:0 5px 12px rgba(0,0,0,.15);
 
-    overflow-x:auto;
+    overflow:hidden;
+
+
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+
 
 }
 
 
 
+/* TABLA */
 
-.tabla{
+
+.ventana-usuarios .tabla-usuarios{
+
 
     width:100%;
 
+
     border-collapse:collapse;
 
-}
-
-
-
-.tabla th{
-
-    background:#263c32;
-
-    color:white;
-
-    padding:14px;
-
-    text-align:left;
 
     font-size:15px;
 
-}
-
-
-
-.tabla td{
-
-    padding:14px;
-
-    border-bottom:1px solid #d5c4a8;
-
-    color:#444;
-
-}
-
-
-
-.tabla tr:hover{
-
-    background:#eee5d2;
-
-}
-
-
-
-.tabla th:first-child{
-
-    border-radius:8px 0 0 0;
-
-}
-
-
-
-.tabla th:last-child{
-
-    border-radius:0 8px 0 0;
 
 }
 
 
 
 
-
-/* ===============================
-   ESTADOS
-=============================== */
+/* CABECERA */
 
 
-.estado-activo{
-
-    color:#263c32;
-
-    font-weight:bold;
-
-}
+.ventana-usuarios .tabla-usuarios thead{
 
 
+    background:#263c32;
 
-.estado-inactivo{
-
-    color:#8b3a3a;
-
-    font-weight:bold;
-
-}
-
-
-
-
-
-/* ===============================
-   ACCIONES TABLA
-=============================== */
-
-
-.acciones-usuario{
-
-    display:flex;
-
-    gap:10px;
-
-    flex-wrap:wrap;
-
-}
-
-
-
-.acciones-usuario button{
-
-    border:none;
-
-    padding:8px 14px;
-
-    border-radius:6px;
-
-    cursor:pointer;
 
     color:white;
 
+
+}
+
+
+
+.ventana-usuarios .tabla-usuarios th{
+
+
+    padding:16px;
+
+
+    text-align:left;
+
+
     font-weight:bold;
 
-}
 
+    letter-spacing:.5px;
 
-
-.btn-editar-usuario{
-
-    background:#705438;
-
-}
-
-
-
-.btn-password-usuario{
-
-    background:#556b2f;
 
 }
 
 
 
-.btn-eliminar-usuario{
+/* CUERPO */
 
-    background:#8b3a3a;
+
+.ventana-usuarios .tabla-usuarios td{
+
+
+    padding:15px;
+
+
+    border-bottom:1px solid #cdbb9c;
+
+
+    color:#3c3024;
+
 
 }
 
 
 
+.ventana-usuarios .tabla-usuarios tr{
 
-.acciones-usuario button:hover{
 
-    transform:translateY(-2px);
+    transition:.2s;
 
-    opacity:.9;
 
 }
 
 
 
+.ventana-usuarios .tabla-usuarios tbody tr:hover{
 
 
-/* ===============================
-   MODAL USUARIO
-=============================== */
+    background:#ebe0c8;
 
-
-#modalUsuario .modal-contenido,
-#modalPassword .modal-contenido{
-
-
-    width:min(550px,90vw);
 
 }
 
 
 
-#modalUsuario h2,
-#modalPassword h2{
+/* =====================================================
+        ESTADO USUARIO
+===================================================== */
+
+
+.ventana-usuarios .tabla-usuarios td:nth-child(4){
+
+
+    font-weight:bold;
+
+
+}
+
+/* =====================================================
+        BOTONES TABLA
+===================================================== */
+
+
+.ventana-usuarios .tabla-usuarios button{
+
+
+    border:none;
+
+
+    padding:8px 12px;
+
+
+    border-radius:6px;
+
+
+    cursor:pointer;
+
+
+    margin-right:5px;
+
+
+    font-size:13px;
+
+
+    font-weight:bold;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+/* EDITAR */
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(1){
+
+
+    background:#8b6f47;
+
+
+    color:white;
+
+
+}
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(1):hover{
+
+
+    background:#a9895d;
+
+
+}
+
+
+
+/* CAMBIAR PASSWORD */
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(2){
+
+
+    background:#263c32;
+
+
+    color:white;
+
+
+}
+
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(2):hover{
+
+
+    background:#405b4d;
+
+
+}
+
+
+
+/* ELIMINAR */
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(3){
+
+
+    background:#8b3a32;
+
+
+    color:white;
+
+
+}
+
+
+
+.ventana-usuarios .tabla-usuarios button:nth-child(3):hover{
+
+
+    background:#a94a3d;
+
+
+}
+
+/* =====================================================
+        MODALES USUARIOS
+===================================================== */
+
+
+.modal-usuarios{
+
+
+    position:fixed;
+
+
+    inset:0;
+
+
+    background:rgba(0,0,0,.55);
+
+
+    display:none;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    z-index:2000;
+
+
+}
+
+
+
+.modal-usuarios .contenido-modal-usuarios{
+
+
+    background:#f4eddb;
+
+
+    width:420px;
+
+
+    padding:30px;
+
+
+    border-radius:15px;
+
+
+    border:2px solid #705438;
+
+
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+
+
+}
+
+
+
+/* TITULO MODAL */
+
+
+.modal-usuarios h2{
 
 
     margin-top:0;
 
+
     color:#263c32;
+
 
     font-family:serif;
 
-    font-size:26px;
+
+    border-bottom:1px solid #705438;
+
+
+    padding-bottom:12px;
+
 
 }
 
 
 
+/* LABEL */
 
 
-/* ===============================
-   FORMULARIO
-=============================== */
+.modal-usuarios label{
 
-
-#modalUsuario label,
-#modalPassword label{
 
     display:block;
 
+
     margin-top:15px;
 
-    margin-bottom:5px;
 
-    color:#263c32;
+    margin-bottom:6px;
+
 
     font-weight:bold;
+
+
+    color:#3b3025;
+
 
 }
 
 
 
+/* INPUTS */
 
-#modalUsuario input,
-#modalUsuario select,
-#modalPassword input{
+
+.modal-usuarios input,
+.modal-usuarios select{
 
 
     width:100%;
 
-    padding:10px;
 
-    border:1px solid #705438;
+    padding:11px;
 
-    border-radius:6px;
+
+    border-radius:7px;
+
+
+    border:1px solid #b79c72;
+
+
+    background:white;
+
 
     box-sizing:border-box;
+
 
 }
 
 
 
-
-
-#modalUsuario input:focus,
-#modalUsuario select:focus,
-#modalPassword input:focus{
+.modal-usuarios input:focus,
+.modal-usuarios select:focus{
 
 
     outline:none;
 
+
     border-color:#263c32;
+
 
 }
 
 
 
+/* ACCIONES */
 
 
-/* ===============================
-   CHECKBOX
-=============================== */
+.modal-usuarios .acciones-modal-usuarios{
 
-
-#modalUsuario label:has(input[type="checkbox"]){
 
     display:flex;
 
-    align-items:center;
 
-    gap:10px;
-
-    margin-top:20px;
-
-}
+    justify-content:flex-end;
 
 
-
-#modalUsuario input[type="checkbox"]{
-
-    width:auto;
-
-}
-
-
-
-
-
-/* ===============================
-   BOTONES MODAL
-=============================== */
-
-
-#modalUsuario .acciones-modal,
-#modalPassword .acciones-modal{
+    gap:12px;
 
 
     margin-top:25px;
 
-    display:flex;
-
-    justify-content:flex-end;
-
-    gap:15px;
 
 }
 
 
 
-#modalUsuario .acciones-modal button:first-child,
-#modalPassword .acciones-modal button:first-child{
+/* GUARDAR */
 
 
-    background:#705438;
+.modal-usuarios .btn-guardar-usuario{
+
+
+    background:#263c32;
+
 
     color:white;
 
-}
 
-
-
-#modalUsuario .acciones-modal button,
-#modalPassword .acciones-modal button{
+    padding:11px 20px;
 
 
     border:none;
 
-    padding:10px 18px;
 
-    border-radius:6px;
+    border-radius:7px;
+
 
     cursor:pointer;
 
-    font-weight:bold;
 
 }
 
 
 
+/* CANCELAR */
 
 
-/* ===============================
-   RESPONSIVE
-=============================== */
+.modal-usuarios button:not(.btn-guardar-usuario){
 
 
-@media(max-width:700px){
+    background:#8b6f47;
 
 
-    .encabezado-ventana{
-
-        flex-direction:column;
-
-        align-items:flex-start;
-
-        gap:15px;
-
-    }
+    color:white;
 
 
-    .tabla{
+    padding:11px 20px;
 
-        font-size:14px;
 
-    }
+    border:none;
+
+
+    border-radius:7px;
+
+
+    cursor:pointer;
+
+
+}
+
+/* =====================================================
+        FORMULARIO USUARIOS - FICHA ADMINISTRATIVA
+===================================================== */
+
+
+.modal-usuarios .contenido-modal-usuarios{
+
+
+    width:480px;
+
+
+    background:#eee2c6;
+
+
+    border:3px solid #705438;
+
+
+    border-radius:18px;
+
+
+    padding:35px;
+
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.45);
+
+
+    position:relative;
 
 
 }
 
 
 
-/* =====================================
-   MODAL MENSAJES
-===================================== */
+/* CABECERA */
 
-.modal-mensaje{
+.modal-usuarios .contenido-modal-usuarios h2{
 
-    max-width:500px;
 
     text-align:center;
 
-}
+
+    font-family:serif;
 
 
-.modal-mensaje h2{
+    font-size:30px;
 
-    margin-bottom:15px;
 
     color:#263c32;
 
-    font-size:26px;
-
-}
-
-
-.modal-mensaje p{
 
     margin-bottom:25px;
 
-    color:#4d3b2f;
 
-    line-height:1.6;
+    padding-bottom:15px;
 
-    font-size:16px;
+
+    border-bottom:2px solid #705438;
+
 
 }
 
 
-.acciones-modal{
+
+/* LINEA DECORATIVA */
+
+.modal-usuarios .contenido-modal-usuarios h2::before{
+
+
+    content:"✦";
+
+
+    display:block;
+
+
+    font-size:22px;
+
+
+    margin-bottom:8px;
+
+
+    color:#705438;
+
+
+}
+
+
+
+
+/* GRUPOS DE CAMPOS */
+
+
+.modal-usuarios label{
+
+
+    color:#3a3025;
+
+
+    font-size:15px;
+
+
+    letter-spacing:.4px;
+
+
+}
+
+
+
+/* INPUTS */
+
+
+.modal-usuarios input,
+.modal-usuarios select{
+
+
+    background:#fffaf0;
+
+
+    border:2px solid #b99b6b;
+
+
+    border-radius:10px;
+
+
+    padding:13px;
+
+
+    font-size:15px;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+.modal-usuarios input:hover,
+.modal-usuarios select:hover{
+
+
+    border-color:#705438;
+
+
+}
+
+
+
+.modal-usuarios input:focus,
+.modal-usuarios select:focus{
+
+
+    border-color:#263c32;
+
+
+    box-shadow:
+    0 0 0 3px rgba(38,60,50,.15);
+
+
+}
+
+
+
+
+/* CAMPO PASSWORD */
+
+#contenedorPassword{
+
+
+    background:#e6d6b6;
+
+
+    padding:15px;
+
+
+    border-radius:12px;
+
+
+    border-left:5px solid #705438;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+/* CHECKBOX */
+
+
+.modal-usuarios input[type="checkbox"]{
+
+
+    width:auto;
+
+
+    transform:scale(1.2);
+
+
+    margin-right:10px;
+
+
+}
+
+
+
+.modal-usuarios label:has(input[type="checkbox"]){
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    background:#e6d6b6;
+
+
+    padding:12px;
+
+
+    border-radius:10px;
+
+
+    margin-top:20px;
+
+
+}
+
+
+
+/* BOTONES */
+
+
+.modal-usuarios .acciones-modal{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    margin-top:30px;
+
+
+    gap:15px;
+
+
+}
+
+
+
+.modal-usuarios .acciones-modal button{
+
+
+    flex:1;
+
+
+    padding:14px;
+
+
+    border-radius:10px;
+
+
+    border:none;
+
+
+    font-size:15px;
+
+
+    font-weight:bold;
+
+
+    cursor:pointer;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+/* CANCELAR */
+
+.modal-usuarios .acciones-modal button:first-child{
+
+
+    background:#8b6f47;
+
+
+    color:white;
+
+
+}
+
+
+
+
+.modal-usuarios .acciones-modal button:first-child:hover{
+
+
+    background:#a98a5b;
+
+
+}
+
+
+
+
+/* GUARDAR */
+
+
+.modal-usuarios .btn-guardar-usuario{
+
+
+    background:#263c32;
+
+
+    color:white;
+
+
+}
+
+
+
+.modal-usuarios .btn-guardar-usuario:hover{
+
+
+    background:#405b4d;
+
+
+    transform:translateY(-2px);
+
+
+}
+/* =====================================
+   MODALES USUARIOS
+===================================== */
+
+
+.modal-usuarios{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    background:rgba(0,0,0,0.55);
 
     display:flex;
 
     justify-content:center;
 
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+
+
+/* CONTENIDO GENERAL DEL MODAL */
+
+.contenido-modal-usuarios,
+.contenido-modal-mensaje-usuarios,
+.contenido-modal-eliminar-usuarios{
+
+
+    background:#f4eddb;
+
+
+    width:420px;
+
+
+    max-width:90%;
+
+
+    padding:30px;
+
+
+    border-radius:15px;
+
+
+    border:2px solid #705438;
+
+
+    box-shadow:0 10px 35px rgba(0,0,0,0.45);
+
+
+    color:#263c32;
+
+
+}
+
+
+
+/* TITULOS */
+
+.contenido-modal-usuarios h2,
+.contenido-modal-mensaje-usuarios h2,
+.contenido-modal-eliminar-usuarios h2{
+
+
+    margin-top:0;
+
+
+    color:#263c32;
+
+
+    font-family:serif;
+
+
+    text-align:center;
+
+
+}
+
+
+
+/* MENSAJES */
+
+.contenido-modal-mensaje-usuarios{
+
+
+    text-align:center;
+
+
+}
+
+
+
+.contenido-modal-mensaje-usuarios p{
+
+
+    margin:20px 0;
+
+
+    color:#705438;
+
+
+    font-size:16px;
+
+
+}
+
+
+
+/* BOTONES MODALES */
+
+.acciones-modal-usuarios{
+
+
+    display:flex;
+
+
+    justify-content:flex-end;
+
+
     gap:15px;
+
+
+    margin-top:25px;
+
+
+}
+
+
+
+.acciones-modal-usuarios button{
+
+
+    padding:10px 20px;
+
+
+    border-radius:8px;
+
+
+    border:1px solid #705438;
+
+
+    cursor:pointer;
+
+
+    background:#ddd;
+
+
+    color:#263c32;
+
+
+}
+
+
+
+.acciones-modal-usuarios button:hover{
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+/* BOTON PRINCIPAL */
+
+.btn-nuevo-usuario{
+
+
+    background:#556b2f !important;
+
+
+    color:white !important;
+
+
+    border:none !important;
+
+
+}
+
+
+
+.btn-nuevo-usuario:hover{
+
+
+    background:#3f5221 !important;
+
+
+}
+
+
+
+/* ELIMINAR */
+
+.contenido-modal-eliminar-usuarios{
+
+
+    text-align:center;
+
+
+}
+
+
+.contenido-modal-eliminar-usuarios p{
+
+
+    color:#705438;
+
+
+    line-height:1.5;
+
 
 }

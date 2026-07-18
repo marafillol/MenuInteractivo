@@ -1,60 +1,66 @@
-/* =====================================
+/* ==========================================================
    ETIQUETAS
-===================================== */
+========================================================== */
+
+.ventana-etiquetas{
+    padding:30px;
+}
 
 
-/* ===============================
-   TITULO SECCION
-=============================== */
+/* ==========================================================
+   CABECERA
+========================================================== */
 
+.ventana-etiquetas .cabecera-etiquetas{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
 
-.titulo-seccion{
-
-    margin:0 0 20px;
-
-    font-family:serif;
-
-    font-size:32px;
-
+.ventana-etiquetas .titulo-etiquetas{
+    margin:0;
+    font-size:34px;
     color:#263c32;
+    font-family:serif;
+}
 
+.ventana-etiquetas .btn-nuevo-etiqueta{
+    padding:12px 22px;
+    border:none;
+    border-radius:10px;
+    background:#556b2f;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.ventana-etiquetas .btn-nuevo-etiqueta:hover{
+    background:#6c8440;
+    transform:translateY(-2px);
 }
 
 
+/* ==========================================================
+   GRID
+========================================================== */
 
-
-
-/* ===============================
-   GRID ETIQUETAS
-=============================== */
-
-
-.grid-etiquetas{
-
+.ventana-etiquetas .grid-etiquetas-panel{
     display:grid;
-
-    grid-template-columns:
-    repeat(auto-fill,minmax(280px,1fr));
-
-    gap:25px;
-
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:24px;
     margin-top:25px;
-
 }
 
 
+/* ==========================================================
+   TARJETAS
+========================================================== */
 
+.ventana-etiquetas .tarjeta-etiqueta{
 
-
-/* ===============================
-   TARJETA ETIQUETA
-=============================== */
-
-
-.tarjeta-etiqueta{
-
-
-    background:#f4eddb;
+    background:#f7f1df;
 
     border:2px solid #705438;
 
@@ -62,552 +68,380 @@
 
     padding:22px;
 
-    min-height:180px;
-
     display:flex;
 
     flex-direction:column;
 
     justify-content:space-between;
 
-    box-shadow:
-    0 8px 18px rgba(0,0,0,.15);
-
     transition:.25s;
 
+    box-shadow:0 8px 20px rgba(0,0,0,.10);
 
 }
 
+.ventana-etiquetas .tarjeta-etiqueta:hover{
 
+    transform:translateY(-5px);
 
-.tarjeta-etiqueta:hover{
-
-
-    transform:translateY(-4px);
-
-
-    box-shadow:
-    0 12px 25px rgba(0,0,0,.25);
-
+    box-shadow:0 18px 35px rgba(0,0,0,.18);
 
 }
 
+.ventana-etiquetas .info-etiqueta h3{
 
+    margin:0 0 10px;
 
-
-
-/* ===============================
-   INFORMACION ETIQUETA
-=============================== */
-
-
-.info-etiqueta h3{
-
-
-    margin:0 0 12px;
-
-
-    font-size:23px;
-
+    font-size:24px;
 
     color:#263c32;
 
+    font-family:serif;
 
 }
 
-
-
-.info-etiqueta p{
-
-
-    color:#554536;
-
-
-    font-size:16px;
-
-
-    line-height:1.5;
-
-
-}
-
-
-
-
-.estado-etiqueta{
-
-
-    display:inline-block;
-
-
-    margin-top:12px;
-
-
-    padding:5px 12px;
-
-
-    border-radius:15px;
-
-
-    font-size:13px;
-
-
-    font-weight:bold;
-
-
-}
-
-
-
-.estado-activa{
-
-
-    background:#dce8d4;
-
-    color:#263c32;
-
-
-}
-
-
-
-.estado-inactiva{
-
-
-    background:#ead3d3;
-
-    color:#8b3a3a;
-
-
-}
-
-
-
-
-
-/* ===============================
-   ACCIONES ETIQUETA
-=============================== */
-
-
-.acciones-etiqueta{
-
-
-    display:flex;
-
-
-    gap:10px;
-
-
-    margin-top:20px;
-
-
-    flex-wrap:wrap;
-
-
-}
-
-
-
-.acciones-etiqueta button{
-
-
-    border:none;
-
-
-    padding:10px 15px;
-
-
-    border-radius:8px;
-
-
-    cursor:pointer;
-
-
-    font-weight:bold;
-
-
-    color:white;
-
-
-    transition:.2s;
-
-
-}
-
-
-
-
-.acciones-etiqueta button:hover{
-
-
-    transform:translateY(-2px);
-
-
-    opacity:.9;
-
-
-}
-
-
-
-
-
-.btn-vista-previa{
-
-
-    background:#304b38;
-
-
-}
-
-
-
-.btn-editar{
-
-
-    background:#806040;
-
-
-}
-
-
-
-.btn-eliminar{
-
-
-    background:#943b3b;
-
-
-}
-
-
-
-
-
-/* ===============================
-   MODAL ETIQUETA
-=============================== */
-
-
-#modalEtiqueta .modal-contenido,
-#modalVistaEtiqueta .modal-contenido,
-#modalEliminarEtiqueta .modal-contenido{
-
-
-    width:min(550px,90vw);
-
-
-}
-
-
-
-
-
-/* ===============================
-   ENCABEZADO MODAL
-=============================== */
-
-
-.encabezado-modal{
-
-
-    display:flex;
-
-
-    justify-content:space-between;
-
-
-    align-items:center;
-
-
-    margin-bottom:20px;
-
-
-    padding-bottom:12px;
-
-
-    border-bottom:2px solid #d3c0a1;
-
-
-}
-
-
-
-.encabezado-modal h3{
-
+.ventana-etiquetas .info-etiqueta p{
 
     margin:0;
 
-
-    color:#5b4227;
-
-
-    font-size:22px;
-
-
-}
-
-
-
-
-
-/* ===============================
-   FORMULARIO
-=============================== */
-
-
-#modalEtiqueta label,
-#modalVistaEtiqueta label{
-
-
-    display:block;
-
-
-    margin-top:15px;
-
-
-    margin-bottom:6px;
-
-
-    color:#263c32;
-
-
-    font-weight:bold;
-
-
-}
-
-
-
-
-
-#modalEtiqueta input,
-#modalEtiqueta textarea,
-#modalVistaEtiqueta input,
-#modalVistaEtiqueta textarea{
-
-
-    width:100%;
-
-
-    box-sizing:border-box;
-
-
-    padding:10px;
-
-
-    border:1px solid #705438;
-
-
-    border-radius:7px;
-
-
-    background:white;
-
-
-}
-
-
-
-
-
-#modalEtiqueta textarea,
-#modalVistaEtiqueta textarea{
-
-
-    resize:vertical;
-
-
-}
-
-
-
-
-#modalEtiqueta input:focus,
-#modalEtiqueta textarea:focus{
-
-
-    outline:none;
-
-
-    border-color:#263c32;
-
-
-}
-
-
-
-
-
-/* ===============================
-   CHECKBOX
-=============================== */
-
-
-.checkbox-label{
-
-
-    display:flex!important;
-
-
-    align-items:center;
-
-
-    gap:10px;
-
-
-    margin-top:18px;
-
-
-}
-
-
-
-.checkbox-label input{
-
-
-    width:auto!important;
-
-
-}
-
-
-
-
-
-/* ===============================
-   VISTA PREVIA
-=============================== */
-
-
-#modalVistaEtiqueta input[readonly],
-#modalVistaEtiqueta textarea[readonly]{
-
-
-    background:#f5f0e5;
-
-
-    color:#555;
-
-
-}
-
-
-
-
-
-/* ===============================
-   CONFIRMACION ELIMINAR
-=============================== */
-
-
-.modal-confirmacion{
-
-
-    text-align:center;
-
-
-}
-
-
-
-.mensaje-confirmacion{
-
-
-    color:#555;
-
+    color:#6b5a47;
 
     line-height:1.6;
 
-
-    font-size:16px;
-
+    min-height:70px;
 
 }
 
 
+/* ==========================================================
+   BOTONES TARJETA
+========================================================== */
 
-.mensaje-confirmacion strong{
+.ventana-etiquetas .acciones-etiqueta{
 
+    display:flex;
 
-    color:#263c32;
+    gap:10px;
 
-
-    font-size:18px;
-
-
-}
-
-
-
-
-
-/* ===============================
-   RESPONSIVE
-=============================== */
-
-
-@media(max-width:700px){
-
-
-    .grid-etiquetas{
-
-
-        grid-template-columns:1fr;
-
-
-    }
-
-
-    .acciones-etiqueta{
-
-
-        flex-direction:column;
-
-
-    }
-
-
-    .acciones-etiqueta button{
-
-
-        width:100%;
-
-
-    }
-
+    margin-top:22px;
 
 }
 
+.ventana-etiquetas .acciones-etiqueta button{
 
-
-
-/* ===============================
-   BOTON NUEVA ETIQUETA
-=============================== */
-
-.btn-nuevo{
-
-    background:#304b38;
-
-    color:white;
+    flex:1;
 
     border:none;
 
-    padding:12px 20px;
-
     border-radius:10px;
 
-    cursor:pointer;
+    padding:11px;
 
     font-weight:bold;
 
-    font-size:16px;
+    cursor:pointer;
 
-    margin-bottom:20px;
-
-    transition:.2s;
+    transition:.25s;
 
 }
 
+.ventana-etiquetas .acciones-etiqueta button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.ventana-etiquetas .btn-vista-previa{
+
+    background:#405f4f;
+
+    color:white;
+
+}
+
+.ventana-etiquetas .btn-editar{
+
+    background:#d8b14a;
+
+    color:#222;
+
+}
+
+.ventana-etiquetas .btn-eliminar{
+
+    background:#b24b44;
+
+    color:white;
+
+}
+
+
+/* ==========================================================
+   MODALES
+========================================================== */
+
+.ventana-etiquetas .modal-etiqueta{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.ventana-etiquetas .contenido-modal-etiqueta{
+
+    width:min(92%,700px);
+
+    background:#f7f1df;
+
+    border:2px solid #705438;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    max-height:90vh;
+
+    overflow:auto;
+
+    box-shadow:0 20px 45px rgba(0,0,0,.35);
+
+    animation:modalEtiqueta .25s ease;
+
+}
+
+
+/* ==========================================================
+   CABECERA MODAL
+========================================================== */
+
+.ventana-etiquetas .encabezado-modal-etiqueta{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.ventana-etiquetas .encabezado-modal-etiqueta h3{
+
+    margin:0;
+
+    color:#263c32;
+
+    font-size:28px;
+
+}
+
+.ventana-etiquetas .cerrar-modal-etiqueta{
+
+    width:40px;
+
+    height:40px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#705438;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    transition:.25s;
+
+}
+
+.ventana-etiquetas .cerrar-modal-etiqueta:hover{
+
+    transform:rotate(90deg);
+
+}
+
+
+/* ==========================================================
+   FORMULARIO
+========================================================== */
+
+.ventana-etiquetas label{
+
+    display:block;
+
+    margin-top:18px;
+
+    margin-bottom:8px;
+
+    color:#4d3927;
+
+    font-weight:bold;
+
+}
+
+.ventana-etiquetas input,
+
+.ventana-etiquetas textarea{
+
+    width:100%;
+
+    padding:12px;
+
+    border:2px solid #cdb38d;
+
+    border-radius:10px;
+
+    background:white;
+
+    box-sizing:border-box;
+
+    font-size:15px;
+
+}
+
+.ventana-etiquetas textarea{
+
+    resize:vertical;
+
+    min-height:130px;
+
+}
+
+.ventana-etiquetas input:focus,
+
+.ventana-etiquetas textarea:focus{
+
+    outline:none;
+
+    border-color:#556b2f;
+
+    box-shadow:0 0 0 3px rgba(85,107,47,.18);
+
+}
+
+
+/* ==========================================================
+   CHECKBOX
+========================================================== */
+
+.ventana-etiquetas .checkbox-etiqueta{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-top:22px;
+
+}
+
+.ventana-etiquetas .checkbox-etiqueta input{
+
+    width:18px;
+
+    height:18px;
+
+}
+
+
+/* ==========================================================
+   BOTONES MODAL
+========================================================== */
+
+.ventana-etiquetas .acciones-modal-etiqueta{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:30px;
+
+}
+
+.ventana-etiquetas .acciones-modal-etiqueta button{
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:12px 24px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.ventana-etiquetas .acciones-modal-etiqueta button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+/* ==========================================================
+   MENSAJES
+========================================================== */
+
+.ventana-etiquetas .confirmacion-etiqueta{
+
+    max-width:500px;
+
+    text-align:center;
+
+}
+
+.ventana-etiquetas .mensaje-confirmacion-etiqueta{
+
+    line-height:1.7;
+
+    color:#555;
+
+    font-size:17px;
+
+}
+
+
+/* ==========================================================
+   ANIMACIÓN
+========================================================== */
+
+@keyframes modalEtiqueta{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-20px) scale(.96);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0) scale(1);
+
+    }
+
+}

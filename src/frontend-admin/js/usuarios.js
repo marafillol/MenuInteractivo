@@ -1,11 +1,11 @@
 console.log("usuarios.js cargado");
 
 
-let usuarioEditando = null;
+let usuarioEditandoUsuarios = null;
 
-let usuarioPassword = null;
+let usuarioPasswordUsuarios = null;
 
-let idUsuarioEliminar = null;
+let idUsuarioEliminarUsuarios  = null;
 
 
 
@@ -45,10 +45,10 @@ async function cargarUsuarios(){
         await respuesta.json();
 
 
-        cerrarModalUsuario();
+        cerrarModalUsuarioUsuarios();
 
 
-        mostrarMensaje(
+        mostrarMensajeUsuarios(
 
             "Acción no permitida",
 
@@ -92,17 +92,17 @@ async function cargarUsuarios(){
             <td>
 
                 <button
-                onclick="editarUsuario(${usuario.id_usuario})">
+                onclick="editarUsuarioUsuarios(${usuario.id_usuario})">
                     Editar
                 </button>
 
 
                 <button
-                onclick="abrirCambioPassword(${usuario.id_usuario})">
+                onclick="abrirCambioPasswordUsuarios(${usuario.id_usuario})">
                     Cambiar contraseña
                 </button>
 
-                <button onclick="abrirModalEliminar(${usuario.id_usuario}, '${usuario.nombre}')">
+                <button onclick="abrirModalEliminarUsuarios(${usuario.id_usuario}, '${usuario.nombre}')">
                     Eliminar
                 </button>
 
@@ -121,24 +121,24 @@ async function cargarUsuarios(){
 }
 
 
-function abrirModalEliminar(id, nombre){
+function abrirModalEliminarUsuarios(id, nombre){
 
-    idUsuarioEliminar = id;
+    idUsuarioEliminarUsuarios  = id;
 
-    document.getElementById("textoEliminar").innerHTML =
+    document.getElementById("textoEliminarUsuarios").innerHTML =
 
         `¿Estás seguro de que querés eliminar al usuario <strong>${nombre}</strong>?<br><br>
         Esta acción eliminará el usuario del sistema y de Firebase.`;
 
-    document.getElementById("modalEliminar").style.display = "flex";
+    document.getElementById("modalEliminarUsuarios").style.display = "flex";
 
 }
 
-function cerrarModalEliminar(){
+function cerrarModalEliminarUsuarios(){
 
-    idUsuarioEliminar = null;
+    idUsuarioEliminarUsuarios  = null;
 
-    document.getElementById("modalEliminar").style.display = "none";
+    document.getElementById("modalEliminarUsuarios").style.display = "none";
 
 }
 
@@ -162,7 +162,7 @@ async function eliminarUsuario(id){
 
     if(!respuesta.ok){
 
-        mostrarMensaje(
+        mostrarMensajeUsuarios(
 
                 "Operación no permitida",
 
@@ -175,7 +175,7 @@ async function eliminarUsuario(id){
     }
 
 
-    mostrarMensaje(
+    mostrarMensajeUsuarios(
 
         "Usuario eliminado",
 
@@ -188,9 +188,9 @@ async function eliminarUsuario(id){
 
 }
 
-async function confirmarEliminarUsuario(){
+async function confirmarEliminarUsuarioUsuarios(){
 
-    if(!idUsuarioEliminar){
+    if(!idUsuarioEliminarUsuarios){
 
         return;
 
@@ -199,7 +199,7 @@ async function confirmarEliminarUsuario(){
 
     const respuesta = await fetchProtegido(
 
-        `/api/usuarios/${idUsuarioEliminar}`,
+        `/api/usuarios/${idUsuarioEliminarUsuarios }`,
 
         {
 
@@ -214,14 +214,14 @@ async function confirmarEliminarUsuario(){
 
 
 
-    cerrarModalEliminar();
+    cerrarModalEliminarUsuarios();
 
 
 
     if(!respuesta.ok){
 
 
-        mostrarMensaje(
+        mostrarMensajeUsuarios(
 
             "No se puede eliminar",
 
@@ -236,7 +236,7 @@ async function confirmarEliminarUsuario(){
 
 
 
-    mostrarMensaje(
+    mostrarMensajeUsuarios(
 
         "Usuario eliminado",
 
@@ -250,9 +250,9 @@ async function confirmarEliminarUsuario(){
 
 }
 
-function abrirModalUsuario(){
+function abrirModalUsuarioUsuarios(){
 
-    if(!usuarioEditando){
+    if(!usuarioEditandoUsuarios ){
 
         document.getElementById(
             "nombreUsuarioNuevo"
@@ -288,7 +288,7 @@ function abrirModalUsuario(){
 
 
     document
-    .getElementById("modalUsuario")
+    .getElementById("modalUsuarioUsuarios")
     .style.display="flex";
 
 }
@@ -299,19 +299,19 @@ function abrirModalUsuario(){
 
 
 
-function cerrarModalUsuario(){
+function cerrarModalUsuarioUsuarios(){
 
 
     document
-    .getElementById("modalUsuario")
+    .getElementById("modalUsuarioUsuarios")
     .style.display="none";
 
 
-    usuarioEditando=null;
+    usuarioEditandoUsuarios =null;
 
 
     document.getElementById(
-        "tituloModalUsuario"
+        "tituloModalUsuarioUsuarios"
     ).innerText="Nuevo Usuario";
 
 
@@ -324,35 +324,117 @@ function cerrarModalUsuario(){
 
 
 
-async function guardarUsuario(){
-
+async function guardarUsuarioUsuarios(){
 
 
     const nombre =
-    document.getElementById("nombreUsuarioNuevo").value;
+    document.getElementById("nombreUsuarioNuevo")
+    .value
+    .trim();
+
 
     const email =
-    document.getElementById("emailUsuarioNuevo").value;
+    document.getElementById("emailUsuarioNuevo")
+    .value
+    .trim();
+
 
     const rol =
-    document.getElementById("rolUsuarioNuevo").value;
+    document.getElementById("rolUsuarioNuevo")
+    .value;
+
 
     const password =
-    document.getElementById("passwordUsuarioNuevo").value;
+    document.getElementById("passwordUsuarioNuevo")
+    .value
+    .trim();
+
 
 
     const activo =
     document.getElementById(
-    "activoUsuarioNuevo"
+        "activoUsuarioNuevo"
     ).checked
     ? 1
     : 0;
 
 
 
+    // ==================================
+    // VALIDACIONES DEL FORMULARIO
+    // ==================================
+
+
+    if(!nombre){
+
+        mostrarMensajeUsuarios(
+
+            "Datos incompletos",
+
+            "Debe ingresar el nombre del usuario."
+
+        );
+
+        return;
+
+    }
+
+
+
+    if(!email){
+
+        mostrarMensajeUsuarios(
+
+            "Datos incompletos",
+
+            "Debe ingresar el correo electrónico."
+
+        );
+
+        return;
+
+    }
+
+
+
+    // Solo controla contraseña cuando es usuario nuevo
+
+    if(!usuarioEditandoUsuarios && !password){
+
+        mostrarMensajeUsuarios(
+
+            "Datos incompletos",
+
+            "Debe ingresar una contraseña para crear el usuario."
+
+        );
+
+        return;
+
+    }
+
+
+
+    if(!usuarioEditandoUsuarios && password.length < 6){
+
+        mostrarMensajeUsuarios(
+
+            "Contraseña inválida",
+
+            "La contraseña debe tener al menos 6 caracteres."
+
+        );
+
+        return;
+
+    }
+
+
+
 
     const token =
     await window.obtenerTokenFirebase();
+
 
 
 
@@ -373,11 +455,17 @@ async function guardarUsuario(){
 
 
 
-    if(usuarioEditando){
+
+    // ==================================
+    // EDITAR USUARIO
+    // ==================================
+
+
+    if(usuarioEditandoUsuarios){
 
 
         url =
-        `/api/usuarios/${usuarioEditando}`;
+        `/api/usuarios/${usuarioEditandoUsuarios}`;
 
 
         metodo =
@@ -399,7 +487,15 @@ async function guardarUsuario(){
 
 
 
-    }else{
+    }
+
+
+    // ==================================
+    // CREAR USUARIO
+    // ==================================
+
+
+    else{
 
 
         datos={
@@ -423,86 +519,163 @@ async function guardarUsuario(){
 
 
 
-    const respuesta =
-    await window.fetchProtegido(
-        url,
-        {
 
 
-            method:metodo,
+    try{
 
 
-            headers:{
+        const respuesta =
+        await window.fetchProtegido(
+
+            url,
+
+            {
 
 
-                "Content-Type":
-                "application/json",
+                method:metodo,
 
 
-                Authorization:
-                `Bearer ${token}`
+                headers:{
 
 
-            },
+                    "Content-Type":
+                    "application/json",
 
 
-            body:
-            JSON.stringify(datos)
+                    Authorization:
+                    `Bearer ${token}`
 
 
-        }
-    );
+                },
 
 
+                body:
+                JSON.stringify(datos)
 
 
-
-    const resultado =
-    await respuesta.json();
-
-
-
-
-    if(respuesta.ok){
-
-
-        mostrarMensaje(
-
-            usuarioEditando
-            ?
-            "Usuario actualizado"
-            :
-            "Usuario creado",
-
-            usuarioEditando
-            ?
-            "Los datos del usuario fueron modificados correctamente."
-            :
-            "El usuario fue creado correctamente en el sistema."
+            }
 
         );
 
 
-        cerrarModalUsuario();
-
-
-        cargarUsuarios();
 
 
 
-    }else{
+        const resultado =
+        await respuesta.json();
 
 
-         mostrarMensaje(
 
-             "No se pudo crear el usuario",
 
-             resultado.error
 
-         );
+
+        if(respuesta.ok){
+
+
+
+            mostrarMensajeUsuarios(
+
+
+                usuarioEditandoUsuarios
+
+                ?
+
+                "Usuario actualizado"
+
+                :
+
+                "Usuario creado",
+
+
+
+                usuarioEditandoUsuarios
+
+                ?
+
+                "Los datos del usuario fueron modificados correctamente."
+
+                :
+
+                "El usuario fue creado correctamente en el sistema."
+
+
+            );
+
+
+
+            cerrarModalUsuarioUsuarios();
+
+
+
+            cargarUsuarios();
+
+
+
+        }
+
+
+
+        else{
+
+
+            let mensaje =
+            resultado.error ||
+            "Ocurrió un error inesperado.";
+
+
+
+            if(
+                mensaje.includes(
+                    "email address is already in use"
+                )
+            ){
+
+                mensaje =
+                "El correo electrónico ingresado ya pertenece a otro usuario del sistema.";
+
+            }
+
+
+
+            mostrarMensajeUsuarios(
+
+
+                "No se pudo guardar el usuario",
+
+
+                mensaje
+
+
+            );
+
+
+        }
+
 
 
     }
+
+
+    catch(error){
+
+
+        console.error(
+            "Error guardando usuario:",
+            error
+        );
+
+
+        mostrarMensajeUsuarios(
+
+            "Error del sistema",
+
+            "No se pudo conectar con el servidor."
+
+        );
+
+
+    }
+
 
 
 }
@@ -512,15 +685,11 @@ async function guardarUsuario(){
 
 
 
+async function editarUsuarioUsuarios(id){
 
 
 
-
-async function editarUsuario(id){
-
-
-
-    usuarioEditando=id;
+    usuarioEditandoUsuarios =id;
 
 
 
@@ -596,11 +765,11 @@ async function editarUsuario(id){
 
 
     document.getElementById(
-    "tituloModalUsuario"
+    "tituloModalUsuarioUsuarios"
     ).innerText =
     "Editar Usuario";
 
-    abrirModalUsuario();
+    abrirModalUsuarioUsuarios();
 
 
 
@@ -611,23 +780,23 @@ async function editarUsuario(id){
 // MODAL MENSAJES
 // ======================================
 
-function mostrarMensaje(titulo, mensaje){
+function mostrarMensajeUsuarios(titulo, mensaje){
 
-    document.getElementById("tituloMensaje").textContent = titulo;
+    document.getElementById("tituloMensajeUsuarios").textContent = titulo;
 
-    document.getElementById("textoMensaje").textContent = mensaje;
+    document.getElementById("textoMensajeUsuarios").textContent = mensaje;
 
     document
-        .getElementById("modalMensaje")
+        .getElementById("modalMensajeUsuarios")
         .style.display = "flex";
 
 }
 
 
-function cerrarMensaje(){
+function cerrarMensajeUsuarios(){
 
     document
-        .getElementById("modalMensaje")
+        .getElementById("modalMensajeUsuarios")
         .style.display = "none";
 
 }
@@ -635,21 +804,21 @@ function cerrarMensaje(){
 
 
 
-function abrirCambioPassword(id){
+function abrirCambioPasswordUsuarios(id){
 
 
-    usuarioPassword=id;
+    usuarioPasswordUsuarios =id;
 
 
     document
-    .getElementById("modalPassword")
+    .getElementById("modalPasswordUsuarios")
     .style.display="flex";
 
 
 }
 
 
-async function guardarPassword(){
+async function guardarPasswordUsuarios(){
 
 
 const password =
@@ -667,7 +836,7 @@ await window.obtenerTokenFirebase();
 const respuesta =
 await window.fetchProtegido(
 
-`/api/usuarios/${usuarioPassword}/password`,
+`/api/usuarios/${usuarioPasswordUsuarios }/password`,
 
 {
 
@@ -701,7 +870,7 @@ await respuesta.json();
 if(respuesta.ok){
 
 
-    mostrarMensaje(
+    mostrarMensajeUsuarios(
 
         "Contraseña modificada",
 
@@ -710,7 +879,7 @@ if(respuesta.ok){
     );
 
 
-    cerrarModalPassword();
+    cerrarModalPasswordUsuarios();
 
 
     document.getElementById(
@@ -721,7 +890,7 @@ if(respuesta.ok){
 }else{
 
 
-    mostrarMensaje(
+    mostrarMensajeUsuarios(
 
         "Error",
 
@@ -736,27 +905,30 @@ if(respuesta.ok){
 
 
 document
-.getElementById("btnAceptarMensaje")
-.addEventListener("click", cerrarMensaje);
+.getElementById("btnAceptarMensajeUsuarios")
+.addEventListener("click", cerrarMensajeUsuarios);
 
 document
-    .getElementById("btnCancelarEliminar")
-    .addEventListener("click", cerrarModalEliminar);
-
-document
-.getElementById("btnConfirmarEliminar")
+.getElementById("btnCancelarEliminarUsuarios")
 .addEventListener(
-    "click",
-    confirmarEliminarUsuario
+"click",
+cerrarModalEliminarUsuarios
 );
 
-function cerrarModalPassword(){
+document
+.getElementById("btnConfirmarEliminarUsuarios")
+.addEventListener(
+    "click",
+    confirmarEliminarUsuarioUsuarios
+);
+
+function cerrarModalPasswordUsuarios(){
 
     document
-    .getElementById("modalPassword")
+    .getElementById("modalPasswordUsuarios")
     .style.display="none";
 
 
-    usuarioPassword=null;
+    usuarioPasswordUsuarios =null;
 
 }
