@@ -345,51 +345,6 @@ async function cargarSelectPlantillas(){
 
 }
 
-async function cargarPlantillas(){
-
-    try{
-
-        const respuesta = await window.fetchProtegido("/api/plantillas");
-
-        const plantillas = await respuesta.json();
-
-
-        const select =
-        document.getElementById("plantillaMenu");
-
-
-        if(!select){
-            console.error("No existe el selector de plantillas");
-            return;
-        }
-
-
-        plantillas.forEach(p => {
-
-            const opcion =
-            document.createElement("option");
-
-
-            opcion.value = p.id_plantilla;
-
-            opcion.textContent = p.nombre;
-
-
-            select.appendChild(opcion);
-
-        });
-
-
-    }catch(error){
-
-        console.error(
-            "Error cargando plantillas:",
-            error
-        );
-
-    }
-
-}
 
 console.log("Eventos de menu preparados");
 
