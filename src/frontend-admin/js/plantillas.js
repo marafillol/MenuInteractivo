@@ -111,19 +111,72 @@ document
 .addEventListener("click",function(e){
 
 
-    if(e.target.id==="nuevaPlantilla"){
+    const boton = e.target.closest("#nuevaPlantilla");
+
+
+    if(boton){
 
         limpiarFormularioPlantilla();
 
         document
-            .getElementById("modalPlantilla")
-            .style.display = "flex";
+        .getElementById("modalPlantilla")
+        .style.display = "flex";
 
     }
 
 
 });
 
+
+
+function iniciarPlantillas(){
+
+    console.log("Inicializando módulo plantillas");
+
+
+    const modulo =
+    document.getElementById("moduloPlantillas");
+
+
+    if(!modulo){
+
+        console.warn(
+            "No existe moduloPlantillas"
+        );
+
+        return;
+
+    }
+
+
+    modulo.addEventListener(
+        "click",
+        function(e){
+
+
+            const boton =
+            e.target.closest("#nuevaPlantilla");
+
+
+            if(boton){
+
+
+                limpiarFormularioPlantilla();
+
+
+                document
+                .getElementById("modalPlantilla")
+                .style.display="flex";
+
+
+            }
+
+
+        }
+    );
+
+
+}
 
 function cerrarModalPlantilla(){
 
@@ -143,6 +196,12 @@ function abrirNuevoCampo(){
     document.getElementById("nombreCampo").value = "";
 
     document.getElementById("tipoCampo").value = "text";
+
+    document.getElementById("mostrarTarjetaCampo").checked = true;
+
+    document.getElementById("mostrarVistaPreviaCampo").checked = true;
+
+    document.getElementById("mostrarHistoriaCampo").checked = true;
 
     document.getElementById("modalCampoPlantilla").style.display = "flex";
 
@@ -194,7 +253,16 @@ function guardarCampo(){
 
         tipo:tipo,
 
-        etiqueta:etiqueta
+        etiqueta:etiqueta,
+
+        mostrarTarjeta:
+            document.getElementById("mostrarTarjetaCampo").checked,
+
+        mostrarVistaPrevia:
+            document.getElementById("mostrarVistaPreviaCampo").checked,
+
+        mostrarHistoria:
+            document.getElementById("mostrarHistoriaCampo").checked
 
     };
 
@@ -260,6 +328,25 @@ function mostrarCamposPlantilla(){
                 <br>
 
                 <small>${campo.tipo}</small>
+
+                <br>
+
+                <small>
+
+                Tarjeta:
+                ${campo.mostrarTarjeta ? "✔" : "✖"}
+
+                |
+
+                Vista:
+                ${campo.mostrarVistaPrevia ? "✔" : "✖"}
+
+                |
+
+                Historia:
+                ${campo.mostrarHistoria ? "✔" : "✖"}
+
+                </small>
 
             </div>
 
@@ -338,6 +425,15 @@ function editarCampo(indice){
 
     document.getElementById("tipoCampo").value =
     campo.tipo;
+
+    document.getElementById("mostrarTarjetaCampo").checked =
+        campo.mostrarTarjeta ?? true;
+
+    document.getElementById("mostrarVistaPreviaCampo").checked =
+        campo.mostrarVistaPrevia ?? true;
+
+    document.getElementById("mostrarHistoriaCampo").checked =
+        campo.mostrarHistoria ?? true;
 
     document.getElementById("modalCampoPlantilla").style.display = "flex";
 

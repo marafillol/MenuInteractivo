@@ -200,7 +200,10 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         if(nombre === "plantillas"){
 
+            iniciarPlantillas();
+
             cargarPlantillas();
+
             aplicarPermisosConsulta();
 
         }
