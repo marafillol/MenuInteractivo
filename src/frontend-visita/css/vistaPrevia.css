@@ -1,0 +1,547 @@
+/* ==========================================
+   VISTA PREVIA DE FICHA
+========================================== */
+
+#visorFicha{
+
+    position:fixed;
+
+    top:120px;
+
+    right:30px;
+
+    width:420px;
+
+    height:calc(100vh - 160px);
+
+
+    background-image:
+
+    linear-gradient(
+        rgba(245,230,195,.9),
+        rgba(220,195,145,.95)
+    ),
+    url("../img/pergamino.png");
+
+
+    background-size:cover;
+
+
+    border:
+
+    3px solid #705438;
+
+
+    border-radius:5px;
+
+
+    padding:30px;
+
+
+    box-sizing:border-box;
+
+
+    overflow-y:auto;
+
+
+    z-index:9999;
+
+
+    box-shadow:
+
+    -10px 10px 30px rgba(0,0,0,.45);
+
+
+    animation:
+
+    abrirFicha .35s ease;
+
+}
+
+
+@keyframes abrirFicha{
+
+
+    from{
+
+        transform:translateX(450px);
+
+        opacity:0;
+
+    }
+
+
+    to{
+
+        transform:translateX(0);
+
+        opacity:1;
+
+    }
+
+
+}
+
+
+
+.cerrarVista{
+
+
+    position:absolute;
+
+    top:15px;
+
+    right:15px;
+
+
+    width:35px;
+
+    height:35px;
+
+
+    border:none;
+
+
+    background:#5b4630;
+
+
+    color:white;
+
+
+    font-size:20px;
+
+
+    cursor:pointer;
+
+
+    border-radius:50%;
+
+
+}
+
+
+.cerrarVista:hover{
+
+    background:#263c32;
+
+}
+
+/* ==========================================
+   CONTENEDOR PRINCIPAL
+========================================== */
+
+
+.vistaPreviaFicha{
+
+    background:#f7f0df;
+
+    border:2px solid #705438;
+
+    border-radius:10px;
+
+    padding:25px;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.25);
+
+}
+
+
+
+/* ==========================================
+   CABECERA
+========================================== */
+#visorFicha{
+
+    z-index:99999 !important;
+
+}
+
+.cabeceraVista{
+
+    text-align:center;
+
+    border-bottom:2px solid #705438;
+
+    padding-bottom:20px;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.imagenVista{
+
+    width:220px;
+
+    height:220px;
+
+    object-fit:cover;
+
+    border-radius:8px;
+
+    border:5px solid #4b3a27;
+
+    margin-bottom:15px;
+
+}
+
+
+
+/* TITULO */
+
+
+.cabeceraVista h2{
+
+    margin:10px 0;
+
+    color:#263c32;
+
+    font-size:28px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+}
+
+
+
+/* CATEGORIA */
+
+
+.cabeceraVista span{
+
+    display:inline-block;
+
+    background:#263c32;
+
+    color:white;
+
+    padding:6px 15px;
+
+    border-radius:15px;
+
+    font-size:14px;
+
+}
+
+
+
+/* ==========================================
+   DATOS DINAMICOS
+========================================== */
+
+
+.datoFicha{
+
+    margin-bottom:18px;
+
+    padding:15px;
+
+    background:#efe4cc;
+
+    border-left:5px solid #705438;
+
+    border-radius:6px;
+
+}
+
+
+
+/* etiqueta del campo */
+
+
+.datoFicha label{
+
+    display:block;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    color:#5b4630;
+
+    text-transform:uppercase;
+
+    margin-bottom:6px;
+
+    letter-spacing:1px;
+
+}
+
+
+
+/* valor */
+
+
+.datoFicha p{
+
+    margin:0;
+
+    color:#222;
+
+    font-size:17px;
+
+    line-height:1.5;
+
+}
+
+
+
+/* ==========================================
+   TEXTO COMPLETO
+========================================== */
+
+
+.textoFicha{
+
+    margin-top:25px;
+
+    padding-top:20px;
+
+    border-top:1px solid #705438;
+
+}
+
+
+
+.textoFicha h3{
+
+    color:#263c32;
+
+    text-transform:uppercase;
+
+}
+
+
+
+.textoFicha p{
+
+    line-height:1.7;
+
+    font-size:17px;
+
+}
+
+
+
+/* ==========================================
+   SCROLL
+========================================== */
+
+
+#visorFicha::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+
+
+#visorFicha::-webkit-scrollbar-thumb{
+
+    border-radius:10px;
+
+}
+
+
+
+.btnFichaCompleta{
+
+
+    width:100%;
+
+
+    margin-top:30px;
+
+
+    padding:15px;
+
+
+    background:#263c32;
+
+
+    color:white;
+
+
+    border:none;
+
+
+    border-radius:8px;
+
+
+    font-size:16px;
+
+
+    font-weight:bold;
+
+
+    cursor:pointer;
+
+
+    letter-spacing:1px;
+
+
+}
+
+
+
+.btnFichaCompleta:hover{
+
+
+    background:#3e5a4b;
+
+
+}
+
+
+
+.resumenFicha{
+
+    margin-top:20px;
+
+    padding:15px;
+
+    background:#efe4cc;
+
+    border-left:5px solid #705438;
+
+    border-radius:8px;
+
+}
+
+
+.resumenFicha label{
+
+    display:block;
+
+    font-weight:bold;
+
+    color:#5b4630;
+
+    margin-bottom:8px;
+
+    text-transform:uppercase;
+
+}
+
+
+.resumenFicha p{
+
+    margin:0;
+
+    line-height:1.5;
+
+    font-size:16px;
+
+}
+
+
+
+
+
+
+/* ==========================================
+   ETIQUETAS
+========================================== */
+
+.seccionEtiquetas{
+
+    margin-top:25px;
+
+}
+
+.seccionEtiquetas h3{
+
+    margin-bottom:12px;
+
+    color:#263c32;
+
+    text-transform:uppercase;
+
+    font-size:18px;
+
+}
+
+.listaEtiquetas{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+}
+
+.etiquetaFicha{
+
+    padding:6px 14px;
+
+    border-radius:20px;
+
+    background:#5b4630;
+
+    color:white;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+}
+
+#visorFicha:not(.oculto){
+
+    display:block;
+
+}
+
+
+
+#fondoVista{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:100%;
+
+
+    background:
+    rgba(0,0,0,.55);
+
+
+    z-index:9000;
+
+
+    backdrop-filter:blur(2px);
+
+
+    animation:
+    aparecerFondo .3s ease;
+
+}
+
+
+
+@keyframes aparecerFondo{
+
+    from{
+
+        opacity:0;
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+    }
+
+}

@@ -9,7 +9,6 @@ const fs = require("fs");
 
 const app = express();
 
-
 // =======================================================
 // CONFIGURACIÓN GENERAL DEL SERVIDOR
 // =======================================================
@@ -23,8 +22,7 @@ app.use(express.json());
 // CONFIGURACIÓN DE CARPETAS
 // =======================================================
 
-const carpetaUploads =
-path.join(__dirname,"../public/uploads");
+const carpetaUploads = path.join(__dirname,"../public/uploads");
 
 if(!fs.existsSync(carpetaUploads)){
 
@@ -106,18 +104,7 @@ app.get("/panel.html",(req,res)=>{
 
 });
 
-// Frontend visitante
-app.get("/visita",(req,res)=>{
 
-    res.sendFile(
-        path.join(
-            __dirname,
-            "frontend-visita",
-            "index.html"
-        )
-    );
-
-});
 
 
 // =======================================================
@@ -152,6 +139,19 @@ const usuarioRoutes =
 require("./rutas/admin/usuarios");
 
 // =======================================================
+// IMPORTACIÓN DE RUTAS PÚBLICAS
+// =======================================================
+
+const menuPublicoRoutes =
+require("./rutas/public/menus");
+
+const fichaPublicaRoutes =
+require("./rutas/public/fichas");
+
+// Cuando las creemos:
+/// const fichaPublicaRoutes = require("./rutas/public/fichas");
+
+// =======================================================
 // ENDPOINTS API ADMIN
 // =======================================================
 
@@ -163,7 +163,9 @@ app.use(
 
 app.use(
     "/imagenes",
-    express.static("imagenes")
+    express.static(
+        path.join(__dirname,"../imagenes")
+    )
 );
 
 app.use(
@@ -204,6 +206,21 @@ app.use(
 app.use(
     "/api/usuarios",
     usuarioRoutes
+);
+
+
+// =======================================================
+// ENDPOINTS API PÚBLICOS
+// =======================================================
+
+app.use(
+    "/api/public/menus",
+    menuPublicoRoutes
+);
+
+app.use(
+    "/api/public/fichas",
+    fichaPublicaRoutes
 );
 
 // =======================================================

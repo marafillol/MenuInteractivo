@@ -1,0 +1,103 @@
+.pantalla-bienvenida{
+
+    width:100vw;
+    height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+
+    background-image: url("../img/fondo-malvinass.png");
+
+    background-size:cover;
+    background-repeat:no-repeat;
+    background-position:center;
+
+}
+
+
+
+.contenido-bienvenida{
+
+    position:relative;
+    z-index:2;
+
+    text-align:center;
+
+    width:min(90%,1000px);
+
+    color:white;
+
+    transform:translateY(80px);
+
+}
+
+
+
+
+#btnComenzar{
+
+    margin-top:153px;
+
+    padding:70px 120px;
+
+    font-family:"Courier New", monospace;
+
+    font-size:35px;
+
+    font-weight:bold;
+
+    text-transform:uppercase;
+
+    letter-spacing:4px;
+
+    color:#1e1b18;
+
+    background:transparent;
+
+    border:none;
+
+    text-shadow:
+        2px 3px 8px black;
+
+    cursor:pointer;
+
+    animation:pulsoTexto 2.5s infinite ease-in-out;
+
+}
+
+
+/* efecto agrandar / achicar */
+
+@keyframes pulsoTexto{
+
+    0%,100%{
+
+        transform:scale(1);
+
+    }
+
+
+    50%{
+
+        transform:scale(1.08);
+
+    }
+
+}
+
+
+#btnComenzar:hover{
+
+    color:#ffffff;
+
+    background:transparent;
+
+    transform:scale(1.05);
+
+}
