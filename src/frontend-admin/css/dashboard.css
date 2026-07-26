@@ -9,16 +9,8 @@
 ================================ */
 
 
-.ventana.dashboard {
-
-    width:100%;
-
-    min-height:100%;
-
-    padding:25px;
-
-    overflow:visible;
-
+.ventana.dashboard{
+    background:transparent;
 }
 
 
@@ -1485,4 +1477,8 @@
 
     border-radius:10px;
 
+}
+
+.ventana-dashboard{
+    background:transparent;
 }

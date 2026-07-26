@@ -304,40 +304,29 @@
    CONTENIDO DINAMICO
 ===================================================== */
 
-
 .panel-admin #contenido{
-
 
     flex:1;
 
-
     min-height:0;
-
 
     height:auto;
 
-
     overflow-y:auto;
-
 
     overflow-x:hidden;
 
-
     padding:30px;
-
 
     background:
 
-
     linear-gradient(
         135deg,
-        #efe6d1,
-        #f8f3e8
+        #e8dcc0,
+        #f4eddb
     );
 
-
 }
-
 
 
 
@@ -348,21 +337,19 @@
    VENTANAS INTERNAS
 ===================================================== */
 
-
 .panel-admin .ventana{
 
+    background:#efe4ca;
 
-    width:100%;
+    border:
+    1px solid rgba(112,84,56,.4);
 
+    border-radius:15px;
 
-    min-height:100%;
+    padding:30px;
 
-
-    height:auto;
-
-
-    overflow:visible;
-
+    box-shadow:
+    0 10px 25px rgba(0,0,0,.15);
 
 }
 
@@ -713,5 +700,103 @@
         transform:scale(1);
 
     }
+
+}
+
+
+/* =====================================================
+   USUARIO CABECERA
+===================================================== */
+
+
+.panel-admin .usuario{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    background:#efe4ca;
+
+    padding:10px 16px;
+
+    border-radius:14px;
+
+    border:2px solid #705438;
+
+    box-shadow:
+    0 5px 15px rgba(0,0,0,.15);
+
+}
+
+
+/* INFORMACION */
+
+.panel-admin .usuario-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+    text-align:right;
+
+}
+
+
+.panel-admin .usuario-info strong{
+
+    font-family:Georgia,serif;
+
+    font-size:17px;
+
+    color:#263c32;
+
+    letter-spacing:.5px;
+
+}
+
+
+.panel-admin .usuario-info small{
+
+    margin-top:4px;
+
+    color:#705438;
+
+    font-size:12px;
+
+    font-style:italic;
+
+}
+
+
+
+/* AVATAR */
+
+
+.panel-admin .avatar{
+
+    width:48px;
+
+    height:48px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:50%;
+
+    background:#263c32;
+
+    color:#f4eddb;
+
+    font-size:25px;
+
+    border:2px solid #705438;
+
+    box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,.08);
 
 }

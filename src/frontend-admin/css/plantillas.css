@@ -22,6 +22,18 @@
 }
 
 
+.cabecera-plantillas{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+}
+
 
 /* ===============================
    TITULOS
@@ -29,15 +41,14 @@
 
 #moduloPlantillas .titulo-plantillas{
 
+
     margin:0;
-
-    font-size:32px;
-
+    font-size:34px;
     color:#263c32;
-
-    font-family:Georgia,serif;
-
+    font-family:serif;
 }
+
+
 
 
 
@@ -77,16 +88,14 @@
 #moduloPlantillas .btn-guardar-plantilla,
 #moduloPlantillas .btn-aceptar-plantilla{
 
-    background:#3d4b35;
-
-    color:white;
-
-    padding:12px 20px;
-
-    border-radius:6px;
-
-    border:1px solid #263c32;
-
+    padding:12px 22px;
+    border:none;
+    border-radius:10px;
+    background:#556b2f;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.25s;
 }
 
 
@@ -95,7 +104,8 @@
 #moduloPlantillas .btn-guardar-plantilla:hover,
 #moduloPlantillas .btn-aceptar-plantilla:hover{
 
-    background:#263c32;
+    background:#6c8440;
+    transform:translateY(-2px);
 
 }
 

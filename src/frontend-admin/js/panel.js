@@ -218,11 +218,11 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         if(nombre === "usuarios"){
 
-            setTimeout(()=>{
+            if(typeof iniciarUsuarios === "function"){
+                iniciarUsuarios();
+            }
 
-                cargarUsuarios();
-
-            },100);
+            cargarUsuarios();
 
             aplicarPermisosConsulta();
 

@@ -1,3 +1,6 @@
+let fichasDisponibles = [];
+let menuActual = 0;
+
 function mostrarExplorador(){
 
     const app = document.getElementById("app");
@@ -124,6 +127,11 @@ function mostrarExplorador(){
 
     cargarCategorias();
     cargarFichas();
+
+
+    document
+    .getElementById("buscador")
+    .addEventListener("input", buscarFichas);
 
 
 }

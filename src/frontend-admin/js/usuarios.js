@@ -34,32 +34,21 @@ async function cargarUsuarios(){
 
 
 
-    const usuarios =
-    await respuesta.json();
-
-
+    const datos = await respuesta.json();
 
     if(!respuesta.ok){
 
-        const datos =
-        await respuesta.json();
-
-
         cerrarModalUsuarioUsuarios();
 
-
         mostrarMensajeUsuarios(
-
             "Acción no permitida",
-
             datos.error
-
         );
 
-
         return;
-
     }
+
+    const usuarios = datos;
 
 
 
@@ -265,8 +254,8 @@ function abrirModalUsuarioUsuarios(){
 
 
         document.getElementById(
-            "passwordUsuarioNuevo"
-        ).value="";
+        "contenedorPassword"
+        ).style.display="block";
 
 
         document.getElementById(
@@ -279,9 +268,8 @@ function abrirModalUsuarioUsuarios(){
         ).checked=true;
 
 
-        document.getElementById(
-            "passwordUsuarioNuevo"
-        ).style.display="block";
+        document.getElementById("passwordUsuarioNuevo").value = "";
+        document.getElementById("passwordUsuarioNuevo").style.display = "block";
 
 
     }
@@ -298,21 +286,25 @@ function abrirModalUsuarioUsuarios(){
 
 
 
-
 function cerrarModalUsuarioUsuarios(){
 
-
     document
-    .getElementById("modalUsuarioUsuarios")
-    .style.display="none";
+        .getElementById("modalUsuarioUsuarios")
+        .style.display = "none";
 
+    usuarioEditandoUsuarios = null;
 
-    usuarioEditandoUsuarios =null;
+    document.getElementById("tituloModalUsuarioUsuarios").innerText =
+        "Nuevo Usuario";
 
+    document.getElementById("contenedorPassword").style.display = "block";
 
-    document.getElementById(
-        "tituloModalUsuarioUsuarios"
-    ).innerText="Nuevo Usuario";
+    // Limpiar formulario
+    document.getElementById("nombreUsuarioNuevo").value = "";
+    document.getElementById("emailUsuarioNuevo").value = "";
+    document.getElementById("passwordUsuarioNuevo").value = "";
+    document.getElementById("rolUsuarioNuevo").value = "consulta";
+    document.getElementById("activoUsuarioNuevo").checked = true;
 
 
 }
@@ -723,7 +715,15 @@ async function editarUsuarioUsuarios(id){
     const usuarios =
     await respuesta.json();
 
+    if(!respuesta.ok){
 
+        mostrarMensajeUsuarios(
+            "Error",
+            "No se pudieron cargar los usuarios."
+        );
+
+        return;
+    }
 
 
     const usuario =
@@ -731,7 +731,15 @@ async function editarUsuarioUsuarios(id){
         u=>u.id_usuario===id
     );
 
+    if(!usuario){
 
+        mostrarMensajeUsuarios(
+            "Error",
+            "No se encontró el usuario."
+        );
+
+        return;
+    }
 
 
     document.getElementById(
@@ -760,7 +768,7 @@ async function editarUsuarioUsuarios(id){
 
 
     document.getElementById(
-        "passwordUsuarioNuevo"
+    "contenedorPassword"
     ).style.display="none";
 
 
@@ -781,6 +789,11 @@ async function editarUsuarioUsuarios(id){
 // ======================================
 
 function mostrarMensajeUsuarios(titulo, mensaje){
+
+    // Cerrar cualquier modal abierto
+    cerrarModalUsuarioUsuarios();
+    cerrarModalPasswordUsuarios();
+    cerrarModalEliminarUsuarios();
 
     document.getElementById("tituloMensajeUsuarios").textContent = titulo;
 
@@ -899,28 +912,8 @@ if(respuesta.ok){
     );
 
 }
-
-
 }
 
-
-document
-.getElementById("btnAceptarMensajeUsuarios")
-.addEventListener("click", cerrarMensajeUsuarios);
-
-document
-.getElementById("btnCancelarEliminarUsuarios")
-.addEventListener(
-"click",
-cerrarModalEliminarUsuarios
-);
-
-document
-.getElementById("btnConfirmarEliminarUsuarios")
-.addEventListener(
-    "click",
-    confirmarEliminarUsuarioUsuarios
-);
 
 function cerrarModalPasswordUsuarios(){
 
@@ -930,5 +923,21 @@ function cerrarModalPasswordUsuarios(){
 
 
     usuarioPasswordUsuarios =null;
+
+}
+
+function iniciarUsuarios(){
+
+    document
+        .getElementById("btnAceptarMensajeUsuarios")
+        .addEventListener("click", cerrarMensajeUsuarios);
+
+    document
+        .getElementById("btnCancelarEliminarUsuarios")
+        .addEventListener("click", cerrarModalEliminarUsuarios);
+
+    document
+        .getElementById("btnConfirmarEliminarUsuarios")
+        .addEventListener("click", confirmarEliminarUsuarioUsuarios);
 
 }

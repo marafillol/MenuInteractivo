@@ -54,7 +54,9 @@ async function cargarMenus(){
 
                 <div class="menu-info">
 
-
+                    <span class="campo-titulo-menu">
+                        TÍTULO
+                    </span>
                     <h3>
                         ${menu.nombre}
                     </h3>

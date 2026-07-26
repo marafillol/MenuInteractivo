@@ -11,40 +11,11 @@
 
 
 .ventana-menu{
-
-    width:100%;
-
-    min-height:100%;
-
-    padding:25px;
-
-    overflow:visible;
-
+    background:transparent;
 }
 
 
 
-.ventana-menu h2{
-
-    font-family:"Cinzel",serif;
-
-    color:#314734;
-
-    font-size:28px;
-
-    margin-bottom:20px;
-
-}
-
-
-
-.ventana-menu h3{
-
-    color:#705438;
-
-    margin:25px 0 15px;
-
-}
 
 
 
@@ -95,45 +66,15 @@
 }
 
 
-
-
-
 /* =====================================================
    GRID MENU
 ===================================================== */
 
-
-.ventana-menu #listaMenus.grid-menus{
-
-
-    display:grid !important;
-
-
-    grid-template-columns:
-
-    repeat(auto-fill,260px) !important;
-
-
-    gap:25px !important;
-
-
-    justify-content:start !important;
-
-
-    align-items:start !important;
-
-
-    width:100% !important;
-
-
-    height:auto !important;
-
-
-    overflow:visible !important;
-
-
+#listaMenus.grid-menus{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:25px;
 }
-
 
 
 
@@ -142,75 +83,60 @@
    TARJETAS MENU
 ===================================================== */
 
-
-.ventana-menu #listaMenus .menu-tarjeta{
-
-
-    width:260px !important;
+.ventana-menu .menu-tarjeta{
 
 
-    height:360px !important;
+    position:relative;
+    overflow:hidden;
 
+    background:linear-gradient(
+        145deg,
+        #f7f0df,
+        #e9ddc2
+    );
 
-    min-width:260px !important;
+    border:1px solid #705438;
+    border-radius:14px;
 
+    box-shadow:0 8px 18px rgba(0,0,0,.18);
 
-    max-width:260px !important;
+    transition:.25s ease;
+}
 
+.ventana-menu .menu-tarjeta:hover{
 
-
-    background:#f5edda !important;
-
-
-
-    border:2px solid #705438 !important;
-
-
-
-    border-radius:15px !important;
-
-
-
-    overflow:hidden !important;
-
-
-
-    display:flex !important;
-
-
-
-    flex-direction:column !important;
-
-
+    transform:translateY(-8px);
 
     box-shadow:
-
-    0 5px 15px rgba(0,0,0,.15);
-
-
-
-    transition:.25s;
-
+        0 15px 30px rgba(0,0,0,.25);
 
 }
 
 
+.ventana-menu .menu-tarjeta::before{
 
+    content:"MENÚ";
 
+    position:absolute;
 
-.ventana-menu #listaMenus .menu-tarjeta:hover{
+    top:12px;
+    left:12px;
 
+    z-index:5;
 
-    transform:translateY(-6px);
+    background:#263c32;
 
+    color:#f4eddb;
 
-    box-shadow:
+    padding:5px 12px;
 
-    0 12px 25px rgba(0,0,0,.25);
+    border-radius:20px;
 
+    font-size:11px;
+
+    letter-spacing:2px;
 
 }
-
 
 
 
@@ -220,20 +146,33 @@
 ===================================================== */
 
 
-.ventana-menu #listaMenus .menu-imagen{
+.ventana-menu .menu-imagen{
 
+    width:100%;
 
-    width:100% !important;
-
-
-    height:150px !important;
-
-
-    flex-shrink:0 !important;
-
+    height:230px;
 
     overflow:hidden;
 
+    background:#222;
+
+}
+
+.ventana-menu .menu-imagen img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    transition:.4s;
+
+}
+
+.ventana-menu .menu-tarjeta:hover .menu-imagen img{
+
+    transform:scale(1.08);
 
 }
 
@@ -277,89 +216,39 @@
 ===================================================== */
 
 
-.ventana-menu #listaMenus .menu-info{
+.ventana-menu .menu-info{
+
+    padding:20px;
+
+}
 
 
-    padding:15px !important;
+.ventana-menu .menu-info h3{
 
+    margin:10px 0;
 
-    height:210px !important;
+    color:#263c32;
 
+    font-family:Georgia,serif;
 
-    display:flex !important;
+    font-size:24px;
 
+    border-bottom:1px solid rgba(112,84,56,.4);
 
-    flex-direction:column !important;
-
-
-    overflow:hidden;
-
+    padding-bottom:10px;
 
 }
 
 
 
 
+.ventana-menu .menu-info p{
 
-.ventana-menu #listaMenus .menu-info h3{
+    color:#4b4235;
 
+    line-height:1.5;
 
-    margin:0 0 10px 0 !important;
-
-
-    color:#314734 !important;
-
-
-    font-family:"Cinzel",serif;
-
-
-    font-size:20px !important;
-
-
-    text-align:center;
-
-
-    letter-spacing:1px;
-
-
-    padding-bottom:8px;
-
-
-    border-bottom:1px solid #d8c5a5;
-
-
-}
-
-
-
-
-
-.ventana-menu #listaMenus .menu-info p{
-
-
-    margin:0;
-
-
-    color:#594936;
-
-
-    font-size:14px;
-
-
-    line-height:1.4;
-
-
-    overflow:hidden !important;
-
-
-    display:-webkit-box !important;
-
-
-    -webkit-line-clamp:4 !important;
-
-
-    -webkit-box-orient:vertical !important;
-
+    min-height:45px;
 
 }
 
@@ -370,68 +259,33 @@
 /* =====================================================
    ACCIONES TARJETA MENU
 ===================================================== */
+.ventana-menu .menu-acciones{
 
+    display:flex;
 
-.ventana-menu #listaMenus .menu-acciones{
+    flex-wrap:wrap;
 
+    gap:8px;
 
-    margin-top:auto !important;
-
-
-    padding:12px;
-
-
-    display:grid !important;
-
-
-    grid-template-columns:repeat(2,1fr) !important;
-
-
-    gap:7px;
-
-
-    background:#eee2cb;
-
-
-    border-top:1px solid #ccb58f;
-
+    margin-top:15px;
 
 }
 
+.ventana-menu .menu-acciones button{
 
+    flex:1;
 
+    min-width:100px;
 
-
-.ventana-menu #listaMenus .menu-acciones button{
-
-
-    padding:7px;
-
+    padding:9px 12px;
 
     border:none;
 
+    border-radius:8px;
 
-    border-radius:7px;
-
-
-    cursor:pointer;
-
-
-    font-size:12px;
-
-
-    color:white;
-
-
-    font-weight:bold;
-
-
-    transition:.25s;
-
+    font-size:13px;
 
 }
-
-
 
 
 
@@ -448,7 +302,23 @@
 
 
 
+/* ETIQUETA TITULO MENU */
 
+.ventana-menu .campo-titulo-menu{
+
+    display:block;
+
+    color:#705438;
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+    text-transform:uppercase;
+
+}
 
 /* =====================================================
    BOTONES MENU
@@ -456,34 +326,10 @@
 
 
 .ventana-menu .menu-btn-vista{
-
-
-    background:#556b2f;
-
-
+      background:#263c32;
+      color:white;
 }
 
-
-
-
-.ventana-menu .menu-btn-vista:hover{
-
-
-    background:#425323;
-
-
-}
-
-
-
-
-.ventana-menu .menu-btn-ver{
-
-
-    background:#314734;
-
-
-}
 
 
 
@@ -491,7 +337,8 @@
 .ventana-menu .menu-btn-editar{
 
 
-    background:#b8860b;
+    background:#c5a46d;
+    color:#263c32;
 
 
 }
@@ -499,36 +346,25 @@
 
 
 
-.ventana-menu .menu-btn-editar:hover{
 
 
-    background:#987008;
-
-
+.ventana-menu .menu-btn-ver{
+    background:#556F87;
+    color:#fff;
 }
 
-
-
+.ventana-menu .menu-btn-ver:hover{
+    background:#465D72;
+}
 
 
 .ventana-menu .menu-btn-eliminar{
 
-
-    background:#8b0000;
-
-
-}
-
-
-
-
-.ventana-menu .menu-btn-eliminar:hover{
-
-
-    background:#6f0000;
-
+      background:#7b2222;
+      color:white;
 
 }
+
 
 
 
@@ -702,7 +538,11 @@
 }
 
 
+#tituloFichas{
 
+    margin:0;
+
+}
 
 
 
@@ -1714,54 +1554,9 @@
 
 
 /* =====================================================
-   TARJETA MENU DETALLE
-===================================================== */
-
-
-.ventana-menu #listaMenus .menu-tarjeta::before{
-
-
-    content:"";
-
-
-    display:block;
-
-
-    height:8px;
-
-
-    background:#556b2f;
-
-
-
-}
-
-
-
-
-
-
-
-
-/* =====================================================
    RESPONSIVE
 ===================================================== */
 
-
-@media(max-width:900px){
-
-
-    .ventana-menu #listaMenus.grid-menus{
-
-
-        grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) !important;
-
-
-    }
-
-
-
-}
 
 
 
@@ -1771,14 +1566,6 @@
 
 @media(max-width:700px){
 
-
-    .ventana-menu #listaMenus.grid-menus{
-
-
-        grid-template-columns:1fr !important;
-
-
-    }
 
 
 
@@ -1909,4 +1696,41 @@
     }
 
 
+}
+
+
+.ventana-menu .cabecera-menu{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+}
+
+.cabecera-menu{
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.btn-nuevo{
+
+    margin-left:auto;
+    margin-right:40px; /* Ajusta este valor */
+
+}
+.ventana-menu #tituloFichas{
+
+    margin:0;
+
+}
+
+.ventana-menu{
+    background:transparent;
 }

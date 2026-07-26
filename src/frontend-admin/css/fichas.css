@@ -10,11 +10,7 @@
 
 
 .ventana-fichas{
-
-    width:100%;
-
-    position:relative;
-
+    background:transparent;
 }
 
 
@@ -70,7 +66,17 @@
 
 }
 
+.ventana-fichas h2{
 
+    font-family:"Cinzel",serif;
+
+    color:#314734;
+
+    font-size:28px;
+
+    margin:0;
+
+}
 
 
 
@@ -81,13 +87,32 @@
 
 .ventana-fichas .btn-nuevo{
 
+    background:#556b2f;
 
-    margin-bottom:25px;
+    color:white;
 
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    transition:.3s;
 
 }
 
 
+.ventana-fichas .btn-nuevo:hover{
+
+    background:#3f5223;
+
+    transform:translateY(-2px);
+
+}
 
 
 
@@ -2636,5 +2661,58 @@
 
     }
 
+
+}
+
+
+/* ===================================
+   ETIQUETAS CHECKBOX
+=================================== */
+
+.ventana-fichas .lista-etiquetas-ficha .item-etiqueta{
+
+    color:#f4eddb !important;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+
+.ventana-fichas .lista-etiquetas-ficha .item-etiqueta:hover{
+
+    background:#3f5223;
+
+}
+
+
+.ventana-fichas .lista-etiquetas-ficha .item-etiqueta input{
+
+    width:16px;
+
+    height:16px;
+
+}
+
+
+/* ===================================
+   TIPO DE FICHA
+=================================== */
+
+.ventana-fichas .tipo-ficha span{
+
+    color:#f4eddb !important;
+
+    font-weight:bold;
+
+}
+
+
+.ventana-fichas .tipo-ficha #nombreTipoFicha{
+
+    color:#f4eddb !important;
 
 }
