@@ -1,5 +1,5 @@
 /* =====================================================
-        USUARIOS - ESTILO ADMINISTRACIÓN
+        USUARIOS - ESTILO ADMINISTRACIÃ“N
         CSS ENCAPSULADO
 ===================================================== */
 
@@ -78,7 +78,7 @@
 
 
 /* =====================================================
-        BOTÓN NUEVO USUARIO
+        BOTÃ“N NUEVO USUARIO
 ===================================================== */
 
 
@@ -644,7 +644,7 @@
 .modal-usuarios .contenido-modal-usuarios h2::before{
 
 
-    content:"✦";
+    content:"âœ¦";
 
 
     display:block;
@@ -1091,7 +1091,7 @@
 .btn-nuevo-usuario{
 
 
-    background:#556b2f !important;
+    background:#163A61 !important;
 
 
     color:white !important;

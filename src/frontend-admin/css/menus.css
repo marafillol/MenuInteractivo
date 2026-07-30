@@ -27,7 +27,7 @@
 .ventana-menu .btn-nuevo{
 
 
-    background:#556b2f;
+    background:#163A61;
 
     color:white;
 
@@ -115,7 +115,7 @@
 
 .ventana-menu .menu-tarjeta::before{
 
-    content:"MENÚ";
+    content:"MENÃš";
 
     position:absolute;
 
@@ -557,7 +557,7 @@
     font-family:"Cinzel",serif;
 
 
-    color:#314734;
+    color:#163A61;
 
 
     font-size:25px;
@@ -695,7 +695,7 @@
     background:#fffaf0;
 
 
-    color:#314734;
+    color:#163A61;
 
 
     font-size:14px;
@@ -742,7 +742,7 @@
 .ventana-menu #ventanaEmergente select:focus{
 
 
-    border-color:#556b2f;
+    border-color:#163A61;
 
 
     box-shadow:
@@ -930,7 +930,7 @@
     height:18px;
 
 
-    accent-color:#556b2f;
+    accent-color:#163A61;
 
 
 
@@ -1007,7 +1007,7 @@
 .ventana-menu #guardarMenu{
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     color:white;
@@ -1106,7 +1106,7 @@
 
 /* =====================================================
    VISTA PREVIA MENU
-   ESTILO ARCHIVO HISTÓRICO
+   ESTILO ARCHIVO HISTÃ“RICO
 ===================================================== */
 
 
@@ -1289,7 +1289,7 @@
     font-size:32px;
 
 
-    color:#314734;
+    color:#163A61;
 
 
     margin:10px 0;
@@ -1325,7 +1325,7 @@
     height:3px;
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     margin:12px auto;
@@ -1398,7 +1398,7 @@
     font-family:"Cinzel",serif;
 
 
-    color:#314734;
+    color:#163A61;
 
 
     margin-top:25px;
@@ -1530,7 +1530,7 @@
 .ventana-menu .dato-preview p{
 
 
-    color:#314734;
+    color:#163A61;
 
 
     font-size:16px;

@@ -20,6 +20,100 @@ let menuSeleccionado = null;
 let fichaSeleccionada = null;
 let nombreMenuSeleccionado = "";
 let nombreFichaSeleccionada = "";
+
+const iconosNavegacion = {
+    dashboard: "layout-dashboard",
+    menus: "folder-open",
+    fichas: "file-text",
+    multimedia: "image",
+    etiquetas: "tag",
+    plantillas: "files",
+    usuarios: "users-round",
+    configuracion: "settings"
+};
+
+function actualizarIconos(){
+
+    document
+    .querySelectorAll(".sidebar .item")
+    .forEach(boton=>{
+
+        const icono =
+        iconosNavegacion[boton.dataset.ventana];
+
+        const marcador =
+        boton.querySelector("span");
+
+        if(icono && marcador){
+            marcador.outerHTML =
+            `<i class="icono-navegacion" data-lucide="${icono}" aria-hidden="true"></i>`;
+        }
+
+    });
+
+    const avatar = document.querySelector(".avatar");
+
+    if(avatar && !avatar.querySelector("svg")){
+        avatar.innerHTML =
+        '<i data-lucide="user-round" aria-hidden="true"></i>';
+    }
+
+    const cerrarSesion =
+    document.getElementById("cerrarSesion");
+
+    if(cerrarSesion && !cerrarSesion.querySelector("svg")){
+        cerrarSesion.innerHTML =
+        '<i data-lucide="log-out" aria-hidden="true"></i><span>Cerrar sesi&oacute;n</span>';
+    }
+
+    const iconosDashboard = [
+        "folder-open",
+        "file-text",
+        "files",
+        "image",
+        "tag"
+    ];
+
+    document
+    .querySelectorAll(".ventana.dashboard .icono-dashboard")
+    .forEach((contenedor, indice)=>{
+
+        if(iconosDashboard[indice]){
+            contenedor.innerHTML =
+            `<i data-lucide="${iconosDashboard[indice]}" aria-hidden="true"></i>`;
+        }
+
+    });
+
+    const titulosDashboard = [
+        ["file-text", "&Uacute;ltimas fichas"],
+        ["folder-open", "&Uacute;ltimos men&uacute;s"],
+        ["image", "Multimedia"],
+        ["bar-chart-3", "Fichas por men&uacute;"],
+        ["image", "Tipos de multimedia"],
+        ["eye", "Estado del contenido"]
+    ];
+
+    document
+    .querySelectorAll(".ventana.dashboard .bloque-dashboard > h3")
+    .forEach((titulo, indice)=>{
+
+        const configuracion = titulosDashboard[indice];
+
+        if(configuracion){
+            titulo.innerHTML =
+            `<i data-lucide="${configuracion[0]}" aria-hidden="true"></i>${configuracion[1]}`;
+        }
+
+    });
+
+    if(window.lucide){
+        window.lucide.createIcons();
+    }
+
+}
+
+window.actualizarIconos = actualizarIconos;
 // ==========================================================
 // FECHA
 // ==========================================================
@@ -210,7 +304,7 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         if(nombre === "dashboard"){
 
-            cargarDashboard();
+            await cargarDashboard();
 
             aplicarPermisosConsulta();
 
@@ -227,6 +321,8 @@ async function cargarVentana(nombre, mantenerMenu=false){
             aplicarPermisosConsulta();
 
         }
+
+        actualizarIconos();
 
     }
 

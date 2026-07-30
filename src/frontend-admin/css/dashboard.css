@@ -39,7 +39,7 @@
     background:#f4eddb;
 
 
-    border-left:5px solid #556b2f;
+    border-left:5px solid #81D2F7;
 
 
     border-bottom:2px solid #705438;
@@ -68,7 +68,7 @@
     font-size:34px;
 
 
-    color:#314734;
+    color:#163A61;
 
 
 }
@@ -84,7 +84,7 @@
     max-width:700px;
 
 
-    color:#705438;
+    color:#163A61;
 
 
     line-height:1.6;
@@ -140,13 +140,13 @@
     min-height:120px;
 
 
-    background:#314734;
+    background:#163A61;
 
 
     border-radius:12px;
 
 
-    border:2px solid #705438;
+    border:2px solid #DBB060;
 
 
     box-shadow:
@@ -193,10 +193,10 @@
     font-size:30px;
 
 
-    background:#556b2f;
+    background:#DBB060;
 
 
-    color:white;
+    color:#163A61;
 
 
     border-radius:10px;
@@ -212,7 +212,7 @@
     margin:0 0 8px;
 
 
-    color:#e6d5b8;
+    color:#DBB060;
 
 
     font-size:14px;
@@ -274,7 +274,7 @@
     border:2px solid #705438;
 
 
-    border-left:5px solid #556b2f;
+    border-left:5px solid #163A61;
 
 
     border-radius:12px;
@@ -296,7 +296,7 @@
     font-family:"Cinzel",serif;
 
 
-    color:#314734;
+    color:#163A61;
 
 
     border-bottom:1px solid #cbb693;
@@ -332,13 +332,13 @@
     background:#eee2cb;
 
 
-    border-left:4px solid #556b2f;
+    border-left:4px solid #163A61;
 
 
     border-radius:8px;
 
 
-    color:#314734;
+    color:#163A61;
 
 
 }
@@ -409,7 +409,7 @@
     padding-left:10px;
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     color:white;
@@ -481,7 +481,7 @@
 .estado-card span{
 
 
-    color:#314734;
+    color:#163A61;
 
 
     font-size:28px;
@@ -599,7 +599,7 @@
 .dashboard .btn-dashboard-principal{
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     color:white;
@@ -694,7 +694,7 @@
 
     linear-gradient(
         135deg,
-        #314734,
+        #163A61,
         #263629
     );
 
@@ -769,7 +769,7 @@
 .dashboard .icono-dashboard{
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     border:2px solid #b69a73;
@@ -894,7 +894,7 @@
     border-radius:10px;
 
 
-    border-left:5px solid #556b2f;
+    border-left:5px solid #163A61;
 
 
     transition:.2s;
@@ -948,7 +948,7 @@
 .dashboard .barra-grafico span{
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     font-weight:bold;
@@ -1011,7 +1011,7 @@
     font-family:"Cinzel",serif;
 
 
-    color:#314734;
+    color:#163A61;
 
 
 }
@@ -1038,7 +1038,7 @@
     );
 
 
-    border-left:8px solid #556b2f;
+    border-left:8px solid #163A61;
 
 
 }
@@ -1062,7 +1062,7 @@
 
 /* ==================================================
    DASHBOARD - ELEMENTOS ENCAPSULADOS
-   Evita conflictos con Menús/Fichas/Multimedia
+   Evita conflictos con MenÃºs/Fichas/Multimedia
 ================================================== */
 
 
@@ -1087,7 +1087,7 @@
 
     font-family:"Cinzel",serif;
 
-    color:#314734;
+    color:#163A61;
 
     font-size:28px;
 
@@ -1115,7 +1115,7 @@
 .dashboard .btn-nuevo{
 
 
-    background:#556b2f;
+    background:#163A61;
 
     color:white;
 
@@ -1194,13 +1194,13 @@
     background:#eee2cb;
 
 
-    border-left:4px solid #556b2f;
+    border-left:4px solid #163A61;
 
 
     border-radius:8px;
 
 
-    color:#314734;
+    color:#163A61;
 
 
 }
@@ -1270,7 +1270,7 @@
     padding-left:10px;
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     color:white;
@@ -1339,7 +1339,7 @@
 .dashboard .estado-card span{
 
 
-    color:#314734;
+    color:#163A61;
 
 
     font-size:28px;
@@ -1372,7 +1372,7 @@
     min-height:120px;
 
 
-    background:#314734;
+    background:#163A61;
 
 
     border-radius:12px;
@@ -1424,7 +1424,7 @@
     font-size:30px;
 
 
-    background:#556b2f;
+    background:#163A61;
 
 
     color:white;
@@ -1449,7 +1449,7 @@
 
     justify-content:space-between;
 
-    color:#314734;
+    color:#163A61;
 
     margin-bottom:8px;
 
@@ -1473,7 +1473,7 @@
 
     height:100%;
 
-    background:#556b2f;
+    background:#163A61;
 
     border-radius:10px;
 
@@ -1481,4 +1481,47 @@
 
 .ventana-dashboard{
     background:transparent;
+}
+
+/* Paleta institucional MMAAS para iconos y paneles del dashboard. */
+.dashboard .tarjeta-dashboard{
+    background:#163A61;
+    border-color:#DBB060;
+}
+
+.dashboard .icono-dashboard{
+    background:#DBB060;
+    border-color:#81D2F7;
+    color:#163A61;
+}
+
+.dashboard .tarjeta-dashboard h3{
+    color:#DBB060;
+}
+
+.dashboard .icono-dashboard svg{
+    width:30px;
+    height:30px;
+    stroke-width:1.8;
+}
+
+.dashboard .bloque-dashboard h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#163A61;
+}
+
+.dashboard .bloque-dashboard h3 svg,
+.dashboard .item-dashboard strong svg{
+    width:18px;
+    height:18px;
+    color:#163A61;
+    stroke-width:1.8;
+}
+
+.dashboard .item-dashboard strong{
+    display:flex;
+    align-items:center;
+    gap:8px;
 }

@@ -60,6 +60,15 @@ async function cargarDashboard(){
 
             `).join("");
 
+            listaFichas
+            .querySelectorAll("strong")
+            .forEach((titulo, indice)=>{
+
+                titulo.innerHTML =
+                `<i data-lucide="file-text" aria-hidden="true"></i>${datos.fichas[indice].titulo}`;
+
+            });
+
         }
 
 

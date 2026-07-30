@@ -39,14 +39,14 @@
 
     linear-gradient(
         180deg,
-        #314734,
-        #1d291f
+        #163A61,
+        #0f2a48
     );
 
 
     border-right:
 
-    4px solid #705438;
+    4px solid #DBB060;
 
 
     box-shadow:
@@ -169,7 +169,7 @@
     letter-spacing:2px;
 
 
-    color:#d8c6a1;
+    color:#DBB060;
 
 
 }
@@ -216,7 +216,7 @@
 .panel-admin .sidebar nav::-webkit-scrollbar-thumb{
 
 
-    background:#705438;
+    background:#DBB060;
 
 
     border-radius:10px;
@@ -316,7 +316,7 @@
     height:100%;
 
 
-    background:#c5a46d;
+    background:#81D2F7;
 
 
     transform:scaleY(0);
@@ -336,7 +336,7 @@
 
     background:
 
-    rgba(255,255,255,.08);
+    rgba(129,210,247,.12);
 
 
     transform:
@@ -370,10 +370,10 @@
 .panel-admin .sidebar .item.activo{
 
 
-    background:#705438;
+    background:#DBB060;
 
 
-    color:#fff;
+    color:#163A61;
 
 
     font-weight:bold;
@@ -410,7 +410,8 @@
 ===================================================== */
 
 
-.panel-admin .sidebar .item i{
+.panel-admin .sidebar .item i,
+.panel-admin .sidebar .item svg{
 
 
     width:22px;
@@ -419,7 +420,7 @@
     text-align:center;
 
 
-    color:#d8c6a1;
+    color:#81D2F7;
 
 
 }
@@ -428,10 +429,11 @@
 
 
 
-.panel-admin .sidebar .item.activo i{
+.panel-admin .sidebar .item.activo i,
+.panel-admin .sidebar .item.activo svg{
 
 
-    color:#fff;
+    color:#163A61;
 
 
 }
@@ -515,6 +517,22 @@
 
     1px solid rgba(255,255,255,.2);
 
+
+}
+
+.panel-admin #cerrarSesion{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+
+}
+
+.panel-admin #cerrarSesion svg{
+
+    width:18px;
+    height:18px;
 
 }
 
