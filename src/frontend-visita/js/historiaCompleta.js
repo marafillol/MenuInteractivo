@@ -21,7 +21,11 @@ async function abrirHistoriaCompleta(idFicha){
 
 
         const visor =
-        document.getElementById("contenidoHistoriaCompleta");
+        document.getElementById("visorFicha");
+
+        visor.classList.remove("oculto");
+
+        document.body.classList.add("vistaAbierta");
 
         console.log("visor:", visor);
 
@@ -39,7 +43,7 @@ async function abrirHistoriaCompleta(idFicha){
 
             <button
             class="btnVolverVista"
-            onclick="volverVistaPrevia()">
+            onclick="cerrarVistaCompleta()">
 
                 ← Volver
 
@@ -65,6 +69,19 @@ async function abrirHistoriaCompleta(idFicha){
             </span>
 
 
+            ${ficha.resumen ? `
+
+            <section class="seccionHistoria">
+
+                <h2>Resumen</h2>
+
+                <p>${ficha.resumen}</p>
+
+            </section>
+
+            ` : ""}
+
+
         `;
 
 
@@ -75,35 +92,43 @@ async function abrirHistoriaCompleta(idFicha){
 
 
         const campos =
-        ficha.plantilla
-        .estructura
-        .campos || [];
+        ficha.plantilla?.estructura?.campos || [];
 
 
-
-        campos.forEach(campo=>{
-
-
-            if(!campo.mostrarHistoria){
-
-                return;
-
-            }
-
+        const camposConValor =
+        campos.filter(campo=>{
 
             const valor =
-            ficha.datos_json[campo.nombre];
+            ficha.datos_json?.[campo.nombre];
 
 
+            return valor !== undefined &&
+                valor !== null &&
+                valor !== "";
 
-            if(valor && campo.mostrarHistoria){
+        });
+
+
+        if(camposConValor.length){
+
+            contenido += `
+
+            <section class="seccionHistoria">
+
+                <h2>Datos especificos de ${ficha.menu}</h2>
+
+            `;
+
+
+            camposConValor.forEach(campo=>{
+
+                const valor =
+                ficha.datos_json[campo.nombre];
 
 
                 contenido += `
 
-
                 <div class="datoHistoria">
-
 
                     <label>
 
@@ -124,10 +149,16 @@ async function abrirHistoriaCompleta(idFicha){
 
                 `;
 
-            }
+            });
 
 
-        });
+            contenido += `
+
+            </section>
+
+            `;
+
+        }
 
 
         // ======================================
@@ -449,14 +480,11 @@ async function abrirHistoriaCompleta(idFicha){
         `;
 
 
-        const modal =
-        document.getElementById("modalHistoriaCompleta");
-
-
         visor.innerHTML = contenido;
 
-
-        modal.style.display = "flex";
+        visor
+        .querySelector(".btnVolverVista")
+        .textContent = "Cerrar";
 
 
     }
@@ -468,19 +496,6 @@ async function abrirHistoriaCompleta(idFicha){
         );
 
     }
-
-
-    document
-    .getElementById("cerrarHistoria")
-    .addEventListener("click",()=>{
-
-        document
-        .getElementById("modalHistoriaCompleta")
-        .style.display="none";
-
-    });
-
-
 
 }
 
@@ -640,19 +655,22 @@ function cerrarAudioMultimedia(){
 
 }
 
-function volverVistaPrevia(){
+function cerrarVistaCompleta(){
 
     const visor =
-    document.getElementById("contenidoHistoriaCompleta");
-
-
-    const modal =
-    document.getElementById("modalHistoriaCompleta");
+    document.getElementById("visorFicha");
 
 
     visor.innerHTML = "";
+    visor.classList.add("oculto");
 
 
-    modal.style.display="none";
+    document.body.classList.remove("vistaAbierta");
+
+}
+
+function volverVistaPrevia(){
+
+    cerrarVistaCompleta();
 
 }

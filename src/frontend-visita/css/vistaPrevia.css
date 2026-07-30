@@ -912,6 +912,51 @@ to{
 
 }
 
+/* La ficha completa se presenta en una unica ventana centrada. */
+#visorFicha{
+
+    top:50%;
+    right:auto;
+    left:50%;
+
+    width:min(970px, calc(100vw - 48px));
+    height:min(924px, calc(100vh - 36px));
+
+    padding:35px 42px;
+
+    box-sizing:border-box;
+
+    transform:translate(-50%, -50%);
+
+    animation:abrirFichaCentrada .35s ease;
+
+}
+
+#visorFicha .historiaCompleta{
+
+    position:relative;
+    z-index:1;
+
+}
+
+@keyframes abrirFichaCentrada{
+
+    from{
+
+        transform:translate(-50%, -46%);
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:translate(-50%, -50%);
+        opacity:1;
+
+    }
+
+}
+
 
 
 #fondoVista{

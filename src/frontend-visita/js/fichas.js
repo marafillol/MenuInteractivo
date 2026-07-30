@@ -210,7 +210,7 @@ function activarTarjetas(){
             tarjeta.dataset.id;
 
 
-            cargarVistaPrevia(idFicha);
+            abrirHistoriaCompleta(idFicha);
 
 
         });
