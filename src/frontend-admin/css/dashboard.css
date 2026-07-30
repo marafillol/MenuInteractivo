@@ -1525,3 +1525,9 @@
     align-items:center;
     gap:8px;
 }
+
+/* Separa las secciones consecutivas para que sus bordes no se superpongan. */
+.dashboard .panel-dashboard + .panel-dashboard,
+.dashboard .panel-dashboard + .bloque-dashboard{
+    margin-top:28px;
+}
