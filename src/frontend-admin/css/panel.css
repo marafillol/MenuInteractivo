@@ -800,3 +800,144 @@
     inset 0 0 0 3px rgba(255,255,255,.08);
 
 }
+
+/* Control para plegar la navegacion sin perder acceso a sus iconos. */
+.panel-admin .boton-menu-lateral{
+    display:inline-grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    min-width:42px;
+    padding:0;
+    margin-right:18px;
+}
+
+.panel-admin .boton-menu-lateral svg{
+    width:22px;
+    height:22px;
+}
+
+.panel-admin .barra-superior{
+    background:#f7f2e8;
+    border-bottom:1px solid rgba(22,58,97,.18);
+    box-shadow:0 2px 12px rgba(22,58,97,.08);
+}
+
+.panel-admin .boton-menu-lateral{
+    background:#163A61;
+    border-color:#163A61;
+    border-radius:6px;
+}
+
+.panel-admin .barra-superior{
+    gap:16px;
+}
+
+.panel-admin .titulo-panel{
+    margin-right:auto;
+    min-width:0;
+}
+
+.panel-admin button:focus-visible,
+.panel-admin input:focus-visible,
+.panel-admin select:focus-visible,
+.panel-admin textarea:focus-visible{
+    outline:3px solid #81D2F7;
+    outline-offset:3px;
+}
+
+@media(min-width:701px){
+    .panel-admin.sidebar-plegada .sidebar{
+        width:78px;
+        min-width:78px;
+    }
+
+    .panel-admin.sidebar-plegada .sidebar .logo{
+        padding:28px 8px;
+    }
+
+    .panel-admin.sidebar-plegada .sidebar .logo h2,
+    .panel-admin.sidebar-plegada .sidebar .logo span,
+    .panel-admin.sidebar-plegada .sidebar .separador{
+        display:none;
+    }
+
+    .panel-admin.sidebar-plegada .sidebar .item{
+        justify-content:center;
+        gap:0;
+        padding:15px 8px;
+        font-size:0;
+    }
+
+    .panel-admin.sidebar-plegada .sidebar .item:hover{
+        transform:none;
+    }
+
+    .panel-admin.sidebar-plegada .sidebar-footer{
+        padding:12px 10px;
+    }
+
+    .panel-admin.sidebar-plegada #cerrarSesion{
+        justify-content:center;
+        gap:0;
+    }
+
+    .panel-admin.sidebar-plegada #cerrarSesion span{
+        display:none;
+    }
+}
+
+@media(max-width:700px){
+    .panel-admin{
+        min-height:100dvh;
+        height:100dvh;
+    }
+
+    .panel-admin .sidebar{
+        min-height:64px;
+    }
+
+    .panel-admin .sidebar .logo,
+    .panel-admin .sidebar-footer{
+        display:none;
+    }
+
+    .panel-admin .sidebar nav{
+        padding:8px;
+        gap:8px;
+    }
+
+    .panel-admin .sidebar .item{
+        min-width:52px;
+        width:52px;
+        justify-content:center;
+        gap:0;
+        padding:12px;
+        margin:0;
+        font-size:0;
+    }
+
+    .panel-admin .barra-superior{
+        min-height:76px;
+        height:auto;
+        flex-basis:auto;
+        padding:12px 16px;
+    }
+
+    .panel-admin .barra-superior h1{
+        font-size:24px;
+    }
+
+    .panel-admin .subtitulo,
+    .panel-admin .usuario-info small{
+        display:none;
+    }
+
+    .panel-admin .usuario{
+        gap:8px;
+    }
+
+    .panel-admin #contenido{
+        padding:16px;
+    }
+}

@@ -49,7 +49,7 @@ async function cargarDashboard(){
                 <div class="item-dashboard"
 
                     <strong>
-                        📄 ${f.titulo}
+                        <i data-lucide="file-text" aria-hidden="true"></i>${f.titulo}
                     </strong>
 
                     <span>
@@ -266,11 +266,11 @@ function mostrarEstadoContenido(datos){
 
             <span>
 
-            ✅ ${item.visibles}
+            <i data-lucide="eye" aria-hidden="true"></i> ${item.visibles}
 
             |
 
-            ❌ ${item.no_visibles}
+            <i data-lucide="eye-off" aria-hidden="true"></i> ${item.no_visibles}
 
             </span>
 

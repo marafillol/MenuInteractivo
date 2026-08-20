@@ -101,3 +101,85 @@
     transform:scale(1.05);
 
 }
+
+/* Bienvenida actual, con la identidad institucional sobre la imagen del museo. */
+.pantalla-bienvenida{
+    height:100dvh;
+    align-items:flex-end;
+    padding:clamp(32px, 8vw, 110px);
+    box-sizing:border-box;
+    background-image:linear-gradient(90deg, rgba(8,31,53,.88), rgba(8,31,53,.46)), url("../img/fondo-malvinass.png");
+    background-position:center;
+}
+
+.contenido-bienvenida{
+    width:min(680px, 100%);
+    transform:none;
+    text-align:left;
+}
+
+.eyebrow-bienvenida{
+    margin:0 0 14px;
+    color:#81D2F7;
+    font-family:"Courier Prime", monospace;
+    font-size:14px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.contenido-bienvenida h1{
+    margin:0;
+    color:#fff;
+    font-family:"Cormorant Garamond", Georgia, serif;
+    font-size:clamp(48px, 7vw, 82px);
+    font-weight:500;
+    letter-spacing:0;
+    line-height:.95;
+}
+
+.descripcion-bienvenida{
+    max-width:520px;
+    margin:22px 0 0;
+    color:#edf5f7;
+    font-size:19px;
+    line-height:1.45;
+}
+
+#btnComenzar{
+    margin-top:34px;
+    padding:14px 22px;
+    color:#163A61;
+    background:#DBB060;
+    border:1px solid #DBB060;
+    border-radius:6px;
+    font-family:"Courier Prime", monospace;
+    font-size:15px;
+    letter-spacing:0;
+    text-shadow:none;
+    animation:none;
+}
+
+#btnComenzar:hover,
+#btnComenzar:focus-visible{
+    color:#fff;
+    background:transparent;
+    outline:2px solid #81D2F7;
+    outline-offset:4px;
+    transform:none;
+}
+
+@media(max-width:620px){
+    .pantalla-bienvenida{
+        align-items:center;
+        padding:28px;
+        background-image:linear-gradient(rgba(8,31,53,.78), rgba(8,31,53,.78)), url("../img/fondo-malvinass.png");
+    }
+
+    .contenido-bienvenida{
+        text-align:center;
+    }
+
+    .descripcion-bienvenida{
+        font-size:17px;
+    }
+}

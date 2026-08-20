@@ -138,6 +138,9 @@ require("./rutas/admin/dashboard");
 const usuarioRoutes =
 require("./rutas/admin/usuarios");
 
+const configuracionRoutes =
+require("./rutas/admin/configuracion");
+
 // =======================================================
 // IMPORTACIÓN DE RUTAS PÚBLICAS
 // =======================================================
@@ -147,6 +150,9 @@ require("./rutas/public/menus");
 
 const fichaPublicaRoutes =
 require("./rutas/public/fichas");
+
+const configuracionPublicaRoutes =
+require("./rutas/public/configuracion");
 
 // Cuando las creemos:
 /// const fichaPublicaRoutes = require("./rutas/public/fichas");
@@ -208,6 +214,11 @@ app.use(
     usuarioRoutes
 );
 
+app.use(
+    "/api/configuracion",
+    configuracionRoutes
+);
+
 
 // =======================================================
 // ENDPOINTS API PÚBLICOS
@@ -221,6 +232,11 @@ app.use(
 app.use(
     "/api/public/fichas",
     fichaPublicaRoutes
+);
+
+app.use(
+    "/api/public/configuracion",
+    configuracionPublicaRoutes
 );
 
 // =======================================================

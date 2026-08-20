@@ -41,9 +41,9 @@ function nuevaPlantillaActual(){
 
             columnas:4,
 
-            mostrarImagen:true,
+        mostrarImagen:true,
 
-            mostrarResumen:true
+        mostrarResumen:true
 
         },
 

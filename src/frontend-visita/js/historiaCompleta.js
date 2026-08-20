@@ -43,6 +43,8 @@ async function abrirHistoriaCompleta(idFicha){
 
             <button
             class="btnVolverVista"
+            type="button"
+            aria-label="Cerrar detalle de ficha"
             onclick="cerrarVistaCompleta()">
 
                 ← Volver
@@ -485,6 +487,8 @@ async function abrirHistoriaCompleta(idFicha){
         visor
         .querySelector(".btnVolverVista")
         .textContent = "Cerrar";
+
+        visor.focus();
 
 
     }

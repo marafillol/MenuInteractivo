@@ -286,7 +286,9 @@
 
 }
 
-.ventana-multimedia .emoji-multimedia{
+.ventana-multimedia .emoji-multimedia,
+
+.ventana-multimedia .icono-multimedia{
 
     width:56px;
 
@@ -306,6 +308,33 @@
 
     font-size:28px;
 
+}
+
+.ventana-multimedia .thumb-audio svg,
+.ventana-multimedia .thumb-pdf svg{
+    width:64px;
+    height:64px;
+    stroke-width:1.6;
+}
+
+.ventana-multimedia .icono-multimedia svg{
+    width:27px;
+    height:27px;
+    stroke-width:1.8;
+}
+
+.ventana-multimedia .datos-multimedia small{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.ventana-multimedia .datos-multimedia small svg,
+.ventana-multimedia .icono-documento svg,
+.ventana-multimedia .btn-vista svg{
+    width:17px;
+    height:17px;
+    stroke-width:1.8;
 }
 
 .ventana-multimedia .titulo-multimedia{

@@ -565,3 +565,288 @@
     object-fit:contain;
 
 }
+
+/* Adaptacion para pantallas tactiles, verticales y horizontales. */
+.explorador{
+    height:100dvh;
+}
+
+#btnIndice:focus-visible,
+#btnCerrarIndice:focus-visible,
+#buscador:focus-visible,
+.categoria:focus-visible,
+.tarjetaFicha:focus-visible{
+    outline:3px solid #DBB060;
+    outline-offset:4px;
+}
+
+@media(max-width:760px){
+    .cabecera{
+        min-height:0;
+        padding:16px 20px;
+        gap:14px;
+        flex-wrap:wrap;
+    }
+
+    .cabeceraIzquierda,
+    .cabeceraDerecha{
+        width:100%;
+        margin-right:0;
+    }
+
+    .cabeceraIzquierda{
+        justify-content:space-between;
+        gap:14px;
+    }
+
+    .cabecera h1{
+        margin:0;
+        font-size:24px;
+        letter-spacing:2px;
+        text-align:right;
+    }
+
+    #btnIndice{
+        flex-shrink:0;
+        padding:10px 14px;
+    }
+
+    #buscador{
+        box-sizing:border-box;
+        width:100%;
+        height:42px;
+    }
+
+    #panelIndice{
+        width:min(320px, 88vw);
+        left:-88vw;
+    }
+
+    #panelIndice.abierto{
+        left:0;
+    }
+
+    .contenidoPrincipal{
+        padding:22px 16px;
+        margin-top:-12px;
+    }
+
+    #contenedorFichas{
+        grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+        gap:24px;
+        padding:8px 0 24px;
+    }
+}
+
+@media(max-width:430px){
+    .cabecera h1{
+        font-size:20px;
+    }
+
+    .tarjetaFicha{
+        transform:scale(.92);
+        transform-origin:top center;
+        margin-bottom:-28px;
+    }
+}
+
+@media(orientation:landscape) and (max-height:620px){
+    .cabecera{
+        min-height:0;
+        padding:10px 24px;
+        margin-bottom:12px;
+    }
+
+    .cabecera h1{
+        font-size:22px;
+    }
+
+    .contenidoPrincipal{
+        padding:16px 24px;
+        margin-top:-8px;
+    }
+}
+
+/* Estilo actual de la visita, alimentado por la configuración global. */
+.explorador{
+    --color-primario:#163A61;
+    --color-acento:#DBB060;
+    --color-fondo:#F4EDDB;
+    --fondo-visitante:url("../img/pergamino.png");
+    background-image:var(--fondo-visitante);
+    background-attachment:fixed;
+}
+
+.cabecera{
+    min-height:74px;
+    padding:18px 48px;
+    background:var(--color-primario);
+    border-bottom:1px solid rgba(255,255,255,.22);
+    box-shadow:0 2px 18px rgba(22,58,97,.22);
+}
+
+.cabecera::before{
+    display:none;
+}
+
+.cabecera h1{
+    margin:0;
+    font-family:"Cormorant Garamond", Georgia, serif;
+    font-size:36px;
+    letter-spacing:1px;
+    text-shadow:none;
+}
+
+#btnIndice{
+    border-color:rgba(255,255,255,.5);
+    background:transparent;
+    border-radius:6px;
+}
+
+#btnIndice:hover{
+    background:rgba(255,255,255,.14);
+}
+
+#buscador{
+    border:1px solid var(--color-acento);
+    border-radius:6px;
+    box-shadow:none;
+}
+
+#panelIndice{
+    background:var(--color-fondo);
+    border-right:1px solid var(--color-acento);
+    box-shadow:8px 0 24px rgba(22,58,97,.18);
+}
+
+#panelIndice li{
+    border-left:3px solid transparent;
+    border-radius:4px;
+    background:rgba(255,255,255,.45);
+}
+
+#panelIndice li:hover,
+#panelIndice .seleccionada{
+    background:rgba(219,176,96,.28) !important;
+    border-left-color:var(--color-primario);
+    transform:none;
+}
+
+.contenidoPrincipal{
+    margin-top:0;
+}
+
+#contenedorFichas{
+    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+    gap:24px;
+    align-items:stretch;
+}
+
+.tarjetaFicha{
+    box-sizing:border-box;
+    width:100%;
+    max-width:320px;
+    min-height:0;
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    transform:none;
+}
+
+.tarjetaFicha:hover{
+    transform:translateY(-4px);
+    box-shadow:none;
+}
+
+.baseFicha,
+.clip{
+    display:none;
+}
+
+.imagenFicha{
+    position:static;
+    width:100%;
+    height:205px;
+    box-sizing:border-box;
+    padding:0;
+    transform:none;
+    background:rgba(22,58,97,.06);
+    border-radius:5px;
+    box-shadow:none;
+}
+
+.imagenFicha img{
+    box-sizing:border-box;
+    padding:8px;
+    border-radius:5px;
+    filter:none;
+}
+
+.imagenFicha::after{
+    display:none;
+}
+
+.infoFicha{
+    position:static;
+    width:auto;
+    margin-top:16px;
+    transform:none;
+    text-align:left;
+}
+
+.infoFicha h3{
+    color:var(--color-primario);
+    font-family:"Cormorant Garamond", Georgia, serif;
+    font-size:25px;
+    letter-spacing:0;
+}
+
+.camposTarjeta small{
+    color:#3a4a5b;
+}
+
+.tarjetaFicha:focus-visible,
+#btnIndice:focus-visible,
+#btnCerrarIndice:focus-visible,
+#buscador:focus-visible,
+.categoria:focus-visible{
+    outline-color:var(--color-acento);
+}
+
+.explorador.sin-buscador #buscador{
+    display:none;
+}
+
+.explorador.tarjetas-compactas #contenedorFichas{
+    grid-template-columns:repeat(auto-fill, minmax(205px, 1fr));
+    gap:16px;
+}
+
+.explorador.tarjetas-compactas .tarjetaFicha{
+    min-height:290px;
+    padding:10px;
+}
+
+.explorador.tarjetas-compactas .imagenFicha{
+    height:165px;
+}
+
+.explorador.tarjetas-compactas .infoFicha{
+    margin-top:11px;
+}
+
+@media(max-width:760px){
+    .cabecera{
+        padding:16px 20px;
+    }
+
+    .cabecera h1{
+        font-size:28px;
+    }
+
+    .tarjetaFicha{
+        max-width:none;
+    }
+}

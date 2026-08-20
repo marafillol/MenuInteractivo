@@ -261,3 +261,50 @@
     display:block;
     background:transparent;
 }
+
+/* Ficha documental: hoja de archivo, clip visible y fotografia sin marco blanco. */
+.tarjetaFicha{
+    width:280px;
+    min-height:390px;
+    position:relative;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+
+.baseFicha{
+    display:block !important;
+    width:100%;
+    height:auto;
+}
+
+.clip{
+    display:block !important;
+    z-index:3;
+}
+
+.imagenFicha{
+    top:76px;
+    width:142px;
+    height:174px;
+    padding:0 !important;
+    overflow:hidden;
+    background:transparent !important;
+    border:3px solid rgba(67,48,28,.85);
+    box-shadow:0 3px 7px rgba(0,0,0,.28) !important;
+}
+
+.imagenFicha img{
+    display:block;
+    width:100%;
+    height:100%;
+    padding:0 !important;
+    object-fit:cover;
+    filter:sepia(20%) contrast(92%) brightness(96%) saturate(78%);
+}
+
+.imagenFicha::after{
+    display:none !important;
+}

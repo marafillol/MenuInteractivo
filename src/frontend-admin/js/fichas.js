@@ -35,7 +35,7 @@ async function cargarFichas(){
 
             barraVolver.style.display = "block";
 
-            titulo.textContent = `📂 Menú de ${nombreMenuSeleccionado}`;
+            titulo.textContent = `Menú de ${nombreMenuSeleccionado}`;
 
         }else{
 
@@ -316,7 +316,7 @@ async function vistaPreviaFicha(id_ficha){
                 contenedorEtiquetas.innerHTML += `
                     <span class="etiqueta-vista">
 
-                        🏷️ ${etiqueta.nombre}
+                        ${etiqueta.nombre}
 
                     </span>
                 `;

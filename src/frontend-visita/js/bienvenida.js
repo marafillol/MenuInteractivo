@@ -12,11 +12,18 @@ function mostrarBienvenida() {
 
         <div class="contenido-bienvenida">
 
+            <p class="eyebrow-bienvenida">Museo Malvinas Antartida y Atlantico Sur</p>
+
+            <h1>Menu interactivo</h1>
+
+            <p class="descripcion-bienvenida">
+                Explora historias, testimonios y documentos de nuestra memoria colectiva.
+            </p>
 
 
             <button id="btnComenzar">
 
-                Nuestros heroes
+                Explorar coleccion
 
             </button>
 

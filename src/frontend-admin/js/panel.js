@@ -38,6 +38,11 @@ function actualizarIconos(){
     .querySelectorAll(".sidebar .item")
     .forEach(boton=>{
 
+        const nombreSeccion = boton.textContent.trim();
+
+        boton.setAttribute("aria-label", nombreSeccion);
+        boton.setAttribute("title", nombreSeccion);
+
         const icono =
         iconosNavegacion[boton.dataset.ventana];
 
@@ -114,6 +119,45 @@ function actualizarIconos(){
 }
 
 window.actualizarIconos = actualizarIconos;
+
+function iniciarSidebarPlegable(){
+
+    const panelAdmin = document.querySelector(".panel-admin");
+    const boton = document.getElementById("botonAlternarSidebar");
+
+    if(!panelAdmin || !boton){
+        return;
+    }
+
+    const actualizarEstado = (plegada)=>{
+
+        panelAdmin.classList.toggle("sidebar-plegada", plegada);
+
+        boton.setAttribute("aria-expanded", String(!plegada));
+
+        const accion = plegada ? "Expandir" : "Contraer";
+
+        boton.setAttribute("aria-label", `${accion} menu lateral`);
+        boton.setAttribute("title", `${accion} menu lateral`);
+
+    };
+
+    actualizarEstado(
+        localStorage.getItem("sidebarPlegada") === "true"
+    );
+
+    boton.addEventListener("click", ()=>{
+
+        const plegada =
+        !panelAdmin.classList.contains("sidebar-plegada");
+
+        actualizarEstado(plegada);
+
+        localStorage.setItem("sidebarPlegada", String(plegada));
+
+    });
+
+}
 // ==========================================================
 // FECHA
 // ==========================================================
@@ -322,6 +366,12 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         }
 
+        if(nombre === "configuracion"){
+
+            iniciarConfiguracion();
+
+        }
+
         actualizarIconos();
 
     }
@@ -387,9 +437,14 @@ botonCerrarSesion.addEventListener(
 
 async function iniciarPanel(){
 
+    iniciarSidebarPlegable();
+
     actualizarFecha();
 
     await cargarUsuarioActual();
+
+    await cargarScriptVentana("configuracion");
+    aplicarConfiguracionAdminGuardada();
 
     activarNavegacion();
 

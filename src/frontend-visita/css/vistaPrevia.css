@@ -1006,5 +1006,56 @@ to{
 
 }
 
+#visorFicha:focus-visible,
+.cerrarVista:focus-visible,
+.btnVolverVista:focus-visible{
+    outline:3px solid #DBB060;
+    outline-offset:4px;
+}
+
+@media(max-width:760px){
+    #visorFicha{
+        width:calc(100vw - 24px);
+        height:calc(100dvh - 24px);
+        padding:28px 20px;
+    }
+
+    #visorFicha .historiaCompleta{
+        padding-top:24px;
+    }
+
+    .imagenHistoria,
+    .imagenVista{
+        width:min(190px, 62vw);
+        height:min(190px, 62vw);
+    }
+
+    .historiaCompleta h1,
+    .cabeceraVista h2{
+        font-size:clamp(24px, 7vw, 32px);
+        letter-spacing:1px;
+    }
+
+    .datoHistoria,
+    .datoFicha,
+    .resumenFicha{
+        padding:13px;
+    }
+}
+
+@media(orientation:landscape) and (max-height:620px){
+    #visorFicha{
+        width:min(880px, calc(100vw - 32px));
+        height:calc(100dvh - 20px);
+        padding:20px 28px;
+    }
+
+    .imagenHistoria,
+    .imagenVista{
+        width:135px;
+        height:135px;
+    }
+}
+
 
 

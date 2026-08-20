@@ -425,6 +425,11 @@
 
 }
 
+.panel-admin .sidebar .item:focus-visible{
+    outline:3px solid #81D2F7;
+    outline-offset:-3px;
+}
+
 
 
 
@@ -636,4 +641,75 @@
     }
 
 
-}}
+}
+
+/* Navegacion compacta en telefonos: conserva los iconos sin desbordar. */
+@media(max-width:700px){
+    .panel-admin .sidebar nav{
+        padding:8px;
+        gap:8px;
+    }
+
+    .panel-admin .sidebar .item{
+        min-width:52px;
+        width:52px;
+        justify-content:center;
+        gap:0;
+        padding:12px;
+        margin:0;
+        font-size:0;
+    }
+}
+
+/* Navegacion contemporanea con la paleta institucional. */
+.panel-admin .sidebar{
+    border-right:1px solid rgba(219,176,96,.8);
+    box-shadow:8px 0 28px rgba(9,29,49,.2);
+}
+
+.panel-admin .sidebar .logo{
+    padding:30px 24px 24px;
+    text-align:left;
+    border-bottom:1px solid rgba(129,210,247,.2);
+}
+
+.panel-admin .sidebar nav{
+    padding:16px 12px;
+}
+
+.panel-admin .sidebar .item{
+    min-height:46px;
+    margin-bottom:4px;
+    padding:12px 14px;
+    border-radius:6px;
+    font-weight:500;
+    letter-spacing:0;
+}
+
+.panel-admin .sidebar .item::before{
+    width:3px;
+    border-radius:0 3px 3px 0;
+}
+
+.panel-admin .sidebar .item:hover{
+    background:rgba(129,210,247,.16);
+    transform:none;
+}
+
+.panel-admin .sidebar .item.activo{
+    background:rgba(219,176,96,.95);
+    box-shadow:none;
+}
+
+.panel-admin .sidebar .item i,
+.panel-admin .sidebar .item svg{
+    flex:0 0 21px;
+    width:21px;
+    height:21px;
+    stroke-width:1.9;
+}
+
+.panel-admin .sidebar-footer{
+    padding:14px 12px;
+    border-top:1px solid rgba(129,210,247,.2);
+}

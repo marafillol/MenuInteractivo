@@ -145,6 +145,19 @@ db.serialize(() => {
         )
     `);
 
+    // Ajustes globales del sitio, por ejemplo el estilo de la vista visitante.
+    db.run(`
+        CREATE TABLE IF NOT EXISTS configuracion(
+
+            clave TEXT PRIMARY KEY,
+
+            valor TEXT NOT NULL,
+
+            actualizado DATETIME DEFAULT CURRENT_TIMESTAMP
+
+        )
+    `);
+
 
 
     // =================================================

@@ -1,7 +1,121 @@
-<h2>Configuración</h2>
+<section class="ventana ventana-configuracion">
 
-<p>
+    <div class="cabecera-configuracion">
+        <div>
+            <h2>Configuración</h2>
+            <p>Definí la identidad visual y presentación de las dos experiencias del museo.</p>
+        </div>
+    </div>
 
-    Configuración general.
+    <form id="formularioEstiloVisitante" class="formulario-estilo-visitante">
 
-</p>
+        <section class="bloque-configuracion">
+            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
+            <h3>Identidad visual</h3>
+
+            <label for="fondoConfiguracionVisitante">Fondo predefinido</label>
+
+            <select id="fondoConfiguracionVisitante">
+                <option value="pergamino">Pergamino</option>
+                <option value="mapa">Mapa de Malvinas</option>
+                <option value="papel">Papel histórico</option>
+            </select>
+
+            <label for="imagenFondoConfiguracion">Imagen de fondo personalizada</label>
+
+            <input
+                    id="imagenFondoConfiguracion"
+                    type="text"
+                    placeholder="Ej.: /imagenes/menus/fondo.jpg">
+
+            <p class="ayuda-configuracion">
+                Usá una imagen ya cargada, por ejemplo: /imagenes/menus/fondo.jpg.
+            </p>
+        </section>
+
+        <section class="bloque-configuracion">
+            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
+            <h3>Paleta de colores</h3>
+
+            <div class="paleta-configuracion">
+                <label for="colorPrimarioConfiguracion">Color principal</label>
+                <input id="colorPrimarioConfiguracion" type="color" value="#163A61">
+
+                <label for="colorAcentoConfiguracion">Color de acento</label>
+                <input id="colorAcentoConfiguracion" type="color" value="#DBB060">
+
+                <label for="colorFondoConfiguracion">Color de fondo</label>
+                <input id="colorFondoConfiguracion" type="color" value="#F4EDDB">
+            </div>
+        </section>
+
+        <section class="bloque-configuracion">
+            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
+            <h3>Presentación del contenido</h3>
+
+            <label class="control-interruptor" for="mostrarBuscadorConfiguracion">
+                <input id="mostrarBuscadorConfiguracion" type="checkbox" checked>
+                <span>Mostrar buscador de fichas</span>
+            </label>
+
+            <label for="densidadTarjetasConfiguracion">Tamaño de tarjetas</label>
+            <select id="densidadTarjetasConfiguracion">
+                <option value="normal">Normal</option>
+                <option value="compacta">Compacta</option>
+            </select>
+        </section>
+
+        <div class="acciones-configuracion">
+            <button type="submit" class="btn-guardar-configuracion">
+                Guardar estilo del menú
+            </button>
+        </div>
+
+        <p id="mensajeConfiguracion" class="mensaje-configuracion" aria-live="polite"></p>
+
+    </form>
+
+    <form id="formularioEstiloAdmin" class="formulario-estilo-admin">
+
+        <section class="bloque-configuracion">
+            <span class="referencia-configuracion">PANEL ADMINISTRADOR</span>
+            <h3>Apariencia del panel</h3>
+
+            <div class="paleta-configuracion">
+                <label for="colorPrincipalAdmin">Color principal</label>
+                <input id="colorPrincipalAdmin" type="color" value="#163A61">
+
+                <label for="colorAcentoAdmin">Color de acento</label>
+                <input id="colorAcentoAdmin" type="color" value="#DBB060">
+
+                <label for="colorFondoAdmin">Color de fondo</label>
+                <input id="colorFondoAdmin" type="color" value="#F4EDDB">
+            </div>
+        </section>
+
+        <section class="bloque-configuracion">
+            <span class="referencia-configuracion">PANEL ADMINISTRADOR</span>
+            <h3>Distribución</h3>
+
+            <label for="densidadAdminConfiguracion">Densidad de la interfaz</label>
+            <select id="densidadAdminConfiguracion">
+                <option value="normal">Normal</option>
+                <option value="compacta">Compacta</option>
+            </select>
+
+            <p class="ayuda-configuracion">
+                La vista compacta reduce espacios para mostrar más información en pantalla.
+            </p>
+        </section>
+
+        <div class="acciones-configuracion">
+            <button type="submit" class="btn-guardar-configuracion">
+                Guardar estilo del panel
+            </button>
+        </div>
+
+        <p id="mensajeConfiguracionAdmin" class="mensaje-configuracion" aria-live="polite"></p>
+
+    </form>
+
+</section>

@@ -36,3 +36,11 @@ html,body{
     overflow:hidden;
 
 }
+
+body.cargando-visita{
+    background:#0b1f35;
+}
+
+body.cargando-visita #app{
+    visibility:hidden;
+}

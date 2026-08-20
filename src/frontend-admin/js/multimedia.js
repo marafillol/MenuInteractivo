@@ -45,7 +45,7 @@ async function cargarMultimedia(){
             botonNuevo.style.display = "none";
 
             titulo.textContent =
-                `🎞 Multimedia de ${nombreFichaSeleccionada}`;
+                `Multimedia de ${nombreFichaSeleccionada}`;
 
             await cargarResumenFicha();
 
@@ -146,7 +146,7 @@ async function cargarMultimedia(){
 
                 vista = `
                     <div class="thumb-audio">
-                        🎵
+                        <i data-lucide="music" aria-hidden="true"></i>
                     </div>
                 `;
 
@@ -155,12 +155,20 @@ async function cargarMultimedia(){
 
                 vista = `
                     <div class="thumb-pdf">
-                        📄
+                        <i data-lucide="file-text" aria-hidden="true"></i>
                     </div>
                 `;
 
             }
-            const icono = item.miniatura || "📁";
+
+            const iconosPorTipo = {
+                imagen: "image",
+                video: "video",
+                audio: "music",
+                pdf: "file-text"
+            };
+
+            const icono = iconosPorTipo[item.tipo_multi] || "folder";
 
 
             contenedor.innerHTML += `
@@ -177,8 +185,8 @@ async function cargarMultimedia(){
 
                         <div class="encabezado-multimedia">
 
-                            <span class="emoji-multimedia">
-                                ${icono}
+                            <span class="icono-multimedia">
+                                <i data-lucide="${icono}" aria-hidden="true"></i>
                             </span>
 
                             <div>
@@ -198,11 +206,13 @@ async function cargarMultimedia(){
                         <div class="datos-multimedia">
 
                             <small>
-                                📁 Ficha #${item.id_ficha}
+                                <i data-lucide="folder" aria-hidden="true"></i>
+                                Ficha #${item.id_ficha}
                             </small>
 
                             <small>
-                                📅 ${item.creado || "-"}
+                                <i data-lucide="calendar" aria-hidden="true"></i>
+                                ${item.creado || "-"}
                             </small>
 
                         </div>
@@ -245,6 +255,10 @@ async function cargarMultimedia(){
             `;
 
         });
+
+        if(window.lucide){
+            window.lucide.createIcons();
+        }
 
     }catch(error){
 
@@ -415,7 +429,7 @@ async function vistaPreviaMultimedia(id_multi){
                         <div class="encabezado-documento">
 
                             <div class="icono-documento">
-                                📄
+                                <i data-lucide="file-text" aria-hidden="true"></i>
                             </div>
 
                             <div>
@@ -441,7 +455,8 @@ async function vistaPreviaMultimedia(id_multi){
                                 class="btn-vista"
                                 onclick="abrirDocumentoCompleto('${ruta}')">
 
-                                ⛶ Ver documento completo
+                                <i data-lucide="maximize-2" aria-hidden="true"></i>
+                                Ver documento completo
 
                             </button>
 
@@ -652,6 +667,10 @@ async function vistaPreviaMultimedia(id_multi){
         </div>
 
         `;
+
+        if(window.lucide){
+            window.lucide.createIcons();
+        }
 
 
         document.getElementById(
@@ -1143,7 +1162,7 @@ async function editarMultimedia(id){
                     <div style="text-align:center">
 
                         <div style="font-size:60px;margin-bottom:10px;">
-                            🎵
+                            <i data-lucide="music" aria-hidden="true"></i>
                         </div>
 
                         <audio controls style="width:100%;">
@@ -1179,7 +1198,7 @@ async function editarMultimedia(id){
                         text-align:center;
                         font-size:60px;
                     ">
-                        📁
+                        <i data-lucide="folder" aria-hidden="true"></i>
                     </div>
                 `;
 
@@ -1215,6 +1234,10 @@ async function editarMultimedia(id){
         `;
 
         preview.style.display = "block";
+
+        if(window.lucide){
+            window.lucide.createIcons();
+        }
 
         document.querySelector(
             "#modalMultimediaNuevo h3"

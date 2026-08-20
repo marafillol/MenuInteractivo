@@ -141,14 +141,17 @@ function pintarFichas(fichas){
         contenedor.innerHTML += `
 
         <article class="tarjetaFicha"
-            data-id="${ficha.id_ficha}">
+            data-id="${ficha.id_ficha}"
+            role="button"
+            tabindex="0"
+            aria-label="Abrir ficha: ${ficha.titulo}">
 
 
-            <img class="baseFicha" src="img/fondo.png">
+            <img class="baseFicha" src="img/fondo.png" alt="">
 
 
             <div class="clip">
-                <img src="img/clip.png">
+                <img src="img/clip.png" alt="">
             </div>
 
 
@@ -159,7 +162,8 @@ function pintarFichas(fichas){
                     ficha.imagen
                     ? "/" + ficha.imagen
                     : "/imagenes/default.png"
-                }">
+                }"
+                alt="${ficha.titulo}">
 
             </div>
 
@@ -202,19 +206,28 @@ function activarTarjetas(){
 
     tarjetas.forEach(tarjeta=>{
 
-
-        tarjeta.addEventListener("click",()=>{
-
+        const abrirFicha = ()=>{
 
             const idFicha =
             tarjeta.dataset.id;
 
-
             abrirHistoriaCompleta(idFicha);
 
+        };
+
+        tarjeta.addEventListener("click", abrirFicha);
+
+        tarjeta.addEventListener("keydown", (evento)=>{
+
+            if(evento.key === "Enter" || evento.key === " "){
+
+                evento.preventDefault();
+
+                abrirFicha();
+
+            }
 
         });
-
 
     });
 
