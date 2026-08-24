@@ -1,48 +1,13 @@
-// =======================================================
-// MODELO DASHBOARD
-// =======================================================
-//
-// Este modelo contiene todas las consultas SQL necesarias
-// para obtener información estadística utilizada por el
-// panel administrativo.
-//
-// Su responsabilidad es:
-// - Consultar información de la base de datos.
-// - Procesar datos generales del sistema.
-// - Devolver resultados al controlador.
-//
-// No maneja:
-// - Peticiones HTTP.
-// - Respuestas al cliente.
-// - Lógica de interfaz.
-//
-
 const db = require("../database");
-
-
 
 
 // =======================================================
 // RESUMEN GENERAL DEL SISTEMA
 // =======================================================
-//
-// Obtiene la cantidad total de elementos principales
-// almacenados en la base de datos:
-//
-// - Menús.
-// - Fichas.
-// - Plantillas.
-// - Etiquetas.
-// - Multimedia.
-//
-// Utilizado para mostrar tarjetas de resumen
-// en el dashboard.
-//
 
 const obtenerResumen = ()=>{
 
     return new Promise((resolve,reject)=>{
-
 
         const sql = `
 
@@ -58,27 +23,20 @@ const obtenerResumen = ()=>{
 
         (SELECT COUNT(*) FROM multimedia) AS multimedia
 
-
         `;
 
-
         db.get(sql,[],(error,fila)=>{
-
 
             if(error){
 
                 reject(error);
-
                 return;
 
             }
 
-
             resolve(fila);
 
-
         });
-
 
     });
 
@@ -86,29 +44,13 @@ const obtenerResumen = ()=>{
 
 
 
-
-
-
 // =======================================================
 // ÚLTIMAS FICHAS CREADAS
 // =======================================================
-//
-// Obtiene las últimas 5 fichas agregadas al sistema.
-//
-// Devuelve:
-// - ID de la ficha.
-// - Título.
-// - Fecha de creación.
-//
-// Utilizado para mostrar actividad reciente
-// en el panel administrativo.
-//
 
 const ultimasFichas = ()=>{
 
-
     return new Promise((resolve,reject)=>{
-
 
         db.all(
 
@@ -131,7 +73,6 @@ const ultimasFichas = ()=>{
 
             (error,filas)=>{
 
-
                 if(error){
 
                     reject(error);
@@ -142,42 +83,23 @@ const ultimasFichas = ()=>{
 
                 }
 
-
             }
 
         );
 
-
     });
 
-
 };
-
-
-
 
 
 
 // =======================================================
 // ÚLTIMOS MENÚS MODIFICADOS
 // =======================================================
-//
-// Obtiene los últimos 5 menús modificados.
-//
-// Devuelve:
-// - ID del menú.
-// - Nombre.
-// - Fecha de actualización.
-//
-// Utilizado para mostrar los cambios recientes
-// realizados en el sistema.
-//
 
 const ultimosMenus = ()=>{
 
-
     return new Promise((resolve,reject)=>{
-
 
         db.all(
 
@@ -200,7 +122,6 @@ const ultimosMenus = ()=>{
 
             (error,filas)=>{
 
-
                 if(error){
 
                     reject(error);
@@ -211,43 +132,23 @@ const ultimosMenus = ()=>{
 
                 }
 
-
             }
 
         );
 
-
     });
 
-
 };
-
-
-
 
 
 
 // =======================================================
 // CANTIDAD DE MULTIMEDIA POR TIPO
 // =======================================================
-//
-// Agrupa los archivos multimedia según su tipo.
-//
-// Ejemplo:
-//
-// imagen -> 50
-// video  -> 10
-// audio  -> 5
-//
-// Utilizado para generar estadísticas
-// o gráficos del dashboard.
-//
 
 const multimediaPorTipo = ()=>{
 
-
     return new Promise((resolve,reject)=>{
-
 
         db.all(
 
@@ -267,7 +168,6 @@ const multimediaPorTipo = ()=>{
 
             (error,filas)=>{
 
-
                 if(error){
 
                     reject(error);
@@ -278,37 +178,19 @@ const multimediaPorTipo = ()=>{
 
                 }
 
-
             }
 
         );
 
-
     });
 
-
 };
-
-
-
 
 
 
 // =======================================================
 // CANTIDAD DE FICHAS POR MENÚ
 // =======================================================
-//
-// Cuenta cuántas fichas pertenecen a cada menú.
-//
-// Utiliza LEFT JOIN para incluir también menús
-// que todavía no tienen fichas asociadas.
-//
-// Ejemplo:
-//
-// Soldados        -> 50 fichas
-// Fauna           -> 20 fichas
-// Nuevo menú      -> 0 fichas
-//
 
 const fichasPorMenu = ()=>{
 
@@ -351,117 +233,156 @@ const fichasPorMenu = ()=>{
 
         );
 
-
     });
 
 };
 
 
 
-
-
-
-
 // =======================================================
-// ESTADO DE VISIBILIDAD DEL CONTENIDO
+// ESTADO DE VISIBILIDAD
 // =======================================================
 //
-// Obtiene la cantidad de elementos visibles
-// y no visibles del sistema.
+// Devuelve:
 //
-// Analiza:
+// menus
+// fichas
+// etiquetas
+// multimedia
 //
-// - Menús.
-// - Fichas.
-// - Etiquetas.
-// - Multimedia.
-//
-// El resultado permite mostrar estadísticas
-// sobre el contenido activo del museo.
-//
+// con cantidad visible/activa y oculta/inactiva.
+// =======================================================
 
 const estadoContenido = ()=>{
 
     return new Promise((resolve,reject)=>{
 
-
         const sql = `
 
         SELECT
 
-        'menus' AS tipo,
+            'menus' AS tipo,
 
-        SUM(CASE WHEN visible = 1 THEN 1 ELSE 0 END) AS visibles,
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN visible = 1 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS visibles,
 
-        SUM(CASE WHEN visible = 0 THEN 1 ELSE 0 END) AS no_visibles
-
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN visible = 0 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS no_visibles
 
         FROM menu
 
 
-
         UNION ALL
-
 
 
         SELECT
 
-        'fichas' AS tipo,
+            'fichas' AS tipo,
 
-        SUM(CASE WHEN visible = 1 THEN 1 ELSE 0 END),
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN visible = 1 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ),
 
-        SUM(CASE WHEN visible = 0 THEN 1 ELSE 0 END)
-
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN visible = 0 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            )
 
         FROM ficha
 
 
-
         UNION ALL
-
 
 
         SELECT
 
-        'etiquetas' AS tipo,
+            'etiquetas' AS tipo,
 
-        SUM(CASE WHEN activo = 1 THEN 1 ELSE 0 END),
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN activo = 1 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ),
 
-        SUM(CASE WHEN activo = 0 THEN 1 ELSE 0 END)
-
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN activo = 0 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            )
 
         FROM etiqueta
 
 
-
         UNION ALL
-
 
 
         SELECT
 
-        'multimedia' AS tipo,
+            'multimedia' AS tipo,
 
-        SUM(CASE WHEN activo = 1 THEN 1 ELSE 0 END),
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN activo = 1 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            ),
 
-        SUM(CASE WHEN activo = 0 THEN 1 ELSE 0 END)
-
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN activo = 0 THEN 1
+                        ELSE 0
+                    END
+                ),
+                0
+            )
 
         FROM multimedia
 
-
         `;
-
-
 
         db.all(
 
             sql,
-
             [],
 
             (error,filas)=>{
-
 
                 if(error){
 
@@ -473,11 +394,9 @@ const estadoContenido = ()=>{
 
                 }
 
-
             }
 
         );
-
 
     });
 
@@ -485,18 +404,244 @@ const estadoContenido = ()=>{
 
 
 
+// =======================================================
+// ELEMENTOS OCULTOS / INACTIVOS
+// =======================================================
+//
+// Obtiene los registros concretos que están ocultos.
+//
+// Menús       -> visible = 0
+// Fichas      -> visible = 0
+// Etiquetas   -> activo = 0
+// Multimedia  -> activo = 0
+// =======================================================
+
+const contenidoOculto = ()=>{
+
+    return new Promise((resolve,reject)=>{
+
+        const consultas = [
+
+            // -------------------------------------------
+            // MENÚS
+            // -------------------------------------------
+
+            new Promise((resolve,reject)=>{
+
+                db.all(
+
+                    `
+                    SELECT
+
+                        id_menu AS id,
+                        nombre AS nombre,
+                        'menus' AS tipo
+
+                    FROM menu
+
+                    WHERE visible = 0
+
+                    ORDER BY nombre ASC
+
+                    `,
+
+                    [],
+
+                    (error,filas)=>{
+
+                        if(error){
+
+                            reject(error);
+
+                        }else{
+
+                            resolve(filas);
+
+                        }
+
+                    }
+
+                );
+
+            }),
+
+
+            // -------------------------------------------
+            // FICHAS
+            // -------------------------------------------
+
+            new Promise((resolve,reject)=>{
+
+                db.all(
+
+                    `
+                    SELECT
+
+                        id_ficha AS id,
+                        titulo AS nombre,
+                        'fichas' AS tipo
+
+                    FROM ficha
+
+                    WHERE visible = 0
+
+                    ORDER BY titulo ASC
+
+                    `,
+
+                    [],
+
+                    (error,filas)=>{
+
+                        if(error){
+
+                            reject(error);
+
+                        }else{
+
+                            resolve(filas);
+
+                        }
+
+                    }
+
+                );
+
+            }),
+
+
+            // -------------------------------------------
+            // ETIQUETAS
+            // -------------------------------------------
+
+            new Promise((resolve,reject)=>{
+
+                db.all(
+
+                    `
+                    SELECT
+
+                        id_etiqueta AS id,
+                        nombre AS nombre,
+                        'etiquetas' AS tipo
+
+                    FROM etiqueta
+
+                    WHERE activo = 0
+
+                    ORDER BY nombre ASC
+
+                    `,
+
+                    [],
+
+                    (error,filas)=>{
+
+                        if(error){
+
+                            reject(error);
+
+                        }else{
+
+                            resolve(filas);
+
+                        }
+
+                    }
+
+                );
+
+            }),
+
+
+            // -------------------------------------------
+            // MULTIMEDIA
+            // -------------------------------------------
+
+            new Promise((resolve,reject)=>{
+
+                db.all(
+
+                    `
+                    SELECT
+
+                        id_multi AS id,
+
+                        COALESCE(
+                            descripcion,
+                            tipo_multi
+                        ) AS nombre,
+
+                        tipo_multi AS subtitulo,
+
+                        'multimedia' AS tipo
+
+                    FROM multimedia
+
+                    WHERE activo = 0
+
+                    ORDER BY id_multi DESC
+
+                    `,
+
+                    [],
+
+                    (error,filas)=>{
+
+                        if(error){
+
+                            reject(error);
+
+                        }else{
+
+                            resolve(filas);
+
+                        }
+
+                    }
+
+                );
+
+            })
+
+        ];
+
+
+        Promise.all(consultas)
+
+            .then(resultados=>{
+
+                resolve({
+
+                    menus: resultados[0],
+
+                    fichas: resultados[1],
+
+                    etiquetas: resultados[2],
+
+                    multimedia: resultados[3]
+
+                });
+
+            })
+
+            .catch(error=>{
+
+                reject(error);
+
+            });
+
+    });
+
+};
 
 
 
 // =======================================================
-// EXPORTACIÓN DEL MODELO
+// EXPORTACIÓN
 // =======================================================
-//
-// Exporta las funciones para que puedan ser utilizadas
-// por los controladores del dashboard.
-//
 
-module.exports={
+module.exports = {
 
     obtenerResumen,
 
@@ -508,6 +653,8 @@ module.exports={
 
     fichasPorMenu,
 
-    estadoContenido
+    estadoContenido,
+
+    contenidoOculto
 
 };

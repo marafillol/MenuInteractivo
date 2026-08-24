@@ -27,7 +27,10 @@ const obtenerDashboard = async(req,res)=>{
         await Dashboard.fichasPorMenu();
 
         const estado =
-        await Dashboard.estadoContenido();
+            await Dashboard.estadoContenido();
+
+        const contenidoOculto =
+            await Dashboard.contenidoOculto();
 
         res.json({
 
@@ -41,7 +44,9 @@ const obtenerDashboard = async(req,res)=>{
 
             fichasMenu,
 
-            estado
+            estado,
+
+            contenidoOculto
 
         });
 

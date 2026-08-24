@@ -373,6 +373,7 @@ async function cargarVentana(nombre, mantenerMenu=false){
         }
 
         actualizarIconos();
+        activarAccesosRapidos();
 
     }
 
@@ -651,6 +652,50 @@ async function confirmarCerrarSesion(){
 
     window.location.href="index.html";
 
+
+}
+
+
+function activarAccesosRapidos(){
+
+    const accesos =
+        document.querySelectorAll(
+            ".acceso-dashboard"
+        );
+
+    accesos.forEach(acceso => {
+
+        acceso.addEventListener("click", () => {
+
+            const ventana =
+                acceso.dataset.acceso;
+
+            if(!ventana){
+                return;
+            }
+
+            // Marcar como activo el botón correspondiente
+            const botonSidebar =
+                document.querySelector(
+                    `.sidebar .item[data-ventana="${ventana}"]`
+                );
+
+            document
+                .querySelectorAll(".sidebar .item")
+                .forEach(item => {
+                    item.classList.remove("activo");
+                });
+
+            if(botonSidebar){
+                botonSidebar.classList.add("activo");
+            }
+
+            // Cargar la ventana
+            cargarVentana(ventana);
+
+        });
+
+    });
 
 }
 

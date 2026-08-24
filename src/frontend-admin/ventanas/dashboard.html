@@ -1,30 +1,60 @@
 <section class="ventana ventana dashboard">
 
+    <!-- =====================================================
+         CABECERA DEL DASHBOARD
+    ====================================================== -->
 
     <div class="cabecera-dashboard">
 
-        <div>
+        <div class="dashboard-encabezado-contenido">
 
-            <h2 class="titulo-seccion">
-                Panel General
-            </h2>
+            <div class="dashboard-icono-titulo">
+                <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+            </div>
 
+            <div>
 
-            <p class="descripcion-dashboard">
+                <span class="dashboard-etiqueta">
+                    CENTRO DE DOCUMENTACIÓN HISTÓRICA
+                </span>
 
-                Resumen del contenido histórico almacenado
-                en el sistema Menu Interactivo.
+                <h2 class="titulo-seccion">
+                    Panel General
+                </h2>
 
-            </p>
+                <p class="descripcion-dashboard">
+                    Vista general del contenido y estado actual
+                    del sistema MenuInteractivo.
+                </p>
+
+            </div>
 
         </div>
+
 
     </div>
 
 
+    <!-- =====================================================
+         RESUMEN GENERAL
+    ====================================================== -->
+
+    <div class="dashboard-seccion-titulo">
+
+        <div>
+            <span>RESUMEN</span>
+            <h3>Contenido del sistema</h3>
+        </div>
+
+        <i data-lucide="database" aria-hidden="true"></i>
+
+    </div>
+
 
     <div class="grid-dashboard">
 
+
+        <!-- MENÚS -->
 
         <div class="tarjeta-dashboard">
 
@@ -32,25 +62,26 @@
                 <i data-lucide="folder-open" aria-hidden="true"></i>
             </div>
 
-
-            <div>
+            <div class="tarjeta-dashboard-info">
 
                 <h3>
                     Menús
                 </h3>
 
-
                 <span id="totalMenus">
                     0
                 </span>
 
-            </div>
+                <small>
+                    Secciones disponibles
+                </small>
 
+            </div>
 
         </div>
 
 
-
+        <!-- FICHAS -->
 
         <div class="tarjeta-dashboard">
 
@@ -58,25 +89,26 @@
                 <i data-lucide="file-text" aria-hidden="true"></i>
             </div>
 
-
-            <div>
+            <div class="tarjeta-dashboard-info">
 
                 <h3>
                     Fichas
                 </h3>
 
-
                 <span id="totalFichas">
                     0
                 </span>
 
-            </div>
+                <small>
+                    Registros históricos
+                </small>
 
+            </div>
 
         </div>
 
 
-
+        <!-- PLANTILLAS -->
 
         <div class="tarjeta-dashboard">
 
@@ -84,26 +116,26 @@
                 <i data-lucide="files" aria-hidden="true"></i>
             </div>
 
-
-            <div>
+            <div class="tarjeta-dashboard-info">
 
                 <h3>
                     Plantillas
                 </h3>
 
-
                 <span id="totalPlantillas">
                     0
                 </span>
 
-            </div>
+                <small>
+                    Estructuras disponibles
+                </small>
 
+            </div>
 
         </div>
 
 
-
-
+        <!-- MULTIMEDIA -->
 
         <div class="tarjeta-dashboard">
 
@@ -111,25 +143,26 @@
                 <i data-lucide="image" aria-hidden="true"></i>
             </div>
 
-
-            <div>
+            <div class="tarjeta-dashboard-info">
 
                 <h3>
                     Multimedia
                 </h3>
 
-
                 <span id="totalMultimedia">
                     0
                 </span>
 
-            </div>
+                <small>
+                    Recursos asociados
+                </small>
 
+            </div>
 
         </div>
 
 
-
+        <!-- ETIQUETAS -->
 
         <div class="tarjeta-dashboard">
 
@@ -137,96 +170,19 @@
                 <i data-lucide="tag" aria-hidden="true"></i>
             </div>
 
-
-            <div>
+            <div class="tarjeta-dashboard-info">
 
                 <h3>
                     Etiquetas
                 </h3>
 
-
                 <span id="totalEtiquetas">
                     0
                 </span>
 
-            </div>
-
-
-        </div>
-
-
-
-    </div>
-
-    <div class="panel-dashboard">
-
-
-        <div class="bloque-dashboard">
-
-            <h3>
-                <i data-lucide="file-text" aria-hidden="true"></i>Últimas fichas
-            </h3>
-
-            <div id="listaFichas"></div>
-
-        </div>
-
-
-
-        <div class="bloque-dashboard">
-
-            <h3>
-                <i data-lucide="folder-open" aria-hidden="true"></i>Últimos menús
-            </h3>
-
-            <div id="listaMenus"></div>
-
-        </div>
-
-
-
-        <div class="bloque-dashboard">
-
-            <h3>
-                <i data-lucide="image" aria-hidden="true"></i>Multimedia
-            </h3>
-
-            <div id="listaMultimedia"></div>
-
-        </div>
-
-
-    </div>
-
-
-    <div class="panel-dashboard">
-
-
-        <div class="bloque-dashboard">
-
-            <h3>
-                <i data-lucide="bar-chart-3" aria-hidden="true"></i>Fichas por menú
-            </h3>
-
-
-            <div id="graficoFichasMenu"
-                 class="dashboard-grafico-barras">
-
-            </div>
-
-        </div>
-
-
-
-        <div class="bloque-dashboard">
-
-            <h3>
-                <i data-lucide="image" aria-hidden="true"></i>Tipos de multimedia
-            </h3>
-
-
-            <div id="graficoMultimedia"
-                 class="dashboard-grafico-barras">
+                <small>
+                    Clasificación temática
+                </small>
 
             </div>
 
@@ -236,20 +192,584 @@
     </div>
 
 
+    <!-- =====================================================
+         ACCESOS RÁPIDOS
+    ====================================================== -->
 
-    <div class="bloque-dashboard">
+    <div class="dashboard-seccion-titulo">
 
-        <h3>
-            <i data-lucide="eye" aria-hidden="true"></i>Estado del contenido
-        </h3>
+        <div>
+            <span>GESTIÓN</span>
+            <h3>Accesos rápidos</h3>
+        </div>
+
+        <i data-lucide="zap" aria-hidden="true"></i>
+
+    </div>
 
 
-        <div id="estadoContenido"
-             class="dashboard-estados">
+    <div class="dashboard-accesos">
+
+
+        <button
+                type="button"
+                class="acceso-dashboard"
+                data-acceso="menus"
+        >
+
+            <div class="acceso-icono">
+                <i data-lucide="folder-plus" aria-hidden="true"></i>
+            </div>
+
+            <div>
+                <strong>Gestionar menús</strong>
+                <span>Crear y organizar secciones</span>
+            </div>
+
+            <i
+                    class="acceso-flecha"
+                    data-lucide="arrow-right"
+                    aria-hidden="true">
+            </i>
+
+        </button>
+
+
+        <button
+                type="button"
+                class="acceso-dashboard"
+                data-acceso="fichas"
+        >
+
+            <div class="acceso-icono">
+                <i data-lucide="file-plus-2" aria-hidden="true"></i>
+            </div>
+
+            <div>
+                <strong>Crear ficha</strong>
+                <span>Agregar contenido histórico</span>
+            </div>
+
+            <i
+                    class="acceso-flecha"
+                    data-lucide="arrow-right"
+                    aria-hidden="true">
+            </i>
+
+        </button>
+
+
+        <button
+                type="button"
+                class="acceso-dashboard"
+                data-acceso="multimedia"
+        >
+
+            <div class="acceso-icono">
+                <i data-lucide="upload" aria-hidden="true"></i>
+            </div>
+
+            <div>
+                <strong>Multimedia</strong>
+                <span>Administrar imágenes y recursos</span>
+            </div>
+
+            <i
+                    class="acceso-flecha"
+                    data-lucide="arrow-right"
+                    aria-hidden="true">
+            </i>
+
+        </button>
+
+
+        <button
+                type="button"
+                class="acceso-dashboard"
+                data-acceso="etiquetas"
+        >
+
+            <div class="acceso-icono">
+                <i data-lucide="tags" aria-hidden="true"></i>
+            </div>
+
+            <div>
+                <strong>Etiquetas</strong>
+                <span>Organizar y clasificar contenido</span>
+            </div>
+
+            <i
+                    class="acceso-flecha"
+                    data-lucide="arrow-right"
+                    aria-hidden="true">
+            </i>
+
+        </button>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIVIDAD RECIENTE
+    ====================================================== -->
+
+    <div class="dashboard-seccion-titulo">
+
+        <div>
+            <span>ACTIVIDAD</span>
+            <h3>Contenido reciente</h3>
+        </div>
+
+        <i data-lucide="clock-3" aria-hidden="true"></i>
+
+    </div>
+
+
+    <div class="panel-dashboard dashboard-panel-reciente">
+
+
+        <!-- ÚLTIMAS FICHAS -->
+
+        <div class="bloque-dashboard">
+
+            <div class="bloque-dashboard-cabecera">
+
+                <div>
+
+                    <span class="bloque-etiqueta">
+                        REGISTROS
+                    </span>
+
+                    <h3>
+                        <i
+                                data-lucide="file-text"
+                                aria-hidden="true">
+                        </i>
+
+                        Últimas fichas
+                    </h3>
+
+                </div>
+
+                <i
+                        class="bloque-icono"
+                        data-lucide="files"
+                        aria-hidden="true">
+                </i>
+
+            </div>
+
+            <div
+                    id="listaFichas"
+                    class="dashboard-lista">
+            </div>
+
+        </div>
+
+
+        <!-- ÚLTIMOS MENÚS -->
+
+        <div class="bloque-dashboard">
+
+            <div class="bloque-dashboard-cabecera">
+
+                <div>
+
+                    <span class="bloque-etiqueta">
+                        ORGANIZACIÓN
+                    </span>
+
+                    <h3>
+                        <i
+                                data-lucide="folder-open"
+                                aria-hidden="true">
+                        </i>
+
+                        Últimos menús
+                    </h3>
+
+                </div>
+
+                <i
+                        class="bloque-icono"
+                        data-lucide="folder"
+                        aria-hidden="true">
+                </i>
+
+            </div>
+
+            <div
+                    id="listaMenus"
+                    class="dashboard-lista">
+            </div>
+
+        </div>
+
+
+        <!-- MULTIMEDIA -->
+
+        <div class="bloque-dashboard">
+
+            <div class="bloque-dashboard-cabecera">
+
+                <div>
+
+                    <span class="bloque-etiqueta">
+                        RECURSOS
+                    </span>
+
+                    <h3>
+                        <i
+                                data-lucide="image"
+                                aria-hidden="true">
+                        </i>
+
+                        Multimedia
+                    </h3>
+
+                </div>
+
+                <i
+                        class="bloque-icono"
+                        data-lucide="images"
+                        aria-hidden="true">
+                </i>
+
+            </div>
+
+            <div
+                    id="listaMultimedia"
+                    class="dashboard-lista">
+            </div>
+
         </div>
 
 
     </div>
+
+
+    <!-- =====================================================
+         ESTADÍSTICAS
+    ====================================================== -->
+
+    <div class="dashboard-seccion-titulo">
+
+        <div>
+            <span>ESTADÍSTICAS</span>
+            <h3>Distribución del contenido</h3>
+        </div>
+
+        <i data-lucide="bar-chart-3" aria-hidden="true"></i>
+
+    </div>
+
+
+    <div class="panel-dashboard dashboard-estadisticas">
+
+
+        <!-- FICHAS POR MENÚ -->
+
+        <div class="bloque-dashboard bloque-grafico">
+
+            <div class="bloque-dashboard-cabecera">
+
+                <div>
+
+                    <span class="bloque-etiqueta">
+                        CONTENIDO
+                    </span>
+
+                    <h3>
+                        <i
+                                data-lucide="bar-chart-3"
+                                aria-hidden="true">
+                        </i>
+
+                        Fichas por menú
+                    </h3>
+
+                </div>
+
+            </div>
+
+            <div
+                    id="graficoFichasMenu"
+                    class="dashboard-grafico-barras">
+            </div>
+
+        </div>
+
+
+        <!-- TIPOS MULTIMEDIA -->
+
+        <div class="bloque-dashboard bloque-grafico">
+
+            <div class="bloque-dashboard-cabecera">
+
+                <div>
+
+                    <span class="bloque-etiqueta">
+                        RECURSOS
+                    </span>
+
+                    <h3>
+                        <i
+                                data-lucide="pie-chart"
+                                aria-hidden="true">
+                        </i>
+
+                        Tipos de multimedia
+                    </h3>
+
+                </div>
+
+            </div>
+
+            <div
+                    id="graficoMultimedia"
+                    class="dashboard-grafico-barras">
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <!-- =====================================================
+         ESTADO DEL CONTENIDO
+    ====================================================== -->
+
+    <div class="dashboard-seccion-titulo">
+
+        <div>
+            <span>CONTROL</span>
+            <h3>Estado del contenido</h3>
+        </div>
+
+        <i data-lucide="shield-check" aria-hidden="true"></i>
+
+    </div>
+
+
+    <div class="bloque-dashboard bloque-estado">
+
+        <div class="bloque-dashboard-cabecera">
+
+            <div>
+
+            <span class="bloque-etiqueta">
+                SUPERVISIÓN
+            </span>
+
+                <h3>
+                    <i
+                            data-lucide="eye"
+                            aria-hidden="true">
+                    </i>
+
+                    Estado del sistema
+                </h3>
+
+            </div>
+
+            <div class="estado-indicador">
+
+                <span></span>
+
+                Contenido disponible
+
+            </div>
+
+        </div>
+
+
+        <div
+                id="estadoContenido"
+                class="dashboard-estados">
+        </div>
+
+
+        <!-- ==========================================
+     CONTENIDO NO VISIBLE
+=========================================== -->
+
+        <div class="contenido-oculto">
+
+
+            <!-- ================= MENÚS ================= -->
+
+            <div class="contenido-oculto-cabecera">
+
+                <div>
+
+            <span class="bloque-etiqueta">
+                CONTENIDO NO VISIBLE
+            </span>
+
+                    <h4>
+
+                        <i
+                                data-lucide="folder"
+                                aria-hidden="true">
+                        </i>
+
+                        Menús ocultos
+
+                    </h4>
+
+                </div>
+
+
+                <span
+                        id="cantidad-menus-ocultos"
+                        class="contador-oculto">
+            0
+        </span>
+
+            </div>
+
+
+            <div
+                    id="ocultos-menus"
+                    class="lista-fichas-ocultas">
+
+            </div>
+
+
+
+            <!-- ================= FICHAS ================= -->
+
+            <div class="contenido-oculto-cabecera">
+
+                <div>
+
+            <span class="bloque-etiqueta">
+                CONTENIDO NO VISIBLE
+            </span>
+
+                    <h4>
+
+                        <i
+                                data-lucide="file-text"
+                                aria-hidden="true">
+                        </i>
+
+                        Fichas ocultas
+
+                    </h4>
+
+                </div>
+
+
+                <span
+                        id="cantidad-fichas-ocultos"
+                        class="contador-oculto">
+            0
+        </span>
+
+            </div>
+
+
+            <div
+                    id="ocultos-fichas"
+                    class="lista-fichas-ocultas">
+
+            </div>
+
+
+
+            <!-- ================= ETIQUETAS ================= -->
+
+            <div class="contenido-oculto-cabecera">
+
+                <div>
+
+            <span class="bloque-etiqueta">
+                CLASIFICACIÓN
+
+            </span>
+
+                    <h4>
+
+                        <i
+                                data-lucide="tag"
+                                aria-hidden="true">
+                        </i>
+
+                        Etiquetas inactivas
+
+                    </h4>
+
+                </div>
+
+
+                <span
+                        id="cantidad-etiquetas-ocultos"
+                        class="contador-oculto">
+            0
+        </span>
+
+            </div>
+
+
+            <div
+                    id="ocultos-etiquetas"
+                    class="lista-fichas-ocultas">
+
+            </div>
+
+
+
+            <!-- ================= MULTIMEDIA ================= -->
+
+            <div class="contenido-oculto-cabecera">
+
+                <div>
+
+            <span class="bloque-etiqueta">
+                RECURSOS
+
+            </span>
+
+                    <h4>
+
+                        <i
+                                data-lucide="image"
+                                aria-hidden="true">
+                        </i>
+
+                        Multimedia inactiva
+
+                    </h4>
+
+                </div>
+
+
+                <span
+                        id="cantidad-multimedia-ocultos"
+                        class="contador-oculto">
+            0
+        </span>
+
+            </div>
+
+
+            <div
+                    id="ocultos-multimedia"
+                    class="lista-fichas-ocultas">
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
 
 
 </section>
