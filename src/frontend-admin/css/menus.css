@@ -1,1737 +1,2267 @@
-/* =====================================================
-   MENU INTERACTIVO
+/* =========================================================
+   MENÚ INTERACTIVO
    Museo Malvinas
-   CSS AISLADO
-===================================================== */
+   ESTILO: EXPEDIENTE MILITAR / ARCHIVO HISTÓRICO
+========================================================= */
 
 
-/* =====================================================
-   CONTENEDOR GENERAL MENU
-===================================================== */
+/* =========================================================
+   PALETA
+========================================================= */
 
+:root {
 
-.ventana-menu{
-    background:transparent;
+    --menu-azul: #163A61;
+    --menu-azul-oscuro: #102d4b;
+    --menu-azul-medio: #355d80;
+    --menu-azul-suave: #e8eef3;
+
+    --menu-amarillo: #c5a46d;
+    --menu-dorado: #a88952;
+
+    --menu-papel: #f5edda;
+    --menu-papel-claro: #fbf7ed;
+    --menu-papel-oscuro: #e8ddc5;
+
+    --menu-texto: #26384a;
+    --menu-texto-suave: #5c6470;
+
+    --menu-borde: #b8a47d;
+
+    --menu-rojo: #6f3a3a;
 }
 
 
+/* =========================================================
+   CONTENEDOR GENERAL
+========================================================= */
 
-
-
-
-
-/* =====================================================
-   BOTON NUEVO MENU
-===================================================== */
-
-
-.ventana-menu .btn-nuevo{
-
-
-    background:#163A61;
-
-    color:white;
-
-
-    border:none;
-
-
-    padding:12px 22px;
-
-
-    border-radius:8px;
-
-
-    cursor:pointer;
-
-
-    font-size:15px;
-
-
-    transition:.3s;
-
-
+.ventana-menu {
+    background: transparent;
+    color: var(--menu-texto);
 }
 
 
+/* =========================================================
+   CABECERA
+========================================================= */
 
-.ventana-menu .btn-nuevo:hover{
+.ventana-menu .cabecera-menu {
 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    background:#3f5223;
+    margin-bottom: 30px;
+    padding-bottom: 18px;
 
+    border-bottom: 1px solid rgba(22, 58, 97, .20);
 
-    transform:translateY(-2px);
-
-
+    position: relative;
 }
 
 
-/* =====================================================
-   GRID MENU
-===================================================== */
+.ventana-menu .cabecera-menu::after {
 
-#listaMenus.grid-menus{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-    gap:25px;
+    content: "";
+
+    position: absolute;
+
+    bottom: -2px;
+    left: 0;
+
+    width: 110px;
+    height: 3px;
+
+    background: var(--menu-amarillo);
 }
 
 
+.ventana-menu #tituloFichas {
 
+    margin: 0;
 
-/* =====================================================
-   TARJETAS MENU
-===================================================== */
+    color: var(--menu-azul);
 
-.ventana-menu .menu-tarjeta{
+    font-family: "Cinzel", Georgia, serif;
 
+    font-size: 28px;
+    font-weight: 600;
 
-    position:relative;
-    overflow:hidden;
-
-    background:linear-gradient(
-        145deg,
-        #f7f0df,
-        #e9ddc2
-    );
-
-    border:1px solid #705438;
-    border-radius:14px;
-
-    box-shadow:0 8px 18px rgba(0,0,0,.18);
-
-    transition:.25s ease;
+    letter-spacing: .8px;
 }
 
-.ventana-menu .menu-tarjeta:hover{
 
-    transform:translateY(-8px);
+/* =========================================================
+   BOTÓN NUEVO MENÚ
+========================================================= */
+
+.ventana-menu .btn-nuevo {
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-left: auto;
+
+    background: var(--menu-azul);
+    color: white;
+
+    border: 1px solid var(--menu-azul-oscuro);
+
+    padding: 11px 20px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    letter-spacing: .3px;
 
     box-shadow:
-        0 15px 30px rgba(0,0,0,.25);
+        0 3px 7px rgba(16, 45, 75, .18);
 
+    transition: .25s ease;
 }
 
 
-.ventana-menu .menu-tarjeta::before{
+.ventana-menu .btn-nuevo:hover {
 
-    content:"MENÃš";
+    background: var(--menu-azul-medio);
 
-    position:absolute;
-
-    top:12px;
-    left:12px;
-
-    z-index:5;
-
-    background:#263c32;
-
-    color:#f4eddb;
-
-    padding:5px 12px;
-
-    border-radius:20px;
-
-    font-size:11px;
-
-    letter-spacing:2px;
-
-}
-
-
-
-
-/* =====================================================
-   IMAGEN MENU
-===================================================== */
-
-
-.ventana-menu .menu-imagen{
-
-    width:100%;
-
-    height:230px;
-
-    overflow:hidden;
-
-    background:#222;
-
-}
-
-.ventana-menu .menu-imagen img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-    transition:.4s;
-
-}
-
-.ventana-menu .menu-tarjeta:hover .menu-imagen img{
-
-    transform:scale(1.08);
-
-}
-
-
-
-
-.ventana-menu #listaMenus .menu-imagen img{
-
-
-    width:100% !important;
-
-
-    height:100% !important;
-
-
-    object-fit:cover !important;
-
-
-    transition:.35s;
-
-
-}
-
-
-
-
-.ventana-menu #listaMenus .menu-tarjeta:hover img{
-
-
-    transform:scale(1.05);
-
-
-}
-
-
-
-
-
-/* =====================================================
-   INFORMACION TARJETA
-===================================================== */
-
-
-.ventana-menu .menu-info{
-
-    padding:20px;
-
-}
-
-
-.ventana-menu .menu-info h3{
-
-    margin:10px 0;
-
-    color:#263c32;
-
-    font-family:Georgia,serif;
-
-    font-size:24px;
-
-    border-bottom:1px solid rgba(112,84,56,.4);
-
-    padding-bottom:10px;
-
-}
-
-
-
-
-.ventana-menu .menu-info p{
-
-    color:#4b4235;
-
-    line-height:1.5;
-
-    min-height:45px;
-
-}
-
-
-
-
-
-/* =====================================================
-   ACCIONES TARJETA MENU
-===================================================== */
-.ventana-menu .menu-acciones{
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:8px;
-
-    margin-top:15px;
-
-}
-
-.ventana-menu .menu-acciones button{
-
-    flex:1;
-
-    min-width:100px;
-
-    padding:9px 12px;
-
-    border:none;
-
-    border-radius:8px;
-
-    font-size:13px;
-
-}
-
-
-
-.ventana-menu #listaMenus .menu-acciones button:hover{
-
-
-    transform:translateY(-2px);
-
-
-    opacity:.9;
-
-
-}
-
-
-
-/* ETIQUETA TITULO MENU */
-
-.ventana-menu .campo-titulo-menu{
-
-    display:block;
-
-    color:#705438;
-
-    font-size:11px;
-
-    font-weight:bold;
-
-    letter-spacing:2px;
-
-    text-transform:uppercase;
-
-}
-
-/* =====================================================
-   BOTONES MENU
-===================================================== */
-
-
-.ventana-menu .menu-btn-vista{
-      background:#263c32;
-      color:white;
-}
-
-
-
-
-
-.ventana-menu .menu-btn-editar{
-
-
-    background:#c5a46d;
-    color:#263c32;
-
-
-}
-
-
-
-
-
-
-.ventana-menu .menu-btn-ver{
-    background:#556F87;
-    color:#fff;
-}
-
-.ventana-menu .menu-btn-ver:hover{
-    background:#465D72;
-}
-
-
-.ventana-menu .menu-btn-eliminar{
-
-      background:#7b2222;
-      color:white;
-
-}
-
-
-
-
-
-
-/* =====================================================
-   EVITAR CAJAS INTERNAS
-===================================================== */
-
-
-.ventana-menu #listaMenus{
-
-
-    overflow:visible !important;
-
-
-    height:auto !important;
-
-
-    max-height:none !important;
-
-
-}
-
-
-
-.ventana-menu #contenido{
-
-
-    overflow-y:auto !important;
-
-
-}
-
-
-
-/* =====================================================
-   MODALES MENU
-===================================================== */
-
-
-/* CONTENEDOR OSCURO DEL MODAL */
-
-.ventana-menu .modal{
-
-
-    display:none;
-
-
-    position:fixed;
-
-
-    inset:0;
-
-
-    background:rgba(0,0,0,.55);
-
-
-    justify-content:center;
-
-
-    align-items:center;
-
-
-    z-index:999;
-
-
-
-}
-
-
-
-
-
-
-/* =====================================================
-   CONTENIDO MODAL GENERAL
-===================================================== */
-
-
-.ventana-menu .modal-contenido{
-
-
-    width:450px;
-
-
-    max-height:90vh;
-
-
-    overflow:auto;
-
-
-    background:#f8f1df;
-
-
-    padding:25px;
-
-
-    border-radius:15px;
-
-
-    border:3px solid #705438;
-
-
-
-    animation:
-
-    menuModalAparecer .25s ease;
-
-
-}
-
-
-
-@keyframes menuModalAparecer{
-
-    from{
-
-        opacity:0;
-        transform:translateY(-20px);
-
-    }
-
-
-    to{
-
-        opacity:1;
-        transform:none;
-
-    }
-
-}
-
-
-
-
-
-/* =====================================================
-   MODAL CREAR / EDITAR MENU
-===================================================== */
-
-
-.ventana-menu #ventanaEmergente .modal-contenido{
-
-
-    width:520px;
-
-
-    max-width:95%;
-
-
-    background:#f5edda;
-
-
-    border:3px solid #705438;
-
-
-    border-radius:18px;
-
-
-    padding:30px;
-
+    transform: translateY(-2px);
 
     box-shadow:
-
-
-    0 15px 35px rgba(0,0,0,.35);
-
-
-
+        0 6px 12px rgba(16, 45, 75, .22);
 }
 
 
-#tituloFichas{
+/* =========================================================
+   GRID DE MENÚS
+========================================================= */
 
-    margin:0;
+#listaMenus.grid-menus {
 
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(300px, 1fr));
+
+    gap: 24px;
 }
 
 
+/* =========================================================
+   TARJETA DE MENÚ
+========================================================= */
 
-/* =====================================================
-   TITULO MODAL
-===================================================== */
+.ventana-menu .menu-tarjeta {
 
+    position: relative;
 
-.ventana-menu #ventanaEmergente h3{
+    overflow: hidden;
 
+    background:
+        linear-gradient(
+            145deg,
+            var(--menu-papel-claro),
+            var(--menu-papel)
+        );
 
-    font-family:"Cinzel",serif;
+    border: 1px solid var(--menu-borde);
 
+    border-radius: 10px;
 
-    color:#163A61;
+    box-shadow:
+        0 5px 14px rgba(20, 40, 60, .12);
 
-
-    font-size:25px;
-
-
-    text-align:center;
-
-
-    margin-bottom:25px;
-
-
-
+    transition: .25s ease;
 }
 
 
+.ventana-menu .menu-tarjeta:hover {
 
+    transform: translateY(-5px);
 
-
-
-
-/* =====================================================
-   BOTON CERRAR
-===================================================== */
-
-
-.ventana-menu .cerrar{
-
-
-    float:right;
-
-
-    border:none;
-
-
-    background:none;
-
-
-    font-size:22px;
-
-
-    cursor:pointer;
-
-
-    color:#705438;
-
-
-    transition:.2s;
-
-
+    box-shadow:
+        0 12px 24px rgba(20, 40, 60, .18);
 }
 
 
+/* =========================================================
+   IDENTIFICADOR DE EXPEDIENTE
+========================================================= */
 
+.ventana-menu .menu-tarjeta::before {
 
+    content: "EXPEDIENTE · MENÚ";
 
-.ventana-menu .cerrar:hover{
+    position: absolute;
 
+    top: 12px;
+    left: 12px;
 
-    transform:scale(1.2);
+    z-index: 5;
 
+    background: rgba(22, 58, 97, .94);
 
-    color:#8b0000;
+    color: #f4eddb;
 
+    padding: 5px 11px;
 
+    border-radius: 4px;
+
+    font-size: 9px;
+    font-weight: bold;
+
+    letter-spacing: 1.5px;
+
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, .18);
 }
 
 
+/* =========================================================
+   IMAGEN DE MENÚ
+========================================================= */
 
+.ventana-menu .menu-imagen {
 
+    width: 100%;
+    height: 220px;
 
+    overflow: hidden;
 
-/* =====================================================
-   LABELS FORMULARIO
-===================================================== */
+    background: #d8d5cc;
 
-
-.ventana-menu #ventanaEmergente label{
-
-
-    display:block;
-
-
-    color:#705438;
-
-
-    font-weight:bold;
-
-
-    margin-top:15px;
-
-
-    margin-bottom:6px;
-
-
-    font-size:14px;
-
-
-
+    border-bottom: 3px solid var(--menu-amarillo);
 }
 
 
+.ventana-menu .menu-imagen img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: .4s;
+}
 
 
+.ventana-menu .menu-tarjeta:hover .menu-imagen img {
+
+    transform: scale(1.04);
+}
 
 
+/* =========================================================
+   INFORMACIÓN DEL MENÚ
+========================================================= */
 
-/* =====================================================
-   INPUTS
-===================================================== */
+.ventana-menu .menu-info {
 
+    padding: 20px;
+}
+
+
+.ventana-menu .campo-titulo-menu {
+
+    display: block;
+
+    color: var(--menu-dorado);
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: 1.8px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 4px;
+}
+
+
+.ventana-menu .menu-info h3 {
+
+    margin: 5px 0 12px;
+
+    padding-bottom: 10px;
+
+    color: var(--menu-azul);
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+
+    border-bottom: 1px solid rgba(168, 137, 82, .45);
+}
+
+
+.ventana-menu .menu-info p {
+
+    margin: 0;
+
+    min-height: 45px;
+
+    color: #4f5963;
+
+    line-height: 1.55;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ACCIONES DE TARJETA
+========================================================= */
+
+.ventana-menu .menu-acciones {
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 18px;
+}
+
+
+.ventana-menu .menu-acciones button {
+
+    flex: 1;
+
+    min-width: 90px;
+
+    padding: 9px 11px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .22s ease;
+}
+
+
+.ventana-menu .menu-acciones button:hover {
+
+    transform: translateY(-2px);
+
+    filter: brightness(1.05);
+}
+
+
+/* =========================================================
+   BOTONES DE TARJETA
+========================================================= */
+
+.ventana-menu .menu-btn-vista {
+
+    background: #355d80;
+    color: white;
+}
+
+
+.ventana-menu .menu-btn-ver {
+
+    background: #52718c;
+    color: white;
+}
+
+
+.ventana-menu .menu-btn-editar {
+
+    background: #c5a46d;
+    color: #26384a;
+}
+
+
+.ventana-menu .menu-btn-eliminar {
+
+    background: var(--menu-rojo);
+    color: white;
+}
+
+
+/* =========================================================
+   MODALES GENERALES
+========================================================= */
+
+.ventana-menu .modal {
+
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(10, 25, 40, .62);
+
+    backdrop-filter: blur(2px);
+
+    z-index: 999;
+}
+
+
+.ventana-menu .modal-contenido {
+
+    width: 450px;
+    max-width: 100%;
+
+    max-height: 90vh;
+
+    box-sizing: border-box;
+
+    background: var(--menu-papel);
+
+    padding: 25px;
+
+    border: 1px solid var(--menu-borde);
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .32);
+
+    animation: menuModalAparecer .25s ease;
+}
+
+
+@keyframes menuModalAparecer {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-15px)
+            scale(.98);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: none;
+    }
+}
+
+
+/* =========================================================
+   MODAL NUEVO / EDITAR MENÚ
+========================================================= */
+
+.ventana-menu #ventanaEmergente {
+
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    background: rgba(17, 30, 45, .68);
+
+    backdrop-filter: blur(3px);
+
+    z-index: 9999;
+}
+
+
+.ventana-menu #ventanaEmergente .modal-contenido {
+
+    position: relative;
+
+    width: 560px;
+    max-width: 95%;
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 0;
+
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .97),
+            rgba(238, 233, 215, .97)
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .30),
+        0 3px 8px rgba(0, 0, 0, .18);
+
+    animation: expedienteModal .25s ease;
+}
+
+
+/* =========================================================
+   CABECERA NUEVO / EDITAR
+========================================================= */
+
+.ventana-menu #ventanaEmergente .modal-contenido::before {
+
+    content: "EXPEDIENTE · REGISTRO DE MENÚ";
+
+    display: block;
+
+    padding: 10px 28px;
+
+    background: #163a61;
+
+    color: #eef3f7;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    border-bottom: 3px solid #c5a46d;
+}
+
+
+.ventana-menu #ventanaEmergente .modal-contenido h3 {
+
+    position: relative;
+
+    margin: 0;
+
+    padding: 24px 65px 18px 28px;
+
+    color: #233b52;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 24px;
+    font-weight: 700;
+
+    letter-spacing: .8px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+
+.ventana-menu #ventanaEmergente .modal-contenido h3::after {
+
+    content: "";
+
+    display: block;
+
+    width: 55px;
+    height: 3px;
+
+    margin-top: 10px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   FORMULARIO
+========================================================= */
+
+.ventana-menu #ventanaEmergente form {
+
+    padding: 25px 28px 28px;
+}
+
+
+.ventana-menu #ventanaEmergente form > label {
+
+    display: block;
+
+    margin: 17px 0 7px;
+
+    color: #43586b;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.2px;
+}
+
+
+.ventana-menu #ventanaEmergente form > label:first-of-type {
+
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   CAMPOS
+========================================================= */
 
 .ventana-menu #ventanaEmergente input[type="text"],
-
-
-
 .ventana-menu #ventanaEmergente textarea,
+.ventana-menu #ventanaEmergente select {
 
+    box-sizing: border-box;
 
+    width: 100%;
 
-.ventana-menu #ventanaEmergente select{
+    padding: 12px 14px;
 
+    border: 1px solid #b5bdc4;
 
-    width:100%;
+    border-radius: 4px;
 
+    background: #fbfaf5;
 
-    padding:12px;
+    color: #263d52;
 
+    font-family: Arial, sans-serif;
 
-    border-radius:10px;
+    font-size: 14px;
 
+    outline: none;
 
-    border:1px solid #b69a73;
-
-
-    background:#fffaf0;
-
-
-    color:#163A61;
-
-
-    font-size:14px;
-
-
-    outline:none;
-
-
-    transition:.2s;
-
-
-
+    transition: .2s ease;
 }
 
 
-
-
-
-.ventana-menu #ventanaEmergente textarea{
-
-
-    height:100px;
-
-
-    resize:none;
-
-
-
-}
-
-
-
-
-
-
-.ventana-menu #ventanaEmergente input:focus,
-
-
-
+.ventana-menu #ventanaEmergente input[type="text"]:focus,
 .ventana-menu #ventanaEmergente textarea:focus,
+.ventana-menu #ventanaEmergente select:focus {
 
+    border-color: #52718f;
 
-
-.ventana-menu #ventanaEmergente select:focus{
-
-
-    border-color:#163A61;
-
+    background: #fffefa;
 
     box-shadow:
-
-
-    0 0 0 3px rgba(85,107,47,.15);
-
-
-
+        0 0 0 2px rgba(82, 113, 143, .12);
 }
 
 
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
 
+.ventana-menu #ventanaEmergente textarea {
 
+    height: 90px;
 
+    resize: vertical;
 
-
-/* =====================================================
-   BLOQUE IMAGEN ACTUAL
-===================================================== */
-
-
-.ventana-menu #bloqueImagenActual{
-
-
-    margin-top:20px;
-
-
-    background:#eee2cb;
-
-
-    padding:15px;
-
-
-    border-radius:12px;
-
-
-    border:1px solid #b69a73;
-
-
-
+    line-height: 1.5;
 }
 
 
+/* =========================================================
+   IMAGEN ACTUAL
+========================================================= */
 
+.ventana-menu #ventanaEmergente #bloqueImagenActual {
 
-.ventana-menu #bloqueImagenActual label{
+    margin: 20px 0 5px;
 
+    padding: 15px;
 
-    margin-top:0;
+    background: rgba(224, 221, 208, .55);
 
+    border: 1px solid #c4bdab;
 
+    /* SIN línea amarilla */
+    border-left: 1px solid #c4bdab;
+
+    border-radius: 4px;
 }
 
 
+.ventana-menu #ventanaEmergente #bloqueImagenActual label {
 
+    margin: 0 0 10px;
 
-
-
-/* =====================================================
-   PREVIEW IMAGEN
-===================================================== */
-
-
-.ventana-menu .preview-imagen{
-
-
-    display:flex;
-
-
-    justify-content:center;
-
-
-    align-items:center;
-
-
-    margin-top:10px;
-
-
-
+    color: #536575;
 }
 
 
+/* =========================================================
+   PREVIEW IMAGEN NUEVO / EDITAR
+========================================================= */
+
+.ventana-menu #ventanaEmergente .preview-imagen {
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 8px;
+}
 
 
+.ventana-menu #ventanaEmergente .preview-imagen img {
 
-.ventana-menu .preview-imagen img{
+    width: 145px;
+    height: 145px;
 
+    object-fit: cover;
 
-    width:180px;
+    border: 3px solid #526b82;
 
-
-    height:180px;
-
-
-    object-fit:cover;
-
-
-    border-radius:12px;
-
-
-    border:3px solid #705438;
-
+    border-radius: 3px;
 
     box-shadow:
-
-
-    0 5px 12px rgba(0,0,0,.2);
-
-
-
+        0 5px 12px rgba(0, 0, 0, .18);
 }
 
 
+/* =========================================================
+   ARCHIVO
+========================================================= */
 
+.ventana-menu #ventanaEmergente input[type="file"] {
 
+    box-sizing: border-box;
 
+    width: 100%;
 
+    padding: 10px;
 
+    border: 1px dashed #9da9b3;
 
-/* =====================================================
-   SUBIR IMAGEN
-===================================================== */
+    border-radius: 4px;
 
+    background: #f8f7f1;
 
-.ventana-menu #ventanaEmergente input[type="file"]{
+    color: #536575;
 
+    font-size: 13px;
 
-    background:#fffaf0;
-
-
-    padding:10px;
-
-
-    border-radius:10px;
-
-
-    border:1px dashed #705438;
-
-
-
+    cursor: pointer;
 }
 
 
+/* =========================================================
+   CHECKBOX
+========================================================= */
 
+.ventana-menu #ventanaEmergente label:has(input[type="checkbox"]) {
 
+    display: flex;
 
+    align-items: center;
 
-/* =====================================================
-   CHECKBOX VISIBLE
-===================================================== */
+    gap: 9px;
 
+    margin-top: 20px;
+    margin-bottom: 0;
 
-.ventana-menu #ventanaEmergente label:has(input[type="checkbox"]){
+    padding: 11px 13px;
 
+    background: #e9edf0;
 
-    display:flex;
+    border: 1px solid #c2c9ce;
 
+    border-radius: 4px;
 
-    align-items:center;
+    color: #3d5368;
 
+    text-transform: none;
 
-    gap:10px;
+    letter-spacing: 0;
 
+    font-size: 13px;
 
-    margin-top:20px;
-
-
-    cursor:pointer;
-
-
-
+    cursor: pointer;
 }
 
 
+.ventana-menu #ventanaEmergente #nuevoVisible {
 
+    width: 17px;
+    height: 17px;
 
+    margin: 0;
 
-.ventana-menu #nuevoVisible{
-
-
-    width:18px;
-
-
-    height:18px;
-
-
-    accent-color:#163A61;
-
-
-
+    accent-color: #355a7c;
 }
 
 
+/* =========================================================
+   ACCIONES NUEVO / EDITAR
+========================================================= */
 
+.ventana-menu #ventanaEmergente .acciones-modal {
 
+    display: flex;
 
+    justify-content: flex-end;
+    align-items: center;
 
+    gap: 10px;
 
+    margin-top: 28px;
 
-/* =====================================================
-   BOTONES DEL FORMULARIO
-===================================================== */
+    padding-top: 18px;
 
-
-.ventana-menu #ventanaEmergente .acciones-modal{
-
-
-    display:flex;
-
-
-    justify-content:flex-end;
-
-
-    gap:12px;
-
-
-    margin-top:30px;
-
-
-
+    border-top: 1px solid #c8c2b2;
 }
 
 
+.ventana-menu #ventanaEmergente .acciones-modal button {
 
+    min-width: 110px;
 
+    padding: 10px 20px;
 
-.ventana-menu #ventanaEmergente .acciones-modal button{
+    border-radius: 4px;
 
+    border: 1px solid transparent;
 
-    padding:11px 22px;
+    font-family: Arial, sans-serif;
 
+    font-size: 13px;
+    font-weight: 700;
 
-    border-radius:10px;
+    cursor: pointer;
 
-
-    border:none;
-
-
-    cursor:pointer;
-
-
-    font-weight:bold;
-
-
-    transition:.25s;
-
-
-
+    transition: .2s ease;
 }
-
-
-
-
-
-
 
 
 /* GUARDAR */
 
+.ventana-menu #ventanaEmergente #guardarMenu {
 
-.ventana-menu #guardarMenu{
+    background: #315b7d;
 
+    color: #ffffff;
 
-    background:#163A61;
-
-
-    color:white;
-
-
-
+    border-color: #294d6a;
 }
 
 
+.ventana-menu #ventanaEmergente #guardarMenu:hover {
 
+    background: #274c69;
 
-
-.ventana-menu #guardarMenu:hover{
-
-
-    background:#3f5223;
-
-
-    transform:translateY(-2px);
-
-
-
+    transform: translateY(-1px);
 }
-
-
-
-
 
 
 /* CANCELAR */
 
+.ventana-menu #ventanaEmergente #cancelarMenu {
 
-.ventana-menu #cancelarMenu{
+    background: #d5dce1;
 
+    color: #3f5365;
 
-    background:#777;
-
-
-    color:white;
-
-
-
-}
-
-
-
-
-
-.ventana-menu #cancelarMenu:hover{
-
-
-    background:#555;
-
-
-    transform:translateY(-2px);
-
-
-
-}
-
-
-
-
-
-
-/* =====================================================
-   SCROLL MODAL
-===================================================== */
-
-
-.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar{
-
-
-    width:8px;
-
-
-
-}
-
-
-
-
-
-.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar-thumb{
-
-
-    background:#705438;
-
-
-    border-radius:20px;
-
-
-
-}
-
-
-/* =====================================================
-   VISTA PREVIA MENU
-   ESTILO ARCHIVO HISTÃ“RICO
-===================================================== */
-
-
-
-.ventana-menu #modalVistaPrevia .modal-contenido{
-
-
-    width:550px;
-
-
-    max-width:90%;
-
-
-    background:#f5edda;
-
-
-    border:3px solid #705438;
-
-
-    border-radius:18px;
-
-
-    padding:30px;
-
+    border: 1px solid #aab6bf;
 
     box-shadow:
-
-
-    0 15px 35px rgba(0,0,0,.35);
-
-
-
+        inset 0 1px 0 rgba(255, 255, 255, .45);
 }
 
 
+.ventana-menu #ventanaEmergente #cancelarMenu:hover {
 
+    background: #c5d0d8;
 
+    color: #29445b;
 
+    border-color: #8799a8;
 
-/* BOTON CERRAR PREVIEW */
-
-
-.ventana-menu #modalVistaPrevia .cerrar{
-
-
-    color:#705438;
-
-
-    font-size:24px;
-
-
+    transform: translateY(-1px);
 }
 
 
+/* =========================================================
+   CERRAR NUEVO / EDITAR
+========================================================= */
 
+.ventana-menu #ventanaEmergente .cerrar {
 
+    position: absolute;
 
-.ventana-menu #modalVistaPrevia .cerrar:hover{
+    top: 48px;
+    right: 22px;
 
+    z-index: 10;
 
-    color:#8b0000;
+    width: 34px;
+    height: 34px;
 
+    display: flex;
 
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #8fa0af;
+
+    border-radius: 5px;
+
+    background: #dce4ea;
+
+    color: #3d5368;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition: .2s ease;
 }
 
 
+.ventana-menu #ventanaEmergente .cerrar:hover {
 
+    background: #cbd6df;
 
+    color: #263f56;
 
-
-
-/* =====================================================
-   CONTENIDO PREVIEW
-===================================================== */
-
-
-.ventana-menu .preview-menu{
-
-
-    text-align:center;
-
-
+    border-color: #71879a;
 }
 
 
+/* =========================================================
+   SCROLL NUEVO / EDITAR
+========================================================= */
 
+.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar {
 
-
-
-
-/* =====================================================
-   IMAGEN PRINCIPAL
-===================================================== */
-
-
-.ventana-menu .preview-imagen-ficha{
-
-
-    width:100%;
-
-
-    display:flex;
-
-
-    justify-content:center;
-
-
-    margin-bottom:20px;
-
-
-
+    width: 7px;
 }
 
 
+.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar-track {
+
+    background: #e8e4d8;
+}
 
 
+.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar-thumb {
 
-.ventana-menu .preview-imagen-ficha img{
+    background: #8797a5;
 
-
-    width:260px;
-
-
-    height:260px;
+    border-radius: 10px;
+}
 
 
-    object-fit:cover;
+.ventana-menu #ventanaEmergente .modal-contenido::-webkit-scrollbar-thumb:hover {
+
+    background: #65798b;
+}
 
 
-    border-radius:15px;
+/* =========================================================
+   VISTA PREVIA DEL MENÚ
+========================================================= */
+
+.ventana-menu #modalVistaPrevia {
+
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 25px;
+
+    box-sizing: border-box;
+
+    background: rgba(10, 25, 40, .62);
+
+    backdrop-filter: blur(2px);
+
+    z-index: 10000;
+}
 
 
-    border:4px solid #705438;
+/* =========================================================
+   CONTENEDOR VISTA PREVIA
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .modal-contenido {
+
+    position: relative;
+
+    width: 680px;
+    max-width: 100%;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+
+    padding: 0;
+
+    background:
+        linear-gradient(
+            rgba(245, 240, 225, .98),
+            rgba(239, 233, 215, .98)
+        );
+
+    border: 1px solid #9ca8b5;
+
+    border-radius: 8px;
 
     box-shadow:
+        0 18px 45px rgba(20, 40, 60, .28),
+        0 3px 8px rgba(20, 40, 60, .15);
 
+    animation: vistaPreviaExpediente .25s ease;
 
-    0 8px 18px rgba(0,0,0,.25);
-
-
-    transition:.3s;
-
-
-
+    /* Ocultar scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 
+.ventana-menu #modalVistaPrevia .modal-contenido::-webkit-scrollbar {
 
-
-
-
-
-.ventana-menu .preview-imagen-ficha img:hover{
-
-
-    transform:scale(1.03);
-
-
+    display: none;
 }
 
 
+/* =========================================================
+   CABECERA VISTA PREVIA
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .modal-contenido::before {
 
+    content: "EXPEDIENTE DE MENÚ";
 
+    display: flex;
 
+    align-items: center;
 
+    box-sizing: border-box;
 
-/* =====================================================
-   TITULO MENU
-===================================================== */
+    width: 100%;
+    height: 68px;
 
+    padding: 0 75px 0 30px;
 
-.ventana-menu #previewNombre{
+    background:
+        linear-gradient(
+            90deg,
+            #1d4161 0%,
+            #294f70 55%,
+            #315e81 100%
+        );
 
+    border-bottom: 4px solid #c5a46d;
 
-    font-family:"Cinzel",serif;
+    color: #ffffff;
 
+    font-family: "Courier New", monospace;
 
-    font-size:32px;
+    font-size: 13px;
+    font-weight: 700;
 
+    letter-spacing: 2px;
 
-    color:#163A61;
+    text-transform: uppercase;
 
-
-    margin:10px 0;
-
-
-    letter-spacing:1px;
-
-
-
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
 
+/* =========================================================
+   BOTÓN CERRAR VISTA PREVIA
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .cerrar {
 
+    position: absolute;
 
+    top: 16px;
+    right: 18px;
 
+    z-index: 10;
 
-/* LINEA DECORATIVA */
+    width: 36px;
+    height: 36px;
 
+    display: flex;
 
-.ventana-menu #previewNombre::after{
+    align-items: center;
+    justify-content: center;
 
+    box-sizing: border-box;
 
-    content:"";
+    padding: 0;
 
+    margin: 0;
 
-    display:block;
+    border: 1px solid rgba(255, 255, 255, .45);
 
+    border-radius: 5px;
 
-    width:80px;
+    background: rgba(10, 30, 48, .28);
 
+    color: #ffffff;
 
-    height:3px;
+    font-family: Arial, sans-serif;
 
+    font-size: 18px;
+    font-weight: 400;
 
-    background:#163A61;
+    line-height: 1;
 
+    cursor: pointer;
 
-    margin:12px auto;
-
-
-
+    transition: .2s ease;
 }
 
 
+.ventana-menu #modalVistaPrevia .cerrar:hover {
 
+    background: rgba(255, 255, 255, .16);
 
+    border-color: rgba(255, 255, 255, .85);
 
+    color: #ffffff;
 
-
-/* =====================================================
-   DESCRIPCION
-===================================================== */
-
-
-.ventana-menu .preview-descripcion{
-
-
-    background:#eee2cb;
-
-
-    border-left:5px solid #705438;
-
-
-    padding:15px;
-
-
-    border-radius:8px;
-
-
-    text-align:left;
-
-
-    color:#594936;
-
-
-    margin:20px 0;
-
-
-    font-size:15px;
-
-
-    line-height:1.5;
-
-
-
+    transform: scale(1.04);
 }
 
 
+/* =========================================================
+   CONTENIDO VISTA PREVIA
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .preview-menu {
 
+    position: relative;
 
+    box-sizing: border-box;
 
+    width: 100%;
 
-/* =====================================================
-   TITULO DATOS
-===================================================== */
+    /* Un poco más hacia la derecha */
+    padding: 26px 25px 32px 45px;
 
-
-.ventana-menu .titulo-datos{
-
-
-    text-align:left;
-
-
-    font-family:"Cinzel",serif;
-
-
-    color:#163A61;
-
-
-    margin-top:25px;
-
-
-
+    text-align: left;
 }
 
 
+/* =========================================================
+   IMAGEN VISTA PREVIA
+========================================================= */
+
+.ventana-menu #modalVistaPrevia .preview-imagen-ficha {
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    margin: 2px 0 24px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 0;
+
+    box-shadow: none;
+}
 
 
+/* IMPORTANTE:
+   No hay border-left amarillo ni pseudo-elemento amarillo.
+*/
+
+.ventana-menu #modalVistaPrevia .preview-imagen-ficha img {
+
+    width: 400px;
+    height: 270px;
+
+    max-width: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    border: 5px solid #f6f2e7;
+
+    outline: 1px solid #7d8993;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 7px 16px rgba(30, 45, 60, .22);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
 
 
+.ventana-menu #modalVistaPrevia .preview-imagen-ficha img:hover {
+
+    transform: scale(1.015);
+
+    box-shadow:
+        0 9px 20px rgba(30, 45, 60, .26);
+}
 
 
-/* =====================================================
+/* =========================================================
+   NOMBRE DEL MENÚ
+========================================================= */
+
+.ventana-menu #modalVistaPrevia #previewNombre {
+
+    margin: 4px 0 0;
+
+    padding-bottom: 9px;
+
+    color: #244d73;
+
+    font-family: Georgia, serif;
+
+    font-size: 27px;
+    font-weight: bold;
+
+    line-height: 1.2;
+
+    letter-spacing: .5px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #8c9aa5;
+}
+
+
+.ventana-menu #modalVistaPrevia #previewNombre::after {
+
+    content: "";
+
+    display: block;
+
+    width: 42px;
+    height: 2px;
+
+    margin-top: 7px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
+
+.ventana-menu #modalVistaPrevia .preview-descripcion {
+
+    margin: 14px 0 21px;
+
+    padding: 12px 15px;
+
+    background: #f6f2e7;
+
+    border: 1px solid #c7c8c2;
+
+    border-left: 3px solid #71879a;
+
+    border-radius: 3px;
+
+    color: #46515a;
+
+    font-family: Georgia, serif;
+
+    font-size: 13.5px;
+
+    line-height: 1.55;
+
+    text-align: left;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+
+
+/* =========================================================
+   TÍTULO DATOS
+========================================================= */
+
+.ventana-menu #modalVistaPrevia .titulo-datos {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 20px 0 11px;
+
+    padding-bottom: 7px;
+
+    color: var(--menu-azul);
+
+    font-family: "Courier New", monospace;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    letter-spacing: 1.3px;
+
+    text-transform: uppercase;
+
+    text-align: left;
+
+    border-bottom: 1px solid #b8bec4;
+}
+
+
+.ventana-menu #modalVistaPrevia .titulo-datos::before {
+
+    content: "";
+
+    display: inline-block;
+
+    width: 6px;
+    height: 6px;
+
+    flex-shrink: 0;
+
+    background: #c7ad57;
+
+    border: 1px solid #a58d3c;
+}
+
+
+/* =========================================================
    GRID DATOS
-===================================================== */
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .grid-datos-preview {
 
-.ventana-menu .grid-datos-preview{
+    display: grid;
 
+    grid-template-columns: repeat(2, 1fr);
 
-    display:grid;
+    gap: 8px;
 
-
-    grid-template-columns:repeat(2,1fr);
-
-
-    gap:15px;
-
-
-    margin-top:15px;
-
-
-
+    margin-top: 0;
 }
 
 
+/* =========================================================
+   DATOS INDIVIDUALES
+========================================================= */
 
+.ventana-menu #modalVistaPrevia .dato-preview {
 
+    position: relative;
 
+    min-height: 63px;
 
+    padding: 11px 13px;
 
-/* =====================================================
-   TARJETAS DE DATOS
-===================================================== */
+    background: #f8f5ec;
 
+    border: 1px solid #c7c9c7;
 
-.ventana-menu .dato-preview{
+    border-radius: 4px;
 
+    text-align: left;
 
-    background:#faf4e6;
-
-
-    border:1px solid #b69a73;
-
-
-    border-radius:12px;
-
-
-    padding:15px;
-
-
-    text-align:left;
-
-
-    transition:.2s;
-
-
-
+    transition: .2s ease;
 }
 
 
+.ventana-menu #modalVistaPrevia .dato-preview:hover {
 
+    border-color: #8194a5;
 
+    background: #f3f1e8;
 
-
-
-.ventana-menu .dato-preview:hover{
-
-
-    transform:translateY(-3px);
-
+    transform: translateY(-1px);
 
     box-shadow:
-
-
-    0 5px 12px rgba(0,0,0,.15);
-
-
-
+        0 3px 8px rgba(30, 45, 60, .10);
 }
 
 
+.ventana-menu #modalVistaPrevia .dato-preview h4 {
 
+    margin: 0 0 5px;
 
+    color: #73808a;
 
+    font-family: "Courier New", monospace;
 
+    font-size: 9px;
+    font-weight: bold;
 
+    letter-spacing: 1px;
 
-.ventana-menu .dato-preview h4{
-
-
-    color:#705438;
-
-
-    font-size:13px;
-
-
-    text-transform:uppercase;
-
-
-    letter-spacing:1px;
-
-
-    margin-bottom:8px;
-
-
-
+    text-transform: uppercase;
 }
 
 
+.ventana-menu #modalVistaPrevia .dato-preview p {
 
+    margin: 0;
 
+    color: #29445e;
 
+    font-family: Georgia, serif;
 
+    font-size: 14px;
+    font-weight: bold;
 
-.ventana-menu .dato-preview p{
-
-
-    color:#163A61;
-
-
-    font-size:16px;
-
-
-    font-weight:bold;
-
-
-    margin:0;
-
-
-
+    line-height: 1.3;
 }
 
 
+.ventana-menu #modalVistaPrevia .dato-preview::after {
+
+    content: "";
+
+    position: absolute;
+
+    right: 8px;
+    bottom: 7px;
+
+    width: 14px;
+    height: 1px;
+
+    background: #c7ad57;
+
+    opacity: .55;
+}
 
 
+/* =========================================================
+   MODAL ELIMINAR MENÚ
+   ID REAL DEL HTML:
+   #modalConfirmarEliminar
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(17, 30, 45, .68);
+
+    backdrop-filter: blur(3px);
+
+    z-index: 9999;
+}
 
 
+/* =========================================================
+   CONTENEDOR ELIMINAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar .modal-contenido {
+
+    position: relative;
+
+    width: 440px;
+    max-width: 95%;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .98),
+            rgba(238, 233, 215, .98)
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .30),
+        0 3px 8px rgba(0, 0, 0, .18);
+
+    animation: expedienteModal .25s ease;
+}
 
 
+/* =========================================================
+   CABECERA ELIMINAR
+========================================================= */
 
-/* =====================================================
+.ventana-menu #modalConfirmarEliminar .modal-contenido::before {
+
+    content: "EXPEDIENTE · ELIMINACIÓN DE MENÚ";
+
+    display: block;
+
+    box-sizing: border-box;
+
+    width: 100%;
+
+    padding: 11px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #244b6d 0%,
+            #2d587b 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 4px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: 1.7px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TÍTULO ELIMINAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar h3 {
+
+    margin: 0;
+
+    padding: 22px 28px 12px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+
+.ventana-menu #modalConfirmarEliminar h3::after {
+
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   MENSAJE ELIMINAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar #mensajeEliminar {
+
+    margin: 0;
+
+    padding: 22px 28px 18px;
+
+    color: #4b5660;
+
+    font-family: Georgia, serif;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   ACCIONES ELIMINAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar .acciones-modal {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 0 28px 25px;
+
+    padding-top: 17px;
+
+    border-top: 1px solid #c8c2b2;
+}
+
+
+.ventana-menu #modalConfirmarEliminar .acciones-modal button {
+
+    min-width: 110px;
+
+    padding: 10px 18px;
+
+    border-radius: 4px;
+
+    border: 1px solid transparent;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+/* =========================================================
+   BOTÓN ELIMINAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar .btn-eliminar {
+
+    background: #6f3a3a;
+
+    color: #ffffff;
+
+    border-color: #5b2e2e;
+
+    box-shadow:
+        0 2px 5px rgba(70, 30, 30, .18);
+}
+
+
+.ventana-menu #modalConfirmarEliminar .btn-eliminar:hover {
+
+    background: #592d2d;
+
+    border-color: #492525;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 8px rgba(70, 30, 30, .22);
+}
+
+
+/* =========================================================
+   BOTÓN CANCELAR
+========================================================= */
+
+.ventana-menu #modalConfirmarEliminar
+.acciones-modal button:not(.btn-eliminar) {
+
+    background: #d5dce1;
+
+    color: #3f5365;
+
+    border-color: #aab6bf;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .45);
+}
+
+
+.ventana-menu #modalConfirmarEliminar
+.acciones-modal button:not(.btn-eliminar):hover {
+
+    background: #c5d0d8;
+
+    color: #29445b;
+
+    border-color: #8799a8;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   MODAL MENSAJE / AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(17, 30, 45, .68);
+
+    backdrop-filter: blur(3px);
+
+    z-index: 10000;
+}
+
+
+.ventana-menu #modalMensaje .modal-contenido {
+
+    position: relative;
+
+    width: 430px;
+    max-width: 95%;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .98),
+            rgba(238, 233, 215, .98)
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .30),
+        0 3px 8px rgba(0, 0, 0, .18);
+
+    animation: expedienteModal .25s ease;
+}
+
+
+/* CABECERA */
+
+.ventana-menu #modalMensaje .modal-contenido::before {
+
+    content: "EXPEDIENTE · AVISO";
+
+    display: block;
+
+    box-sizing: border-box;
+
+    padding: 11px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #244b6d 0%,
+            #2d587b 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 4px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+
+/* TÍTULO */
+
+.ventana-menu #modalMensaje #tituloMensaje {
+
+    margin: 0;
+
+    padding: 22px 28px 12px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+
+.ventana-menu #modalMensaje #tituloMensaje::after {
+
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+
+/* TEXTO */
+
+.ventana-menu #modalMensaje #textoMensaje {
+
+    margin: 0;
+
+    padding: 20px 28px 10px;
+
+    color: #4b5660;
+
+    font-family: Georgia, serif;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* ACCIONES */
+
+.ventana-menu #modalMensaje .acciones-modal {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin: 12px 28px 25px;
+
+    padding-top: 17px;
+
+    border-top: 1px solid #c8c2b2;
+}
+
+
+.ventana-menu #modalMensaje .acciones-modal button {
+
+    min-width: 110px;
+
+    padding: 10px 18px;
+
+    border-radius: 4px;
+
+    border: 1px solid #294d6a;
+
+    background: #315b7d;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.ventana-menu #modalMensaje .acciones-modal button:hover {
+
+    background: #274c69;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   CONTENEDORES
+========================================================= */
+
+.ventana-menu #listaMenus {
+
+    overflow: visible !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+}
+
+
+.ventana-menu #contenido {
+
+    overflow-y: auto !important;
+}
+
+
+/* =========================================================
+   ANIMACIONES
+========================================================= */
+
+@keyframes expedienteModal {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-15px)
+            scale(.98);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+@keyframes vistaPreviaExpediente {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-12px)
+            scale(.985);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================================
    RESPONSIVE
-===================================================== */
+========================================================= */
 
+@media (max-width: 700px) {
 
+    #listaMenus.grid-menus {
 
-
-
-
-
-
-@media(max-width:700px){
-
-
-
-
-
-    .ventana-menu #listaMenus .menu-tarjeta{
-
-
-        width:100% !important;
-
-
-        max-width:100% !important;
-
-
+        grid-template-columns: 1fr;
     }
 
 
+    .ventana-menu #listaMenus .menu-tarjeta {
 
+        width: 100% !important;
+
+        max-width: 100% !important;
+    }
 }
 
 
+@media (max-width: 600px) {
 
+    /* =====================================================
+       CABECERA
+    ===================================================== */
 
+    .ventana-menu .cabecera-menu {
 
+        align-items: flex-start;
 
+        gap: 15px;
 
-@media(max-width:600px){
-
-
-
-    .ventana-menu #modalVistaPrevia .modal-contenido{
-
-
-        width:95%;
-
-
-        padding:20px;
-
-
-
+        flex-direction: column;
     }
 
 
+    .ventana-menu .btn-nuevo {
 
+        width: 100%;
 
-
-    .ventana-menu .grid-datos-preview{
-
-
-        grid-template-columns:1fr;
-
-
-
+        justify-content: center;
     }
 
 
+    /* =====================================================
+       NUEVO / EDITAR
+    ===================================================== */
 
+    .ventana-menu #ventanaEmergente {
 
-
-    .ventana-menu .preview-imagen-ficha img{
-
-
-        width:200px;
-
-
-        height:200px;
-
-
-
+        padding: 15px;
     }
 
 
+    .ventana-menu #ventanaEmergente .modal-contenido {
 
-}
-
-
-
-
-
-
-/* =====================================================
-   DETALLES FINALES
-===================================================== */
-
-
-
-.ventana-menu .modal-contenido{
-
-
-    animation:
-
-
-    menuModalAparecer .25s ease;
-
-
-
-}
-
-
-
-
-
-
-@keyframes menuAparecer{
-
-
-    from{
-
-
-        opacity:0;
-
-
-        transform:translateY(-20px);
-
-
+        width: 94%;
     }
 
 
+    .ventana-menu #ventanaEmergente form {
 
-    to{
-
-
-        opacity:1;
-
-
-        transform:none;
-
-
+        padding: 22px;
     }
 
 
-}
+    .ventana-menu #ventanaEmergente .modal-contenido h3 {
+
+        font-size: 20px;
+
+        padding:
+            21px
+            55px
+            16px
+            20px;
+    }
 
 
-.ventana-menu .cabecera-menu{
+    .ventana-menu #ventanaEmergente .acciones-modal {
 
-    display:flex;
+        flex-direction: column-reverse;
 
-    justify-content:space-between;
+        align-items: stretch;
+    }
 
-    align-items:center;
 
-    margin-bottom:35px;
+    .ventana-menu #ventanaEmergente .acciones-modal button {
 
-}
+        width: 100%;
+    }
 
-.cabecera-menu{
 
-    display:flex;
+    /* =====================================================
+       VISTA PREVIA
+    ===================================================== */
 
-    align-items:center;
+    .ventana-menu #modalVistaPrevia {
 
-}
+        padding: 12px;
+    }
 
-.btn-nuevo{
 
-    margin-left:auto;
-    margin-right:40px; /* Ajusta este valor */
+    .ventana-menu #modalVistaPrevia .modal-contenido {
 
-}
-.ventana-menu #tituloFichas{
+        width: 100%;
 
-    margin:0;
+        max-height: 94vh;
 
-}
+        border-radius: 6px;
+    }
 
-.ventana-menu{
-    background:transparent;
+
+    .ventana-menu #modalVistaPrevia .modal-contenido::before {
+
+        height: 60px;
+
+        padding-left: 20px;
+        padding-right: 65px;
+
+        font-size: 11px;
+
+        letter-spacing: 1.5px;
+    }
+
+
+    .ventana-menu #modalVistaPrevia .cerrar {
+
+        top: 12px;
+        right: 13px;
+
+        width: 34px;
+        height: 34px;
+    }
+
+
+    .ventana-menu #modalVistaPrevia .preview-menu {
+
+        padding:
+            20px
+            20px
+            28px
+            28px;
+    }
+
+
+    .ventana-menu #modalVistaPrevia .grid-datos-preview {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .ventana-menu #modalVistaPrevia .preview-imagen-ficha img {
+
+        width: 100%;
+
+        max-width: 400px;
+
+        height: 240px;
+    }
+
+
+    .ventana-menu #modalVistaPrevia #previewNombre {
+
+        font-size: 24px;
+    }
+
+
+    /* =====================================================
+       ELIMINAR
+    ===================================================== */
+
+    .ventana-menu #modalConfirmarEliminar {
+
+        padding: 15px;
+    }
+
+
+    .ventana-menu #modalConfirmarEliminar .modal-contenido {
+
+        width: 94%;
+    }
+
+
+    .ventana-menu #modalConfirmarEliminar h3 {
+
+        font-size: 20px;
+
+        padding:
+            20px
+            20px
+            12px;
+    }
+
+
+    .ventana-menu #modalConfirmarEliminar #mensajeEliminar {
+
+        padding:
+            18px
+            20px
+            15px;
+    }
+
+
+    .ventana-menu #modalConfirmarEliminar .acciones-modal {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        margin:
+            0
+            20px
+            20px;
+    }
+
+
+    .ventana-menu #modalConfirmarEliminar .acciones-modal button {
+
+        width: 100%;
+    }
+
+
+    /* =====================================================
+       AVISO
+    ===================================================== */
+
+    .ventana-menu #modalMensaje .modal-contenido {
+
+        width: 94%;
+    }
+
+
+    .ventana-menu #modalMensaje #tituloMensaje {
+
+        font-size: 20px;
+
+        padding:
+            20px
+            20px
+            12px;
+    }
+
+
+    .ventana-menu #modalMensaje #textoMensaje {
+
+        padding:
+            18px
+            20px
+            10px;
+    }
+
+
+    .ventana-menu #modalMensaje .acciones-modal {
+
+        margin:
+            12px
+            20px
+            20px;
+    }
 }
