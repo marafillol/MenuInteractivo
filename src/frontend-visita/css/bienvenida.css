@@ -1,185 +1,174 @@
+/* Bienvenida: identidad institucional centrada, con fondo del museo
+   y líneas decorativas que acompañan la composición. Responsive de
+   punta a punta (mobile-first con ajustes para pantallas grandes). */
+
 .pantalla-bienvenida{
+    position: relative;
+    overflow: hidden;
 
-    width:100vw;
-    height:100vh;
+    height: 100dvh;
+    width: 100%;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-    position:relative;
+    text-align: center;
+    padding: clamp(24px, 8vw, 110px);
+    box-sizing: border-box;
 
-    overflow:hidden;
-
-
-    background-image: url("../img/fondo-malvinass.png");
-
-    background-size:cover;
-    background-repeat:no-repeat;
-    background-position:center;
-
+    background-color: #0a2645;
 }
 
+/* Líneas decorativas de fondo: se ubican detrás del contenido y de la
+   viñeta, cubriendo toda la pantalla para acompañar la composición. */
+.lineas-decorativas{
+    position: absolute;
+    inset: 0;
+    z-index: 0;
 
+    background-image: url("../img/lineas-01.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 
-.contenido-bienvenida{
-
-    position:relative;
-    z-index:2;
-
-    text-align:center;
-
-    width:min(90%,1000px);
-
-    color:white;
-
-    transform:translateY(80px);
-
+    pointer-events: none;
 }
 
+.efecto-vigneta{
+    position: absolute;
+    inset: 0;
+    z-index: 1;
 
-
-
-#btnComenzar{
-
-    margin-top:260px;
-
-    padding:70px 120px;
-
-    font-family:"Courier New", monospace;
-
-    font-size:35px;
-
-    font-weight:bold;
-
-    text-transform:uppercase;
-
-    letter-spacing:4px;
-
-    color:#1e1b18;
-
-    background:transparent;
-
-    border:none;
-
-    text-shadow:
-        2px 3px 8px black;
-
-    cursor:pointer;
-
-    animation:pulsoTexto 2.5s infinite ease-in-out;
-
-}
-
-
-/* efecto agrandar / achicar */
-
-@keyframes pulsoTexto{
-
-    0%,100%{
-
-        transform:scale(1);
-
-    }
-
-
-    50%{
-
-        transform:scale(1.08);
-
-    }
-
-}
-
-
-#btnComenzar:hover{
-
-    color:#ffffff;
-
-    background:transparent;
-
-    transform:scale(1.05);
-
-}
-
-/* Bienvenida actual, con la identidad institucional sobre la imagen del museo. */
-.pantalla-bienvenida{
-    height:100dvh;
-    align-items:flex-end;
-    padding:clamp(32px, 8vw, 110px);
-    box-sizing:border-box;
-    background-image:linear-gradient(90deg, rgba(8,31,53,.88), rgba(8,31,53,.46)), url("../img/fondo-malvinass.png");
-    background-position:center;
+    pointer-events: none;
 }
 
 .contenido-bienvenida{
-    width:min(680px, 100%);
-    transform:none;
-    text-align:left;
+    position: relative;
+    z-index: 2;
+
+    width: min(680px, 100%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(24px, 6vw, 64px);
+
+
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(3px);
+}
+
+/* Logo del museo, centrado arriba del texto. */
+.logo-museo{
+    width: min(220px, 60vw);
+    height: clamp(80px, 12vw, 130px);
+    margin: 0 auto clamp(20px, 4vw, 32px);
+
+    background-image: url("../img/logo-sol.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
 
 .eyebrow-bienvenida{
-    margin:0 0 14px;
-    color:#81D2F7;
-    font-family:"Courier Prime", monospace;
-    font-size:14px;
-    letter-spacing:1px;
-    text-transform:uppercase;
+    margin: 0 0 14px;
+    color: #81D2F7;
+    font-family: "Courier Prime", monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 .contenido-bienvenida h1{
-    margin:0;
-    color:#fff;
-    font-family:"Cormorant Garamond", Georgia, serif;
-    font-size:clamp(48px, 7vw, 82px);
-    font-weight:500;
-    letter-spacing:0;
-    line-height:.95;
+    margin: 0;
+    color: #fff;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(40px, 7vw, 82px);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: .95;
+    text-align: center;
 }
 
 .descripcion-bienvenida{
-    max-width:520px;
-    margin:22px 0 0;
-    color:#edf5f7;
-    font-size:19px;
-    line-height:1.45;
+    max-width: 520px;
+    margin: 22px auto 0;
+    color: #edf5f7;
+    font-size: clamp(16px, 2.2vw, 19px);
+    line-height: 1.45;
+    text-align: center;
 }
 
 #btnComenzar{
-    margin-top:34px;
-    padding:14px 22px;
-    color:#163A61;
-    background:#DBB060;
-    border:1px solid #DBB060;
-    border-radius:6px;
-    font-family:"Courier Prime", monospace;
-    font-size:15px;
-    letter-spacing:0;
-    text-shadow:none;
-    animation:none;
+    margin: clamp(28px, 5vw, 34px) auto 0;
+    padding: 14px 22px;
+
+    color: #163A61;
+    background: #DBB060;
+    border: 1px solid #DBB060;
+    border-radius: 6px;
+
+    font-family: "Courier Prime", monospace;
+    font-size: 15px;
+    letter-spacing: 0;
+    text-shadow: none;
+
+    cursor: pointer;
+    transition: color .2s ease, background .2s ease, outline-offset .2s ease;
 }
 
 #btnComenzar:hover,
 #btnComenzar:focus-visible{
-    color:#fff;
-    background:transparent;
-    outline:2px solid #81D2F7;
-    outline-offset:4px;
-    transform:none;
+    color: #fff;
+    background: transparent;
+    outline: 2px solid #81D2F7;
+    outline-offset: 4px;
 }
 
-@media(max-width:620px){
+/* --- Responsive --- */
+
+@media (max-width: 768px){
     .pantalla-bienvenida{
-        align-items:center;
-        padding:28px;
-        background-image:linear-gradient(rgba(8,31,53,.78), rgba(8,31,53,.78)), url("../img/fondo-malvinass.png");
+        padding: clamp(24px, 10vw, 48px) 20px;
     }
 
     .contenido-bienvenida{
-        text-align:center;
+        padding: 28px 20px;
+        border-radius: 14px;
+    }
+
+    .logo-museo{
+        width: min(160px, 55vw);
+        height: 90px;
+        margin-bottom: 20px;
     }
 
     .descripcion-bienvenida{
-        font-size:17px;
+        font-size: 16px;
+    }
+
+    .lineas-decorativas{
+        background-size: cover;
+        background-position: center bottom;
+    }
+}
+
+@media (max-width: 420px){
+    .contenido-bienvenida h1{
+        font-size: clamp(32px, 9vw, 44px);
+    }
+
+    #btnComenzar{
+        width: 100%;
+        max-width: 280px;
+        padding: 16px 22px;
     }
 }

@@ -1,0 +1,46 @@
+/**
+ * transitions.css — Estilos base compartidos del sistema de transiciones
+ * --------------------------------------------------------------------
+ * Este archivo NO define animaciones (eso vive en cada preset, vía WAAPI).
+ * Sólo define el "esqueleto" estructural que cualquier preset necesita:
+ * posicionamiento absoluto de las capas, perspectiva 3D opcional, y
+ * stacking (z-index) entre la vista saliente y la entrante.
+ */
+
+.transition-viewport {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Se agrega/quita dinámicamente sólo mientras corre un preset 3D (book, folder) */
+.transition-viewport--3d {
+  perspective: 1600px;
+}
+
+.transition-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.transition-layer--under {
+  z-index: 1;
+}
+
+.transition-layer--over {
+  z-index: 2;
+}
+
+/* Accesibilidad: si el usuario pide menos movimiento, el motor ya resuelve
+   el cambio sin animar (engine.js -> _runReduced), esto es un refuerzo extra
+   por si algún preset dejara alguna transition/animation CSS colgada. */
+@media (prefers-reduced-motion: reduce) {
+  .transition-layer {
+    transition: none !important;
+    animation: none !important;
+  }
+}
