@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // A partir de acá, cada llamado a estas funciones corre con transición.
     envolverNavegacion("mostrarBienvenida", "fade");
-    envolverNavegacion("mostrarExplorador", "book"); // probá "folder" también
+    envolverNavegacion("mostrarExplorador", "fade"); // probá "folder" también
 
     mostrarBienvenida(); // primera carga: fade-in desde vacío
 

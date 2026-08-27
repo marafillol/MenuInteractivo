@@ -10,7 +10,7 @@
 
 const book = {
   id: 'book',
-  defaultDuration: 700,
+  defaultDuration: 1500,
   defaultEasing: 'cubic-bezier(.55, 0, .1, 1)',
 
   run(ctx) {
