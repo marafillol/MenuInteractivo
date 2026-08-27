@@ -540,8 +540,8 @@
 
 
     <!-- =====================================================
-         ESTADO DEL CONTENIDO
-    ====================================================== -->
+     ESTADO DEL CONTENIDO
+====================================================== -->
 
     <div class="dashboard-seccion-titulo">
 
@@ -557,35 +557,58 @@
 
     <div class="bloque-dashboard bloque-estado">
 
-        <div class="bloque-dashboard-cabecera">
 
-            <div>
+        <!-- =================================================
+             CABECERA
+        ================================================== -->
 
-            <span class="bloque-etiqueta">
-                SUPERVISIÓN
-            </span>
+        <div class="estado-cabecera">
 
-                <h3>
+            <div class="estado-cabecera-info">
+
+                <div class="estado-cabecera-icono">
+
                     <i
-                            data-lucide="eye"
+                            data-lucide="activity"
                             aria-hidden="true">
                     </i>
 
-                    Estado del sistema
-                </h3>
+                </div>
+
+                <div>
+
+                <span class="bloque-etiqueta">
+                    SUPERVISIÓN
+                </span>
+
+                    <h3>
+                        Situación del contenido
+                    </h3>
+
+                    <p>
+                        Resumen de los elementos disponibles y no visibles.
+                    </p>
+
+                </div>
 
             </div>
+
 
             <div class="estado-indicador">
 
                 <span></span>
 
-                Contenido disponible
+                Contenido activo
 
             </div>
 
         </div>
 
+
+
+        <!-- =================================================
+             RESUMEN DE ESTADOS
+        ================================================== -->
 
         <div
                 id="estadoContenido"
@@ -593,183 +616,223 @@
         </div>
 
 
-        <!-- ==========================================
-     CONTENIDO NO VISIBLE
-=========================================== -->
+
+        <!-- =================================================
+             CONTENIDO NO VISIBLE
+        ================================================== -->
 
         <div class="contenido-oculto">
 
 
-            <!-- ================= MENÚS ================= -->
-
-            <div class="contenido-oculto-cabecera">
+            <div class="contenido-oculto-titulo">
 
                 <div>
 
-            <span class="bloque-etiqueta">
-                CONTENIDO NO VISIBLE
-            </span>
+                <span class="bloque-etiqueta">
+                    SUPERVISIÓN
+                </span>
 
-                    <h4>
-
+                    <h3>
                         <i
-                                data-lucide="folder"
+                                data-lucide="eye-off"
                                 aria-hidden="true">
                         </i>
 
-                        Menús ocultos
+                        Contenido no visible
+                    </h3>
 
-                    </h4>
+                </div>
+
+                <span class="contenido-oculto-descripcion">
+                Elementos actualmente ocultos
+            </span>
+
+            </div>
+
+
+
+            <div class="contenido-oculto-grid">
+
+
+                <!-- ================= MENÚS ================= -->
+
+                <div class="contenido-oculto-grupo">
+
+                    <div class="contenido-oculto-cabecera">
+
+                        <div>
+
+                        <span class="bloque-etiqueta">
+                            ORGANIZACIÓN
+                        </span>
+
+                            <h4>
+
+                                <i
+                                        data-lucide="folder"
+                                        aria-hidden="true">
+                                </i>
+
+                                Menús ocultos
+
+                            </h4>
+
+                        </div>
+
+
+                        <span
+                                id="cantidad-menus-ocultos"
+                                class="contador-oculto">
+                        0
+                    </span>
+
+                    </div>
+
+
+                    <div
+                            id="ocultos-menus"
+                            class="lista-fichas-ocultas">
+                    </div>
 
                 </div>
 
 
-                <span
-                        id="cantidad-menus-ocultos"
-                        class="contador-oculto">
-            0
-        </span>
 
-            </div>
+                <!-- ================= FICHAS ================= -->
 
+                <div class="contenido-oculto-grupo">
 
-            <div
-                    id="ocultos-menus"
-                    class="lista-fichas-ocultas">
+                    <div class="contenido-oculto-cabecera">
 
-            </div>
+                        <div>
 
+                        <span class="bloque-etiqueta">
+                            REGISTROS
+                        </span>
 
+                            <h4>
 
-            <!-- ================= FICHAS ================= -->
+                                <i
+                                        data-lucide="file-text"
+                                        aria-hidden="true">
+                                </i>
 
-            <div class="contenido-oculto-cabecera">
+                                Fichas ocultas
 
-                <div>
+                            </h4>
 
-            <span class="bloque-etiqueta">
-                CONTENIDO NO VISIBLE
-            </span>
-
-                    <h4>
-
-                        <i
-                                data-lucide="file-text"
-                                aria-hidden="true">
-                        </i>
-
-                        Fichas ocultas
-
-                    </h4>
-
-                </div>
+                        </div>
 
 
-                <span
-                        id="cantidad-fichas-ocultos"
-                        class="contador-oculto">
-            0
-        </span>
+                        <span
+                                id="cantidad-fichas-ocultos"
+                                class="contador-oculto">
+                        0
+                    </span>
 
-            </div>
-
-
-            <div
-                    id="ocultos-fichas"
-                    class="lista-fichas-ocultas">
-
-            </div>
+                    </div>
 
 
-
-            <!-- ================= ETIQUETAS ================= -->
-
-            <div class="contenido-oculto-cabecera">
-
-                <div>
-
-            <span class="bloque-etiqueta">
-                CLASIFICACIÓN
-
-            </span>
-
-                    <h4>
-
-                        <i
-                                data-lucide="tag"
-                                aria-hidden="true">
-                        </i>
-
-                        Etiquetas inactivas
-
-                    </h4>
+                    <div
+                            id="ocultos-fichas"
+                            class="lista-fichas-ocultas">
+                    </div>
 
                 </div>
 
 
-                <span
-                        id="cantidad-etiquetas-ocultos"
-                        class="contador-oculto">
-            0
-        </span>
 
-            </div>
+                <!-- ================= ETIQUETAS ================= -->
+
+                <div class="contenido-oculto-grupo">
+
+                    <div class="contenido-oculto-cabecera">
+
+                        <div>
+
+                        <span class="bloque-etiqueta">
+                            CLASIFICACIÓN
+                        </span>
+
+                            <h4>
+
+                                <i
+                                        data-lucide="tag"
+                                        aria-hidden="true">
+                                </i>
+
+                                Etiquetas inactivas
+
+                            </h4>
+
+                        </div>
 
 
-            <div
-                    id="ocultos-etiquetas"
-                    class="lista-fichas-ocultas">
+                        <span
+                                id="cantidad-etiquetas-ocultos"
+                                class="contador-oculto">
+                        0
+                    </span>
 
-            </div>
+                    </div>
 
 
-
-            <!-- ================= MULTIMEDIA ================= -->
-
-            <div class="contenido-oculto-cabecera">
-
-                <div>
-
-            <span class="bloque-etiqueta">
-                RECURSOS
-
-            </span>
-
-                    <h4>
-
-                        <i
-                                data-lucide="image"
-                                aria-hidden="true">
-                        </i>
-
-                        Multimedia inactiva
-
-                    </h4>
+                    <div
+                            id="ocultos-etiquetas"
+                            class="lista-fichas-ocultas">
+                    </div>
 
                 </div>
 
 
-                <span
-                        id="cantidad-multimedia-ocultos"
-                        class="contador-oculto">
-            0
-        </span>
+
+                <!-- ================= MULTIMEDIA ================= -->
+
+                <div class="contenido-oculto-grupo">
+
+                    <div class="contenido-oculto-cabecera">
+
+                        <div>
+
+                        <span class="bloque-etiqueta">
+                            RECURSOS
+                        </span>
+
+                            <h4>
+
+                                <i
+                                        data-lucide="image"
+                                        aria-hidden="true">
+                                </i>
+
+                                Multimedia inactiva
+
+                            </h4>
+
+                        </div>
+
+
+                        <span
+                                id="cantidad-multimedia-ocultos"
+                                class="contador-oculto">
+                        0
+                    </span>
+
+                    </div>
+
+
+                    <div
+                            id="ocultos-multimedia"
+                            class="lista-fichas-ocultas">
+                    </div>
+
+                </div>
+
 
             </div>
-
-
-            <div
-                    id="ocultos-multimedia"
-                    class="lista-fichas-ocultas">
-
-            </div>
-
 
         </div>
 
+
     </div>
-
-
-
-
 </section>

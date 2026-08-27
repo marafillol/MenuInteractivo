@@ -207,6 +207,8 @@ function cargarScriptVentana(nombre){
 
         script.src = ruta;
 
+        console.log("INTENTANDO CARGAR SCRIPT:", ruta);
+
         script.onload = ()=>{
 
             console.log(
@@ -242,6 +244,19 @@ function cargarScriptVentana(nombre){
 
 async function cargarVentana(nombre, mantenerMenu=false){
 
+    console.log(
+        "======================================"
+    );
+
+    console.log(
+        "CARGAR VENTANA:",
+        nombre,
+        "mantenerMenu:",
+        mantenerMenu,
+        "menuSeleccionado ANTES:",
+        menuSeleccionado
+    );
+
     try {
 
         const respuesta =
@@ -259,6 +274,9 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         const html =
         await respuesta.text();
+
+        console.log("HTML CARGADO:", nombre);
+        console.log(html);
 
         contenedorPanel.innerHTML = html;
 
@@ -301,9 +319,28 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         if(nombre === "fichas"){
 
+            console.log(
+                "ENTRANDO A FICHAS",
+                {
+                    mantenerMenu,
+                    menuSeleccionadoAntes: menuSeleccionado
+                }
+            );
+
             if(!mantenerMenu){
+
+                console.log(
+                    "⚠️ SE VA A RESETEAR menuSeleccionado"
+                );
+
                 menuSeleccionado = null;
+
             }
+
+            console.log(
+                "menuSeleccionado DESPUÉS:",
+                menuSeleccionado
+            );
 
             cargarFichas();
 

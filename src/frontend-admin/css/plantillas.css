@@ -1,558 +1,3366 @@
-/* =====================================================
-   MODULO PLANTILLAS
-   Encapsulado dentro de #moduloPlantillas
-   Estilo militar / archivo histÃ³rico
-===================================================== */
+/* =========================================================
+   MENÚ INTERACTIVO
+   Museo Malvinas
+   PLANTILLAS
+   ESTILO: EXPEDIENTE MILITAR / ARCHIVO HISTÓRICO
+
+   Versión consolidada y corregida
+   Encapsulado completamente en #moduloPlantillas
+========================================================= */
 
 
-/* ===============================
+/* =========================================================
+   PALETA
+========================================================= */
+
+#moduloPlantillas {
+
+    --plantilla-azul: #163A61;
+    --plantilla-azul-oscuro: #102d4b;
+    --plantilla-azul-medio: #355d80;
+    --plantilla-azul-suave: #e8eef3;
+
+    --plantilla-amarillo: #c5a46d;
+    --plantilla-dorado: #a88952;
+
+    --plantilla-papel: #f5edda;
+    --plantilla-papel-claro: #fbf7ed;
+    --plantilla-papel-oscuro: #e8ddc5;
+
+    --plantilla-texto: #26384a;
+    --plantilla-texto-suave: #5c6470;
+
+    --plantilla-borde: #b8a47d;
+
+    --plantilla-rojo: #6f3a3a;
+    --plantilla-rojo-oscuro: #592d2d;
+
+    --plantilla-gris: #d5dce1;
+    --plantilla-gris-borde: #aab6bf;
+
+}
+
+
+/* =========================================================
    CONTENEDOR PRINCIPAL
-================================ */
+========================================================= */
 
-#moduloPlantillas{
+#moduloPlantillas {
 
-    width:100%;
+    width: 100%;
+    padding: 25px;
 
-    padding:25px;
+    box-sizing: border-box;
 
-    box-sizing:border-box;
+    color: var(--plantilla-texto);
 
-    color:#2d2a22;
-
-}
-
-
-.cabecera-plantillas{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:35px;
+    position: relative;
 
 }
 
 
-/* ===============================
-   TITULOS
-================================ */
+/* =========================================================
+   CABECERA
+========================================================= */
 
-#moduloPlantillas .titulo-plantillas{
+#moduloPlantillas .cabecera-plantillas {
 
+    display: flex;
 
-    margin:0;
-    font-size:34px;
-    color:#263c32;
-    font-family:serif;
-}
+    justify-content: space-between;
+    align-items: center;
 
+    margin-bottom: 30px;
+    padding-bottom: 18px;
 
+    border-bottom: 1px solid rgba(22, 58, 97, .20);
 
-
-
-#moduloPlantillas .subtitulo-plantillas{
-
-    margin-top:8px;
-
-    margin-bottom:25px;
-
-    color:#705438;
-
-    font-style:italic;
+    position: relative;
 
 }
 
 
+#moduloPlantillas .cabecera-plantillas::after {
 
-/* ===============================
-   BOTONES
-================================ */
+    content: "";
 
-#moduloPlantillas button{
+    position: absolute;
 
-    font-family:inherit;
+    bottom: -2px;
+    left: 0;
 
-    cursor:pointer;
+    width: 110px;
+    height: 3px;
 
-    border:none;
-
-    transition:.2s;
-
-}
-
-
-
-#moduloPlantillas .btn-nueva-plantilla,
-#moduloPlantillas .btn-guardar-plantilla,
-#moduloPlantillas .btn-aceptar-plantilla{
-
-    padding:12px 22px;
-    border:none;
-    border-radius:10px;
-    background:#163A61;
-    color:#fff;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.25s;
-}
-
-
-
-#moduloPlantillas .btn-nueva-plantilla:hover,
-#moduloPlantillas .btn-guardar-plantilla:hover,
-#moduloPlantillas .btn-aceptar-plantilla:hover{
-
-    background:#6c8440;
-    transform:translateY(-2px);
+    background: var(--plantilla-amarillo);
 
 }
 
 
+/* =========================================================
+   TÍTULO
+========================================================= */
 
-#moduloPlantillas .btn-cancelar-plantilla{
+#moduloPlantillas .titulo-plantillas {
 
-    background:#705438;
+    margin: 0;
 
-    color:white;
+    color: var(--plantilla-azul);
 
-    padding:10px 18px;
+    font-family: "Cinzel", Georgia, serif;
 
-    border-radius:6px;
+    font-size: 28px;
+    font-weight: 600;
 
-}
-
-
-
-#moduloPlantillas .btn-eliminar-plantilla{
-
-    background:#7b3028;
-
-    color:white;
-
-    padding:10px 18px;
-
-    border-radius:6px;
+    letter-spacing: .8px;
 
 }
 
 
+/* =========================================================
+   SUBTÍTULO
+========================================================= */
 
-#moduloPlantillas .btn-editar-plantilla,
-#moduloPlantillas .btn-vista-plantilla{
+#moduloPlantillas .subtitulo-plantillas {
 
-    background:#5b6b4b;
+    margin: 8px 0 25px;
 
-    color:white;
+    color: var(--plantilla-texto-suave);
 
-    padding:8px 14px;
+    font-family: Georgia, serif;
 
-    border-radius:5px;
+    font-size: 14px;
+
+    line-height: 1.5;
 
 }
 
 
+/* =========================================================
+   BOTÓN NUEVA PLANTILLA
+========================================================= */
 
-/* ===============================
+#moduloPlantillas .btn-nueva-plantilla {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-left: auto;
+
+    padding: 11px 20px;
+
+    background: var(--plantilla-azul);
+
+    color: #ffffff;
+
+    border: 1px solid var(--plantilla-azul-oscuro);
+
+    border-radius: 6px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    letter-spacing: .3px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 7px rgba(16, 45, 75, .18);
+
+    transition: .25s ease;
+
+}
+
+
+#moduloPlantillas .btn-nueva-plantilla:hover {
+
+    background: var(--plantilla-azul-medio);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 12px rgba(16, 45, 75, .22);
+
+}
+
+
+/* =========================================================
+   BOTONES GENERALES
+========================================================= */
+
+#moduloPlantillas button {
+
+    font-family: Arial, sans-serif;
+
+    cursor: pointer;
+
+    transition: .22s ease;
+
+}
+
+
+#moduloPlantillas button:hover {
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
    GRID PLANTILLAS
-================================ */
+========================================================= */
 
-#moduloPlantillas .grid-plantillas{
+#moduloPlantillas .grid-plantillas {
 
-    margin-top:30px;
+    margin-top: 30px;
 
-    display:grid;
+    display: grid;
 
-    grid-template-columns:repeat(
-        auto-fill,
-        minmax(260px,1fr)
-    );
+    grid-template-columns:
+        repeat(auto-fill, minmax(300px, 1fr));
 
-    gap:20px;
+    gap: 24px;
 
 }
 
 
+/* =========================================================
+   TARJETA
+========================================================= */
 
-/* ===============================
-   TARJETAS
-================================ */
+#moduloPlantillas .tarjeta-plantilla {
 
-#moduloPlantillas .tarjeta-plantilla{
+    position: relative;
 
-    background:#f4eddb;
+    overflow: hidden;
 
-    border:2px solid #705438;
+    background:
+        linear-gradient(
+            145deg,
+            var(--plantilla-papel-claro),
+            var(--plantilla-papel)
+        );
 
-    border-radius:10px;
+    border: 1px solid var(--plantilla-borde);
 
-    padding:20px;
+    border-radius: 10px;
 
-    box-shadow:0 4px 10px rgba(0,0,0,.15);
+    padding: 0;
 
-}
+    box-shadow:
+        0 5px 14px rgba(20, 40, 60, .12);
 
-
-
-#moduloPlantillas .info-plantilla h3{
-
-    margin-top:0;
-
-    color:#263c32;
-
-    font-family:Georgia,serif;
-
-}
-
-
-
-#moduloPlantillas .info-plantilla p{
-
-    color:#5b4632;
+    transition: .25s ease;
 
 }
 
 
+#moduloPlantillas .tarjeta-plantilla:hover {
 
-#moduloPlantillas .acciones-plantilla{
+    transform: translateY(-5px);
 
-    margin-top:20px;
-
-    display:flex;
-
-    gap:8px;
-
-    flex-wrap:wrap;
+    box-shadow:
+        0 12px 24px rgba(20, 40, 60, .18);
 
 }
 
 
+/* =========================================================
+   IDENTIFICADOR DE EXPEDIENTE
+========================================================= */
 
-/* ===============================
+#moduloPlantillas .tarjeta-plantilla::before {
+
+    content: "EXPEDIENTE · PLANTILLA";
+
+    display: block;
+
+    background: rgba(22, 58, 97, .94);
+
+    color: #f4eddb;
+
+    padding: 7px 13px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 9px;
+    font-weight: bold;
+
+    letter-spacing: 1.5px;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+#moduloPlantillas .info-plantilla {
+
+    padding: 20px;
+
+}
+
+
+#moduloPlantillas .info-plantilla h3 {
+
+    margin: 0 0 12px;
+
+    padding-bottom: 10px;
+
+    color: var(--plantilla-azul);
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+    font-weight: 600;
+
+    line-height: 1.25;
+
+    border-bottom:
+        1px solid rgba(168, 137, 82, .45);
+
+}
+
+
+#moduloPlantillas .info-plantilla p {
+
+    margin: 0;
+
+    min-height: 45px;
+
+    color: #4f5963;
+
+    font-family: Georgia, serif;
+
+    font-size: 14px;
+
+    line-height: 1.55;
+
+}
+
+
+/* =========================================================
+   ACCIONES DE TARJETA
+========================================================= */
+
+#moduloPlantillas .acciones-plantilla {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 18px;
+
+}
+
+
+#moduloPlantillas .acciones-plantilla button {
+
+    flex: 1;
+
+    min-width: 90px;
+
+    padding: 9px 11px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+/* =========================================================
+   BOTÓN VISTA
+========================================================= */
+
+#moduloPlantillas .btn-vista-plantilla {
+
+    background: #355d80;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+}
+
+
+#moduloPlantillas .btn-vista-plantilla:hover {
+
+    background: #294f70;
+
+}
+
+
+/* =========================================================
+   BOTÓN EDITAR
+========================================================= */
+
+#moduloPlantillas .btn-editar-plantilla {
+
+    background: var(--plantilla-amarillo);
+
+    color: var(--plantilla-texto);
+
+    border: 1px solid #a88952;
+
+}
+
+
+#moduloPlantillas .btn-editar-plantilla:hover {
+
+    background: #b4935b;
+
+}
+
+
+/* =========================================================
+   BOTÓN ELIMINAR
+========================================================= */
+
+#moduloPlantillas .btn-eliminar-plantilla {
+
+    background: var(--plantilla-rojo);
+
+    color: #ffffff;
+
+    border: 1px solid var(--plantilla-rojo-oscuro);
+
+}
+
+
+#moduloPlantillas .btn-eliminar-plantilla:hover {
+
+    background: var(--plantilla-rojo-oscuro);
+
+}
+
+
+/* =========================================================
    MODALES
-================================ */
+========================================================= */
 
-#moduloPlantillas .modal-plantilla{
+#moduloPlantillas .modal-plantilla {
 
-    display:none;
+    display: none;
 
-    position:fixed;
+    position: fixed;
 
-    inset:0;
+    inset: 0;
 
-    background:rgba(0,0,0,.55);
+    align-items: center;
+    justify-content: center;
 
-    align-items:center;
+    padding: 25px;
 
-    justify-content:center;
+    box-sizing: border-box;
 
-    z-index:2000;
+    background: rgba(10, 25, 40, .68);
+
+    backdrop-filter: blur(3px);
+
+    z-index: 20000;
 
 }
 
 
+/* =========================================================
+   CONTENIDO MODALES
+========================================================= */
 
 #moduloPlantillas .contenido-modal-plantilla,
 #moduloPlantillas .contenido-modal-plantilla-pequeno,
 #moduloPlantillas .contenido-modal-confirmacion,
 #moduloPlantillas .contenido-modal-preview,
 #moduloPlantillas .contenido-modal-eliminar-plantilla,
-#moduloPlantillas .contenido-modal-mensaje-plantilla{
+#moduloPlantillas .contenido-modal-mensaje-plantilla {
 
-    background:#f4eddb;
+    position: relative;
 
-    border:3px solid #705438;
+    width: 560px;
 
-    border-radius:12px;
+    max-width: 95%;
+    max-height: 90vh;
 
-    padding:25px;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-    width:90%;
+    padding: 0;
 
-    max-width:700px;
+    box-sizing: border-box;
 
-    max-height:85vh;
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .99),
+            rgba(238, 233, 215, .99)
+        );
 
-    overflow-y:auto;
+    border: 1px solid #8b9aaa;
 
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    border-radius: 7px;
 
-}
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .30),
+        0 4px 10px rgba(0, 0, 0, .15);
 
-
-
-#moduloPlantillas .contenido-modal-plantilla-pequeno{
-
-    max-width:420px;
-
-}
-
-
-
-#moduloPlantillas .contenido-modal-preview{
-
-    max-width:600px;
+    animation: modalPlantillaEntrada .25s ease;
 
 }
 
 
+#moduloPlantillas .contenido-modal-plantilla-pequeno {
 
-/* ===============================
-   CERRAR MODAL
-================================ */
-
-#moduloPlantillas .cerrar-modal-plantilla,
-#moduloPlantillas .cerrar-preview-plantilla{
-
-    float:right;
-
-    background:#7b3028;
-
-    color:white;
-
-    border-radius:50%;
-
-    width:32px;
-
-    height:32px;
+    width: 430px;
 
 }
 
 
+#moduloPlantillas .contenido-modal-preview {
 
-/* ===============================
-   FIELDSET
-================================ */
-
-#moduloPlantillas .grupo-plantilla{
-
-    border:2px solid #705438;
-
-    border-radius:8px;
-
-    padding:18px;
-
-    margin-bottom:20px;
+    width: 650px;
 
 }
 
 
+/* =========================================================
+   CABECERA INTERNA DEL MODAL
+========================================================= */
 
-#moduloPlantillas .grupo-plantilla legend{
+#moduloPlantillas .contenido-modal-plantilla::before,
+#moduloPlantillas .contenido-modal-plantilla-pequeno::before,
+#moduloPlantillas .contenido-modal-confirmacion::before,
 
-    color:#263c32;
+#moduloPlantillas .contenido-modal-eliminar-plantilla::before,
+#moduloPlantillas .contenido-modal-mensaje-plantilla::before {
 
-    font-weight:bold;
+    content: "EXPEDIENTE · PLANTILLA";
 
-    padding:0 10px;
+    display: block;
 
-}
+    width: 100%;
 
+    box-sizing: border-box;
 
+    padding: 11px 28px;
 
-/* ===============================
-   INPUTS
-================================ */
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 65%,
+            #315e81 100%
+        );
 
-#moduloPlantillas input,
-#moduloPlantillas textarea,
-#moduloPlantillas select{
+    border-bottom: 3px solid #c5a46d;
 
-    width:100%;
+    color: #eef3f7;
 
-    box-sizing:border-box;
+    font-family: "Courier New", monospace;
 
-    padding:10px;
+    font-size: 10px;
+    font-weight: 700;
 
-    margin-top:6px;
+    letter-spacing: 2px;
 
-    margin-bottom:15px;
-
-    border:1px solid #705438;
-
-    border-radius:6px;
-
-    background:#fffaf0;
-
-    color:#2d2a22;
-
-}
-
-
-
-#moduloPlantillas textarea{
-
-    min-height:90px;
+    text-transform: uppercase;
 
 }
 
 
+/* =========================================================
+   TÍTULO DEL MODAL
+========================================================= */
 
-/* ===============================
+#moduloPlantillas .contenido-modal-plantilla > h2,
+#moduloPlantillas .contenido-modal-plantilla > h3,
+#moduloPlantillas .contenido-modal-plantilla-pequeno > h2,
+#moduloPlantillas .contenido-modal-plantilla-pequeno > h3,
+#moduloPlantillas .contenido-modal-confirmacion > h2,
+#moduloPlantillas .contenido-modal-confirmacion > h3,
+#moduloPlantillas .contenido-modal-preview > h2,
+#moduloPlantillas .contenido-modal-preview > h3,
+#moduloPlantillas .contenido-modal-eliminar-plantilla > h2,
+#moduloPlantillas .contenido-modal-eliminar-plantilla > h3,
+#moduloPlantillas .contenido-modal-mensaje-plantilla > h2,
+#moduloPlantillas .contenido-modal-mensaje-plantilla > h3 {
+
+    margin: 0;
+
+    padding: 21px 60px 14px 28px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 23px;
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #c7c0ad;
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla > h2::after,
+#moduloPlantillas .contenido-modal-plantilla > h3::after,
+#moduloPlantillas .contenido-modal-plantilla-pequeno > h2::after,
+#moduloPlantillas .contenido-modal-plantilla-pequeno > h3::after,
+#moduloPlantillas .contenido-modal-preview > h2::after,
+#moduloPlantillas .contenido-modal-preview > h3::after {
+
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+
+}
+
+
+/* =========================================================
+   FORMULARIO NUEVA PLANTILLA
+========================================================= */
+
+#moduloPlantillas .contenido-modal-plantilla form {
+
+    padding: 24px 28px 28px;
+
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+#moduloPlantillas .contenido-modal-plantilla form > label,
+#moduloPlantillas .contenido-modal-plantilla form > .form-label {
+
+    display: block;
+
+    margin: 15px 0 6px;
+
+    color: #43586b;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 1.1px;
+
+    text-transform: uppercase;
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla form > label:first-child,
+#moduloPlantillas .contenido-modal-plantilla form > .form-label:first-child {
+
+    margin-top: 0;
+
+}
+
+
+/* =========================================================
+   INPUTS DEL FORMULARIO
+========================================================= */
+
+#moduloPlantillas .contenido-modal-plantilla input[type="text"],
+#moduloPlantillas .contenido-modal-plantilla input[type="number"],
+#moduloPlantillas .contenido-modal-plantilla textarea,
+#moduloPlantillas .contenido-modal-plantilla select {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 13px;
+
+    margin: 0 0 5px;
+
+    border: 1px solid #b5bdc4;
+
+    border-radius: 4px;
+
+    background: #fbfaf5;
+
+    color: #263d52;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: .2s ease;
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla input:focus,
+#moduloPlantillas .contenido-modal-plantilla textarea:focus,
+#moduloPlantillas .contenido-modal-plantilla select:focus {
+
+    border-color: #52718f;
+
+    background: #fffefa;
+
+    box-shadow:
+        0 0 0 2px rgba(82, 113, 143, .12);
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla textarea {
+
+    min-height: 90px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+
+}
+
+
+/* =========================================================
    CHECKBOX
-================================ */
+========================================================= */
 
-#moduloPlantillas .checkbox-plantilla{
+#moduloPlantillas .contenido-modal-plantilla .checkbox-plantilla {
 
-    display:flex;
+    display: flex;
 
-    align-items:center;
+    align-items: center;
 
-    gap:10px;
+    gap: 9px;
 
-}
+    margin-top: 17px;
+    margin-bottom: 0;
 
+    padding: 11px 13px;
 
+    background: #e9edf0;
 
-#moduloPlantillas .checkbox-plantilla input{
+    border: 1px solid #c2c9ce;
 
-    width:auto;
+    border-radius: 4px;
 
-}
+    color: #3d5368;
 
+    font-family: Arial, sans-serif;
 
+    font-size: 13px;
 
-/* ===============================
-   CAMPOS
-================================ */
+    text-transform: none;
 
-#moduloPlantillas .lista-campos-plantilla{
+    letter-spacing: 0;
 
-    margin-top:20px;
-
-}
-
-
-
-#moduloPlantillas .item-campo{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    gap:15px;
-
-    background:#e8dcc4;
-
-    border:1px solid #705438;
-
-    padding:12px;
-
-    border-radius:8px;
-
-    margin-bottom:10px;
+    cursor: pointer;
 
 }
 
 
+#moduloPlantillas .contenido-modal-plantilla .checkbox-plantilla input {
 
-/* ===============================
-   PREVIEW
-================================ */
+    width: 17px;
+    height: 17px;
 
-#moduloPlantillas .preview-plantilla{
+    margin: 0;
 
-    background:#eee2ca;
-
-    border:2px dashed #705438;
-
-    border-radius:8px;
-
-    padding:20px;
+    accent-color: #355a7c;
 
 }
 
 
+/* =========================================================
+   SECCIÓN CAMPOS DE LA PLANTILLA
+   Más limpia y alineada con el formulario
+========================================================= */
 
-#moduloPlantillas .preview-imagen{
+#moduloPlantillas .grupo-plantilla {
 
-    text-align:center;
+    margin: 20px 0 0;
 
-    margin-bottom:15px;
+    padding: 16px 17px 17px;
+
+    background: rgba(232, 237, 240, .38);
+
+    border: 1px solid #c3cbd1;
+
+    border-radius: 5px;
 
 }
 
 
+#moduloPlantillas .grupo-plantilla legend {
 
-#moduloPlantillas .preview-imagen img{
+    padding: 0 8px;
 
-    max-width:150px;
+    color: #294f73;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
 
 }
 
 
+/* =========================================================
+   CABECERA DE NUEVO CAMPO
+   Si existe un contenedor con este nombre
+========================================================= */
+
+#moduloPlantillas .nuevo-campo-plantilla {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    background: rgba(255, 255, 255, .45);
+
+    border: 1px solid #c7cdd1;
+
+    border-radius: 4px;
+
+}
+
+
+/* =========================================================
+   INPUT DEL NUEVO CAMPO
+========================================================= */
+
+#moduloPlantillas .nuevo-campo-plantilla input,
+#moduloPlantillas .grupo-plantilla .nuevo-campo input {
+
+    flex: 1;
+
+    width: auto;
+
+    margin: 0;
+
+    padding: 9px 11px;
+
+}
+
+
+/* =========================================================
+   BOTÓN AGREGAR CAMPO
+========================================================= */
+
+#moduloPlantillas .btn-agregar-campo,
+#moduloPlantillas .btn-nuevo-campo {
+
+    flex-shrink: 0;
+
+    padding: 9px 14px;
+
+    background: #355d80;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+    font-weight: 700;
+
+}
+
+
+#moduloPlantillas .btn-agregar-campo:hover,
+#moduloPlantillas .btn-nuevo-campo:hover {
+
+    background: #294f70;
+
+}
+
+
+/* =========================================================
+   LISTA DE CAMPOS
+========================================================= */
+
+#moduloPlantillas .lista-campos-plantilla {
+
+    margin-top: 13px;
+
+}
+
+
+/* =========================================================
+   ITEM CAMPO
+========================================================= */
+
+#moduloPlantillas .item-campo {
+
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 8px;
+
+    padding: 10px 12px;
+
+    background: #f8f5ec;
+
+    border: 1px solid #c7c9c7;
+
+    border-left: 3px solid #71879a;
+
+    border-radius: 4px;
+
+    color: var(--plantilla-texto);
+
+}
+
+
+#moduloPlantillas .item-campo:last-child {
+
+    margin-bottom: 0;
+
+}
+
+
+/* =========================================================
+   BOTÓN ELIMINAR CAMPO
+========================================================= */
+
+#moduloPlantillas .item-campo button {
+
+    flex-shrink: 0;
+
+    padding: 6px 9px;
+
+    background: #d9dee2;
+
+    color: #5a6873;
+
+    border: 1px solid #b5bec5;
+
+    border-radius: 4px;
+
+    font-size: 11px;
+
+}
+
+
+#moduloPlantillas .item-campo button:hover {
+
+    background: #c8d0d6;
+
+    color: #6f3a3a;
+
+}
+
+
+/* =========================================================
+   PREVISUALIZACIÓN
+   SIN RECUADROS INTERNOS
+========================================================= */
+
+
+
+/* =========================================================
+   IMAGEN DE PREVISUALIZACIÓN
+   Sin recuadro decorativo
+========================================================= */
+
+#moduloPlantillas .preview-imagen {
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    margin: 0 0 20px;
+
+}
+
+
+#moduloPlantillas .preview-imagen img {
+
+    display: block;
+
+    max-width: 220px;
+    max-height: 220px;
+
+    object-fit: contain;
+
+    border: none;
+
+    outline: none;
+
+    border-radius: 0;
+
+    box-shadow:
+        0 7px 16px rgba(30, 45, 60, .18);
+
+}
+
+
+/* =========================================================
+   CAMPOS DE PREVISUALIZACIÓN
+   Sin cajas
+========================================================= */
 
 #moduloPlantillas .preview-campo,
-#moduloPlantillas .campo-preview{
+#moduloPlantillas .campo-preview {
 
-    margin-bottom:15px;
+    margin: 0 0 14px;
+
+    padding: 0 0 11px;
+
+    background: transparent;
+
+    border: none;
+
+    border-bottom: 1px solid #d4d1c7;
+
+    border-radius: 0;
 
 }
 
+
+#moduloPlantillas .preview-campo:last-child,
+#moduloPlantillas .campo-preview:last-child {
+
+    margin-bottom: 0;
+
+    padding-bottom: 0;
+
+    border-bottom: none;
+
+}
 
 
 #moduloPlantillas .preview-campo label,
-#moduloPlantillas .campo-preview label{
+#moduloPlantillas .campo-preview label {
 
-    display:block;
+    display: block;
 
-    font-weight:bold;
+    margin: 0 0 4px;
 
-    color:#263c32;
+    color: #73808a;
 
-}
+    font-family: "Courier New", monospace;
 
+    font-size: 9px;
+    font-weight: 700;
 
+    letter-spacing: 1px;
 
-/* ===============================
-   ACCIONES MODALES
-================================ */
-
-#moduloPlantillas .acciones-modal-plantilla{
-
-    display:flex;
-
-    justify-content:flex-end;
-
-    gap:12px;
-
-    margin-top:20px;
+    text-transform: uppercase;
 
 }
 
 
+#moduloPlantillas .preview-campo p,
+#moduloPlantillas .campo-preview p {
 
-/* ===============================
+    margin: 0;
+
+    color: #29445e;
+
+    font-family: Georgia, serif;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    line-height: 1.45;
+
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+========================================================= */
+
+#moduloPlantillas .cerrar-modal-plantilla,
+#moduloPlantillas .cerrar-preview-plantilla {
+
+    position: absolute;
+
+    top: 50px;
+    right: 18px;
+
+    z-index: 20;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, .45);
+
+    border-radius: 5px;
+
+    background: rgba(10, 30, 48, .28);
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+}
+
+
+#moduloPlantillas .cerrar-modal-plantilla:hover,
+#moduloPlantillas .cerrar-preview-plantilla:hover {
+
+    background: rgba(255, 255, 255, .16);
+
+    border-color: rgba(255, 255, 255, .85);
+
+    transform: none;
+
+}
+
+
+/* =========================================================
+   ACCIONES DEL MODAL
+========================================================= */
+
+#moduloPlantillas .acciones-modal-plantilla {
+
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 23px 28px 28px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid #c8c2b2;
+
+}
+
+
+#moduloPlantillas .acciones-modal-plantilla button {
+
+    min-width: 110px;
+
+    padding: 10px 19px;
+
+    border-radius: 4px;
+
+    border: 1px solid transparent;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+
+}
+
+
+/* =========================================================
+   GUARDAR / ACEPTAR
+========================================================= */
+
+#moduloPlantillas .btn-guardar-plantilla,
+#moduloPlantillas .btn-aceptar-plantilla {
+
+    background: #315b7d;
+
+    color: #ffffff;
+
+    border-color: #294d6a;
+
+    box-shadow:
+        0 2px 5px rgba(20, 45, 70, .15);
+
+}
+
+
+#moduloPlantillas .btn-guardar-plantilla:hover,
+#moduloPlantillas .btn-aceptar-plantilla:hover {
+
+    background: #274c69;
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   CANCELAR
+========================================================= */
+
+#moduloPlantillas .btn-cancelar-plantilla {
+
+    background: #d5dce1;
+
+    color: #3f5365;
+
+    border: 1px solid #aab6bf;
+
+}
+
+
+#moduloPlantillas .btn-cancelar-plantilla:hover {
+
+    background: #c5d0d8;
+
+    color: #29445b;
+
+    border-color: #8799a8;
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   ELIMINAR
+========================================================= */
+
+#moduloPlantillas .btn-eliminar-plantilla {
+
+    background: #6f3a3a;
+
+    color: #ffffff;
+
+    padding: 10px 19px;
+
+    border: 1px solid #5b2e2e;
+
+    border-radius: 4px;
+
+}
+
+
+#moduloPlantillas .btn-eliminar-plantilla:hover {
+
+    background: #592d2d;
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+#moduloPlantillas .contenido-modal-plantilla::-webkit-scrollbar,
+#moduloPlantillas .contenido-modal-preview::-webkit-scrollbar,
+#moduloPlantillas .contenido-modal-confirmacion::-webkit-scrollbar,
+#moduloPlantillas .contenido-modal-eliminar-plantilla::-webkit-scrollbar,
+#moduloPlantillas .contenido-modal-mensaje-plantilla::-webkit-scrollbar {
+
+    width: 7px;
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla::-webkit-scrollbar-track,
+#moduloPlantillas .contenido-modal-preview::-webkit-scrollbar-track,
+#moduloPlantillas .contenido-modal-confirmacion::-webkit-scrollbar-track,
+#moduloPlantillas .contenido-modal-eliminar-plantilla::-webkit-scrollbar-track,
+#moduloPlantillas .contenido-modal-mensaje-plantilla::-webkit-scrollbar-track {
+
+    background: #e8e4d8;
+
+}
+
+
+#moduloPlantillas .contenido-modal-plantilla::-webkit-scrollbar-thumb,
+#moduloPlantillas .contenido-modal-preview::-webkit-scrollbar-thumb,
+#moduloPlantillas .contenido-modal-confirmacion::-webkit-scrollbar-thumb,
+#moduloPlantillas .contenido-modal-eliminar-plantilla::-webkit-scrollbar-thumb,
+#moduloPlantillas .contenido-modal-mensaje-plantilla::-webkit-scrollbar-thumb {
+
+    background: #8797a5;
+
+    border-radius: 10px;
+
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+@keyframes modalPlantillaEntrada {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-12px)
+            scale(.985);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* =========================================================
    RESPONSIVE
-================================ */
+========================================================= */
 
-@media(max-width:700px){
+@media (max-width: 700px) {
 
+    #moduloPlantillas {
 
-    #moduloPlantillas{
-
-        padding:15px;
-
-    }
-
-
-    #moduloPlantillas .acciones-plantilla{
-
-        flex-direction:column;
+        padding: 15px;
 
     }
 
 
-    #moduloPlantillas .item-campo{
+    #moduloPlantillas .cabecera-plantillas {
 
-        flex-direction:column;
+        align-items: flex-start;
 
-        align-items:flex-start;
+        flex-direction: column;
+
+        gap: 15px;
 
     }
 
+
+    #moduloPlantillas .btn-nueva-plantilla {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    #moduloPlantillas .grid-plantillas {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    #moduloPlantillas .acciones-plantilla {
+
+        flex-direction: column;
+
+    }
+
+
+    #moduloPlantillas .acciones-plantilla button {
+
+        width: 100%;
+
+    }
+
+
+    #moduloPlantillas .item-campo {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    #moduloPlantillas .item-campo button {
+
+        width: 100%;
+
+    }
+
+
+    #moduloPlantillas .nuevo-campo-plantilla {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    #moduloPlantillas .nuevo-campo-plantilla input {
+
+        width: 100%;
+
+    }
+
+
+    #moduloPlantillas .btn-agregar-campo,
+    #moduloPlantillas .btn-nuevo-campo {
+
+        width: 100%;
+
+    }
+
+
+    #moduloPlantillas .modal-plantilla {
+
+        padding: 15px;
+
+    }
+
+
+    #moduloPlantillas .contenido-modal-plantilla,
+    #moduloPlantillas .contenido-modal-plantilla-pequeno,
+    #moduloPlantillas .contenido-modal-confirmacion,
+    #moduloPlantillas .contenido-modal-preview,
+    #moduloPlantillas .contenido-modal-eliminar-plantilla,
+    #moduloPlantillas .contenido-modal-mensaje-plantilla {
+
+        width: 94%;
+
+        max-width: 100%;
+
+        max-height: 94vh;
+
+    }
+
+
+    #moduloPlantillas .contenido-modal-plantilla form {
+
+        padding: 21px;
+
+    }
+
+
+    #moduloPlantillas .acciones-modal-plantilla {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        margin:
+            20px
+            21px
+            21px;
+
+    }
+
+
+    #moduloPlantillas .acciones-modal-plantilla button {
+
+        width: 100%;
+
+    }
+
+
+    #moduloPlantillas .cerrar-modal-plantilla,
+    #moduloPlantillas .cerrar-preview-plantilla {
+
+        right: 13px;
+
+        width: 32px;
+        height: 32px;
+
+    }
+
+
+    #moduloPlantillas .preview-plantilla {
+
+        margin-left: 21px;
+        margin-right: 21px;
+
+    }
+
+}
+
+
+/* =========================================================
+   NUEVO CAMPO
+   Modal específico
+   Diseño limpio y ordenado
+========================================================= */
+
+
+/* =========================================================
+   CONTENEDOR DEL MODAL
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno {
+
+    width: 500px;
+
+    max-width: 94%;
+    max-height: 90vh;
+
+    padding: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fbf7ed 0%,
+            #f3eddf 100%
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 7px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .28),
+        0 5px 12px rgba(0, 0, 0, .14);
+
+    animation: nuevoCampoEntrada .22s ease;
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno::before {
+
+    content: "EXPEDIENTE · CONFIGURACIÓN DE CAMPO";
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 26px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 3px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.7px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno > h2 {
+
+    margin: 0;
+
+    padding: 21px 26px 15px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #c8c1b1;
+}
+
+
+/* Línea dorada */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno > h2::after {
+
+    content: "";
+
+    display: block;
+
+    width: 46px;
+
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   CUERPO
+========================================================= */
+
+/*
+   Como el HTML no tiene <form>, hacemos que todos
+   los elementos internos respeten el mismo margen.
+*/
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno {
+
+    padding-bottom: 0;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno > label {
+
+    display: block;
+
+    margin: 18px 26px 7px;
+
+    color: #43586b;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.1px;
+
+    line-height: 1.2;
+
+    text-transform: uppercase;
+}
+
+
+/* Primer label */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno > h2 + label {
+
+    margin-top: 22px;
+}
+
+
+/* =========================================================
+   INPUTS Y SELECT
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> input[type="text"],
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> select {
+
+    display: block;
+
+    width: calc(100% - 52px);
+
+    height: 43px;
+
+    margin: 0 26px 3px;
+
+    padding: 10px 13px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #b5bdc4;
+
+    border-radius: 4px;
+
+    background: #fffdf7;
+
+    color: #263d52;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+
+/* Focus */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> input[type="text"]:focus,
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> select:focus {
+
+    border-color: #52718f;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 3px rgba(82, 113, 143, .11);
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> select {
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   OPCIONES DE VISIBILIDAD
+========================================================= */
+
+/*
+   Acá está uno de los cambios importantes:
+   NO usamos los recuadros grandes del checkbox general.
+
+   Los tres checks quedan como opciones simples,
+   alineadas y limpias.
+*/
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> label.checkbox-plantilla {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    width: auto;
+
+    min-height: auto;
+
+    margin:
+        11px
+        26px
+        0;
+
+    padding: 5px 0;
+
+    box-sizing: border-box;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 0;
+
+    color: #43586b;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    letter-spacing: 0;
+
+    line-height: 1.3;
+
+    text-transform: none;
+
+    cursor: pointer;
+}
+
+
+/* Primer checkbox */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno
+> select + label.checkbox-plantilla {
+
+    margin-top: 17px;
+}
+
+
+/* =========================================================
+   CHECKBOX REAL
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.checkbox-plantilla input[type="checkbox"] {
+
+    flex: 0 0 auto;
+
+    width: 17px;
+
+    height: 17px;
+
+    margin: 0;
+
+    padding: 0;
+
+    accent-color: #315b7d;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   HOVER DE OPCIONES
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.checkbox-plantilla:hover {
+
+    color: #294f73;
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.acciones-modal-plantilla {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin:
+        22px
+        26px
+        0;
+
+    padding:
+        17px
+        0
+        24px;
+
+    border-top: 1px solid #c8c1b1;
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.acciones-modal-plantilla button {
+
+    min-width: 105px;
+
+    padding: 10px 18px;
+
+    box-sizing: border-box;
+
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+
+/* =========================================================
+   GUARDAR
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.btn-guardar-plantilla {
+
+    background: #315b7d;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+    box-shadow:
+        0 2px 5px rgba(20, 45, 70, .14);
+}
+
+
+#moduloPlantillas #modalCampoPlantilla
+.btn-guardar-plantilla:hover {
+
+    background: #274c69;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   CANCELAR
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.btn-cancelar-plantilla {
+
+    background: #d5dce1;
+
+    color: #3f5365;
+
+    border: 1px solid #aab6bf;
+}
+
+
+#moduloPlantillas #modalCampoPlantilla
+.btn-cancelar-plantilla:hover {
+
+    background: #c5d0d8;
+
+    color: #29445b;
+
+    border-color: #8799a8;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno::-webkit-scrollbar {
+
+    width: 7px;
+}
+
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno::-webkit-scrollbar-track {
+
+    background: #e8e4d8;
+}
+
+
+#moduloPlantillas #modalCampoPlantilla
+.contenido-modal-plantilla-pequeno::-webkit-scrollbar-thumb {
+
+    background: #8797a5;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+@keyframes nuevoCampoEntrada {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-10px)
+            scale(.985);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    #moduloPlantillas #modalCampoPlantilla
+    .contenido-modal-plantilla-pequeno {
+
+        width: 94%;
+
+        max-width: 94%;
+    }
+
+
+    #moduloPlantillas #modalCampoPlantilla
+    .contenido-modal-plantilla-pequeno
+    > label {
+
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+
+    #moduloPlantillas #modalCampoPlantilla
+    .contenido-modal-plantilla-pequeno
+    > input[type="text"],
+
+    #moduloPlantillas #modalCampoPlantilla
+    .contenido-modal-plantilla-pequeno
+    > select {
+
+        width: calc(100% - 40px);
+
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+
+    #moduloPlantillas #modalCampoPlantilla
+    .contenido-modal-plantilla-pequeno
+    > label.checkbox-plantilla {
+
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+
+    #moduloPlantillas #modalCampoPlantilla
+    .acciones-modal-plantilla {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+
+    #moduloPlantillas #modalCampoPlantilla
+    .acciones-modal-plantilla button {
+
+        width: 100%;
+    }
+
+}
+
+/* =========================================================
+   MENSAJE SIN CAMPOS
+========================================================= */
+
+#moduloPlantillas .sin-campos-plantilla {
+
+    margin: 15px 0 5px;
+
+    padding: 12px 14px;
+
+    color: #6b737a;
+
+    font-family: Georgia, serif;
+
+    font-size: 13px;
+
+    font-style: italic;
+
+    line-height: 1.4;
+
+    text-align: center;
+
+    border-top: 1px solid rgba(168, 137, 82, .28);
+
+    border-bottom: 1px solid rgba(168, 137, 82, .28);
+
+    background: rgba(245, 237, 218, .30);
+
+}
+
+
+/* =========================================================
+   VISTA PREVIA — UNA SOLA FICHA
+   Evita que el contenido interno genere un segundo recuadro
+========================================================= */
+
+#moduloPlantillas .preview-plantilla {
+
+    position: relative;
+
+    margin: 22px 28px 28px;
+
+    padding: 24px;
+
+    background: #f8f4e8;
+
+    border: 1px solid #9d927c;
+
+    border-radius: 3px;
+
+    box-shadow:
+        0 4px 10px rgba(35, 45, 55, .16);
+
+    box-sizing: border-box;
+
+}
+
+
+/* El contenido interno NO debe parecer otra ficha */
+
+#moduloPlantillas .preview-plantilla > div {
+
+    background: transparent !important;
+
+    border: none !important;
+
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+    margin: 0 !important;
+
+}
+
+
+/* Si el JS utiliza estas clases para envolver la ficha */
+
+#moduloPlantillas .preview-plantilla .ficha-preview,
+#moduloPlantillas .preview-plantilla .vista-previa-ficha,
+#moduloPlantillas .preview-plantilla .preview-ficha,
+#moduloPlantillas .preview-plantilla .tarjeta-preview {
+
+    background: transparent !important;
+
+    border: none !important;
+
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+}
+
+
+/* Los campos siguen separados, pero no forman otra ficha */
+
+#moduloPlantillas .preview-plantilla .preview-campo,
+#moduloPlantillas .preview-plantilla .campo-preview {
+
+    background: transparent !important;
+
+    border-left: none !important;
+
+    border-right: none !important;
+
+    border-top: none !important;
+
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+}
+
+/* =========================================================
+   MODAL — VISTA PREVIA DE PLANTILLA
+   Misma estética que "Nueva plantilla"
+========================================================= */
+
+#moduloPlantillas #modalVistaPlantilla
+.contenido-modal-preview {
+
+    position: relative;
+
+    width: 720px;
+
+    max-width: 94%;
+    max-height: 90vh;
+
+    padding: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fbf7ed 0%,
+            #f3eddf 100%
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 7px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .30),
+        0 5px 12px rgba(0, 0, 0, .15);
+
+    animation: modalPlantillaEntrada .25s ease;
+
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+#moduloPlantillas #modalVistaPlantilla
+.contenido-modal-preview::before {
+
+    content: "EXPEDIENTE · VISTA PREVIA";
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 3px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.8px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+#moduloPlantillas #modalVistaPlantilla
+.contenido-modal-preview > h2 {
+
+    margin: 0;
+
+    padding: 21px 60px 15px 28px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #c8c1b1;
+
+}
+
+
+/* Línea dorada debajo del título */
+
+#moduloPlantillas #modalVistaPlantilla
+.contenido-modal-preview > h2::after {
+
+    content: "";
+
+    display: block;
+
+    width: 46px;
+
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+
+}
+
+
+/* =========================================================
+   CONTENIDO DE LA VISTA
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla {
+
+    margin: 22px 28px 28px;
+
+    padding: 22px;
+
+    background: #f8f4e8;
+
+    border: 1px solid #b8a47d;
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 3px 9px rgba(30, 45, 60, .12);
+
+}
+
+
+/* =========================================================
+   TÍTULOS DENTRO DE LA VISTA
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla h3 {
+
+    margin: 0 0 16px;
+
+    padding-bottom: 10px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 20px;
+
+    border-bottom: 1px solid #c5a46d;
+
+}
+
+
+/* =========================================================
+   CAMPOS DE LA VISTA
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla
+.preview-campo,
+
+#moduloPlantillas #contenidoVistaPlantilla
+.campo-preview {
+
+    margin: 0 0 14px;
+
+    padding: 10px 0;
+
+    background: transparent;
+
+    border: none;
+
+    border-bottom: 1px solid #d1c7b2;
+
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla
+label {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #43586b;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* =========================================================
+   TEXTOS
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla
+p {
+
+    margin: 0;
+
+    color: #29445e;
+
+    font-family: Georgia, serif;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+
+}
+
+
+/* =========================================================
+   IMAGEN
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla img {
+
+    display: block;
+
+    max-width: 240px;
+
+    max-height: 240px;
+
+    width: auto;
+
+    height: auto;
+
+    margin: 0 auto 20px;
+
+    object-fit: contain;
+
+    border: 1px solid #b8a47d;
+
+    border-radius: 3px;
+
+    box-shadow:
+        0 4px 10px rgba(30, 45, 60, .16);
+
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+========================================================= */
+
+#moduloPlantillas #modalVistaPlantilla
+.cerrar-preview-plantilla {
+
+    position: absolute;
+
+    top: 48px;
+
+    right: 18px;
+
+    z-index: 20;
+
+    width: 34px;
+
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: rgba(10, 30, 48, .28);
+
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, .45);
+
+    border-radius: 5px;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+}
+
+
+#moduloPlantillas #modalVistaPlantilla
+.cerrar-preview-plantilla:hover {
+
+    background: rgba(255, 255, 255, .16);
+
+    border-color: rgba(255, 255, 255, .85);
+
+    transform: none;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    #moduloPlantillas #modalVistaPlantilla
+    .contenido-modal-preview {
+
+        width: 94%;
+
+        max-width: 94%;
+
+        max-height: 94vh;
+
+    }
+
+
+    #moduloPlantillas #contenidoVistaPlantilla {
+
+        margin: 18px 20px 22px;
+
+        padding: 17px;
+
+    }
+
+
+    #moduloPlantillas #modalVistaPlantilla
+    .cerrar-preview-plantilla {
+
+        right: 13px;
+
+        width: 32px;
+
+        height: 32px;
+
+    }
+
+}
+
+/* =========================================================
+   CENTRAR ATRIBUTOS DE LA FICHA EN VISTA PREVIA
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla {
+    text-align: center;
+}
+
+#moduloPlantillas #contenidoVistaPlantilla
+.preview-campo,
+#moduloPlantillas #contenidoVistaPlantilla
+.campo-preview {
+    text-align: center;
+}
+
+#moduloPlantillas #contenidoVistaPlantilla
+.preview-campo label,
+#moduloPlantillas #contenidoVistaPlantilla
+.campo-preview label {
+    text-align: center;
+}
+
+#moduloPlantillas #contenidoVistaPlantilla
+.preview-campo p,
+#moduloPlantillas #contenidoVistaPlantilla
+.campo-preview p {
+    text-align: center;
+}
+
+
+/* =========================================================
+   TÍTULO DE LA FICHA — VISTA PREVIA
+========================================================= */
+
+#moduloPlantillas #contenidoVistaPlantilla
+.titulo-preview-plantilla {
+
+    margin: 0 0 18px;
+
+    padding: 0 0 12px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    line-height: 1.3;
+
+    text-align: center;
+
+    border-bottom: 1px solid #c5a46d;
+
+}
+
+
+/* Detalle dorado */
+
+#moduloPlantillas #contenidoVistaPlantilla
+.titulo-preview-plantilla::after {
+
+    content: "";
+
+    display: block;
+
+    width: 46px;
+
+    height: 3px;
+
+    margin: 9px auto 0;
+
+    background: #c5a46d;
+
+}
+
+/* =========================================================
+   TIPOGRAFÍA DE LOS CAMPOS DE PLANTILLA
+   Mantiene la estética de archivo histórico
+========================================================= */
+
+/* Textos: Nombre, Descripción, Vista, Columnas, etc. */
+
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla > label {
+
+    font-family: "Courier New", monospace;
+
+    color: #43586b;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+
+/* Valores escritos dentro de los campos */
+
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla input[type="text"],
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla input[type="number"],
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla textarea,
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla select {
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    color: #29445e;
+
+    font-size: 14px;
+
+}
+
+
+/* Texto de los checkbox */
+
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla .checkbox-plantilla {
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    color: #43586b;
+
+    font-size: 13px;
+
+    letter-spacing: 0;
+
+    text-transform: none;
+}
+
+
+/* Texto de las opciones del select */
+
+#moduloPlantillas .contenido-modal-plantilla
+.grupo-plantilla select option {
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    color: #29445e;
+
+}
+
+/* =========================================================
+   BOTÓN GUARDAR PLANTILLA
+   Alineado a la derecha
+========================================================= */
+
+#moduloPlantillas #btnGuardarPlantilla {
+
+    display: block;
+
+    margin: 24px 28px 28px auto;
+
+    padding: 11px 22px;
+
+    min-width: 150px;
+
+    background: #315b7d;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+    border-radius: 5px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: .2px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 7px rgba(20, 45, 70, .16);
+
+    transition:
+        background .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+
+#moduloPlantillas #btnGuardarPlantilla:hover {
+
+    background: #274c69;
+
+    box-shadow:
+        0 5px 10px rgba(20, 45, 70, .20);
+
+    transform: translateY(-1px);
+}
+
+
+#moduloPlantillas #btnGuardarPlantilla:active {
+
+    transform: translateY(0);
+
+    box-shadow:
+        0 2px 4px rgba(20, 45, 70, .15);
+}
+
+
+/* =========================================================
+   MODAL CONFIRMAR ELIMINACIÓN
+   Estética Plantillas
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.contenido-modal-eliminar-plantilla {
+
+    width: 480px;
+
+    max-width: 94%;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fbf7ed 0%,
+            #f3eddf 100%
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 7px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .30),
+        0 5px 12px rgba(0, 0, 0, .15);
+
+    animation: modalPlantillaEntrada .25s ease;
+
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.contenido-modal-eliminar-plantilla::before {
+
+    content: "EXPEDIENTE · CONFIRMACIÓN";
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 3px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.8px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.contenido-modal-eliminar-plantilla
+.titulo-plantillas {
+
+    margin: 0;
+
+    padding: 21px 28px 14px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #c8c1b1;
+
+}
+
+
+/* =========================================================
+   MENSAJE
+========================================================= */
+
+#moduloPlantillas #mensajeEliminarPlantilla {
+
+    margin: 0;
+
+    padding: 23px 28px 8px;
+
+    color: #43586b;
+
+    font-family: Georgia, serif;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    text-align: center;
+
+}
+
+
+/* =========================================================
+   ADVERTENCIA
+========================================================= */
+
+#moduloPlantillas #mensajeEliminarPlantilla::before {
+
+    content: "⚠";
+
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #a88952;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 25px;
+
+    font-weight: bold;
+
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.acciones-modal-plantilla {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 18px 28px 26px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid #c8c1b1;
+
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.acciones-modal-plantilla button {
+
+    min-width: 110px;
+
+    padding: 10px 18px;
+
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+
+}
+
+
+/* =========================================================
+   CANCELAR
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.btn-cancelar-plantilla {
+
+    background: #d5dce1;
+
+    color: #3f5365;
+
+    border: 1px solid #aab6bf;
+
+}
+
+
+#moduloPlantillas #modalEliminarPlantilla
+.btn-cancelar-plantilla:hover {
+
+    background: #c5d0d8;
+
+    color: #29445b;
+
+    border-color: #8799a8;
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   ELIMINAR — AZUL
+========================================================= */
+
+#moduloPlantillas #modalEliminarPlantilla
+.btn-eliminar-plantilla {
+
+    background: #315b7d;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+    box-shadow:
+        0 2px 5px rgba(20, 45, 70, .14);
+
+}
+
+
+#moduloPlantillas #modalEliminarPlantilla
+.btn-eliminar-plantilla:hover {
+
+    background: #274c69;
+
+    border-color: #203f58;
+
+    transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    #moduloPlantillas #modalEliminarPlantilla
+    .contenido-modal-eliminar-plantilla {
+
+        width: 94%;
+
+    }
+
+
+    #moduloPlantillas #modalEliminarPlantilla
+    .acciones-modal-plantilla {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        margin-left: 20px;
+
+        margin-right: 20px;
+
+    }
+
+
+    #moduloPlantillas #modalEliminarPlantilla
+    .acciones-modal-plantilla button {
+
+        width: 100%;
+
+    }
+
+}
+
+
+/* =========================================================
+   MODAL AVISO
+   Estética institucional de Plantillas
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla {
+
+    width: 440px;
+    max-width: 94%;
+
+    padding: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fbf7ed 0%,
+            #f3eddf 100%
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 7px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .28),
+        0 5px 12px rgba(0, 0, 0, .14);
+
+    animation: modalPlantillaEntrada .22s ease;
+}
+
+
+/* =========================================================
+   ENCABEZADO
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla::before {
+
+    content: "EXPEDIENTE · AVISO";
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 26px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 3px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.7px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+#tituloMensajePlantilla {
+
+    margin: 0;
+
+    padding: 21px 26px 14px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #c8c1b1;
+}
+
+
+/* Línea dorada debajo del título */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+#tituloMensajePlantilla::after {
+
+    content: "";
+
+    display: block;
+
+    width: 46px;
+
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   MENSAJE
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+#textoMensajePlantilla {
+
+    margin: 0;
+
+    padding: 24px 26px 8px;
+
+    color: #43586b;
+
+    font-family: Georgia, serif;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+.acciones-modal-plantilla {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    margin: 16px 26px 0;
+
+    padding: 16px 0 24px;
+
+    border-top: 1px solid #c8c1b1;
+}
+
+
+/* =========================================================
+   BOTÓN ACEPTAR
+========================================================= */
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+.btn-aceptar-plantilla {
+
+    min-width: 105px;
+
+    padding: 10px 19px;
+
+    background: #315b7d;
+
+    color: #ffffff;
+
+    border: 1px solid #294d6a;
+
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 2px 5px rgba(20, 45, 70, .14);
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+
+#moduloPlantillas .contenido-modal-mensaje-plantilla
+.btn-aceptar-plantilla:hover {
+
+    background: #274c69;
+
+    border-color: #203f58;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    #moduloPlantillas .contenido-modal-mensaje-plantilla {
+
+        width: 94%;
+        max-width: 94%;
+    }
+
+
+    #moduloPlantillas .contenido-modal-mensaje-plantilla
+    #textoMensajePlantilla {
+
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+
+    #moduloPlantillas .contenido-modal-mensaje-plantilla
+    .acciones-modal-plantilla {
+
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+
+    #moduloPlantillas .contenido-modal-mensaje-plantilla
+    .btn-aceptar-plantilla {
+
+        width: 100%;
+    }
 
 }

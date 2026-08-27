@@ -1,17 +1,27 @@
 <section class="ventana ventana-multimedia">
 
-    <div class="cabecera-multimedia-panel">
+    <!-- =======================================
+     CABECERA MULTIMEDIA
+======================================== -->
 
+    <!-- =================================================
+     CABECERA GENERAL
+================================================= -->
 
-        <div>
+    <div
+            id="cabeceraMultimediaGeneral"
+            class="cabecera-multimedia-panel">
+
+        <div class="titulo-multimedia-panel">
 
             <h2 id="tituloMultimedia">
                 Gestión de Multimedia
             </h2>
 
-            <p id="subtituloMultimedia"></p>
+
 
         </div>
+
 
         <button
                 id="nuevoMultimedia"
@@ -22,16 +32,51 @@
 
         </button>
 
+    </div>
+
+
+    <!-- =================================================
+         CABECERA DE MULTIMEDIA DE UNA FICHA
+    ================================================= -->
+
+    <div
+            id="cabeceraMultimediaFicha"
+            class="cabecera-multimedia-ficha"
+            style="display:none;">
+
         <button
                 id="barraVolverFicha"
-                class="btn-ver btn-volver"
-                onclick="volverFicha()"
-                style="display:none;">
+                class="btn-volver-multimedia"
+                onclick="volverFicha()">
 
             ← Volver a fichas
 
         </button>
 
+
+        <div class="titulo-multimedia-ficha">
+
+            <h2 id="tituloFichaMultimedia">
+                Multimedia asociada a la ficha
+            </h2>
+
+            <p id="nombreFichaMultimedia">
+            </p>
+
+        </div>
+
+
+        <!-- NUEVO ARCHIVO PARA ESTA FICHA -->
+
+        <button
+                id="nuevoMultimediaFicha"
+                class="btn-nuevo-multimedia"
+                type="button"
+                onclick="nuevoMultimediaDesdeFicha()">
+
+            + Nuevo archivo
+
+        </button>
 
     </div>
 
@@ -40,34 +85,21 @@
 
 
     <!-- =======================================
-         PANEL CUANDO VIENE DESDE UNA FICHA
-    ======================================== -->
+     PANEL CUANDO VIENE DESDE UNA FICHA
+======================================== -->
+
+    <!-- =======================================
+     MULTIMEDIA DE UNA FICHA
+======================================== -->
 
     <div
             id="panelFichaMultimedia"
             class="panel-ficha-multimedia-contenedor"
             style="display:none;">
 
-        <!-- Tarjeta de la ficha -->
-
         <div
-                id="tarjetaFichaMultimedia"
-                class="tarjeta-resumen-multimedia">
-
-        </div>
-
-
-        <!-- Multimedia asociada -->
-
-        <div class="contenedor-listado-multimedia">
-
-            <h3>Multimedia asociada</h3>
-
-            <div
-                    id="listaMultimedia"
-                    class="grid-multimedia">
-            </div>
-
+                id="listaMultimedia"
+                class="grid-multimedia">
         </div>
 
     </div>
@@ -114,12 +146,9 @@
             <div class="cabecera-vista-multimedia">
 
                 <h2>
-                    <i data-lucide="film" aria-hidden="true"></i>Vista previa multimedia
+                    <i  aria-hidden="true"></i> Vista previa multimedia
                 </h2>
 
-                <p>
-                    Información detallada del archivo
-                </p>
 
             </div>
 
@@ -159,9 +188,13 @@
                 Nuevo archivo
             </h3>
 
-            <label>Ficha</label>
+            <div id="contenedorFichaMultimedia">
 
-            <select id="multiFicha"></select>
+                <label>Ficha</label>
+
+                <select id="multiFicha"></select>
+
+            </div>
 
             <label>Descripción</label>
 
@@ -253,7 +286,7 @@
             </h3>
 
             <p>
-                ¿Desea eliminar este archivo multimedia?
+                 ¿Desea eliminar este archivo multimedia?
             </p>
 
             <div class="acciones-modal-multimedia">

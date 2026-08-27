@@ -303,12 +303,15 @@ function mostrarCamposPlantilla(){
 
     lista.innerHTML = "";
 
-    if(plantillaActual.estructura.campos.length === 0){
+    if (plantillaActual.estructura.campos.length === 0) {
 
-        lista.innerHTML = "<p>No hay campos.</p>";
+        lista.innerHTML = `
+            <p class="sin-campos-plantilla">
+                No hay campos.
+            </p>
+        `;
 
         return;
-
     }
 
     plantillaActual.estructura.campos.forEach((campo,indice)=>{
@@ -1027,11 +1030,9 @@ async function vistaPreviaPlantilla(id){
 
         contenedor.innerHTML += `
 
-
-            <h2>
+            <h2 class="titulo-preview-plantilla">
                 Título de ejemplo
             </h2>
-
 
         `;
 

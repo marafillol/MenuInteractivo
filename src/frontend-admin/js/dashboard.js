@@ -375,9 +375,7 @@ function mostrarUltimasFichas(
                                 ${escaparHTML(f.titulo)}
                             </strong>
 
-                            <span class="badge-dashboard badge-ficha">
-                                FICHA
-                            </span>
+
 
                         </div>
 
@@ -490,9 +488,6 @@ function mostrarUltimosMenus(
                                 ${escaparHTML(m.nombre)}
                             </strong>
 
-                            <span class="badge-dashboard badge-menu">
-                                MENÚ
-                            </span>
 
                         </div>
 
@@ -611,9 +606,6 @@ function mostrarMultimedia(
                                 ${tipo}
                             </strong>
 
-                            <span class="badge-dashboard badge-multimedia">
-                                MULTIMEDIA
-                            </span>
 
                         </div>
 
@@ -780,15 +772,17 @@ function crearGraficoBarras(
 // ESTADO DEL CONTENIDO
 // =======================================================
 
+// =======================================================
+// ESTADO DEL CONTENIDO
+// =======================================================
+
 function mostrarEstadoContenido(
     datos,
     contenidoOculto
 ) {
 
     const contenedor =
-        document.getElementById(
-            "estadoContenido"
-        );
+        document.getElementById("estadoContenido");
 
 
     if (!contenedor) {
@@ -826,7 +820,6 @@ function mostrarEstadoContenido(
         activarIconos();
 
         return;
-
     }
 
 
@@ -834,31 +827,23 @@ function mostrarEstadoContenido(
         datos.map(function (item) {
 
             const tipo =
-                obtenerTipoDashboard(
-                    item.tipo
-                );
+                obtenerTipoDashboard(item.tipo);
 
 
             const visibles =
-                Number(
-                    item.visibles
-                ) || 0;
+                Number(item.visibles) || 0;
 
 
             const noVisibles =
-                Number(
-                    item.no_visibles
-                ) || 0;
+                Number(item.no_visibles) || 0;
 
 
             return `
 
-                <div
-                    class="
-                        estado-contenido-card
-                        estado-${tipo.clase}
-                    "
-                >
+                <div class="
+                    estado-contenido-card
+                    estado-${tipo.clase}
+                ">
 
                     <div class="estado-contenido-icono">
 
@@ -874,23 +859,9 @@ function mostrarEstadoContenido(
 
                         <div class="estado-contenido-titulo">
 
-                            <div class="estado-titulo-principal">
-
-                                <strong>
-                                    ${tipo.nombre}
-                                </strong>
-
-                                <span
-                                    class="
-                                        badge-dashboard
-                                        badge-${tipo.clase}
-                                    "
-                                >
-                                    ${tipo.singular}
-                                </span>
-
-                            </div>
-
+                            <strong>
+                                ${tipo.nombre}
+                            </strong>
 
                             <span class="estado-activo">
 

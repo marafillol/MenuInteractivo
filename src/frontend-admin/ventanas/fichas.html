@@ -7,8 +7,6 @@
 
     <div class="cabecera-fichas">
 
-
-
         <div class="titulo-fichas">
 
             <h2 id="tituloFichas">
@@ -35,7 +33,7 @@
                 onclick="volverMenus()"
                 style="display:none">
 
-            ← Volver a menús
+            ←
 
         </button>
 
@@ -114,7 +112,7 @@
     <div id="modalFicha" class="modal">
 
 
-        <div class="modal-contenido modal-ficha">
+        <div class="modal-ficha-contenido">
 
 
 
@@ -350,134 +348,106 @@
 
 
 
-            <!-- RELACIONES -->
+            <!-- ================================================= FICHAS RELACIONADAS ================================================= -->
 
-
-            <h4 class="titulo-subseccion">
+            <h4 class="titulo-subseccion relaciones-titulo">
 
                 Fichas relacionadas
 
             </h4>
 
+            <div class="relaciones-panel">
 
+                <!-- AGREGAR RELACIÓN -->
 
-            <div class="relacion-ficha-form">
+                <div class="relacion-nueva">
 
 
+                    <div class="campo-relacion">
 
-                <label>
+                        <label for="fichaRelacion">
+                            Ficha relacionada
+                        </label>
 
-                    Ficha relacionada
+                        <select id="fichaRelacion">
 
-                </label>
+                            <option value="">
+                                Seleccionar ficha...
+                            </option>
 
+                        </select>
 
+                    </div>
 
-                <select id="fichaRelacion">
 
+                    <div class="campo-relacion">
 
-                    <option value="">
+                        <label for="tipoRelacion">
+                            Tipo de relación
+                        </label>
 
-                        Seleccionar ficha...
+                        <select id="tipoRelacion">
 
-                    </option>
+                            <option value="">
+                                Seleccionar tipo...
+                            </option>
 
+                            <option value="Relacionado">
+                                Relacionado
+                            </option>
 
-                </select>
+                            <option value="Parte de">
+                                Parte de
+                            </option>
 
+                            <option value="Participó en">
+                                Participó en
+                            </option>
 
+                            <option value="Mismo evento">
+                                Mismo evento
+                            </option>
 
+                            <option value="Otro">
+                                Otro
+                            </option>
 
+                        </select>
 
+                    </div>
 
-                <label>
 
-                    Tipo de relación
+                    <button
+                            type="button"
+                            class="btn-agregar-relacion"
+                            onclick="agregarRelacionFicha()">
 
-                </label>
+                        + Agregar relación
 
+                    </button>
 
 
+                </div>
 
-                <select id="tipoRelacion">
 
+                <!-- RELACIONES YA AGREGADAS -->
 
-                    <option value="">
+                <div class="relaciones-registradas">
 
-                        Seleccionar tipo...
+                    <div class="titulo-relaciones-registradas">
 
-                    </option>
 
 
-                    <option value="Relacionado">
+                    </div>
 
-                        Relacionado
 
-                    </option>
+                    <div
+                            id="listaRelacionesFicha"
+                            class="lista-relaciones-ficha">
 
+                    </div>
 
-                    <option value="Parte de">
-
-                        Parte de
-
-                    </option>
-
-
-
-                    <option value="Participó en">
-
-                        Participó en
-
-                    </option>
-
-
-
-                    <option value="Mismo evento">
-
-                        Mismo evento
-
-                    </option>
-
-
-
-                    <option value="Otro">
-
-                        Otro
-
-                    </option>
-
-
-                </select>
-
-
-
-
-
-
-
-                <button
-                        type="button"
-                        class="btn-ver"
-                        onclick="agregarRelacionFicha()">
-
-
-                    + Agregar relación
-
-
-                </button>
-
-
-
-            </div>
-
-
-
-
-
-
-            <div
-                    id="listaRelacionesFicha"
-                    class="lista-relaciones-ficha">
+                </div>
 
             </div>
 

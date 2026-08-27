@@ -43,81 +43,72 @@
             <div class="encabezado-modal-etiqueta">
 
                 <h3 id="tituloModalEtiqueta">
-
                     Nueva etiqueta
-
                 </h3>
 
                 <button
                         id="cerrarModalEtiqueta"
                         class="cerrar-modal-etiqueta"
                         type="button">
-
                     ✕
-
                 </button>
 
             </div>
 
 
+            <!-- CONTENIDO INTERNO -->
 
-            <label>
+            <div class="cuerpo-modal-etiqueta">
 
-                Nombre
-
-            </label>
-
-            <input
-                    id="nombreEtiqueta"
-                    type="text"
-                    placeholder="Ej: Batalla de Puerto Argentino">
-
-
-
-            <label>
-
-                Descripción
-
-            </label>
-
-            <textarea
-                    id="descripcionEtiqueta"
-                    rows="6"
-                    placeholder="Descripción de la etiqueta"></textarea>
-
-
-            <label class="checkbox-etiqueta">
+                <label>
+                    Nombre
+                </label>
 
                 <input
-                        id="activoEtiqueta"
-                        type="checkbox"
-                        checked>
-
-                Activa
-
-            </label>
-
-            <div class="acciones-modal-etiqueta">
-
-                <button
-                        id="guardarEtiqueta"
-                        class="btn-guardar"
-                        type="button">
-
-                    Guardar
-
-                </button>
+                        id="nombreEtiqueta"
+                        type="text"
+                        placeholder="Ej: Batalla de Puerto Argentino">
 
 
+                <label>
+                    Descripción
+                </label>
 
-                <button
-                        id="cancelarEtiqueta"
-                        class="btn-cancelar"
-                        type="button">
+                <textarea
+                        id="descripcionEtiqueta"
+                        rows="6"
+                        placeholder="Descripción de la etiqueta"></textarea>
 
-                    Cancelar
 
-                </button>
+                <label class="checkbox-etiqueta">
+
+                    <input
+                            id="activoEtiqueta"
+                            type="checkbox"
+                            checked>
+
+                    Activa
+
+                </label>
+
+
+                <div class="acciones-modal-etiqueta">
+
+                    <button
+                            id="guardarEtiqueta"
+                            class="btn-guardar"
+                            type="button">
+                        Guardar
+                    </button>
+
+                    <button
+                            id="cancelarEtiqueta"
+                            class="btn-cancelar"
+                            type="button">
+                        Cancelar
+                    </button>
+
+                </div>
 
             </div>
 
@@ -140,84 +131,71 @@
             <div class="encabezado-modal-etiqueta">
 
                 <h3 id="tituloVistaEtiqueta">
-
                     Vista previa de etiqueta
-
                 </h3>
 
                 <button
                         id="cerrarVistaEtiqueta"
                         class="cerrar-modal-etiqueta"
                         type="button">
-
                     ✕
-
                 </button>
 
             </div>
 
 
+            <div class="cuerpo-modal-etiqueta">
 
-            <label>
+                <label>
+                    ID
+                </label>
 
-                ID
-
-            </label>
-
-            <input
-                    id="vistaIdEtiqueta"
-                    type="text"
-                    readonly>
-
+                <input
+                        id="vistaIdEtiqueta"
+                        type="text"
+                        readonly>
 
 
-            <label>
+                <label>
+                    Nombre
+                </label>
 
-                Nombre
-
-            </label>
-
-            <input
-                    id="vistaNombreEtiqueta"
-                    type="text"
-                    readonly>
+                <input
+                        id="vistaNombreEtiqueta"
+                        type="text"
+                        readonly>
 
 
+                <label>
+                    Descripción
+                </label>
 
-            <label>
-
-                Descripción
-
-            </label>
-
-            <textarea
-                    id="vistaDescripcionEtiqueta"
-                    rows="6"
-                    readonly></textarea>
+                <textarea
+                        id="vistaDescripcionEtiqueta"
+                        rows="6"
+                        readonly></textarea>
 
 
+                <label>
+                    Estado
+                </label>
 
-            <label>
-                Estado
-            </label>
-
-            <input
-                    id="vistaActivoEtiqueta"
-                    type="text"
-                    readonly>
-
+                <div
+                        id="vistaActivoEtiqueta"
+                        class="estado-etiqueta">
+                </div>
 
 
-            <div class="acciones-modal-etiqueta">
+                <div class="acciones-modal-etiqueta">
 
-                <button
-                        id="btnCerrarVistaEtiqueta"
-                        class="btn-cancelar"
-                        type="button">
+                    <button
+                            id="btnCerrarVistaEtiqueta"
+                            class="btn-cancelar"
+                            type="button">
+                        Cerrar
+                    </button>
 
-                    Cerrar
-
-                </button>
+                </div>
 
             </div>
 

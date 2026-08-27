@@ -38,7 +38,7 @@ async function cargarMenus(){
             contenedor.innerHTML += `
 
 
-            <article class="menu-tarjeta">
+            <article class="menu-tarjeta ${menu.visible == 0 ? "menu-desactivado" : ""}">
 
 
                 <div class="menu-imagen">
@@ -309,6 +309,104 @@ async function guardarNuevoMenu(){
 
 }
 
+// ==========================================================
+// EVENTOS DE MENÚS
+// ==========================================================
+
+if (!window.__eventosMenusInicializados) {
+
+    window.__eventosMenusInicializados = true;
+
+    document.addEventListener("click", function(e) {
+
+        console.log("Click detectado:", e.target);
+
+        // ==================================================
+        // NUEVO MENÚ
+        // ==================================================
+
+        if (e.target.closest("#nuevoMenu")) {
+
+            const modal =
+                document.getElementById("ventanaEmergente");
+
+            if (!modal) {
+                return;
+            }
+
+            modal.style.display = "flex";
+
+            const titulo =
+                modal.querySelector(".modal-contenido h3");
+
+            if (titulo) {
+                titulo.textContent = "Crear nuevo menú";
+            }
+
+            const bloqueImagen =
+                document.getElementById("bloqueImagenActual");
+
+            if (bloqueImagen) {
+                bloqueImagen.style.display = "none";
+            }
+
+            document.getElementById("id_menu").value = "";
+            document.getElementById("nuevoNombre").value = "";
+            document.getElementById("nuevaDescripcion").value = "";
+
+            const plantilla =
+                document.getElementById("plantillaMenu");
+
+            if (plantilla) {
+                plantilla.selectedIndex = 0;
+            }
+
+            const visible =
+                document.getElementById("nuevoVisible");
+
+            if (visible) {
+                visible.checked = true;
+            }
+
+            const imagen =
+                document.getElementById("nuevaImagen");
+
+            if (imagen) {
+                imagen.value = "";
+            }
+
+            return;
+        }
+
+        // ==================================================
+        // CERRAR MODAL MENÚ
+        // ==================================================
+
+        if (
+            e.target.closest("#cerrarModal") ||
+            e.target.closest("#cancelarMenu")
+        ) {
+
+            const modal =
+                document.getElementById("ventanaEmergente");
+
+            if (modal) {
+                modal.style.display = "none";
+            }
+
+            const imagen =
+                document.getElementById("nuevaImagen");
+
+            if (imagen) {
+                imagen.value = "";
+            }
+
+            return;
+        }
+
+    });
+
+}
 
 async function cargarSelectPlantillas(){
 
@@ -347,69 +445,10 @@ async function cargarSelectPlantillas(){
 
 }
 
-
 console.log("Eventos de menu preparados");
 
 
-document.addEventListener("click", function(e){
 
-    console.log("Click detectado:", e.target);
-
-
-    if(e.target.id === "nuevoMenu"){
-
-        const modal = document.getElementById("ventanaEmergente");
-
-        if(modal){
-
-            modal.style.display = "flex";
-
-            document.querySelector(
-            "#ventanaEmergente .modal-contenido h3"
-            ).textContent =
-                "Crear nuevo menú";
-
-            document.getElementById("bloqueImagenActual").style.display = "none";
-
-            document.getElementById("id_menu").value = "";
-
-            document.getElementById("nuevoNombre").value = "";
-
-            document.getElementById("nuevaDescripcion").value = "";
-
-            document.getElementById("plantillaMenu").selectedIndex = 0;
-
-            document.getElementById("nuevoVisible").checked = true;
-
-            document.getElementById("nuevaImagen").value = "";
-
-        }
-
-    }
-
-
-});
-
-// =====================================
-// CERRAR MODAL
-// =====================================
-
-document.addEventListener("click", function(e){
-
-    if(
-        e.target.id === "cerrarModal" ||
-        e.target.id === "cancelarMenu"
-    ){
-
-        document.getElementById("ventanaEmergente")
-            .style.display = "none";
-
-
-        document.getElementById("nuevaImagen").value = "";
-
-    }
-
-});
 window.addEventListener("click", function(e){
 
     const modal = document.getElementById("ventanaEmergente");

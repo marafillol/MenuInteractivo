@@ -2,6 +2,9 @@
    MENÚ INTERACTIVO
    Museo Malvinas
    ESTILO: EXPEDIENTE MILITAR / ARCHIVO HISTÓRICO
+
+   MENUS.CSS
+   Versión consolidada
 ========================================================= */
 
 
@@ -29,6 +32,10 @@
     --menu-borde: #b8a47d;
 
     --menu-rojo: #6f3a3a;
+    --menu-rojo-oscuro: #592d2d;
+
+    --menu-gris: #d5dce1;
+    --menu-gris-borde: #aab6bf;
 }
 
 
@@ -37,13 +44,16 @@
 ========================================================= */
 
 .ventana-menu {
+
     background: transparent;
     color: var(--menu-texto);
+
+    position: relative;
 }
 
 
 /* =========================================================
-   CABECERA
+   CABECERA GENERAL
 ========================================================= */
 
 .ventana-menu .cabecera-menu {
@@ -258,6 +268,15 @@
 }
 
 
+.ventana-menu #listaMenus .menu-imagen img {
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+}
+
+
 /* =========================================================
    INFORMACIÓN DEL MENÚ
 ========================================================= */
@@ -297,7 +316,8 @@
 
     font-size: 22px;
 
-    border-bottom: 1px solid rgba(168, 137, 82, .45);
+    border-bottom:
+        1px solid rgba(168, 137, 82, .45);
 }
 
 
@@ -386,13 +406,13 @@
 
 .ventana-menu .menu-btn-eliminar {
 
-    background: var(--menu-rojo);
+    background: #6f3a3a;
     color: white;
 }
 
 
 /* =========================================================
-   MODALES GENERALES
+   BASE DE TODOS LOS MODALES
 ========================================================= */
 
 .ventana-menu .modal {
@@ -400,6 +420,7 @@
     display: none;
 
     position: fixed;
+
     inset: 0;
 
     justify-content: center;
@@ -409,56 +430,20 @@
 
     box-sizing: border-box;
 
-    background: rgba(10, 25, 40, .62);
+    background: rgba(10, 25, 40, .68);
 
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
 
-    z-index: 999;
+    z-index: 99999;
 }
 
 
-.ventana-menu .modal-contenido {
+/*
+   IMPORTANTE:
 
-    width: 450px;
-    max-width: 100%;
-
-    max-height: 90vh;
-
-    box-sizing: border-box;
-
-    background: var(--menu-papel);
-
-    padding: 25px;
-
-    border: 1px solid var(--menu-borde);
-
-    border-radius: 8px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .32);
-
-    animation: menuModalAparecer .25s ease;
-}
-
-
-@keyframes menuModalAparecer {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            translateY(-15px)
-            scale(.98);
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform: none;
-    }
-}
+   Todos los modales de MENÚ quedan por encima
+   del contenido principal y de las tarjetas.
+*/
 
 
 /* =========================================================
@@ -470,6 +455,7 @@
     display: none;
 
     position: fixed;
+
     inset: 0;
 
     justify-content: center;
@@ -479,11 +465,11 @@
 
     box-sizing: border-box;
 
-    background: rgba(17, 30, 45, .68);
+    background: rgba(17, 30, 45, .72);
 
     backdrop-filter: blur(3px);
 
-    z-index: 9999;
+    z-index: 100000;
 }
 
 
@@ -492,17 +478,22 @@
     position: relative;
 
     width: 560px;
+
     max-width: 95%;
+
     max-height: 90vh;
 
     overflow-y: auto;
+    overflow-x: hidden;
 
     padding: 0;
 
+    box-sizing: border-box;
+
     background:
         linear-gradient(
-            rgba(247, 243, 230, .97),
-            rgba(238, 233, 215, .97)
+            rgba(247, 243, 230, .98),
+            rgba(238, 233, 215, .98)
         );
 
     border: 1px solid #8b9aaa;
@@ -529,11 +520,17 @@
 
     padding: 10px 28px;
 
-    background: #163a61;
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
 
     color: #eef3f7;
 
-    font-family: Arial, sans-serif;
+    font-family: "Courier New", monospace;
 
     font-size: 10px;
     font-weight: 700;
@@ -543,6 +540,10 @@
     border-bottom: 3px solid #c5a46d;
 }
 
+
+/* =========================================================
+   TÍTULO NUEVO / EDITAR
+========================================================= */
 
 .ventana-menu #ventanaEmergente .modal-contenido h3 {
 
@@ -557,6 +558,7 @@
     font-family: "Cinzel", Georgia, serif;
 
     font-size: 24px;
+
     font-weight: 700;
 
     letter-spacing: .8px;
@@ -663,6 +665,30 @@
 
 
 /* =========================================================
+   CAMPOS INVÁLIDOS
+   Mantienen estética de la aplicación
+========================================================= */
+
+.ventana-menu #ventanaEmergente input:invalid,
+.ventana-menu #ventanaEmergente textarea:invalid,
+.ventana-menu #ventanaEmergente select:invalid {
+
+    border-color: #a98d63;
+}
+
+
+.ventana-menu #ventanaEmergente input:focus:invalid,
+.ventana-menu #ventanaEmergente textarea:focus:invalid,
+.ventana-menu #ventanaEmergente select:focus:invalid {
+
+    border-color: #8c7049;
+
+    box-shadow:
+        0 0 0 2px rgba(197, 164, 109, .18);
+}
+
+
+/* =========================================================
    DESCRIPCIÓN
 ========================================================= */
 
@@ -690,8 +716,7 @@
 
     border: 1px solid #c4bdab;
 
-    /* SIN línea amarilla */
-    border-left: 1px solid #c4bdab;
+    border-left: 4px solid #c5a46d;
 
     border-radius: 4px;
 }
@@ -706,7 +731,7 @@
 
 
 /* =========================================================
-   PREVIEW IMAGEN NUEVO / EDITAR
+   PREVIEW IMAGEN
 ========================================================= */
 
 .ventana-menu #ventanaEmergente .preview-imagen {
@@ -763,10 +788,12 @@
 
 
 /* =========================================================
-   CHECKBOX
+   CHECKBOX VISIBLE
 ========================================================= */
 
-.ventana-menu #ventanaEmergente label:has(input[type="checkbox"]) {
+.ventana-menu #ventanaEmergente label:has(
+    input[type="checkbox"]
+) {
 
     display: flex;
 
@@ -809,7 +836,7 @@
 
 
 /* =========================================================
-   ACCIONES NUEVO / EDITAR
+   ACCIONES DEL MODAL
 ========================================================= */
 
 .ventana-menu #ventanaEmergente .acciones-modal {
@@ -850,7 +877,9 @@
 }
 
 
-/* GUARDAR */
+/* =========================================================
+   GUARDAR
+========================================================= */
 
 .ventana-menu #ventanaEmergente #guardarMenu {
 
@@ -870,7 +899,9 @@
 }
 
 
-/* CANCELAR */
+/* =========================================================
+   CANCELAR
+========================================================= */
 
 .ventana-menu #ventanaEmergente #cancelarMenu {
 
@@ -898,7 +929,7 @@
 
 
 /* =========================================================
-   CERRAR NUEVO / EDITAR
+   BOTÓN CERRAR NUEVO / EDITAR
 ========================================================= */
 
 .ventana-menu #ventanaEmergente .cerrar {
@@ -908,7 +939,7 @@
     top: 48px;
     right: 22px;
 
-    z-index: 10;
+    z-index: 20;
 
     width: 34px;
     height: 34px;
@@ -943,6 +974,8 @@
     color: #263f56;
 
     border-color: #71879a;
+
+    transform: none;
 }
 
 
@@ -977,7 +1010,7 @@
 
 
 /* =========================================================
-   VISTA PREVIA DEL MENÚ
+   VISTA PREVIA
 ========================================================= */
 
 .ventana-menu #modalVistaPrevia {
@@ -995,23 +1028,20 @@
 
     box-sizing: border-box;
 
-    background: rgba(10, 25, 40, .62);
+    z-index: 100001;
 
-    backdrop-filter: blur(2px);
+    background: rgba(10, 25, 40, .68);
 
-    z-index: 10000;
+    backdrop-filter: blur(3px);
 }
 
-
-/* =========================================================
-   CONTENEDOR VISTA PREVIA
-========================================================= */
 
 .ventana-menu #modalVistaPrevia .modal-contenido {
 
     position: relative;
 
     width: 680px;
+
     max-width: 100%;
 
     max-height: 90vh;
@@ -1038,16 +1068,6 @@
         0 3px 8px rgba(20, 40, 60, .15);
 
     animation: vistaPreviaExpediente .25s ease;
-
-    /* Ocultar scrollbar */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-
-.ventana-menu #modalVistaPrevia .modal-contenido::-webkit-scrollbar {
-
-    display: none;
 }
 
 
@@ -1093,11 +1113,15 @@
 
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, .08);
+
+    position: relative;
+
+    z-index: 2;
 }
 
 
 /* =========================================================
-   BOTÓN CERRAR VISTA PREVIA
+   CERRAR VISTA PREVIA
 ========================================================= */
 
 .ventana-menu #modalVistaPrevia .cerrar {
@@ -1107,7 +1131,7 @@
     top: 16px;
     right: 18px;
 
-    z-index: 10;
+    z-index: 20;
 
     width: 36px;
     height: 36px;
@@ -1131,12 +1155,7 @@
 
     color: #ffffff;
 
-    font-family: Arial, sans-serif;
-
     font-size: 18px;
-    font-weight: 400;
-
-    line-height: 1;
 
     cursor: pointer;
 
@@ -1149,8 +1168,6 @@
     background: rgba(255, 255, 255, .16);
 
     border-color: rgba(255, 255, 255, .85);
-
-    color: #ffffff;
 
     transform: scale(1.04);
 }
@@ -1168,8 +1185,7 @@
 
     width: 100%;
 
-    /* Un poco más hacia la derecha */
-    padding: 26px 25px 32px 45px;
+    padding: 26px 30px 32px;
 
     text-align: left;
 }
@@ -1196,15 +1212,9 @@
 
     border: none;
 
-    border-radius: 0;
-
     box-shadow: none;
 }
 
-
-/* IMPORTANTE:
-   No hay border-left amarillo ni pseudo-elemento amarillo.
-*/
 
 .ventana-menu #modalVistaPrevia .preview-imagen-ficha img {
 
@@ -1226,9 +1236,7 @@
     box-shadow:
         0 7px 16px rgba(30, 45, 60, .22);
 
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease;
+    transition: .25s ease;
 }
 
 
@@ -1310,16 +1318,14 @@
     line-height: 1.55;
 
     text-align: left;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .7);
 }
 
 
 /* =========================================================
-   TÍTULO DATOS
+   TÍTULOS DE DATOS
 ========================================================= */
 
+.ventana-menu .titulo-datos,
 .ventana-menu #modalVistaPrevia .titulo-datos {
 
     display: flex;
@@ -1370,11 +1376,12 @@
    GRID DATOS
 ========================================================= */
 
-.ventana-menu #modalVistaPrevia .grid-datos-preview {
+.ventana-menu .grid-datos-preview {
 
     display: grid;
 
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns:
+        repeat(2, 1fr);
 
     gap: 8px;
 
@@ -1383,10 +1390,10 @@
 
 
 /* =========================================================
-   DATOS INDIVIDUALES
+   DATOS
 ========================================================= */
 
-.ventana-menu #modalVistaPrevia .dato-preview {
+.ventana-menu .dato-preview {
 
     position: relative;
 
@@ -1406,7 +1413,7 @@
 }
 
 
-.ventana-menu #modalVistaPrevia .dato-preview:hover {
+.ventana-menu .dato-preview:hover {
 
     border-color: #8194a5;
 
@@ -1419,7 +1426,7 @@
 }
 
 
-.ventana-menu #modalVistaPrevia .dato-preview h4 {
+.ventana-menu .dato-preview h4 {
 
     margin: 0 0 5px;
 
@@ -1436,7 +1443,7 @@
 }
 
 
-.ventana-menu #modalVistaPrevia .dato-preview p {
+.ventana-menu .dato-preview p {
 
     margin: 0;
 
@@ -1451,7 +1458,7 @@
 }
 
 
-.ventana-menu #modalVistaPrevia .dato-preview::after {
+.ventana-menu .dato-preview::after {
 
     content: "";
 
@@ -1470,9 +1477,290 @@
 
 
 /* =========================================================
-   MODAL ELIMINAR MENÚ
-   ID REAL DEL HTML:
-   #modalConfirmarEliminar
+   OCULTAR SCROLL DE VISTA PREVIA
+========================================================= */
+
+.ventana-menu #modalVistaPrevia .modal-contenido {
+
+    overflow-y: auto;
+
+    scrollbar-width: none;
+
+    -ms-overflow-style: none;
+}
+
+
+.ventana-menu #modalVistaPrevia .modal-contenido::-webkit-scrollbar {
+
+    display: none;
+}
+
+
+/* =========================================================
+   MODAL DE MENSAJE
+   AVISOS / CAMPOS OBLIGATORIOS / ERRORES
+========================================================= */
+
+.ventana-menu #modalMensaje {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(17, 30, 45, .72);
+
+    backdrop-filter: blur(3px);
+
+    z-index: 200000;
+}
+
+
+.ventana-menu #modalMensaje .modal-contenido {
+
+    position: relative;
+
+    width: 430px;
+
+    max-width: 95%;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .99),
+            rgba(238, 233, 215, .99)
+        );
+
+    border: 1px solid #8b9aaa;
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .35),
+        0 4px 10px rgba(0, 0, 0, .18);
+
+    animation: expedienteModal .25s ease;
+}
+
+
+/* =========================================================
+   CABECERA AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje .modal-contenido::before {
+
+    content: "EXPEDIENTE · AVISO";
+
+    display: block;
+
+    box-sizing: border-box;
+
+    padding: 11px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #244b6d 0%,
+            #2d587b 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 4px solid #c5a46d;
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TÍTULO AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje #tituloMensaje {
+
+    margin: 0;
+
+    padding: 22px 65px 12px 28px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+
+.ventana-menu #modalMensaje #tituloMensaje::after {
+
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+
+/* =========================================================
+   TEXTO AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje #textoMensaje {
+
+    margin: 0;
+
+    padding: 20px 28px 10px;
+
+    color: #4b5660;
+
+    font-family: Georgia, serif;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   ACCIONES AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje .acciones-modal {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 12px 28px 25px;
+
+    padding-top: 17px;
+
+    border-top: 1px solid #c8c2b2;
+}
+
+
+.ventana-menu #modalMensaje .acciones-modal button {
+
+    min-width: 110px;
+
+    padding: 10px 18px;
+
+    border-radius: 4px;
+
+    border: 1px solid #294d6a;
+
+    background: #315b7d;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.ventana-menu #modalMensaje .acciones-modal button:hover {
+
+    background: #274c69;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   CERRAR AVISO
+========================================================= */
+
+.ventana-menu #modalMensaje .cerrar {
+
+    position: absolute;
+
+    top: 47px;
+    right: 18px;
+
+    z-index: 20;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, .45);
+
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, .08);
+
+    color: white;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.ventana-menu #modalMensaje .cerrar:hover {
+
+    background: rgba(255, 255, 255, .18);
+
+    border-color: rgba(255, 255, 255, .8);
+
+    transform: none;
+}
+
+
+/* =========================================================
+   MODAL ELIMINAR
 ========================================================= */
 
 .ventana-menu #modalConfirmarEliminar {
@@ -1490,23 +1778,21 @@
 
     box-sizing: border-box;
 
-    background: rgba(17, 30, 45, .68);
+    background: rgba(17, 30, 45, .72);
 
     backdrop-filter: blur(3px);
 
-    z-index: 9999;
+    z-index: 200001;
 }
 
 
-/* =========================================================
-   CONTENEDOR ELIMINAR
-========================================================= */
-
-.ventana-menu #modalConfirmarEliminar .modal-contenido {
+.ventana-menu #modalConfirmarEliminar .modal-contenido,
+.ventana-menu #modalConfirmarEliminar .modal-confirmacion {
 
     position: relative;
 
     width: 440px;
+
     max-width: 95%;
 
     padding: 0;
@@ -1517,8 +1803,8 @@
 
     background:
         linear-gradient(
-            rgba(247, 243, 230, .98),
-            rgba(238, 233, 215, .98)
+            rgba(247, 243, 230, .99),
+            rgba(238, 233, 215, .99)
         );
 
     border: 1px solid #8b9aaa;
@@ -1526,8 +1812,8 @@
     border-radius: 5px;
 
     box-shadow:
-        0 20px 45px rgba(0, 0, 0, .30),
-        0 3px 8px rgba(0, 0, 0, .18);
+        0 20px 50px rgba(0, 0, 0, .35),
+        0 4px 10px rgba(0, 0, 0, .18);
 
     animation: expedienteModal .25s ease;
 }
@@ -1537,15 +1823,14 @@
    CABECERA ELIMINAR
 ========================================================= */
 
-.ventana-menu #modalConfirmarEliminar .modal-contenido::before {
+.ventana-menu #modalConfirmarEliminar .modal-contenido::before,
+.ventana-menu #modalConfirmarEliminar .modal-confirmacion::before {
 
     content: "EXPEDIENTE · ELIMINACIÓN DE MENÚ";
 
     display: block;
 
     box-sizing: border-box;
-
-    width: 100%;
 
     padding: 11px 28px;
 
@@ -1678,7 +1963,7 @@
 
 
 /* =========================================================
-   BOTÓN ELIMINAR
+   ELIMINAR
 ========================================================= */
 
 .ventana-menu #modalConfirmarEliminar .btn-eliminar {
@@ -1708,7 +1993,7 @@
 
 
 /* =========================================================
-   BOTÓN CANCELAR
+   CANCELAR ELIMINACIÓN
 ========================================================= */
 
 .ventana-menu #modalConfirmarEliminar
@@ -1735,224 +2020,6 @@
     border-color: #8799a8;
 
     transform: translateY(-1px);
-}
-
-
-/* =========================================================
-   MODAL MENSAJE / AVISO
-========================================================= */
-
-.ventana-menu #modalMensaje {
-
-    display: none;
-
-    position: fixed;
-
-    inset: 0;
-
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
-
-    box-sizing: border-box;
-
-    background: rgba(17, 30, 45, .68);
-
-    backdrop-filter: blur(3px);
-
-    z-index: 10000;
-}
-
-
-.ventana-menu #modalMensaje .modal-contenido {
-
-    position: relative;
-
-    width: 430px;
-    max-width: 95%;
-
-    padding: 0;
-
-    overflow: hidden;
-
-    box-sizing: border-box;
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .98),
-            rgba(238, 233, 215, .98)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 5px;
-
-    box-shadow:
-        0 20px 45px rgba(0, 0, 0, .30),
-        0 3px 8px rgba(0, 0, 0, .18);
-
-    animation: expedienteModal .25s ease;
-}
-
-
-/* CABECERA */
-
-.ventana-menu #modalMensaje .modal-contenido::before {
-
-    content: "EXPEDIENTE · AVISO";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #244b6d 0%,
-            #2d587b 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-    font-weight: bold;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-}
-
-
-/* TÍTULO */
-
-.ventana-menu #modalMensaje #tituloMensaje {
-
-    margin: 0;
-
-    padding: 22px 28px 12px;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-size: 22px;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-menu #modalMensaje #tituloMensaje::after {
-
-    content: "";
-
-    display: block;
-
-    width: 45px;
-    height: 3px;
-
-    margin-top: 9px;
-
-    background: #c5a46d;
-}
-
-
-/* TEXTO */
-
-.ventana-menu #modalMensaje #textoMensaje {
-
-    margin: 0;
-
-    padding: 20px 28px 10px;
-
-    color: #4b5660;
-
-    font-family: Georgia, serif;
-
-    font-size: 14px;
-
-    line-height: 1.6;
-}
-
-
-/* ACCIONES */
-
-.ventana-menu #modalMensaje .acciones-modal {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 10px;
-
-    margin: 12px 28px 25px;
-
-    padding-top: 17px;
-
-    border-top: 1px solid #c8c2b2;
-}
-
-
-.ventana-menu #modalMensaje .acciones-modal button {
-
-    min-width: 110px;
-
-    padding: 10px 18px;
-
-    border-radius: 4px;
-
-    border: 1px solid #294d6a;
-
-    background: #315b7d;
-
-    color: white;
-
-    font-family: Arial, sans-serif;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition: .2s ease;
-}
-
-
-.ventana-menu #modalMensaje .acciones-modal button:hover {
-
-    background: #274c69;
-
-    transform: translateY(-1px);
-}
-
-
-/* =========================================================
-   CONTENEDORES
-========================================================= */
-
-.ventana-menu #listaMenus {
-
-    overflow: visible !important;
-
-    height: auto !important;
-
-    max-height: none !important;
-}
-
-
-.ventana-menu #contenido {
-
-    overflow-y: auto !important;
 }
 
 
@@ -2005,7 +2072,27 @@
 
 
 /* =========================================================
-   RESPONSIVE
+   CONTENEDORES
+========================================================= */
+
+.ventana-menu #listaMenus {
+
+    overflow: visible !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+}
+
+
+.ventana-menu #contenido {
+
+    overflow-y: auto !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE — MENÚS
 ========================================================= */
 
 @media (max-width: 700px) {
@@ -2025,11 +2112,11 @@
 }
 
 
-@media (max-width: 600px) {
+/* =========================================================
+   RESPONSIVE — GENERAL
+========================================================= */
 
-    /* =====================================================
-       CABECERA
-    ===================================================== */
+@media (max-width: 600px) {
 
     .ventana-menu .cabecera-menu {
 
@@ -2049,9 +2136,9 @@
     }
 
 
-    /* =====================================================
+    /* =============================================
        NUEVO / EDITAR
-    ===================================================== */
+    ============================================= */
 
     .ventana-menu #ventanaEmergente {
 
@@ -2062,6 +2149,8 @@
     .ventana-menu #ventanaEmergente .modal-contenido {
 
         width: 94%;
+
+        max-height: 94vh;
     }
 
 
@@ -2071,7 +2160,8 @@
     }
 
 
-    .ventana-menu #ventanaEmergente .modal-contenido h3 {
+    .ventana-menu #ventanaEmergente
+    .modal-contenido h3 {
 
         font-size: 20px;
 
@@ -2083,7 +2173,8 @@
     }
 
 
-    .ventana-menu #ventanaEmergente .acciones-modal {
+    .ventana-menu #ventanaEmergente
+    .acciones-modal {
 
         flex-direction: column-reverse;
 
@@ -2091,15 +2182,16 @@
     }
 
 
-    .ventana-menu #ventanaEmergente .acciones-modal button {
+    .ventana-menu #ventanaEmergente
+    .acciones-modal button {
 
         width: 100%;
     }
 
 
-    /* =====================================================
+    /* =============================================
        VISTA PREVIA
-    ===================================================== */
+    ============================================= */
 
     .ventana-menu #modalVistaPrevia {
 
@@ -2107,7 +2199,8 @@
     }
 
 
-    .ventana-menu #modalVistaPrevia .modal-contenido {
+    .ventana-menu #modalVistaPrevia
+    .modal-contenido {
 
         width: 100%;
 
@@ -2117,7 +2210,8 @@
     }
 
 
-    .ventana-menu #modalVistaPrevia .modal-contenido::before {
+    .ventana-menu #modalVistaPrevia
+    .modal-contenido::before {
 
         height: 60px;
 
@@ -2130,7 +2224,8 @@
     }
 
 
-    .ventana-menu #modalVistaPrevia .cerrar {
+    .ventana-menu #modalVistaPrevia
+    .cerrar {
 
         top: 12px;
         right: 13px;
@@ -2140,41 +2235,100 @@
     }
 
 
-    .ventana-menu #modalVistaPrevia .preview-menu {
+    .ventana-menu #modalVistaPrevia
+    .preview-menu {
 
-        padding:
-            20px
-            20px
-            28px
-            28px;
+        padding: 20px;
     }
 
 
-    .ventana-menu #modalVistaPrevia .grid-datos-preview {
+    .ventana-menu #modalVistaPrevia
+    .grid-datos-preview {
 
         grid-template-columns: 1fr;
     }
 
 
-    .ventana-menu #modalVistaPrevia .preview-imagen-ficha img {
+    .ventana-menu #modalVistaPrevia
+    .preview-imagen-ficha img {
 
-        width: 100%;
+        width: 200px;
 
-        max-width: 400px;
-
-        height: 240px;
+        height: 200px;
     }
 
 
-    .ventana-menu #modalVistaPrevia #previewNombre {
+    .ventana-menu #modalVistaPrevia
+    #previewNombre {
 
         font-size: 24px;
     }
 
 
-    /* =====================================================
+    /* =============================================
+       AVISO
+    ============================================= */
+
+    .ventana-menu #modalMensaje {
+
+        padding: 15px;
+    }
+
+
+    .ventana-menu #modalMensaje
+    .modal-contenido {
+
+        width: 94%;
+    }
+
+
+    .ventana-menu #modalMensaje
+    #tituloMensaje {
+
+        font-size: 20px;
+
+        padding:
+            20px
+            55px
+            12px
+            20px;
+    }
+
+
+    .ventana-menu #modalMensaje
+    #textoMensaje {
+
+        padding:
+            18px
+            20px
+            8px;
+    }
+
+
+    .ventana-menu #modalMensaje
+    .acciones-modal {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        margin:
+            12px
+            20px
+            20px;
+    }
+
+
+    .ventana-menu #modalMensaje
+    .acciones-modal button {
+
+        width: 100%;
+    }
+
+
+    /* =============================================
        ELIMINAR
-    ===================================================== */
+    ============================================= */
 
     .ventana-menu #modalConfirmarEliminar {
 
@@ -2182,13 +2336,15 @@
     }
 
 
-    .ventana-menu #modalConfirmarEliminar .modal-contenido {
+    .ventana-menu #modalConfirmarEliminar
+    .modal-contenido {
 
         width: 94%;
     }
 
 
-    .ventana-menu #modalConfirmarEliminar h3 {
+    .ventana-menu #modalConfirmarEliminar
+    h3 {
 
         font-size: 20px;
 
@@ -2199,7 +2355,8 @@
     }
 
 
-    .ventana-menu #modalConfirmarEliminar #mensajeEliminar {
+    .ventana-menu #modalConfirmarEliminar
+    #mensajeEliminar {
 
         padding:
             18px
@@ -2208,7 +2365,8 @@
     }
 
 
-    .ventana-menu #modalConfirmarEliminar .acciones-modal {
+    .ventana-menu #modalConfirmarEliminar
+    .acciones-modal {
 
         flex-direction: column-reverse;
 
@@ -2221,47 +2379,124 @@
     }
 
 
-    .ventana-menu #modalConfirmarEliminar .acciones-modal button {
+    .ventana-menu #modalConfirmarEliminar
+    .acciones-modal button {
 
         width: 100%;
     }
+}
+
+/* =========================================================
+   AVISOS Y MODALES — SIEMPRE POR ENCIMA
+========================================================= */
+
+/* Modal general de mensajes */
+.ventana-menu #modalMensaje {
+    z-index: 30000 !important;
+}
+
+/* Confirmación de eliminación */
+.ventana-menu #modalConfirmarEliminar {
+    z-index: 30000 !important;
+}
+
+/* Confirmación general */
+.ventana-menu #modalConfirmacion {
+    z-index: 30000 !important;
+}
+
+/* Nuevo / editar menú */
+.ventana-menu #ventanaEmergente {
+    z-index: 20000 !important;
+}
+
+/* Vista previa */
+.ventana-menu #modalVistaPrevia {
+    z-index: 20000 !important;
+}
 
 
-    /* =====================================================
-       AVISO
-    ===================================================== */
+/* =========================================================
+   MENÚ DESACTIVADO
+   Se muestra completamente en blanco y negro
+========================================================= */
 
-    .ventana-menu #modalMensaje .modal-contenido {
+.ventana-menu .menu-tarjeta.menu-desactivado {
 
-        width: 94%;
-    }
+    filter: grayscale(100%);
 
+    opacity: .72;
 
-    .ventana-menu #modalMensaje #tituloMensaje {
-
-        font-size: 20px;
-
-        padding:
-            20px
-            20px
-            12px;
-    }
+}
 
 
-    .ventana-menu #modalMensaje #textoMensaje {
+/* Mantener el efecto visual al pasar el mouse */
 
-        padding:
-            18px
-            20px
-            10px;
-    }
+.ventana-menu .menu-tarjeta.menu-desactivado:hover {
+
+    filter: grayscale(100%);
+
+}
 
 
-    .ventana-menu #modalMensaje .acciones-modal {
+/* Evitar que la imagen vuelva a tomar color */
 
-        margin:
-            12px
-            20px
-            20px;
-    }
+.ventana-menu .menu-tarjeta.menu-desactivado .menu-imagen img {
+
+    filter: grayscale(100%);
+
+}
+
+
+/* La etiqueta EXPEDIENTE también queda gris */
+
+.ventana-menu .menu-tarjeta.menu-desactivado::before {
+
+    filter: grayscale(100%);
+
+}
+
+
+/* Los botones también quedan en escala de grises */
+
+.ventana-menu .menu-tarjeta.menu-desactivado .menu-acciones button {
+
+    filter: grayscale(100%);
+
+}
+
+
+/* =========================================================
+   INDICADOR DE MENÚ DESACTIVADO
+========================================================= */
+
+.ventana-menu .menu-tarjeta.menu-desactivado::after {
+
+    content: "MENÚ DESACTIVADO";
+
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    z-index: 10;
+
+    padding: 5px 9px;
+
+    background: rgba(40, 40, 40, .88);
+
+    color: #ffffff;
+
+    border: 1px solid rgba(255,255,255,.35);
+
+    border-radius: 4px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 9px;
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
 }

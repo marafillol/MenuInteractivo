@@ -3,270 +3,485 @@ console.log("Modulo fichas cargado");
 let fichaEliminar = null;
 let fichaEditando = null;
 
-
 // Relaciones antes de guardar
 let relacionesPendientes = [];
 
-async function cargarFichas(){
 
-    try{
+/* =========================================================
+   CABECERA DE FICHAS
+========================================================= */
 
+function actualizarCabeceraFichas() {
 
-        const botonNuevaFicha =
-        document.getElementById("nuevaFicha");
-
-        const barraVolver =
-        document.getElementById("barraVolver");
-
-        let url = "/api/fichas";
-
-
-        const titulo =
+    const titulo =
         document.getElementById("tituloFichas");
 
-        const subtitulo =
+    const subtitulo =
         document.getElementById("subtituloFichas");
 
-        if(menuSeleccionado){
+    const volver =
+        document.getElementById("barraVolver");
 
-            url = `/api/fichas/menu/${menuSeleccionado}`;
+    if (!titulo || !subtitulo) {
+        return;
+    }
 
-            botonNuevaFicha.style.display = "none";
+    /*
+     * =====================================================
+     * FICHAS DE UN MENÚ
+     * =====================================================
+     */
 
-            barraVolver.style.display = "block";
+    if (menuSeleccionado && nombreMenuSeleccionado) {
 
-            titulo.textContent = `Menú de ${nombreMenuSeleccionado}`;
+        titulo.textContent =
+            "Fichas del menú";
 
-        }else{
+        subtitulo.innerHTML = `
+            <strong>${nombreMenuSeleccionado}</strong>
+        `;
 
-            botonNuevaFicha.style.display = "inline-block";
+        subtitulo.style.display =
+            "block";
 
-            barraVolver.style.display = "none";
+        if (volver) {
+            volver.style.display =
+                "inline-flex";
+        }
 
-            titulo.textContent = "Gestión de Fichas";
+    }
 
-            subtitulo.textContent = "";
+    /*
+     * =====================================================
+     * TODAS LAS FICHAS
+     * =====================================================
+     */
 
+    else {
+
+        titulo.textContent =
+            "Gestión de Fichas";
+
+        subtitulo.innerHTML =
+            "";
+
+        subtitulo.style.display =
+            "none";
+
+        if (volver) {
+            volver.style.display =
+                "none";
+        }
+    }
+}
+
+
+/* =========================================================
+   CARGAR FICHAS
+========================================================= */
+
+async function cargarFichas() {
+
+    actualizarCabeceraFichas();
+
+    try {
+
+        const botonNuevaFicha =
+            document.getElementById("nuevaFicha");
+
+        const barraVolver =
+            document.getElementById("barraVolver");
+
+        let url =
+            "/api/fichas";
+
+        /*
+         * Si hay un menú seleccionado,
+         * mostramos solamente sus fichas.
+         */
+
+        if (menuSeleccionado) {
+
+            url =
+                `/api/fichas/menu/${menuSeleccionado}`;
+
+            if (botonNuevaFicha) {
+                botonNuevaFicha.style.display =
+                    "inline-flex";
+            }
+
+            if (barraVolver) {
+                barraVolver.style.display =
+                    "inline-flex";
+            }
+
+        } else {
+
+            /*
+             * Gestión general:
+             * mostramos todas las fichas.
+             */
+
+            if (botonNuevaFicha) {
+                botonNuevaFicha.style.display =
+                    "inline-flex";
+            }
+
+            if (barraVolver) {
+                barraVolver.style.display =
+                    "none";
+            }
         }
 
 
-        const respuesta = await window.fetchProtegido(url);
+        const respuesta =
+            await window.fetchProtegido(url);
 
-        const fichas = await respuesta.json();
+        if (!respuesta.ok) {
 
-        const esConsulta = window.usuarioActual?.rol === "consulta";
+            console.error(
+                "Error obteniendo fichas:",
+                respuesta.status
+            );
 
-
-        if(menuSeleccionado){
-
-            subtitulo.textContent =
-                `${fichas.length} ficha${fichas.length !== 1 ? "s" : ""} asociada${fichas.length !== 1 ? "s" : ""}`;
-
-        }
-
-
-        const contenedor = document.getElementById("listaFichas");
-
-
-        if(!contenedor){
-            console.error("No existe listaFichas");
             return;
         }
 
 
-        contenedor.innerHTML = "";
+        const fichas =
+            await respuesta.json();
 
 
-        fichas.forEach(ficha=>{
+        const esConsulta =
+            window.usuarioActual?.rol === "consulta";
+
+
+        const contenedor =
+            document.getElementById("listaFichas");
+
+
+        if (!contenedor) {
+
+            console.error(
+                "No existe listaFichas"
+            );
+
+            return;
+        }
+
+
+        contenedor.innerHTML =
+            "";
+
+
+        fichas.forEach(ficha => {
 
             console.log(ficha);
 
             contenedor.innerHTML += `
 
-            <article class="tarjeta-ficha ${ficha.visible == 0 ? "ficha-desactivada" : ""}">
+                <article class="ficha-tarjeta ${
+                    ficha.visible == 0
+                        ? "ficha-desactivada"
+                        : ""
+                }">
 
-                <div class="imagen-ficha">
+                    <div class="ficha-imagen">
 
-                <img
-                    src="/${(ficha.imagen || "").replace("public/","")}"
-                    onerror="this.onerror=null;this.src='/imagenes/default.png'"
-                />
+                        <img
+                            src="/${
+                                ficha.imagen
+                                    ? ficha.imagen.replace(
+                                        "public/",
+                                        ""
+                                    )
+                                    : "imagenes/default.png"
+                            }"
 
-                </div>
-
-
-                <div class="info-ficha">
-
-
-                    <span class="campo-titulo-ficha">
-                        Título
-                    </span>
-
-
-                    <h3>
-                        ${ficha.titulo || "Sin título"}
-                    </h3>
-
-
-                    <p>
-                        ${ficha.resumen || ""}
-                    </p>
-
-
-                    <small>
-                        Menú: ${ficha.menu || "-"}
-                    </small>
-
-
-                    <div class="acciones-ficha">
-
-
-                    <button
-                    class="btn-vista"
-                    onclick="vistaPreviaFicha(${ficha.id_ficha})">
-
-                    Vista previa
-
-                    </button>
-
-
-
-                    <button
-                        class="btn-cancelar-ficha"
-                        onclick="verMultimediaFicha(${ficha.id_ficha}, '${ficha.titulo}')">
-
-                        Ver multimedia
-
-                    </button>
-
-
-
-                    ${!esConsulta ? `
-                    <button class="btn-editar" onclick="editarFicha(${ficha.id_ficha})">
-                        Editar
-                    </button>
-
-                    <button class="btn-eliminar" onclick="abrirEliminarFicha(${ficha.id_ficha})">
-                        Eliminar
-                    </button>
-                    ` : ""}
-
+                            onerror="
+                                this.onerror=null;
+                                this.src='/img/no-image.png'
+                            "
+                        />
 
                     </div>
 
 
-                </div>
+                    <div class="ficha-info">
+
+                        <span class="campo-titulo-ficha">
+                            TÍTULO
+                        </span>
 
 
-            </article>
+                        <h3>
+                            ${
+                                ficha.titulo ||
+                                "Sin título"
+                            }
+                        </h3>
 
+
+                        <p>
+                            ${
+                                (
+                                    ficha.resumen ||
+                                    "Sin descripción"
+                                ).replace(
+                                    /\n/g,
+                                    " "
+                                )
+                            }
+                        </p>
+
+
+                        <div class="ficha-acciones">
+
+                            <button
+                                class="ficha-btn-vista"
+                                onclick="
+                                    vistaPreviaFicha(
+                                        ${ficha.id_ficha}
+                                    )
+                                "
+                            >
+                                Vista previa
+                            </button>
+
+
+                            <button
+                                class="ficha-btn-ver"
+                                onclick="verMultimediaFicha(${ficha.id_ficha})"
+                            >
+                                Ver multimedia
+                            </button>
+
+
+                            ${
+                                !esConsulta
+                                    ? `
+
+                                    <button
+                                        class="ficha-btn-editar"
+                                        onclick="
+                                            editarFicha(
+                                                ${ficha.id_ficha}
+                                            )
+                                        "
+                                    >
+                                        Editar
+                                    </button>
+
+
+                                    <button
+                                        class="ficha-btn-eliminar"
+                                        onclick="
+                                            abrirEliminarFicha(
+                                                ${ficha.id_ficha}
+                                            )
+                                        "
+                                    >
+                                        Eliminar
+                                    </button>
+
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                </article>
             `;
-
         });
 
+    } catch (error) {
 
-    }catch(error){
-
-        console.error("Error cargando fichas:", error);
-
+        console.error(
+            "Error cargando fichas:",
+            error
+        );
     }
-
 }
 
-// ===================================
-// VISTA PREVIA FICHA
-// ===================================
-async function vistaPreviaFicha(id_ficha){
 
-    try{
+/* =========================================================
+   VISTA PREVIA FICHA
+========================================================= */
 
-        // ===============================
-        // Obtener ficha
-        // ===============================
+async function vistaPreviaFicha(id_ficha) {
+
+    try {
 
         const respuesta =
-        await window.fetchProtegido(`/api/fichas/${id_ficha}`);
-
-        const ficha =
-        await respuesta.json();
-
-        // ===============================
-        // Completar datos generales
-        // ===============================
-
-        document.getElementById("vpFichaId").textContent =
-        ficha.id_ficha;
-
-        document.getElementById("vpFichaMenu").textContent =
-        ficha.id_menu;
-
-        document.getElementById("vpFichaTitulo").textContent =
-        ficha.titulo;
-
-        document.getElementById("vpFichaResumen").textContent =
-        ficha.resumen || "-";
-
-        document.getElementById("vpFichaTexto").textContent =
-        ficha.texto || "-";
-
-        document.getElementById("vpFichaVisible").textContent =
-        ficha.visible == 1 ? "Sí" : "No";
-
-        document.getElementById("vpFichaUsuario").textContent =
-        ficha.id_usuario || "-";
-
-        document.getElementById("vpFichaCreado").textContent =
-            mostrarFechaArgentina(ficha.creado);
+            await window.fetchProtegido(
+                `/api/fichas/${id_ficha}`
+            );
 
 
-        document.getElementById("vpFichaActualizado").textContent =
-            mostrarFechaArgentina(ficha.actualizado);
+        if (!respuesta.ok) {
 
-        // ===============================
-        // Imagen
-        // ===============================
+            console.error(
+                "No se pudo obtener la ficha."
+            );
 
-        const imagen =
-        document.getElementById("vpFichaImagen");
-
-        if(ficha.imagen){
-
-            imagen.src = "/" + ficha.imagen;
-
-        }else{
-
-            imagen.src = "/imagenes/default.png";
-
+            return;
         }
 
-        // ===============================
-        // Datos dinámicos
-        // ===============================
+
+        const ficha =
+            await respuesta.json();
+
+
+        /*
+         * DATOS GENERALES
+         */
+
+        document.getElementById(
+            "vpFichaId"
+        ).textContent =
+            ficha.id_ficha;
+
+
+        document.getElementById(
+            "vpFichaMenu"
+        ).textContent =
+            ficha.id_menu;
+
+
+        document.getElementById(
+            "vpFichaTitulo"
+        ).textContent =
+            ficha.titulo;
+
+
+        document.getElementById(
+            "vpFichaResumen"
+        ).textContent =
+            ficha.resumen || "-";
+
+
+        document.getElementById(
+            "vpFichaTexto"
+        ).textContent =
+            ficha.texto || "-";
+
+
+        document.getElementById(
+            "vpFichaVisible"
+        ).textContent =
+            ficha.visible == 1
+                ? "Sí"
+                : "No";
+
+
+        document.getElementById(
+            "vpFichaUsuario"
+        ).textContent =
+            ficha.id_usuario || "-";
+
+
+        document.getElementById(
+            "vpFichaCreado"
+        ).textContent =
+            mostrarFechaArgentina(
+                ficha.creado
+            );
+
+
+        document.getElementById(
+            "vpFichaActualizado"
+        ).textContent =
+            mostrarFechaArgentina(
+                ficha.actualizado
+            );
+
+
+        /*
+         * IMAGEN
+         */
+
+        const imagen =
+            document.getElementById(
+                "vpFichaImagen"
+            );
+
+
+        if (ficha.imagen) {
+
+            imagen.src =
+                "/" +
+                ficha.imagen.replace(
+                    "public/",
+                    ""
+                );
+
+        } else {
+
+            imagen.src =
+                "/imagenes/default.png";
+        }
+
+
+        /*
+         * DATOS DINÁMICOS
+         */
 
         const contenedor =
-        document.getElementById("vpCamposDinamicos");
+            document.getElementById(
+                "vpCamposDinamicos"
+            );
 
-        contenedor.innerHTML = "";
+
+        contenedor.innerHTML =
+            "";
+
 
         const respuestaPlantilla =
-        await window.fetchProtegido(`/api/plantillas/menu/${ficha.id_menu}`);
+            await window.fetchProtegido(
+                `/api/plantillas/menu/${ficha.id_menu}`
+            );
 
-        if(respuestaPlantilla.ok){
+
+        if (respuestaPlantilla.ok) {
 
             const plantilla =
-            await respuestaPlantilla.json();
+                await respuestaPlantilla.json();
 
-            const datos =
-            ficha.datos_json
-                ? JSON.parse(ficha.datos_json)
-                : {};
+
+            let datos = {};
+
+
+            try {
+
+                datos =
+                    ficha.datos_json
+                        ? JSON.parse(
+                            ficha.datos_json
+                        )
+                        : {};
+
+            } catch (error) {
+
+                console.warn(
+                    "Error leyendo datos_json:",
+                    error
+                );
+            }
+
 
             const campos =
-                plantilla.plantilla_json?.estructura?.campos || [];
+                plantilla
+                    .plantilla_json
+                    ?.estructura
+                    ?.campos || [];
 
-            campos.forEach(campo=>{
+
+            campos.forEach(campo => {
 
                 contenedor.innerHTML += `
+
                     <div class="campo-preview">
 
                         <span class="titulo-preview">
@@ -274,88 +489,102 @@ async function vistaPreviaFicha(id_ficha){
                         </span>
 
                         <span class="valor-preview">
-                            ${datos[campo.nombre] || "-"}
+                            ${
+                                datos[campo.nombre] ||
+                                "-"
+                            }
                         </span>
 
                     </div>
-                `;
 
+                `;
             });
 
-        }else{
+        } else {
 
             contenedor.innerHTML =
-            "<p>No fue posible cargar la plantilla.</p>";
-
+                "<p>No fue posible cargar la plantilla.</p>";
         }
 
-        // ===============================
-        // Etiquetas relacionadas
-        // ===============================
+
+        /*
+         * ETIQUETAS
+         */
 
         const respuestaEtiquetas =
-        await window.fetchProtegido(`/api/fichas/${id_ficha}/etiquetas`);
+            await window.fetchProtegido(
+                `/api/fichas/${id_ficha}/etiquetas`
+            );
+
 
         const etiquetas =
-        await respuestaEtiquetas.json();
+            await respuestaEtiquetas.json();
 
-       const contenedorEtiquetas =
-       document.getElementById("vistaEtiquetasFicha");
 
-        contenedorEtiquetas.innerHTML = "";
+        const contenedorEtiquetas =
+            document.getElementById(
+                "vistaEtiquetasFicha"
+            );
 
-        if(etiquetas.length === 0){
+
+        contenedorEtiquetas.innerHTML =
+            "";
+
+
+        if (etiquetas.length === 0) {
 
             contenedorEtiquetas.innerHTML =
-            "<span class='sin-etiquetas'>Sin etiquetas</span>";
+                "<span class='sin-etiquetas'>Sin etiquetas</span>";
 
-        }else{
+        } else {
 
-            etiquetas.forEach(etiqueta=>{
+            etiquetas.forEach(etiqueta => {
 
                 contenedorEtiquetas.innerHTML += `
+
                     <span class="etiqueta-vista">
-
                         ${etiqueta.nombre}
-
                     </span>
+
                 `;
-
             });
-
         }
 
-        // ===============================
-        // Fichas relacionadas
-        // ===============================
+
+        /*
+         * FICHAS RELACIONADAS
+         */
 
         const respuestaRelaciones =
-        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
+            await window.fetchProtegido(
+                `/api/relacion-ficha/${id_ficha}`
+            );
 
 
         const relaciones =
-        await respuestaRelaciones.json();
+            await respuestaRelaciones.json();
 
 
         const contenedorRelaciones =
-        document.getElementById("vistaRelacionesFicha");
+            document.getElementById(
+                "vistaRelacionesFicha"
+            );
 
 
-        if(contenedorRelaciones){
+        if (contenedorRelaciones) {
 
-            contenedorRelaciones.innerHTML = "";
+            contenedorRelaciones.innerHTML =
+                "";
 
 
-            if(relaciones.length === 0){
+            if (relaciones.length === 0) {
 
                 contenedorRelaciones.innerHTML =
-                "<span class='sin-relaciones'>Sin fichas relacionadas</span>";
+                    "<span class='sin-relaciones'>Sin fichas relacionadas</span>";
 
-            }else{
+            } else {
 
-
-                relaciones.forEach(relacion=>{
-
+                relaciones.forEach(relacion => {
 
                     contenedorRelaciones.innerHTML += `
 
@@ -372,233 +601,320 @@ async function vistaPreviaFicha(id_ficha){
                         </div>
 
                     `;
-
-
                 });
-
-
             }
-
         }
 
 
-        // ===============================
-        // Mostrar modal
-        // ===============================
+        /*
+         * MOSTRAR MODAL
+         */
 
-        document.getElementById("modalVistaFicha")
-        .style.display = "flex";
+        document.getElementById(
+            "modalVistaFicha"
+        ).style.display =
+            "flex";
 
-    }catch(error){
+
+    } catch (error) {
 
         console.error(
             "Error vista previa:",
             error
         );
-
     }
-
 }
 
-async function editarFicha(id_ficha){
+
+/* =========================================================
+   EDITAR FICHA
+========================================================= */
+
+async function editarFicha(id_ficha) {
+
+    console.log(
+        "Editando ficha:",
+        id_ficha
+    );
 
 
-    console.log("Editando ficha:", id_ficha);
+    try {
+
+        fichaEditando =
+            id_ficha;
 
 
-    try{
+        /*
+         * OBTENER FICHA
+         */
+
+        const respuesta =
+            await window.fetchProtegido(
+                `/api/fichas/${id_ficha}`
+            );
 
 
-        // ===============================
-        // Guardar ficha actual
-        // ===============================
+        if (!respuesta.ok) {
 
-        fichaEditando = id_ficha;
+            console.error(
+                "No se pudo obtener la ficha:",
+                respuesta.status
+            );
+
+            return;
+        }
 
 
+        const ficha =
+            await respuesta.json();
 
-        const respuesta = await window.fetchProtegido(
-            `/api/fichas/${id_ficha}`
+
+        console.log(
+            "Ficha recibida:",
+            ficha
         );
 
 
-
-        const ficha = await respuesta.json();
-
-
-
-        console.log("Ficha recibida:", ficha);
-
-
-
-
-
         const modal =
-        document.getElementById("modalFicha");
+            document.getElementById(
+                "modalFicha"
+            );
 
 
+        if (!modal) {
 
-        // guardar datos de referencia
+            console.error(
+                "No existe modalFicha."
+            );
 
-        modal.dataset.idFicha = id_ficha;
-
-        modal.dataset.idMenu = ficha.id_menu;
-
+            return;
+        }
 
 
+        /*
+         * =====================================================
+         * GUARDAMOS EL MENÚ REAL DE LA FICHA
+         * =====================================================
+         *
+         * Este dato es MUY IMPORTANTE.
+         *
+         * No usamos menuSeleccionado porque podemos
+         * estar entrando desde "Gestión general".
+         */
 
+        modal.dataset.idFicha =
+            String(id_ficha);
+
+        modal.dataset.idMenu =
+            String(ficha.id_menu);
+
+
+        console.log(
+            "Menú de la ficha:",
+            ficha.id_menu
+        );
+
+
+        /*
+         * CARGAR MENÚES EN SELECT
+         */
 
         await cargarTiposFicha();
 
 
+        const tipoFicha =
+            document.getElementById(
+                "tipoFicha"
+            );
 
 
-        document.getElementById("tipoFicha").value =
-            ficha.id_menu;
+        if (tipoFicha) {
 
+            /*
+             * Seleccionamos el menú de la ficha.
+             *
+             * IMPORTANTE:
+             * NO hacemos dispatchEvent("change").
+             *
+             * El change está pensado para NUEVA FICHA
+             * y abriría/resetea el formulario.
+             */
 
+            tipoFicha.value =
+                String(ficha.id_menu);
 
 
-        document.getElementById("tipoFicha")
-        .dispatchEvent(
-            new Event("change")
-        );
+            /*
+             * Si por algún motivo el option no existe,
+             * lo agregamos.
+             */
 
+            if (
+                tipoFicha.value !==
+                String(ficha.id_menu)
+            ) {
 
+                console.warn(
+                    "El menú de la ficha no aparece en el selector:",
+                    ficha.id_menu
+                );
 
+            } else {
 
+                const opcion =
+                    tipoFicha.options[
+                        tipoFicha.selectedIndex
+                    ];
 
-        // abrir modal
 
-        modal.style.display = "flex";
+                const nombreMenu =
+                    opcion
+                        ? opcion.textContent.trim()
+                        : `Menú ${ficha.id_menu}`;
 
 
+                const nombreTipo =
+                    document.getElementById(
+                        "nombreTipoFicha"
+                    );
 
 
+                if (nombreTipo) {
 
+                    nombreTipo.textContent =
+                        nombreMenu;
+                }
 
-        // ===============================
-        // Datos básicos
-        // ===============================
 
+                const tituloDatos =
+                    document.getElementById(
+                        "tituloDatosEspecificos"
+                    );
 
-        document.getElementById("tituloFicha").value =
-            ficha.titulo || "";
 
+                if (tituloDatos) {
 
-
-        document.getElementById("resumenFicha").value =
-            ficha.resumen || "";
-
-
-
-        document.getElementById("textoFicha").value =
-            ficha.texto || "";
-
-
-
-        document.getElementById("visibleFicha").checked =
-            ficha.visible == 1;
-
-
-
-
-
-
-
-
-        // ===============================
-        // Imagen actual
-        // ===============================
-
-
-        const imagenActual =
-        document.getElementById("imagenActualFicha");
-
-
-
-        const contenedorImagenActual =
-        document.getElementById("contenedorImagenActual");
-
-
-
-
-
-        if(ficha.imagen){
-
-
-            imagenActual.src =
-            "/" + ficha.imagen.replace("public/","");
-
-
-
-            imagenActual.style.display =
-            "block";
-
-
-
-            contenedorImagenActual.style.display =
-            "block";
-
-
-
-        }else{
-
-
-            imagenActual.style.display =
-            "none";
-
-
-
-            contenedorImagenActual.style.display =
-            "none";
-
-
+                    tituloDatos.textContent =
+                        `Datos específicos de ${nombreMenu}`;
+                }
+            }
         }
 
 
+        /*
+         * ABRIR MODAL
+         */
 
-        document.getElementById("labelImagenFicha").textContent =
-        "Cambiar imagen";
-
-
-        // limpiar archivo nuevo
-
-        document.getElementById("imagenFicha")
-        .value = "";
+        modal.style.display =
+            "flex";
 
 
+        /*
+         * DATOS BÁSICOS
+         */
+
+        document.getElementById(
+            "tituloFicha"
+        ).value =
+            ficha.titulo || "";
 
 
+        document.getElementById(
+            "resumenFicha"
+        ).value =
+            ficha.resumen || "";
 
 
+        document.getElementById(
+            "textoFicha"
+        ).value =
+            ficha.texto || "";
 
 
-        // ===============================
-        // Título modal
-        // ===============================
+        document.getElementById(
+            "visibleFicha"
+        ).checked =
+            ficha.visible == 1;
 
 
-        document.getElementById("tituloModalFicha")
-        .textContent =
-        "Editar ficha";
+        /*
+         * IMAGEN ACTUAL
+         */
+
+        const imagenActual =
+            document.getElementById(
+                "imagenActualFicha"
+            );
 
 
+        const contenedorImagenActual =
+            document.getElementById(
+                "contenedorImagenActual"
+            );
 
 
+        if (ficha.imagen) {
+
+            imagenActual.src =
+                "/" +
+                ficha.imagen.replace(
+                    "public/",
+                    ""
+                );
 
 
+            imagenActual.style.display =
+                "block";
 
 
+            contenedorImagenActual.style.display =
+                "block";
 
-        // ===============================
-        // Etiquetas
-        // ===============================
+        } else {
 
+            imagenActual.src =
+                "";
+
+
+            imagenActual.style.display =
+                "none";
+
+
+            contenedorImagenActual.style.display =
+                "none";
+        }
+
+
+        document.getElementById(
+            "labelImagenFicha"
+        ).textContent =
+            "Cambiar imagen";
+
+
+        document.getElementById(
+            "imagenFicha"
+        ).value =
+            "";
+
+
+        /*
+         * TÍTULO MODAL
+         */
+
+        document.getElementById(
+            "tituloModalFicha"
+        ).textContent =
+            "Editar ficha";
+
+
+        /*
+         * ETIQUETAS
+         */
 
         const etiquetasSeleccionadas =
-        await obtenerEtiquetasFicha(id_ficha);
-
+            await obtenerEtiquetasFicha(
+                id_ficha
+            );
 
 
         await cargarEtiquetasFicha(
@@ -606,79 +922,1248 @@ async function editarFicha(id_ficha){
         );
 
 
+        /*
+         * RELACIONES
+         */
+
+        const selectRelacion =
+            document.getElementById(
+                "fichaRelacion"
+            );
 
 
-        // ===============================
-        // Relaciones ficha-ficha
-        // ===============================
-
-        document.getElementById("fichaRelacion").disabled = false;
-
-        document.getElementById("tipoRelacion").disabled = false;
-
-        await cargarFichasDisponibles(
-            id_ficha
-        );
+        const tipoRelacion =
+            document.getElementById(
+                "tipoRelacion"
+            );
 
 
+        if (selectRelacion) {
+
+            selectRelacion.disabled =
+                false;
+
+
+            await cargarFichasDisponibles(
+                id_ficha
+            );
+        }
+
+
+        if (tipoRelacion) {
+
+            tipoRelacion.disabled =
+                false;
+        }
+
+
+        /*
+         * RELACIONES EXISTENTES
+         */
 
         const respuestaRelaciones =
-        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
+            await window.fetchProtegido(
+                `/api/relacion-ficha/${id_ficha}`
+            );
 
-        relacionesPendientes =
-        await respuestaRelaciones.json();
+
+        if (!respuestaRelaciones.ok) {
+
+            console.error(
+                "No se pudieron cargar las relaciones"
+            );
+
+
+            relacionesPendientes =
+                [];
+
+        } else {
+
+            const relaciones =
+                await respuestaRelaciones.json();
+
+
+            relacionesPendientes =
+                relaciones.map(r => ({
+
+                    id_relacion:
+                        r.id_relacion,
+
+                    id_ficha_destino:
+                        r.id_ficha_destino,
+
+                    tipo_relacion:
+                        r.tipo_relacion,
+
+                    titulo:
+                        r.titulo ||
+                        r.ficha_relacionada ||
+                        `Ficha ${r.id_ficha_destino}`
+
+                }));
+        }
+
 
         mostrarRelacionesPendientes();
 
-        const respuestaRel =
-        await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
 
-        const relaciones =
-        await respuestaRel.json();
-
-
-        relacionesPendientes = relaciones.map(r=>({
-
-            id_relacion: r.id_relacion,
-
-            id_ficha_destino: r.id_ficha_destino,
-
-            tipo_relacion: r.tipo_relacion,
-
-            titulo: r.titulo
-
-        }));
-
-
-
-
-
-
-
-
-
-        // ===============================
-        // Plantilla dinámica
-        // ===============================
-
+        /*
+         * PLANTILLA DINÁMICA
+         *
+         * Usamos ficha.id_menu.
+         * NO menuSeleccionado.
+         */
 
         const plantillaRespuesta =
-        await window.fetchProtegido(
-            `/api/plantillas/menu/${ficha.id_menu}`
+            await window.fetchProtegido(
+                `/api/plantillas/menu/${ficha.id_menu}`
+            );
+
+
+        if (!plantillaRespuesta.ok) {
+
+            console.error(
+                "No se pudo cargar la plantilla del menú:",
+                ficha.id_menu
+            );
+
+            generarCampos([]);
+
+        } else {
+
+            const plantilla =
+                await plantillaRespuesta.json();
+
+
+            window.plantillaActual =
+                plantilla;
+
+
+            const campos =
+                plantilla
+                    .plantilla_json
+                    ?.estructura
+                    ?.campos || [];
+
+
+            generarCampos(
+                campos
+            );
+        }
+
+
+        /*
+         * DATOS DINÁMICOS
+         */
+
+        let datos = {};
+
+
+        try {
+
+            datos =
+                ficha.datos_json
+                    ? JSON.parse(
+                        ficha.datos_json
+                    )
+                    : {};
+
+        } catch (error) {
+
+            console.warn(
+                "Error leyendo datos_json:",
+                error
+            );
+        }
+
+
+        document
+            .querySelectorAll(
+                ".campo-dinamico"
+            )
+            .forEach(input => {
+
+                const nombre =
+                    input.dataset.campo;
+
+
+                if (
+                    datos[nombre] !==
+                    undefined
+                ) {
+
+                    input.value =
+                        datos[nombre];
+                }
+            });
+
+
+        /*
+         * BOTÓN ACTUALIZAR
+         */
+
+        document.getElementById(
+            "btnGuardarFicha"
+        ).textContent =
+            "Actualizar ficha";
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando ficha para editar:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   CERRAR VISTA FICHA
+========================================================= */
+
+function cerrarVistaFicha() {
+
+    document.getElementById(
+        "modalVistaFicha"
+    ).style.display =
+        "none";
+}
+
+
+/* =========================================================
+   MULTIMEDIA
+========================================================= */
+
+function verMultimediaFicha(id_ficha, titulo) {
+
+    console.log("VER MULTIMEDIA FICHA:", {
+        id_ficha,
+        titulo
+    });
+
+    fichaSeleccionada = id_ficha;
+    nombreFichaSeleccionada = titulo || "";
+
+    cargarVentana("multimedia", true);
+}
+
+
+/* =========================================================
+   NUEVA FICHA
+========================================================= */
+
+async function abrirNuevaFicha() {
+
+    console.log(
+        "Nueva ficha. Menú seleccionado:",
+        menuSeleccionado
+    );
+
+
+    /*
+     * =====================================================
+     * SI ESTAMOS DENTRO DE UN MENÚ
+     * =====================================================
+     */
+
+    if (menuSeleccionado) {
+
+        try {
+
+            const idMenu =
+                String(
+                    menuSeleccionado
+                );
+
+
+            const respuesta =
+                await window.fetchProtegido(
+                    `/api/plantillas/menu/${idMenu}`
+                );
+
+
+            if (!respuesta.ok) {
+
+                console.error(
+                    "No se pudo cargar la plantilla del menú."
+                );
+
+
+                mostrarMensaje(
+                    "Error",
+                    "No se pudo cargar la plantilla de este menú."
+                );
+
+
+                return;
+            }
+
+
+            const plantilla =
+                await respuesta.json();
+
+
+            window.plantillaActual =
+                plantilla;
+
+
+            const campos =
+                plantilla
+                    .plantilla_json
+                    ?.estructura
+                    ?.campos || [];
+
+
+            generarCampos(
+                campos
+            );
+
+
+            const modalFicha =
+                document.getElementById(
+                    "modalFicha"
+                );
+
+
+            if (!modalFicha) {
+                return;
+            }
+
+
+            /*
+             * MENÚ ASOCIADO
+             */
+
+            modalFicha.dataset.idFicha =
+                "";
+
+            modalFicha.dataset.idMenu =
+                idMenu;
+
+
+            /*
+             * SELECT
+             */
+
+            const tipoFicha =
+                document.getElementById(
+                    "tipoFicha"
+                );
+
+
+            if (tipoFicha) {
+
+                await cargarTiposFicha();
+
+                tipoFicha.value =
+                    idMenu;
+
+
+                const opcion =
+                    tipoFicha.options[
+                        tipoFicha.selectedIndex
+                    ];
+
+
+                const nombre =
+                    opcion
+                        ? opcion.textContent.trim()
+                        : nombreMenuSeleccionado;
+
+
+                const nombreTipo =
+                    document.getElementById(
+                        "nombreTipoFicha"
+                    );
+
+
+                if (nombreTipo) {
+
+                    nombreTipo.textContent =
+                        nombre;
+                }
+
+
+                const tituloDatos =
+                    document.getElementById(
+                        "tituloDatosEspecificos"
+                    );
+
+
+                if (tituloDatos) {
+
+                    tituloDatos.textContent =
+                        `Datos específicos de ${nombre}`;
+                }
+            }
+
+
+            /*
+             * ESTADO
+             */
+
+            fichaEditando =
+                null;
+
+            relacionesPendientes =
+                [];
+
+
+            document.getElementById(
+                "btnGuardarFicha"
+            ).textContent =
+                "Guardar ficha";
+
+
+            document.getElementById(
+                "tituloModalFicha"
+            ).textContent =
+                "Nueva ficha";
+
+
+            /*
+             * LIMPIAR DATOS
+             */
+
+            document.getElementById(
+                "tituloFicha"
+            ).value =
+                "";
+
+
+            document.getElementById(
+                "resumenFicha"
+            ).value =
+                "";
+
+
+            document.getElementById(
+                "textoFicha"
+            ).value =
+                "";
+
+
+            document.getElementById(
+                "imagenFicha"
+            ).value =
+                "";
+
+
+            document.getElementById(
+                "labelImagenFicha"
+            ).textContent =
+                "Seleccionar imagen";
+
+
+            /*
+             * IMAGEN ACTUAL
+             */
+
+            const imagenActual =
+                document.getElementById(
+                    "imagenActualFicha"
+                );
+
+
+            if (imagenActual) {
+
+                imagenActual.src =
+                    "";
+
+                imagenActual.style.display =
+                    "none";
+            }
+
+
+            const contenedorImagenActual =
+                document.getElementById(
+                    "contenedorImagenActual"
+                );
+
+
+            if (contenedorImagenActual) {
+
+                contenedorImagenActual.style.display =
+                    "none";
+            }
+
+
+            /*
+             * VISIBLE
+             */
+
+            document.getElementById(
+                "visibleFicha"
+            ).checked =
+                true;
+
+
+            /*
+             * CAMPOS DINÁMICOS
+             */
+
+            document
+                .querySelectorAll(
+                    ".campo-dinamico"
+                )
+                .forEach(campo => {
+
+                    campo.value =
+                        "";
+                });
+
+
+            /*
+             * ETIQUETAS
+             */
+
+            await cargarEtiquetasFicha();
+
+
+            /*
+             * RELACIONES
+             */
+
+            const selectRelacion =
+                document.getElementById(
+                    "fichaRelacion"
+                );
+
+
+            const tipoRelacion =
+                document.getElementById(
+                    "tipoRelacion"
+                );
+
+
+            if (selectRelacion) {
+
+                selectRelacion.disabled =
+                    false;
+
+
+                await cargarFichasDisponibles();
+            }
+
+
+            if (tipoRelacion) {
+
+                tipoRelacion.disabled =
+                    false;
+            }
+
+
+            mostrarRelacionesPendientes();
+
+
+            /*
+             * ABRIR MODAL
+             */
+
+            modalFicha.style.display =
+                "flex";
+
+
+        } catch (error) {
+
+            console.error(
+                "Error abriendo nueva ficha:",
+                error
+            );
+
+
+            mostrarMensaje(
+                "Error",
+                "No se pudo abrir el formulario de nueva ficha."
+            );
+        }
+
+
+        return;
+    }
+
+
+    /*
+     * =====================================================
+     * GESTIÓN GENERAL DE FICHAS
+     * =====================================================
+     */
+
+    console.log(
+        "Abriendo selector de tipo"
+    );
+
+
+    const modal =
+        document.getElementById(
+            "modalTipoFicha"
         );
 
 
+    if (modal) {
+
+        modal.style.display =
+            "flex";
+
+
+        await cargarTiposFicha();
+    }
+}
+
+
+/*
+ * =========================================================
+ * EVENTO NUEVA FICHA
+ *
+ * Se protege para que no se registre varias veces
+ * cuando panel.js vuelve a cargar fichas.js.
+ * =========================================================
+ */
+
+if (!window.__fichasEventoNuevaRegistrado) {
+
+    document.addEventListener(
+        "click",
+        async function(e) {
+
+            const boton =
+                e.target.closest(
+                    "#nuevaFicha"
+                );
+
+
+            if (!boton) {
+                return;
+            }
+
+
+            e.preventDefault();
+
+
+            await abrirNuevaFicha();
+        }
+    );
+
+
+    window.__fichasEventoNuevaRegistrado =
+        true;
+}
+
+
+/* =========================================================
+   CERRAR MODAL FICHA
+========================================================= */
+
+function cerrarFicha() {
+
+    const modal =
+        document.getElementById(
+            "modalFicha"
+        );
+
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   GUARDAR FICHA
+========================================================= */
+
+async function guardarFicha() {
+
+    const modalFicha =
+        document.getElementById(
+            "modalFicha"
+        );
+
+
+    if (!modalFicha) {
+
+        console.error(
+            "No existe modalFicha."
+        );
+
+        return;
+    }
+
+
+    const id_ficha =
+        modalFicha.dataset.idFicha || "";
+
+
+    const titulo =
+        document.getElementById(
+            "tituloFicha"
+        ).value.trim();
+
+
+    if (titulo === "") {
+
+        mostrarMensaje(
+            "Campos obligatorios",
+            "Debe ingresar un título para la ficha."
+        );
+
+
+        document.getElementById(
+            "tituloFicha"
+        ).focus();
+
+
+        return;
+    }
+
+
+    const formulario =
+        new FormData();
+
+
+    /*
+     * =====================================================
+     * DATOS DINÁMICOS
+     * =====================================================
+     */
+
+    const datos = {};
+
+
+    document
+        .querySelectorAll(
+            ".campo-dinamico"
+        )
+        .forEach(campo => {
+
+            datos[
+                campo.dataset.campo
+            ] =
+                campo.value;
+        });
+
+
+    /*
+     * =====================================================
+     * MENÚ DE LA FICHA
+     * =====================================================
+     *
+     * ORDEN DE PRIORIDAD:
+     *
+     * 1. dataset.idMenu del modal
+     * 2. menú seleccionado
+     * 3. select tipoFicha
+     *
+     * El dataset es el más importante porque identifica
+     * el menú al que realmente pertenece la ficha.
+     */
+
+    let id_menu = "";
+
+
+    if (modalFicha.dataset.idMenu) {
+
+        id_menu =
+            modalFicha.dataset.idMenu;
+
+    } else if (menuSeleccionado) {
+
+        id_menu =
+            String(
+                menuSeleccionado
+            );
+
+    } else {
+
+        id_menu =
+            document.getElementById(
+                "tipoFicha"
+            )?.value || "";
+    }
+
+
+    console.log(
+        "========== GUARDANDO FICHA =========="
+    );
+
+
+    console.log(
+        "menuSeleccionado:",
+        menuSeleccionado
+    );
+
+
+    console.log(
+        "dataset.idMenu:",
+        modalFicha.dataset.idMenu
+    );
+
+
+    console.log(
+        "tipoFicha:",
+        document.getElementById(
+            "tipoFicha"
+        )?.value
+    );
+
+
+    console.log(
+        "id_menu FINAL:",
+        id_menu
+    );
+
+
+    /*
+     * VALIDAR MENÚ
+     */
+
+    if (!id_menu) {
+
+        mostrarMensaje(
+            "Menú requerido",
+            "Debe seleccionar un menú para la ficha."
+        );
+
+
+        return;
+    }
+
+
+    /*
+     * DATOS GENERALES
+     */
+
+    formulario.append(
+        "id_menu",
+        String(id_menu)
+    );
+
+
+    formulario.append(
+        "titulo",
+        titulo
+    );
+
+
+    formulario.append(
+        "resumen",
+        document.getElementById(
+            "resumenFicha"
+        ).value
+    );
+
+
+    formulario.append(
+        "texto",
+        document.getElementById(
+            "textoFicha"
+        ).value
+    );
+
+
+    formulario.append(
+        "visible",
+        document.getElementById(
+            "visibleFicha"
+        ).checked
+            ? 1
+            : 0
+    );
+
+
+    formulario.append(
+        "datos_json",
+        JSON.stringify(datos)
+    );
+
+
+    /*
+     * IMAGEN
+     */
+
+    const imagen =
+        document.getElementById(
+            "imagenFicha"
+        ).files[0];
+
+
+    if (imagen) {
+
+        formulario.append(
+            "imagen",
+            imagen
+        );
+    }
+
+
+    try {
+
+        let url =
+            "/api/fichas";
+
+        let metodo =
+            "POST";
+
+
+        /*
+         * EDITAR
+         */
+
+        if (id_ficha) {
+
+            url =
+                `/api/fichas/${id_ficha}`;
+
+            metodo =
+                "PUT";
+        }
+
+
+        const respuesta =
+            await window.fetchProtegido(
+                url,
+                {
+                    method: metodo,
+                    body: formulario
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            mostrarMensaje(
+                "No se pudo guardar",
+                resultado.error ||
+                "Ocurrió un error al guardar la ficha."
+            );
+
+
+            return;
+        }
+
+
+        const idGuardado =
+            id_ficha ||
+            resultado.id_ficha;
+
+
+        fichaEditando =
+            idGuardado;
+
+
+        /*
+         * =====================================================
+         * ETIQUETAS
+         * =====================================================
+         */
+
+        await guardarEtiquetasFicha(
+            idGuardado
+        );
+
+
+        /*
+         * =====================================================
+         * RELACIONES
+         * =====================================================
+         */
+
+        const relaciones =
+            relacionesPendientes.map(
+                r => ({
+
+                    id_ficha_destino:
+                        r.id_ficha_destino,
+
+                    tipo_relacion:
+                        r.tipo_relacion
+
+                })
+            );
+
+
+        const respuestaRelaciones =
+            await window.fetchProtegido(
+
+                `/api/relacion-ficha/${idGuardado}`,
+
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        relaciones:
+                            relaciones
+                    })
+                }
+            );
+
+
+        if (!respuestaRelaciones.ok) {
+
+            console.error(
+                "Error guardando relaciones"
+            );
+        }
+
+
+        /*
+         * =====================================================
+         * LIMPIAR
+         * =====================================================
+         */
+
+        relacionesPendientes =
+            [];
+
+
+        fichaEditando =
+            null;
+
+
+        cerrarFicha();
+
+
+        modalFicha.dataset.idFicha =
+            "";
+
+
+        modalFicha.dataset.idMenu =
+            "";
+
+
+        document.getElementById(
+            "btnGuardarFicha"
+        ).textContent =
+            "Guardar ficha";
+
+
+        /*
+         * IMPORTANTE:
+         *
+         * Después de guardar mantenemos la vista actual.
+         * Si estamos dentro de un menú, se muestran solamente
+         * las fichas de ese menú.
+         */
+
+        await cargarFichas();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error guardando ficha:",
+            error
+        );
+
+
+        mostrarMensaje(
+            "Error",
+            "Ocurrió un error al guardar la ficha."
+        );
+    }
+}
+
+
+/* =========================================================
+   ELIMINAR FICHA
+========================================================= */
+
+async function eliminarFicha(id_ficha) {
+
+    console.log(
+        "BOTON ELIMINAR PRESIONADO:",
+        id_ficha
+    );
+
+
+    const confirmar =
+        confirm(
+            "¿Eliminar esta ficha?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                `/api/fichas/${id_ficha}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            alert(
+                resultado.error
+            );
+
+
+            return;
+        }
+
+
+        alert(
+            resultado.mensaje
+        );
+
+
+        cargarFichas();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error eliminando ficha:",
+            error
+        );
+
+
+        alert(
+            "Ocurrió un error al eliminar la ficha."
+        );
+    }
+}
+
+
+/* =========================================================
+   CERRAR MULTIMEDIA
+========================================================= */
+
+function cerrarMultimedia() {
+
+    document.getElementById(
+        "modalMultimedia"
+    ).style.display =
+        "none";
+}
+
+
+/* =========================================================
+   CAMBIO DE TIPO DE FICHA
+========================================================= */
+
+async function cambioTipoFicha(
+    e
+) {
+
+    if (
+        !e ||
+        !e.target ||
+        e.target.id !== "tipoFicha"
+    ) {
+        return;
+    }
+
+
+    const id_menu =
+        e.target.value;
+
+
+    const opcion =
+        e.target.options[
+            e.target.selectedIndex
+        ];
+
+
+    const nombre =
+        opcion
+            ? opcion.textContent.trim()
+            : "";
+
+
+    const nombreTipo =
+        document.getElementById(
+            "nombreTipoFicha"
+        );
+
+
+    if (nombreTipo) {
+
+        nombreTipo.textContent =
+            nombre;
+    }
+
+
+    const tituloDatos =
+        document.getElementById(
+            "tituloDatosEspecificos"
+        );
+
+
+    if (tituloDatos) {
+
+        tituloDatos.textContent =
+            `Datos específicos de ${nombre}`;
+    }
+
+
+    if (!id_menu) {
+
+        document.getElementById(
+            "camposDinamicos"
+        ).innerHTML =
+            "";
+
+
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                `/api/plantillas/menu/${id_menu}`
+            );
+
+
+        if (!respuesta.ok) {
+
+            console.error(
+                "No se pudo cargar la plantilla."
+            );
+
+
+            return;
+        }
+
 
         const plantilla =
-        await plantillaRespuesta.json();
+            await respuesta.json();
 
 
+        window.plantillaActual =
+            plantilla;
 
 
         const campos =
-            plantilla.plantilla_json?.estructura?.campos || [];
-
-
+            plantilla
+                .plantilla_json
+                ?.estructura
+                ?.campos || [];
 
 
         generarCampos(
@@ -686,625 +2171,267 @@ async function editarFicha(id_ficha){
         );
 
 
+        /*
+         * =====================================================
+         * ABRIR FORMULARIO PARA NUEVA FICHA
+         * =====================================================
+         */
+
+        cerrarTipoFicha();
 
 
-
-
-
-
-
-
-
-        // ===============================
-        // Datos dinámicos
-        // ===============================
-
-
-        let datos = {};
-
-
-
-        try{
-
-
-            datos =
-            ficha.datos_json
-            ? JSON.parse(ficha.datos_json)
-            : {};
-
-
-
-        }catch(e){
-
-
-            console.warn(
-                "Error leyendo datos_json",
-                e
+        const modalFicha =
+            document.getElementById(
+                "modalFicha"
             );
 
 
-        }
+        modalFicha.style.display =
+            "flex";
 
 
+        /*
+         * El menú elegido queda guardado en el modal.
+         */
+
+        modalFicha.dataset.idFicha =
+            "";
 
 
+        modalFicha.dataset.idMenu =
+            String(id_menu);
 
 
-        document
-        .querySelectorAll(".campo-dinamico")
-        .forEach(input=>{
+        fichaEditando =
+            null;
 
 
-
-            const nombre =
-            input.dataset.campo;
-
-
-
-            if(datos[nombre] !== undefined){
-
-
-                input.value =
-                datos[nombre];
-
-
-            }
-
-
-
-        });
-
-
-
-
-
-
-
-
-
-        // ===============================
-        // Botón actualizar
-        // ===============================
+        relacionesPendientes =
+            [];
 
 
         document.getElementById(
             "btnGuardarFicha"
-        )
-        .textContent =
-        "Actualizar ficha";
+        ).textContent =
+            "Guardar ficha";
 
 
+        document.getElementById(
+            "tituloModalFicha"
+        ).textContent =
+            "Nueva ficha";
 
 
+        /*
+         * LIMPIAR FORMULARIO
+         */
 
+        document.getElementById(
+            "tituloFicha"
+        ).value =
+            "";
 
-    }catch(error){
 
+        document.getElementById(
+            "resumenFicha"
+        ).value =
+            "";
 
 
-        console.error(
-            "Error cargando ficha para editar:",
-            error
-        );
+        document.getElementById(
+            "textoFicha"
+        ).value =
+            "";
 
 
+        document.getElementById(
+            "imagenFicha"
+        ).value =
+            "";
 
-    }
 
+        document.getElementById(
+            "labelImagenFicha"
+        ).textContent =
+            "Seleccionar imagen";
 
-}
 
-function cerrarVistaFicha(){
+        /*
+         * IMAGEN ACTUAL
+         */
 
-    document.getElementById("modalVistaFicha")
-    .style.display="none";
-
-}
-
-
-
-
-
-
-// ===================================
-// MULTIMEDIA
-// ===================================
-
-
-function verMultimediaFicha(id_ficha, titulo){
-
-    fichaSeleccionada = id_ficha;
-
-    nombreFichaSeleccionada = titulo;
-
-    cargarVentana("multimedia", true);
-
-}
-
-
-// ===================================
-// NUEVA FICHA
-// ===================================
-document.addEventListener("click", function(e){
-
-
-    if(e.target.id === "nuevaFicha"){
-
-
-        console.log("Abriendo selector de tipo");
-
-
-        const modal =
-        document.getElementById("modalTipoFicha");
-
-
-        if(modal){
-
-            modal.style.display="flex";
-
-            cargarTiposFicha();
-
-        }
-
-
-    }
-
-
-});
-
-
-
-// ===================================
-// CERRAR MODAL FICHA
-// ===================================
-
-function cerrarFicha(){
-
-    document.getElementById("modalFicha")
-    .style.display="none";
-
-}
-
-
-
-
-// ===================================
-// GUARDAR FICHA
-// ===================================
-async function guardarFicha(){
-
-    const id_ficha =
-    document
-    .getElementById("modalFicha")
-    .dataset.idFicha;
-
-    const titulo =
-    document.getElementById("tituloFicha").value.trim();
-
-    if(titulo === ""){
-
-        mostrarMensaje(
-            "Campos obligatorios",
-            "Debe ingresar un título para la ficha."
-        );
-
-        document.getElementById("tituloFicha").focus();
-
-        return;
-
-    }
-
-    const formulario = new FormData();
-
-    // ===============================
-    // Construir datos_json
-    // ===============================
-
-    const datos = {};
-
-    document
-        .querySelectorAll(".campo-dinamico")
-        .forEach(campo=>{
-
-            datos[campo.dataset.campo] = campo.value;
-
-        });
-
-    // ===============================
-    // Datos de la ficha
-    // ===============================
-
-    let id_menu =
-    document.getElementById("tipoFicha").value;
-
-    if(!id_menu){
-
-        id_menu =
-        document
-        .getElementById("modalFicha")
-        .dataset.idMenu;
-
-    }
-
-    formulario.append("id_menu", id_menu);
-
-    formulario.append("titulo", titulo);
-
-    formulario.append(
-        "resumen",
-        document.getElementById("resumenFicha").value
-    );
-
-    formulario.append(
-        "texto",
-        document.getElementById("textoFicha").value
-    );
-
-    formulario.append(
-        "visible",
-        document.getElementById("visibleFicha").checked ? 1 : 0
-    );
-
-    formulario.append(
-        "datos_json",
-        JSON.stringify(datos)
-    );
-
-    const imagen =
-    document.getElementById("imagenFicha").files[0];
-
-    if(imagen){
-
-        formulario.append("imagen", imagen);
-
-    }
-
-    try{
-
-        let url = "/api/fichas";
-        let metodo = "POST";
-
-        if(id_ficha){
-
-            url = `/api/fichas/${id_ficha}`;
-            metodo = "PUT";
-
-        }
-
-        const respuesta =
-        await window.fetchProtegido(url,{
-
-            method: metodo,
-
-            body: formulario
-
-        });
-
-        const resultado =
-        await respuesta.json();
-
-        if(!respuesta.ok){
-
-            mostrarMensaje(
-                "No se pudo guardar",
-                resultado.error
+        const imagenActual =
+            document.getElementById(
+                "imagenActualFicha"
             );
 
-            return;
 
+        if (imagenActual) {
+
+            imagenActual.src =
+                "";
+
+
+            imagenActual.style.display =
+                "none";
         }
 
-        const idGuardado =
-        id_ficha || resultado.id_ficha;
 
-        fichaEditando = idGuardado;
+        const contenedorImagenActual =
+            document.getElementById(
+                "contenedorImagenActual"
+            );
 
-        await guardarEtiquetasFicha(idGuardado);
 
-        await window.fetchProtegido(
+        if (contenedorImagenActual) {
 
-            `/api/relacion-ficha/${idGuardado}`,
-
-            {
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
-                },
-
-                body:JSON.stringify({
-
-                    relaciones:
-                    relacionesPendientes.map(r=>({
-
-                        id_ficha_destino:r.id_ficha_destino,
-
-                        tipo_relacion:r.tipo_relacion
-
-                    }))
-
-                })
-
-            }
-
-        );
-
-        relacionesPendientes = [];
-
-        cerrarFicha();
-
-        document
-        .getElementById("modalFicha")
-        .dataset.idFicha = "";
-
-        document
-        .getElementById("btnGuardarFicha")
-        .textContent = "Guardar ficha";
-
-        cargarFichas();
-
-    }catch(error){
-
-        console.error(
-            "Error guardando ficha:",
-            error
-        );
-
-        mostrarMensaje(
-            "Error",
-            "Ocurrió un error al guardar la ficha."
-        );
-
-    }
-
-}
-
-// ===================================
-// ELIMINAR FICHA
-// ===================================
-async function eliminarFicha(id_ficha){
-
-    console.log("BOTON ELIMINAR PRESIONADO:", id_ficha);
-
-    const confirmar =
-    confirm(
-        "¿Eliminar esta ficha?"
-    );
-
-    if(!confirmar){
-        return;
-    }
-
-    try{
-
-        const respuesta =
-        await window.fetchProtegido(
-            `/api/fichas/${id_ficha}`,
-            {
-                method:"DELETE"
-            }
-        );
-
-        const resultado =
-        await respuesta.json();
-
-        if(!respuesta.ok){
-
-            alert(resultado.error);
-
-            return;
-
+            contenedorImagenActual.style.display =
+                "none";
         }
 
-        alert(resultado.mensaje);
 
-        cargarFichas();
+        /*
+         * VISIBLE
+         */
 
-    }
-    catch(error){
-
-        console.error(
-            "Error eliminando ficha:",
-            error
-        );
-
-        alert("Ocurrió un error al eliminar la ficha.");
-
-    }
-
-}
+        document.getElementById(
+            "visibleFicha"
+        ).checked =
+            true;
 
 
+        /*
+         * CAMPOS DINÁMICOS
+         */
 
-// ===================================
-// CERRAR MULTIMEDIA
-// ===================================
-
-function cerrarMultimedia(){
-
-    document.getElementById("modalMultimedia")
-    .style.display="none";
-
-}
-
-
-document.addEventListener(
-"change",
-async function(e){
-
-
-    if(e.target.id !== "tipoFicha"){
-        return;
-    }
-
-
-    const id_menu = e.target.value;
-
-    const nombre =
-    e.target.options[e.target.selectedIndex].text;
-
-    document.getElementById("nombreTipoFicha").textContent =
-    nombre;
-
-    document.getElementById("tituloDatosEspecificos").textContent =
-    `Datos específicos de ${nombre}`;
-
-
-    if(!id_menu){
-
-        document.getElementById("camposDinamicos").innerHTML="";
-
-        return;
-    }
-
-
-    try{
-
-        const respuesta = await window.fetchProtegido(`/api/plantillas/menu/${id_menu}`);
-
-        const plantilla = await respuesta.json();
-
-        window.plantillaActual = plantilla;
-
-        const campos =
-            plantilla.plantilla_json?.estructura?.campos || [];
-
-        generarCampos(campos);
-
-        // abrir el formulario
-        cerrarTipoFicha();
-        document.getElementById("modalFicha").style.display = "flex";
-
-        document.getElementById("modalFicha").dataset.idFicha = "";
-
-        document.getElementById("modalFicha").dataset.idMenu = "";
-
-        document.getElementById("btnGuardarFicha")
-        .textContent = "Guardar ficha";
-
-        document.getElementById("tituloModalFicha")
-        .textContent = "Nueva ficha";
-
-        // Limpiar formulario nueva ficha
-
-        document.getElementById("tituloFicha").value = "";
-
-        document.getElementById("resumenFicha").value = "";
-
-        document.getElementById("textoFicha").value = "";
-
-        document.getElementById("imagenFicha").value = "";
-
-        document.getElementById("labelImagenFicha").textContent =
-        "Seleccionar imagen";
-
-
-        // borrar modo edición
-        document.getElementById("modalFicha").dataset.idFicha = "";
-
-        document.getElementById("modalFicha").dataset.idMenu = "";
-
-
-        // limpiar imagen actual
-        const imagenActual =
-        document.getElementById("imagenActualFicha");
-
-        imagenActual.src = "";
-
-        imagenActual.style.display = "none";
-
-        document.getElementById("contenedorImagenActual")
-        .style.display = "none";
-
-
-        // valores iniciales
-        document.getElementById("visibleFicha").checked = true;
-
-
-        // limpiar campos dinámicos
         document
-        .querySelectorAll(".campo-dinamico")
-        .forEach(campo=>{
-            campo.value = "";
-        });
+            .querySelectorAll(
+                ".campo-dinamico"
+            )
+            .forEach(campo => {
+
+                campo.value =
+                    "";
+            });
+
+
+        /*
+         * ETIQUETAS
+         */
 
         await cargarEtiquetasFicha();
 
 
-        // ===============================
-        // Relaciones ficha-ficha nuevas
-        // ===============================
-
-        fichaEditando = null;
-
-        relacionesPendientes = [];
-
+        /*
+         * RELACIONES
+         */
 
         const selectRelacion =
-        document.getElementById("fichaRelacion");
+            document.getElementById(
+                "fichaRelacion"
+            );
 
 
         const tipoRelacion =
-        document.getElementById("tipoRelacion");
+            document.getElementById(
+                "tipoRelacion"
+            );
 
 
+        if (selectRelacion) {
 
-        if(selectRelacion){
+            selectRelacion.disabled =
+                false;
 
-            selectRelacion.disabled = false;
 
             await cargarFichasDisponibles();
-
         }
 
 
-        if(tipoRelacion){
+        if (tipoRelacion) {
 
-            tipoRelacion.disabled = false;
-
+            tipoRelacion.disabled =
+                false;
         }
 
 
         mostrarRelacionesPendientes();
 
 
-
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Error cargando plantilla:",
             error
         );
-
     }
+}
 
 
-});
+/*
+ * =========================================================
+ * EVENTO CHANGE
+ *
+ * Se registra una sola vez.
+ * =========================================================
+ */
 
-// ===================================
-// CARGAR TIPOS DE FICHA
-// ===================================
+if (!window.__fichasEventoTipoRegistrado) {
 
-async function cargarTiposFicha(){
+    document.addEventListener(
+        "change",
+        cambioTipoFicha
+    );
 
-    try{
+
+    window.__fichasEventoTipoRegistrado =
+        true;
+}
+
+
+/* =========================================================
+   CARGAR TIPOS DE FICHA / MENÚES
+========================================================= */
+
+async function cargarTiposFicha() {
+
+    try {
 
         const respuesta =
-        await window.fetchProtegido("/api/menus");
+            await window.fetchProtegido(
+                "/api/menus"
+            );
+
+
+        if (!respuesta.ok) {
+
+            console.error(
+                "Error obteniendo menús:",
+                respuesta.status
+            );
+
+
+            return;
+        }
 
 
         const menus =
-        await respuesta.json();
+            await respuesta.json();
 
 
         const select =
-        document.getElementById("tipoFicha");
+            document.getElementById(
+                "tipoFicha"
+            );
 
 
-        if(!select){
-            console.error("No existe tipoFicha");
+        if (!select) {
+
+            console.error(
+                "No existe tipoFicha"
+            );
+
+
             return;
         }
 
@@ -1316,680 +2443,917 @@ async function cargarTiposFicha(){
         `;
 
 
-        menus.forEach(menu=>{
-
+        menus.forEach(menu => {
 
             const opcion =
-            document.createElement("option");
+                document.createElement(
+                    "option"
+                );
 
 
-            opcion.value = menu.id_menu;
-
-            opcion.textContent = menu.nombre;
-
-
-            select.appendChild(opcion);
+            opcion.value =
+                menu.id_menu;
 
 
+            opcion.textContent =
+                menu.nombre;
+
+
+            select.appendChild(
+                opcion
+            );
         });
 
 
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Error cargando tipos:",
             error
         );
-
     }
-
 }
 
 
-// ===================================
-// GENERAR CAMPOS DINAMICOS
-// ===================================
-function generarCampos(campos){
+/* =========================================================
+   GENERAR CAMPOS DINÁMICOS
+========================================================= */
 
+function generarCampos(campos) {
 
     const contenedor =
-    document.getElementById("camposDinamicos");
+        document.getElementById(
+            "camposDinamicos"
+        );
 
 
-    contenedor.innerHTML="";
+    if (!contenedor) {
 
+        console.error(
+            "No existe camposDinamicos."
+        );
 
-    if(!campos || campos.length===0){
-
-        contenedor.innerHTML =
-        "<p>No hay atributos definidos para este tipo</p>";
 
         return;
     }
 
 
-    campos.forEach(campo=>{
+    contenedor.innerHTML =
+        "";
 
+
+    if (
+        !campos ||
+        campos.length === 0
+    ) {
+
+        contenedor.innerHTML =
+            "<p>No hay atributos definidos para este tipo</p>";
+
+
+        return;
+    }
+
+
+    campos.forEach(campo => {
 
         contenedor.innerHTML += `
 
-        <div class="campo-dinamico-item">
+            <div class="campo-dinamico-item">
 
-            <label>
-                ${campo.etiqueta || campo.nombre}
-            </label>
+                <label>
+                    ${
+                        campo.etiqueta ||
+                        campo.nombre
+                    }
+                </label>
 
-            <input
-                type="${campo.tipo || "text"}"
-                class="campo-dinamico"
-                data-campo="${campo.nombre}"
-            >
 
-        </div>
+                <input
+                    type="${campo.tipo || "text"}"
+                    class="campo-dinamico"
+                    data-campo="${campo.nombre}"
+                >
+
+            </div>
 
         `;
-
-
     });
-
 }
 
 
-function cerrarTipoFicha(){
+/* =========================================================
+   CERRAR TIPO FICHA
+========================================================= */
 
-    document.getElementById("modalTipoFicha")
-    .style.display="none";
+function cerrarTipoFicha() {
 
-}
-
-function volverMenus(){
-
-    menuSeleccionado = null;
-
-    nombreMenuSeleccionado = "";
-
-    cargarVentana("menus");
-
-}
+    const modal =
+        document.getElementById(
+            "modalTipoFicha"
+        );
 
 
-function abrirEliminarFicha(id){
+    if (modal) {
 
-    fichaEliminar = id;
-
-    document
-        .getElementById("modalEliminarFicha")
-        .style.display = "flex";
-
-}
-
-function cerrarEliminarFicha(){
-
-    fichaEliminar = null;
-
-    document
-        .getElementById("modalEliminarFicha")
-        .style.display = "none";
-
+        modal.style.display =
+            "none";
+    }
 }
 
 
-async function confirmarEliminarFicha(){
+/* =========================================================
+   VOLVER MENÚS
+========================================================= */
 
-    if(!fichaEliminar){
+function volverMenus() {
+
+    menuSeleccionado =
+        null;
+
+
+    nombreMenuSeleccionado =
+        "";
+
+
+    cargarVentana(
+        "menus"
+    );
+}
+
+
+/* =========================================================
+   ELIMINAR FICHA - MODAL
+========================================================= */
+
+function abrirEliminarFicha(id) {
+
+    fichaEliminar =
+        id;
+
+
+    document.getElementById(
+        "modalEliminarFicha"
+    ).style.display =
+        "flex";
+}
+
+
+function cerrarEliminarFicha() {
+
+    fichaEliminar =
+        null;
+
+
+    document.getElementById(
+        "modalEliminarFicha"
+    ).style.display =
+        "none";
+}
+
+
+async function confirmarEliminarFicha() {
+
+    if (!fichaEliminar) {
         return;
     }
 
-    try{
 
-        const respuesta = await window.fetchProtegido(
+    try {
 
-            `/api/fichas/${fichaEliminar}`,
+        const respuesta =
+            await window.fetchProtegido(
 
-            {
-                method:"DELETE"
-            }
+                `/api/fichas/${fichaEliminar}`,
 
-        );
+                {
+                    method: "DELETE"
+                }
+            );
+
 
         const resultado =
-        await respuesta.json();
+            await respuesta.json();
 
-        if(!respuesta.ok){
+
+        if (!respuesta.ok) {
 
             cerrarEliminarFicha();
 
+
             mostrarMensaje(
-                resultado.error,
-                "error"
+                "Error",
+                resultado.error
             );
 
-            return;
 
+            return;
         }
+
 
         cerrarEliminarFicha();
 
-        cargarFichas();
 
+        await cargarFichas();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
     }
-    catch(error){
-
-        console.error(error);
-
-    }
-
 }
 
 
-function cerrarMensaje(){
+/* =========================================================
+   CERRAR MENSAJE
+========================================================= */
 
-    document
-        .getElementById("modalMensajeFicha")
-        .style.display = "none";
+function cerrarMensaje() {
 
+    const modal =
+        document.getElementById(
+            "modalMensajeFicha"
+        );
+
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+    }
 }
 
 
+/* =========================================================
+   ETIQUETAS
+========================================================= */
 
-async function cargarEtiquetasFicha(seleccionadas = []){
+async function cargarEtiquetasFicha(
+    seleccionadas = []
+) {
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/etiquetas"
+            );
+
+
+        if (!respuesta.ok) {
+
+            console.error(
+                "No se pudieron cargar las etiquetas."
+            );
+
+
+            return;
+        }
+
+
+        const etiquetas =
+            await respuesta.json();
+
+
+        const contenedor =
+            document.getElementById(
+                "listaEtiquetasFicha"
+            );
+
+
+        if (!contenedor) {
+            return;
+        }
+
+
+        contenedor.innerHTML =
+            "";
+
+
+        etiquetas
+            .filter(
+                etiqueta =>
+                    etiqueta.activo
+            )
+            .forEach(etiqueta => {
+
+                contenedor.innerHTML += `
+
+                    <label class="item-etiqueta">
+
+                        <input
+                            type="checkbox"
+                            class="checkbox-etiqueta"
+                            value="${etiqueta.id_etiqueta}"
+
+                            ${
+                                seleccionadas.includes(
+                                    etiqueta.id_etiqueta
+                                )
+                                    ? "checked"
+                                    : ""
+                            }
+                        >
+
+                        ${etiqueta.nombre}
+
+                    </label>
+
+                `;
+            });
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando etiquetas:",
+            error
+        );
+    }
+}
+
+
+async function obtenerEtiquetasFicha(
+    idFicha
+) {
 
     const respuesta =
-    await window.fetchProtegido("/api/etiquetas");
+        await window.fetchProtegido(
+            `/api/fichas/${idFicha}/etiquetas`
+        );
+
+
+    if (!respuesta.ok) {
+        return [];
+    }
+
 
     const etiquetas =
-    await respuesta.json();
+        await respuesta.json();
 
-    const contenedor =
-    document.getElementById("listaEtiquetasFicha");
 
-    contenedor.innerHTML = "";
-
-    etiquetas
-    .filter(etiqueta => etiqueta.activo)
-    .forEach(etiqueta=>{
-
-        contenedor.innerHTML +=
-        `
-        <label class="item-etiqueta">
-
-            <input
-                type="checkbox"
-                class="checkbox-etiqueta"
-                value="${etiqueta.id_etiqueta}"
-                ${seleccionadas.includes(etiqueta.id_etiqueta) ? "checked" : ""}>
-
-            ${etiqueta.nombre}
-
-        </label>
-        `;
-
-    });
-
+    return etiquetas.map(
+        etiqueta =>
+            etiqueta.id_etiqueta
+    );
 }
 
 
-async function obtenerEtiquetasFicha(idFicha){
-
-    const respuesta =
-    await window.fetchProtegido(`/api/fichas/${idFicha}/etiquetas`);
-
-    const etiquetas =
-    await respuesta.json();
-
-    return etiquetas.map(etiqueta => etiqueta.id_etiqueta);
-
-}
-
-function obtenerEtiquetasSeleccionadas(){
+function obtenerEtiquetasSeleccionadas() {
 
     return Array.from(
-
-        document.querySelectorAll(".checkbox-etiqueta:checked")
-
-    ).map(checkbox => Number(checkbox.value));
-
+        document.querySelectorAll(
+            ".checkbox-etiqueta:checked"
+        )
+    ).map(
+        checkbox =>
+            Number(
+                checkbox.value
+            )
+    );
 }
 
-async function guardarEtiquetasFicha(idFicha){
+
+async function guardarEtiquetasFicha(
+    idFicha
+) {
 
     const etiquetas =
-    obtenerEtiquetasSeleccionadas();
-
-    await window.fetchProtegido(
-
-        `/api/fichas/${idFicha}/etiquetas`,
-
-        {
-
-            method:"PUT",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
-            body:JSON.stringify({
-
-                etiquetas:etiquetas
-
-            })
-
-        }
-
-    );
-
-}
-
-async function cargarFichasDisponibles(idActual){
+        obtenerEtiquetasSeleccionadas();
 
 
     const respuesta =
-    await window.fetchProtegido("/api/fichas");
+        await window.fetchProtegido(
+
+            `/api/fichas/${idFicha}/etiquetas`,
+
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    etiquetas:
+                        etiquetas
+                })
+            }
+        );
 
 
-    const fichas =
-    await respuesta.json();
+    if (!respuesta.ok) {
+
+        console.error(
+            "No se pudieron guardar las etiquetas."
+        );
+    }
+}
 
 
+/* =========================================================
+   FICHAS DISPONIBLES PARA RELACIONAR
+========================================================= */
 
-    const select =
-    document.getElementById("fichaRelacion");
+async function cargarFichasDisponibles(
+    idActual
+) {
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/fichas"
+            );
 
 
+        if (!respuesta.ok) {
+            return;
+        }
 
-    if(!select){
+
+        const fichas =
+            await respuesta.json();
+
+
+        const select =
+            document.getElementById(
+                "fichaRelacion"
+            );
+
+
+        if (!select) {
+            return;
+        }
+
+
+        select.innerHTML = `
+            <option value="">
+                Seleccionar ficha...
+            </option>
+        `;
+
+
+        fichas.forEach(ficha => {
+
+            if (
+                ficha.id_ficha !=
+                idActual
+            ) {
+
+                select.innerHTML += `
+
+                    <option
+                        value="${ficha.id_ficha}"
+                    >
+                        ${ficha.titulo}
+                    </option>
+
+                `;
+            }
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando fichas disponibles:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   CARGAR RELACIONES
+========================================================= */
+
+async function cargarRelacionesFicha(
+    id_ficha
+) {
+
+    const respuesta =
+        await window.fetchProtegido(
+            `/api/relacion-ficha/${id_ficha}`
+        );
+
+
+    if (!respuesta.ok) {
         return;
     }
-
-
-
-    select.innerHTML = `
-
-        <option value="">
-            Seleccionar ficha...
-        </option>
-
-    `;
-
-
-
-    fichas.forEach(ficha=>{
-
-
-        if(ficha.id_ficha != idActual){
-
-
-            select.innerHTML += `
-
-            <option value="${ficha.id_ficha}">
-
-                ${ficha.titulo}
-
-            </option>
-
-            `;
-
-
-        }
-
-
-    });
-
-
-}
-
-
-async function cargarRelacionesFicha(id_ficha){
-
-
-    const respuesta =
-    await window.fetchProtegido(`/api/relacion-ficha/${id_ficha}`);
-
 
 
     const relaciones =
-    await respuesta.json();
-
+        await respuesta.json();
 
 
     const contenedor =
-    document.getElementById("listaRelacionesFicha");
+        document.getElementById(
+            "listaRelacionesFicha"
+        );
 
 
-
-    if(!contenedor){
+    if (!contenedor) {
         return;
     }
 
 
+    contenedor.innerHTML =
+        "";
 
-    contenedor.innerHTML = "";
 
-
-
-    if(relaciones.length === 0){
-
+    if (relaciones.length === 0) {
 
         contenedor.innerHTML = `
-
             <p>
                 No hay fichas relacionadas
             </p>
-
         `;
 
 
         return;
-
     }
 
 
-
-    relaciones.forEach(relacion=>{
-
+    relaciones.forEach(relacion => {
 
         contenedor.innerHTML += `
 
+            <div class="item-relacion-ficha">
 
-        <div class="item-relacion-ficha">
-
-
-            <span>
-
-                ${relacion.ficha_relacionada}
-
-            </span>
-
-
-
-            <small>
-
-                ${relacion.tipo_relacion}
-
-            </small>
+                <span>
+                    ${
+                        relacion.ficha_relacionada ||
+                        relacion.titulo ||
+                        `Ficha ${relacion.id_ficha_destino}`
+                    }
+                </span>
 
 
-
-            <button
-
-            class="btn-eliminar"
-
-            onclick="eliminarRelacionFicha(${relacion.id_relacion})">
+                <small>
+                    ${relacion.tipo_relacion}
+                </small>
 
 
-                ✖
+                <button
+                    class="btn-eliminar"
 
+                    onclick="
+                        eliminarRelacionFicha(
+                            ${relacion.id_relacion}
+                        )
+                    "
+                >
+                    ✖
+                </button>
 
-            </button>
-
-
-        </div>
-
+            </div>
 
         `;
-
-
     });
-
-
 }
 
-async function agregarRelacionFicha(){
+
+/* =========================================================
+   AGREGAR RELACIÓN
+========================================================= */
+
+async function agregarRelacionFicha() {
+
+    const select =
+        document.getElementById(
+            "fichaRelacion"
+        );
+
+
+    if (!select) {
+        return;
+    }
 
 
     const destino =
-    document.getElementById("fichaRelacion").value;
+        select.value;
 
 
     const tipo =
-    document.getElementById("tipoRelacion").value;
+        document.getElementById(
+            "tipoRelacion"
+        ).value;
 
 
-
-    if(!destino){
+    if (!destino) {
 
         mostrarMensaje(
             "Ficha requerida",
             "Debe seleccionar una ficha para crear la relación."
         );
 
-        return;
 
+        return;
     }
 
 
-
-    if(!tipo){
+    if (!tipo) {
 
         mostrarMensaje(
             "Tipo de relación requerido",
             "Debe seleccionar qué relación existe entre las fichas antes de agregarla."
         );
 
-        return;
 
+        return;
     }
 
 
-
-    // NUEVA FICHA TODAVÍA NO EXISTE
-    if(!fichaEditando){
-
-
-        const texto =
-        document.getElementById("fichaRelacion")
-        .options[
-        document.getElementById("fichaRelacion").selectedIndex
-        ].text;
-
-        relacionesPendientes.push({
-
-            id_ficha_destino:Number(destino),
-
-            tipo_relacion:tipo,
-
-            titulo:texto
-
-        });
-
-        mostrarRelacionesPendientes();
+    const existe =
+        relacionesPendientes.some(
+            relacion =>
+                Number(
+                    relacion.id_ficha_destino
+                ) ===
+                Number(destino)
+                &&
+                relacion.tipo_relacion ===
+                tipo
+        );
 
 
-        mostrarRelacionesPendientes();
+    if (existe) {
+
+        mostrarMensaje(
+            "Relación duplicada",
+            "Esta relación ya fue agregada."
+        );
 
 
         return;
-
     }
 
 
+    const opcion =
+        select.options[
+            select.selectedIndex
+        ];
 
-    // FICHA EXISTENTE
-    // guardar temporalmente hasta presionar Guardar ficha
 
-    const texto =
-    document.getElementById("fichaRelacion")
-    .options[
-    document.getElementById("fichaRelacion").selectedIndex
-    ].text;
+    const titulo =
+        opcion
+            ? opcion.text.trim()
+            : `Ficha ID: ${destino}`;
+
 
     relacionesPendientes.push({
 
-        id_ficha_destino:Number(destino),
+        id_ficha_destino:
+            Number(destino),
 
-        tipo_relacion:tipo,
+        tipo_relacion:
+            tipo,
 
-        titulo:texto
+        titulo:
+            titulo
 
     });
 
-    mostrarRelacionesPendientes();
-
 
     mostrarRelacionesPendientes();
 
 
+    select.value =
+        "";
 }
 
-function mostrarRelacionesPendientes(){
+
+/* =========================================================
+   MOSTRAR RELACIONES PENDIENTES
+========================================================= */
+
+function mostrarRelacionesPendientes() {
 
     const contenedor =
-    document.getElementById("listaRelacionesFicha");
+        document.getElementById(
+            "listaRelacionesFicha"
+        );
 
-    if(!contenedor){
+
+    if (!contenedor) {
         return;
     }
 
-    contenedor.innerHTML = "";
 
-    if(relacionesPendientes.length === 0){
+    contenedor.innerHTML =
+        "";
+
+
+    if (
+        relacionesPendientes.length ===
+        0
+    ) {
 
         contenedor.innerHTML =
-        "<p>No hay relaciones agregadas</p>";
+            "<span class='sin-relaciones'>No hay relaciones agregadas</span>";
+
 
         return;
-
     }
 
-    relacionesPendientes.forEach((relacion,index)=>{
 
-        contenedor.innerHTML += `
+    relacionesPendientes.forEach(
+        (relacion, index) => {
 
-        <div class="item-relacion-ficha">
+            contenedor.innerHTML += `
 
-            <span>
+                <div class="item-relacion-ficha">
 
-                ${relacion.titulo || `Ficha ID: ${relacion.id_ficha_destino}`}
+                    <span>
+                        ${
+                            relacion.titulo ||
+                            `Ficha ID: ${relacion.id_ficha_destino}`
+                        }
+                    </span>
 
-            </span>
 
-            <small>
+                    <small>
+                        ${relacion.tipo_relacion}
+                    </small>
 
-                ${relacion.tipo_relacion}
 
-            </small>
+                    <button
+                        class="btn-eliminar"
 
-            <button
-                class="btn-eliminar"
-                onclick="eliminarRelacionFichaEditar(${index})">
+                        onclick="
+                            eliminarRelacionFichaEditar(
+                                ${index}
+                            )
+                        "
+                    >
+                        ✖
+                    </button>
 
-                ✖
+                </div>
 
-            </button>
-
-        </div>
-
-        `;
-
-    });
-
+            `;
+        }
+    );
 }
 
 
-async function eliminarRelacionFichaEditar(index){
+/* =========================================================
+   ELIMINAR RELACIÓN
+========================================================= */
 
-    const relacion = relacionesPendientes[index];
+async function eliminarRelacionFichaEditar(
+    index
+) {
+
+    const relacion =
+        relacionesPendientes[index];
 
 
-    if(!relacion){
+    if (!relacion) {
         return;
     }
 
 
-    // Si la relación ya existe en la BD
-    if(relacion.id_relacion){
+    /*
+     * Si ya existe en BD
+     */
 
-        try{
+    if (relacion.id_relacion) {
+
+        try {
 
             const respuesta =
-            await window.fetchProtegido(
-                `/api/relacion-ficha/${relacion.id_relacion}`,
-                {
-                    method:"DELETE"
-                }
-            );
+                await window.fetchProtegido(
+
+                    `/api/relacion-ficha/${relacion.id_relacion}`,
+
+                    {
+                        method: "DELETE"
+                    }
+                );
 
 
-            if(!respuesta.ok){
+            if (!respuesta.ok) {
 
                 const error =
-                await respuesta.json();
+                    await respuesta.json();
 
-                alert(error.error);
+
+                mostrarMensaje(
+                    "Error",
+                    error.error ||
+                    "No se pudo eliminar la relación."
+                );
+
 
                 return;
-
             }
 
 
-        }catch(error){
+        } catch (error) {
 
             console.error(
                 "Error eliminando relación:",
                 error
             );
 
+
             return;
-
         }
-
     }
 
 
-    // quitarla del arreglo temporal
-    relacionesPendientes.splice(index,1);
+    relacionesPendientes.splice(
+        index,
+        1
+    );
 
 
     mostrarRelacionesPendientes();
-
 }
 
 
-function eliminarRelacionPendiente(index){
+/* =========================================================
+   ELIMINAR RELACIÓN PENDIENTE
+========================================================= */
 
+function eliminarRelacionPendiente(
+    index
+) {
 
-    relacionesPendientes.splice(index,1);
+    relacionesPendientes.splice(
+        index,
+        1
+    );
 
 
     mostrarRelacionesPendientes();
-
-
 }
 
-function mostrarFechaArgentina(fecha){
 
-    if(!fecha){
+/* =========================================================
+   FECHA ARGENTINA
+========================================================= */
+
+function mostrarFechaArgentina(
+    fecha
+) {
+
+    if (!fecha) {
         return "-";
     }
 
-    const partes = fecha.split(" ");
+
+    const partes =
+        fecha.split(" ");
+
 
     return `${partes[0]} ${partes[1]}`;
-
 }
 
-function mostrarMensaje(titulo, mensaje){
+
+/* =========================================================
+   MENSAJE
+========================================================= */
+
+function mostrarMensaje(
+    titulo,
+    mensaje
+) {
 
     const modal =
-    document.getElementById("modalMensajeFicha");
+        document.getElementById(
+            "modalMensajeFicha"
+        );
 
 
-    if(!modal){
+    if (!modal) {
 
-        alert(`${titulo}\n\n${mensaje}`);
+        alert(
+            `${titulo}\n\n${mensaje}`
+        );
+
+
         return;
-
     }
 
 
-    document.getElementById("tituloMensaje")
-    .textContent = titulo;
+    document.getElementById(
+        "tituloMensaje"
+    ).textContent =
+        titulo;
 
 
-    document.getElementById("textoMensaje")
-    .textContent = mensaje;
+    document.getElementById(
+        "textoMensaje"
+    ).textContent =
+        mensaje;
 
 
-    modal.style.display = "flex";
-
+    modal.style.display =
+        "flex";
 }

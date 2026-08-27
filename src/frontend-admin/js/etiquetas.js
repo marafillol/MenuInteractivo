@@ -307,8 +307,8 @@ async function vistaPreviaEtiqueta(id){
     document.getElementById("vistaDescripcionEtiqueta").value =
     etiqueta.descripcion ?? "";
 
-    document.getElementById("vistaActivoEtiqueta").value =
-    etiqueta.activo ? "Activa" : "Inactiva";
+    document.getElementById("vistaActivoEtiqueta").textContent =
+        etiqueta.activo ? "Activa" : "Inactiva";
 
     document.getElementById("modalVistaEtiqueta")
     .style.display = "flex";

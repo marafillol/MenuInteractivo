@@ -2,29 +2,29 @@ console.log("Modulo multimedia cargado");
 
 let multimediaEditando = null;
 let multimediaEliminar = null;
-// ===================================
-// CARGAR TODA LA MULTIMEDIA
-// ===================================
+
 async function cargarMultimedia(){
 
-
     const panel =
-    document.getElementById("panelFichaMultimedia");
+        document.getElementById("panelFichaMultimedia");
 
     const vistaGeneral =
-    document.getElementById("vistaGeneralMultimedia");
+        document.getElementById("vistaGeneralMultimedia");
 
-    const volver =
-    document.getElementById("barraVolverFicha");
+    const cabeceraGeneral =
+        document.getElementById("cabeceraMultimediaGeneral");
+
+    const cabeceraFicha =
+        document.getElementById("cabeceraMultimediaFicha");
 
     const botonNuevo =
-    document.getElementById("nuevoMultimedia");
+        document.getElementById("nuevoMultimedia");
 
     const titulo =
-    document.getElementById("tituloMultimedia");
+        document.getElementById("tituloMultimedia");
 
     const subtitulo =
-    document.getElementById("subtituloMultimedia");
+        document.getElementById("subtituloMultimedia");
 
 
     try{
@@ -32,148 +32,373 @@ async function cargarMultimedia(){
         let url = "/api/multimedia";
 
 
+        /* =================================================
+           MULTIMEDIA ASOCIADA A UNA FICHA
+        ================================================= */
+
         if(fichaSeleccionada){
 
             url = `/api/multimedia/ficha/${fichaSeleccionada}`;
 
-            panel.style.display = "grid";
+            /* ==========================================
+               MOSTRAR CABECERA DE LA FICHA
+            ========================================== */
+
+            panel.style.display = "block";
 
             vistaGeneral.style.display = "none";
 
-            volver.style.display = "inline-block";
+            cabeceraGeneral.style.display = "none";
+
+            cabeceraFicha.style.display = "flex";
 
             botonNuevo.style.display = "none";
 
-            titulo.textContent =
-                `Multimedia de ${nombreFichaSeleccionada}`;
+            const botonNuevoFicha =
+                document.getElementById("nuevoMultimediaFicha");
 
-            await cargarResumenFicha();
+            if(botonNuevoFicha){
+                botonNuevoFicha.style.display = "inline-flex";
+            }
 
-        }else{
 
-             // Ocultar completamente el panel de ficha
-             panel.style.display = "none";
+            /* ==========================================
+               OBTENER NOMBRE DE LA FICHA
+            ========================================== */
 
-             // Mostrar únicamente la vista general
-             vistaGeneral.style.display = "block";
+            try{
 
-             volver.style.display = "none";
+                const respuestaFicha =
+                    await window.fetchProtegido(
+                        `/api/fichas/${fichaSeleccionada}`
+                    );
 
-             botonNuevo.style.display = "inline-block";
+                const ficha =
+                    await respuestaFicha.json();
 
-             titulo.textContent = "Gestión de Multimedia";
 
-             subtitulo.textContent = "";
+                const tituloFicha =
+                    document.getElementById(
+                        "tituloFichaMultimedia"
+                    );
 
-             // Limpiar el contenido del panel de ficha
-             document.getElementById("tarjetaFichaMultimedia").innerHTML = "";
-             document.getElementById("listaMultimedia").innerHTML = "";
+                const nombreFicha =
+                    document.getElementById(
+                        "nombreFichaMultimedia"
+                    );
+
+
+                if(tituloFicha){
+
+                    tituloFicha.textContent =
+                        "Multimedia asociada a la ficha";
+
+                }
+
+
+                if(nombreFicha){
+
+                    nombreFicha.textContent =
+                        ficha.titulo || "Ficha sin nombre";
+
+                }
+
+
+            }catch(error){
+
+                console.error(
+                    "Error obteniendo nombre de la ficha:",
+                    error
+                );
+
+            }
 
         }
 
 
-        const respuesta =
-        await window.fetchProtegido(url);
+        /* =================================================
+           MULTIMEDIA GENERAL
+        ================================================= */
 
-        const multimedia = await respuesta.json();
-        const esConsulta = window.usuarioActual?.rol === "consulta";
+        else{
+
+            const botonNuevoFicha =
+                document.getElementById("nuevoMultimediaFicha");
+
+            if(botonNuevoFicha){
+                botonNuevoFicha.style.display = "none";
+            }
+
+            panel.style.display = "none";
+
+            vistaGeneral.style.display = "block";
+
+            cabeceraGeneral.style.display = "flex";
+
+            cabeceraFicha.style.display = "none";
+
+            botonNuevo.style.display = "inline-flex";
+
+
+            titulo.textContent =
+                "Gestión de Multimedia";
+
+
+
+
+
+            document.getElementById(
+                "listaMultimedia"
+            ).innerHTML = "";
+
+        }
+
+
+        /* =================================================
+           CONSULTAR MULTIMEDIA
+        ================================================= */
+
+        console.log(
+            "Consultando:",
+            url
+        );
+
+
+        const respuesta =
+            await window.fetchProtegido(url);
+
+
+        if(!respuesta.ok){
+
+            throw new Error(
+                `Error HTTP ${respuesta.status}`
+            );
+
+        }
+
+
+        const multimedia =
+            await respuesta.json();
+
+
+        console.log(
+            "Multimedia recibida:",
+            multimedia
+        );
+
+
+        const esConsulta =
+            window.usuarioActual?.rol === "consulta";
+
+
+        /* =================================================
+           ELEGIR CONTENEDOR
+        ================================================= */
 
         let contenedor;
+
 
         if(fichaSeleccionada){
 
             contenedor =
-            document.getElementById("listaMultimedia");
+                document.getElementById(
+                    "listaMultimedia"
+                );
 
         }else{
 
             contenedor =
-            document.getElementById("listaMultimediaGeneral");
+                document.getElementById(
+                    "listaMultimediaGeneral"
+                );
 
         }
+
 
         if(!contenedor){
 
-            console.error("No existe listaMultimedia");
+            console.error(
+                "No existe el contenedor de multimedia"
+            );
+
             return;
 
         }
+
 
         contenedor.innerHTML = "";
 
-        if(multimedia.length === 0){
 
-            contenedor.innerHTML =
-            "<p>No hay multimedia cargada.</p>";
+        /* =================================================
+           SIN MULTIMEDIA
+        ================================================= */
+
+        if(!Array.isArray(multimedia) || multimedia.length === 0){
+
+            contenedor.innerHTML = `
+
+                <div class="sin-multimedia">
+
+                    <span class="sin-multimedia-icono">
+
+                        <i
+                            data-lucide="images"
+                            aria-hidden="true">
+                        </i>
+
+                    </span>
+
+
+                    <div>
+
+                        <strong>
+                            No hay multimedia asociada
+                        </strong>
+
+                        <p>
+                            Esta ficha todavía no tiene
+                            archivos multimedia asociados.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            if(window.lucide){
+
+                window.lucide.createIcons();
+
+            }
+
 
             return;
 
         }
 
-        multimedia.forEach(item=>{
 
-            console.log(item.ruta_archivo);
+        /* =================================================
+           CREAR TARJETAS
+        ================================================= */
+
+        multimedia.forEach(item => {
+
             let vista = "";
 
+
+            /* ---------------------------------------------
+               IMAGEN
+            --------------------------------------------- */
 
             if(item.tipo_multi === "imagen"){
 
                 vista = `
+
                     <img
                         src="/${item.ruta_archivo}"
                         class="thumb-multi"
-                        onerror="this.src='/imagenes/default.png'">
+                        onerror="
+                            this.src='/imagenes/default.png'
+                        ">
+
                 `;
 
             }
+
+
+            /* ---------------------------------------------
+               VIDEO
+            --------------------------------------------- */
+
             else if(item.tipo_multi === "video"){
 
                 vista = `
+
                     <video
                         class="thumb-multi"
                         muted
                         preload="metadata">
 
-                        <source src="/${item.ruta_archivo}" type="video/mp4">
+                        <source
+                            src="/${item.ruta_archivo}"
+                            type="video/mp4">
 
                     </video>
 
-
                 `;
 
             }
+
+
+            /* ---------------------------------------------
+               AUDIO
+            --------------------------------------------- */
+
             else if(item.tipo_multi === "audio"){
 
                 vista = `
+
                     <div class="thumb-audio">
-                        <i data-lucide="music" aria-hidden="true"></i>
+
+                        <i
+                            data-lucide="music"
+                            aria-hidden="true">
+                        </i>
+
                     </div>
+
                 `;
 
             }
+
+
+            /* ---------------------------------------------
+               PDF
+            --------------------------------------------- */
+
             else{
 
                 vista = `
+
                     <div class="thumb-pdf">
-                        <i data-lucide="file-text" aria-hidden="true"></i>
+
+                        <i
+                            data-lucide="file-text"
+                            aria-hidden="true">
+                        </i>
+
                     </div>
+
                 `;
 
             }
 
+
             const iconosPorTipo = {
+
                 imagen: "image",
                 video: "video",
                 audio: "music",
                 pdf: "file-text"
+
             };
 
-            const icono = iconosPorTipo[item.tipo_multi] || "folder";
 
+            const icono =
+                iconosPorTipo[item.tipo_multi] ||
+                "folder";
+
+
+            /* ---------------------------------------------
+               TARJETA
+            --------------------------------------------- */
 
             contenedor.innerHTML += `
 
                 <article class="tarjeta-multimedia">
+
 
                     <div class="multimedia-preview">
 
@@ -181,64 +406,121 @@ async function cargarMultimedia(){
 
                     </div>
 
+
                     <div class="info-multimedia">
+
 
                         <div class="encabezado-multimedia">
 
+
                             <span class="icono-multimedia">
-                                <i data-lucide="${icono}" aria-hidden="true"></i>
+
+                                <i
+                                    data-lucide="${icono}"
+                                    aria-hidden="true">
+                                </i>
+
                             </span>
+
 
                             <div>
 
                                 <h3 class="titulo-multimedia">
-                                    ${item.tipo_multi.charAt(0).toUpperCase() + item.tipo_multi.slice(1)}
+
+                                    ${
+                                        item.tipo_multi
+                                            .charAt(0)
+                                            .toUpperCase()
+                                        +
+                                        item.tipo_multi.slice(1)
+                                    }
+
                                 </h3>
 
+
                                 <small class="descripcion-tipo">
-                                    ${item.descripcion || "Sin descripción"}
+
+                                    ${
+                                        item.descripcion ||
+                                        "Sin descripción"
+                                    }
+
                                 </small>
 
                             </div>
 
+
                         </div>
+
 
                         <div class="datos-multimedia">
 
-                            <small>
-                                <i data-lucide="folder" aria-hidden="true"></i>
-                                Ficha #${item.id_ficha}
-                            </small>
 
                             <small>
-                                <i data-lucide="calendar" aria-hidden="true"></i>
-                                ${item.creado || "-"}
+
+                                <i
+                                    data-lucide="folder"
+                                    aria-hidden="true">
+                                </i>
+
+                                Ficha #${item.id_ficha}
+
                             </small>
+
+
+                            <small>
+
+                                <i
+                                    data-lucide="calendar"
+                                    aria-hidden="true">
+                                </i>
+
+                                ${item.creado || "-"}
+
+                            </small>
+
 
                         </div>
 
+
                         <div class="acciones-multimedia">
+
 
                             <button
                                 class="btn-vista"
-                                onclick="vistaPreviaMultimedia(${item.id_multi})">
+                                onclick="
+                                    vistaPreviaMultimedia(
+                                        ${item.id_multi}
+                                    )
+                                ">
 
                                 Vista previa
 
                             </button>
 
+
                             ${!esConsulta ? `
+
                                 <button
                                     class="btn-editar"
-                                    onclick="editarMultimedia(${item.id_multi})">
+                                    onclick="
+                                        editarMultimedia(
+                                            ${item.id_multi}
+                                        )
+                                    ">
 
                                     Editar
 
                                 </button>
 
+
                                 <button
                                     class="btn-eliminar"
-                                    onclick="eliminarMultimedia(${item.id_multi})">
+                                    onclick="
+                                        eliminarMultimedia(
+                                            ${item.id_multi}
+                                        )
+                                    ">
 
                                     Eliminar
 
@@ -246,9 +528,12 @@ async function cargarMultimedia(){
 
                             ` : ""}
 
+
                         </div>
 
+
                     </div>
+
 
                 </article>
 
@@ -256,9 +541,17 @@ async function cargarMultimedia(){
 
         });
 
+
+        /* =================================================
+           ICONOS
+        ================================================= */
+
         if(window.lucide){
+
             window.lucide.createIcons();
+
         }
+
 
     }catch(error){
 
@@ -271,119 +564,71 @@ async function cargarMultimedia(){
 
 }
 
-
-
-// ===================================
-// RESUMEN DE LA FICHA SELECCIONADA
-// ===================================
-async function cargarResumenFicha(){
-
-    if(!fichaSeleccionada){
-        return;
-    }
-
-    try{
-
-        const respuesta =
-        await window.fetchProtegido(`/api/fichas/${fichaSeleccionada}`);
-
-        const ficha =
-        await respuesta.json();
-
-        const tarjeta =
-        document.getElementById("tarjetaFichaMultimedia");
-
-        tarjeta.innerHTML = `
-
-            <div class="tarjeta-ficha-lateral">
-
-                <img
-                    src="/${(ficha.imagen || "").replace("public/","")}"
-                    class="imagen-ficha-lateral"
-                    onerror="this.src='/imagenes/default.png'">
-
-                <h2>
-                    ${ficha.titulo}
-                </h2>
-
-                <p class="resumen-ficha-lateral">
-                    ${ficha.resumen || "Sin resumen"}
-                </p>
-
-                <hr>
-
-                <p>
-                    <strong>Menú</strong><br>
-                    ${ficha.menu || ficha.id_menu}
-                </p>
-
-                <p>
-                    <strong>ID de la ficha</strong><br>
-                    ${ficha.id_ficha}
-                </p>
-
-                <p>
-                    <strong>Estado</strong><br>
-                    ${ficha.visible == 1 ? "Visible" : "Oculta"}
-                </p>
-
-                <p>
-                    <strong>Multimedia asociada</strong><br>
-                    Archivos relacionados con esta ficha
-                </p>
-
-            </div>
-
-        `;
-
-    }catch(error){
-
-        console.error(
-            "Error cargando ficha:",
-            error
-        );
-
-    }
-
-}
-
-
 // ===================================
 // VISTA PREVIA MULTIMEDIA
 // ===================================
-async function vistaPreviaMultimedia(id_multi){
 
-    try{
+async function vistaPreviaMultimedia(id_multi) {
+
+    try {
 
         const respuesta =
-        await window.fetchProtegido(`/api/multimedia/${id_multi}`);
+            await window.fetchProtegido(
+                `/api/multimedia/${id_multi}`
+            );
 
-        const item =
-        await respuesta.json();
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP ${respuesta.status}`);
+        }
 
-        if(!item){
+        const item = await respuesta.json();
+
+        if (!item) {
 
             alert("No se encontró el archivo.");
             return;
 
         }
 
+
+        /* =================================================
+           RUTA
+        ================================================= */
+
         const ruta =
-        "/" + item.ruta_archivo.replace("public/","");
+            "/" + item.ruta_archivo.replace("public/", "");
+
+
+        /* =================================================
+           VISOR DEL ARCHIVO
+        ================================================= */
 
         let visor = "";
 
-        switch(item.tipo_multi){
+
+        switch (item.tipo_multi) {
+
+
+            /* ---------------------------------------------
+               IMAGEN
+            --------------------------------------------- */
 
             case "imagen":
 
                 visor = `
                     <img
                         src="${ruta}"
-                        class="preview-imagen-multi">
+                        class="preview-imagen-multi"
+                        alt="Imagen multimedia"
+                        onerror="this.src='/imagenes/default.png'">
                 `;
+
                 break;
 
+
+            /* ---------------------------------------------
+               VIDEO
+            --------------------------------------------- */
 
             case "video":
 
@@ -393,293 +638,320 @@ async function vistaPreviaMultimedia(id_multi){
                         preload="metadata"
                         class="preview-video-multi">
 
-                        <source
-                            src="${ruta}">
+                        <source src="${ruta}">
 
                         Tu navegador no soporta video.
 
                     </video>
                 `;
+
                 break;
 
+
+            /* ---------------------------------------------
+               AUDIO
+            --------------------------------------------- */
 
             case "audio":
 
                 visor = `
-                    <audio
-                        controls
-                        class="preview-audio-multi">
+                    <div class="preview-audio-contenedor">
 
-                        <source
-                            src="${ruta}">
+                        <div class="preview-audio-icono">
 
-                        Tu navegador no soporta audio.
+                            <i
+                                data-lucide="music"
+                                aria-hidden="true">
+                            </i>
 
-                    </audio>
+                        </div>
+
+                        <audio
+                            controls
+                            class="preview-audio-multi">
+
+                            <source src="${ruta}">
+
+                            Tu navegador no soporta audio.
+
+                        </audio>
+
+                    </div>
                 `;
+
                 break;
 
+
+            /* ---------------------------------------------
+               PDF
+            --------------------------------------------- */
 
             case "pdf":
 
                 visor = `
-
-                    <div class="preview-documento">
-
-                        <div class="encabezado-documento">
-
-                            <div class="icono-documento">
-                                <i data-lucide="file-text" aria-hidden="true"></i>
-                            </div>
-
-                            <div>
-
-                                <h3>Documento PDF</h3>
-
-                                <p>
-                                    ${item.descripcion || "Sin descripción"}
-                                </p>
-
-                            </div>
-
-                        </div>
+                    <div class="preview-pdf-contenedor">
 
                         <iframe
                             src="${ruta}"
                             class="preview-pdf-multi">
                         </iframe>
 
-                        <div class="acciones-documento">
-
-                            <button
-                                class="btn-vista"
-                                onclick="abrirDocumentoCompleto('${ruta}')">
-
-                                <i data-lucide="maximize-2" aria-hidden="true"></i>
-                                Ver documento completo
-
-                            </button>
-
-
-
-                        </div>
-
                     </div>
-
                 `;
 
                 break;
 
 
+            /* ---------------------------------------------
+               OTRO
+            --------------------------------------------- */
+
             default:
 
                 visor = `
-                    <a
-                        href="${ruta}"
-                        target="_blank">
+                    <div class="preview-archivo-generico">
 
-                        Descargar archivo
+                        <i
+                            data-lucide="file"
+                            aria-hidden="true">
+                        </i>
 
-                    </a>
+                        <span>
+                            Archivo multimedia
+                        </span>
+
+                    </div>
                 `;
 
         }
 
 
+        /* =================================================
+           CONTENIDO COMPLETO DEL MODAL
+        ================================================= */
+
         document.getElementById(
-        "contenidoVistaMultimedia"
+            "contenidoVistaMultimedia"
         ).innerHTML = `
 
-        <div class="vista-previa-multimedia-panel">
+
+            <div class="vista-previa-multimedia-panel">
 
 
-            <!-- VISOR -->
+                <!-- =================================================
+                     DOCUMENTO / ARCHIVO
+                ================================================= -->
 
-            <section class="visor-multimedia-panel">
-
-
-                <div class="titulo-visor-multimedia">
-
-                    <span>
-                        ${item.tipo_multi.toUpperCase()}
-                    </span>
-
-                </div>
+                <section class="visor-multimedia-panel">
 
 
-                <div class="visor-contenido-multimedia">
-
-                    ${visor}
-
-                </div>
-
-
-            </section>
-
-
-
-
-
-            <!-- INFORMACION -->
-
-            <section class="informacion-multimedia-panel">
-
-
-                <h3>
-                    Información del archivo
-                </h3>
-
-
-
-                <div class="datos-multimedia-grid">
-
-
-
-                    <div class="dato-multimedia">
+                    <div class="titulo-visor-multimedia">
 
                         <span>
-                            ID Multimedia
+                            ${item.tipo_multi.toUpperCase()}
                         </span>
-
-                        <strong>
-                            ${item.id_multi}
-                        </strong>
 
                     </div>
 
 
+                    <div class="visor-contenido-multimedia">
 
-
-                    <div class="dato-multimedia">
-
-                        <span>
-                            Ficha asociada
-                        </span>
-
-                        <strong>
-                            ${item.id_ficha}
-                        </strong>
+                        ${visor}
 
                     </div>
 
 
+                </section>
 
 
 
-                    <div class="dato-multimedia">
+                <!-- =================================================
+                     DATOS
+                ================================================= -->
 
-                        <span>
-                            Tipo
-                        </span>
-
-                        <strong>
-                            ${item.tipo_multi}
-                        </strong>
-
-                    </div>
+                <section class="informacion-multimedia-panel">
 
 
+                    <div class="titulo-informacion-multimedia">
 
+                        <div class="icono-info-multimedia">
 
+                            <i
+                                data-lucide="file-text"
+                                aria-hidden="true">
+                            </i>
 
-                    <div class="dato-multimedia">
+                        </div>
 
-                        <span>
-                            Descripción
-                        </span>
+                        <div>
 
-                        <strong>
-                            ${item.descripcion || "-"}
-                        </strong>
+                            <span>
+                                INFORMACIÓN
+                            </span>
 
-                    </div>
+                            <h3>
+                                Datos del archivo
+                            </h3>
 
-
-
-
-                    <div class="dato-multimedia">
-
-                        <span>
-                            Estado
-                        </span>
-
-                        <strong>
-                            ${item.activo == 1 ? "Activo" : "Inactivo"}
-                        </strong>
+                        </div>
 
                     </div>
 
 
+                    <div class="datos-multimedia-grid">
 
 
+                        <div class="dato-multimedia">
 
-                    <div class="dato-multimedia">
+                            <span>
+                                ID Multimedia
+                            </span>
 
-                        <span>
-                            Creado
-                        </span>
+                            <strong>
+                                ${item.id_multi}
+                            </strong>
 
-                        <strong>
-                            ${item.creado || "-"}
-                        </strong>
+                        </div>
+
+
+                        <div class="dato-multimedia">
+
+                            <span>
+                                Ficha asociada
+                            </span>
+
+                            <strong>
+                                Ficha #${item.id_ficha}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato-multimedia">
+
+                            <span>
+                                Tipo
+                            </span>
+
+                            <strong>
+                                ${
+                                    item.tipo_multi
+                                        .charAt(0)
+                                        .toUpperCase()
+                                    +
+                                    item.tipo_multi.slice(1)
+                                }
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato-multimedia dato-descripcion">
+
+                            <span>
+                                Descripción
+                            </span>
+
+                            <strong>
+                                ${item.descripcion || "Sin descripción"}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato-multimedia">
+
+                            <span>
+                                Estado
+                            </span>
+
+                            <strong>
+                                ${item.activo == 1
+                                    ? "Activo"
+                                    : "Inactivo"}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato-multimedia">
+
+                            <span>
+                                Creado
+                            </span>
+
+                            <strong>
+                                ${item.creado || "-"}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato-multimedia">
+
+                            <span>
+                                Actualizado
+                            </span>
+
+                            <strong>
+                                ${item.actualizado || "-"}
+                            </strong>
+
+                        </div>
+
 
                     </div>
 
 
+                    <!-- UBICACIÓN -->
 
-
-
-                    <div class="dato-multimedia">
+                    <div class="ruta-multimedia">
 
                         <span>
-                            Actualizado
+                            Ubicación del archivo
                         </span>
 
-                        <strong>
-                            ${item.actualizado || "-"}
-                        </strong>
+                        <code>
+                            ${item.ruta_archivo}
+                        </code>
 
                     </div>
 
 
-                </div>
+                </section>
 
 
-
-                <div class="ruta-multimedia">
-
-                    <span>
-                        Ubicación del archivo
-                    </span>
-
-
-                    <code>
-                        ${item.ruta_archivo}
-                    </code>
-
-                </div>
-
-
-
-            </section>
-
-
-        </div>
+            </div>
 
         `;
 
-        if(window.lucide){
+
+        /* =================================================
+           ICONOS
+        ================================================= */
+
+        if (window.lucide) {
+
             window.lucide.createIcons();
+
         }
 
+
+        /* =================================================
+           ABRIR MODAL
+        ================================================= */
 
         document.getElementById(
             "modalVistaMultimedia"
         ).style.display = "flex";
 
-    }catch(error){
 
-        console.error(error);
+    } catch (error) {
+
+        console.error(
+            "Error mostrando vista previa:",
+            error
+        );
 
     }
 
@@ -726,32 +998,38 @@ function cerrarVistaMultimedia(){
 
 }
 
-async function nuevoMultimedia(){
+function nuevoMultimedia() {
 
+    const modal =
+        document.getElementById("modalMultimediaNuevo");
+
+    if (!modal) {
+        console.error("No se encontró modalMultimediaNuevo");
+        return;
+    }
+
+    // Estamos en multimedia general
+    window.multimediaFichaActual = false;
+
+    // Mostrar selector de ficha
+    const contenedorFicha =
+        document.getElementById("contenedorFichaMultimedia");
+
+    if (contenedorFicha) {
+        contenedorFicha.style.display = "block";
+    }
+
+    // Cargar fichas
+    cargarFichasMultimedia();
+
+    // Estado nuevo
     multimediaEditando = null;
-
-    await cargarFichasMultimedia();
-
-    document.getElementById("multiDescripcion").value = "";
-    document.getElementById("multiTipo").selectedIndex = 0;
-    document.getElementById("multiArchivo").value = "";
-    document.getElementById("multiActivo").checked = true;
-
-    const ficha = document.getElementById("multiFicha");
-    if(ficha.options.length > 0){
-        ficha.selectedIndex = 0;
-    }
-
-    const preview = document.getElementById("previewArchivoActual");
-    if(preview){
-        preview.remove();
-    }
 
     document.querySelector(
         "#modalMultimediaNuevo h3"
     ).textContent = "Nuevo archivo";
 
-    document.getElementById("modalMultimediaNuevo").style.display = "flex";
+    modal.style.display = "flex";
 }
 
 async function cargarFichasMultimedia(){
@@ -785,51 +1063,134 @@ async function cargarFichasMultimedia(){
 
 
 
-async function guardarMultimedia(){
+async function guardarMultimedia() {
+
+    const archivoInput =
+        document.getElementById("multiArchivo");
 
     const archivo =
-    document.getElementById("multiArchivo").files[0];
+        archivoInput?.files[0];
 
-    // ==========================
-    // Validación de archivo
-    // ==========================
 
-    if(!multimediaEditando && !archivo){
+    // ==========================================
+    // VALIDAR ARCHIVO
+    // ==========================================
+
+    if (!multimediaEditando && !archivo) {
 
         mostrarMensaje(
             "Campo obligatorio",
             "Debe seleccionar un archivo multimedia."
         );
 
-        document.getElementById("multiArchivo").focus();
+        if (archivoInput) {
+            archivoInput.focus();
+        }
 
         return;
+    }
+
+
+    // ==========================================
+    // DETERMINAR FICHA
+    // ==========================================
+
+    let idFicha;
+
+
+    /*
+     * Si estamos entrando desde una ficha,
+     * usamos directamente fichaSeleccionada.
+     */
+
+    if (window.multimediaFichaActual) {
+
+        idFicha = fichaSeleccionada;
 
     }
 
-    const formulario = new FormData();
+    /*
+     * Si estamos en multimedia general,
+     * usamos el selector.
+     */
+
+    else {
+
+        const selectFicha =
+            document.getElementById("multiFicha");
+
+        idFicha =
+            selectFicha?.value;
+
+    }
+
+
+    // ==========================================
+    // VALIDAR FICHA
+    // ==========================================
+
+    if (!idFicha) {
+
+        mostrarMensaje(
+            "Ficha obligatoria",
+            "Debe seleccionar una ficha para asociar el archivo."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "Guardando multimedia:",
+        {
+            idFicha,
+            fichaDesdeSeleccion: window.multimediaFichaActual,
+            archivo: archivo?.name
+        }
+    );
+
+
+    // ==========================================
+    // CREAR FORM DATA
+    // ==========================================
+
+    const formulario =
+        new FormData();
+
 
     formulario.append(
         "id_ficha",
-        document.getElementById("multiFicha").value
+        idFicha
     );
+
 
     formulario.append(
         "descripcion",
-        document.getElementById("multiDescripcion").value
+        document.getElementById(
+            "multiDescripcion"
+        ).value
     );
+
 
     formulario.append(
         "tipo_multi",
-        document.getElementById("multiTipo").value
+        document.getElementById(
+            "multiTipo"
+        ).value
     );
+
 
     formulario.append(
         "activo",
-        document.getElementById("multiActivo").checked ? 1 : 0
+        document.getElementById(
+            "multiActivo"
+        ).checked
+            ? 1
+            : 0
     );
 
-    if(archivo){
+
+    if (archivo) {
 
         formulario.append(
             "archivo",
@@ -838,69 +1199,137 @@ async function guardarMultimedia(){
 
     }
 
-    try{
 
-        const url =
-            multimediaEditando
-                ? `/api/multimedia/${multimediaEditando}`
-                : "/api/multimedia";
+    // ==========================================
+    // URL Y MÉTODO
+    // ==========================================
 
-        const metodo =
-            multimediaEditando
-                ? "PUT"
-                : "POST";
+    const url =
+        multimediaEditando
+            ? `/api/multimedia/${multimediaEditando}`
+            : "/api/multimedia";
+
+
+    const metodo =
+        multimediaEditando
+            ? "PUT"
+            : "POST";
+
+
+    try {
 
         const respuesta =
-        await window.fetchProtegido(
-            url,
-            {
-                method: metodo,
-                body: formulario
-            }
-        );
-
-        const resultado =
-        await respuesta.json();
-
-        if(!respuesta.ok){
-
-            mostrarMensaje(
-                "Error",
-                resultado.error || "No se pudo guardar la multimedia."
+            await window.fetchProtegido(
+                url,
+                {
+                    method: metodo,
+                    body: formulario
+                }
             );
 
-            return;
+
+        // ======================================
+        // LEER RESPUESTA DE FORMA SEGURA
+        // ======================================
+
+        const texto =
+            await respuesta.text();
+
+
+        let resultado = {};
+
+        try {
+
+            resultado =
+                texto
+                    ? JSON.parse(texto)
+                    : {};
+
+        } catch (errorJSON) {
+
+            console.error(
+                "El servidor no devolvió JSON:",
+                texto
+            );
+
+            throw new Error(
+                `El servidor respondió HTTP ${respuesta.status}`
+            );
 
         }
 
-        console.log(resultado);
+
+        // ======================================
+        // ERROR HTTP
+        // ======================================
+
+        if (!respuesta.ok) {
+
+            console.error(
+                "Error del servidor:",
+                resultado
+            );
+
+            mostrarMensaje(
+                "Error",
+                resultado.error ||
+                "No se pudo guardar la multimedia."
+            );
+
+            return;
+        }
+
+
+        // ======================================
+        // GUARDADO CORRECTO
+        // ======================================
+
+        console.log(
+            "Multimedia guardada correctamente:",
+            resultado
+        );
+
 
         multimediaEditando = null;
 
-        document.querySelector(
-            "#modalMultimediaNuevo h3"
-        ).textContent = "Nuevo archivo";
+
+        const titulo =
+            document.querySelector(
+                "#modalMultimediaNuevo h3"
+            );
+
+        if (titulo) {
+
+            titulo.textContent =
+                "Nuevo archivo";
+
+        }
+
 
         cerrarNuevoMultimedia();
 
-        cargarMultimedia();
 
-    }catch(error){
+        // Recargar multimedia
+        await cargarMultimedia();
+
+
+    } catch (error) {
 
         console.error(
             "Error guardando multimedia:",
             error
         );
 
+
         mostrarMensaje(
             "Error",
+            error.message ||
             "Ocurrió un error al guardar la multimedia."
         );
 
     }
 
 }
-
 
 
 
@@ -916,24 +1345,123 @@ function cerrarNuevoMultimedia(){
 
     multimediaEditando = null;
 
-    document.getElementById("modalMultimediaNuevo").style.display = "none";
+    const modal =
+        document.getElementById("modalMultimediaNuevo");
 
-    document.getElementById("multiFicha").selectedIndex = 0;
-    document.getElementById("multiDescripcion").value = "";
-    document.getElementById("multiTipo").selectedIndex = 0;
-    document.getElementById("multiActivo").checked = true;
-    document.getElementById("multiArchivo").value = "";
+    if(modal){
+        modal.style.display = "none";
+    }
+
+
+    // ==========================================
+    // RESTAURAR SELECTOR DE FICHA
+    // ==========================================
+
+    const contenedorFicha =
+        document.getElementById("contenedorFichaMultimedia");
+
+    if(contenedorFicha){
+
+        /*
+           Si seguimos dentro de una ficha,
+           permanece oculto.
+
+           Si estamos en multimedia general,
+           vuelve a mostrarse.
+        */
+
+        if(fichaSeleccionada){
+
+            contenedorFicha.style.display = "none";
+
+        }else{
+
+            contenedorFicha.style.display = "block";
+
+        }
+
+    }
+
+
+    window.multimediaFichaActual = false;
+
+
+    // ==========================================
+    // LIMPIAR CAMPOS
+    // ==========================================
+
+    const ficha =
+        document.getElementById("multiFicha");
+
+    if(ficha){
+        ficha.selectedIndex = 0;
+    }
+
+
+    const descripcion =
+        document.getElementById("multiDescripcion");
+
+    if(descripcion){
+        descripcion.value = "";
+    }
+
+
+    const tipo =
+        document.getElementById("multiTipo");
+
+    if(tipo){
+        tipo.selectedIndex = 0;
+    }
+
+
+    const activo =
+        document.getElementById("multiActivo");
+
+    if(activo){
+        activo.checked = true;
+    }
+
+
+    const archivo =
+        document.getElementById("multiArchivo");
+
+    if(archivo){
+        archivo.value = "";
+    }
+
+
+    // ==========================================
+    // ELIMINAR PREVIEW
+    // ==========================================
+
+    const preview =
+        document.getElementById("previewArchivoActual");
+
+    if(preview){
+
+        preview.style.display = "none";
+
+        preview.innerHTML = "";
+
+    }
+
 
     const infoArchivo =
-    document.getElementById("archivoActual");
+        document.getElementById("archivoActual");
 
     if(infoArchivo){
         infoArchivo.remove();
     }
 
-    document.querySelector(
-        "#modalMultimediaNuevo h3"
-    ).textContent = "Nuevo archivo";
+
+    const titulo =
+        document.querySelector(
+            "#modalMultimediaNuevo h3"
+        );
+
+    if(titulo){
+        titulo.textContent = "Nuevo archivo";
+    }
 
 }
 
@@ -1252,5 +1780,162 @@ async function editarMultimedia(id){
         console.error(error);
 
     }
+
+}
+
+function cargarMultimediaGeneral(){
+
+    fichaSeleccionada = null;
+
+    cargarMultimedia();
+
+}
+
+
+function nuevoMultimediaDesdeFicha() {
+
+    const modal =
+        document.getElementById("modalMultimediaNuevo");
+
+    if (!modal) {
+        console.error("No se encontró modalMultimediaNuevo");
+        return;
+    }
+
+    // ==========================================
+    // VERIFICAR FICHA ACTUAL
+    // ==========================================
+
+    if (!fichaSeleccionada) {
+
+        console.error(
+            "No hay una ficha seleccionada."
+        );
+
+        mostrarMensaje(
+            "Error",
+            "No se pudo determinar la ficha asociada."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "Nuevo multimedia para ficha:",
+        fichaSeleccionada
+    );
+
+
+    // ==========================================
+    // ESTAMOS CREANDO DESDE UNA FICHA
+    // ==========================================
+
+    window.multimediaFichaActual = true;
+
+    multimediaEditando = null;
+
+
+    // ==========================================
+    // OCULTAR SELECTOR DE FICHA
+    // ==========================================
+
+    const contenedorFicha =
+        document.getElementById(
+            "contenedorFichaMultimedia"
+        );
+
+    if (contenedorFicha) {
+
+        contenedorFicha.style.display = "none";
+
+    }
+
+
+    // ==========================================
+    // LIMPIAR FORMULARIO
+    // ==========================================
+
+    const descripcion =
+        document.getElementById("multiDescripcion");
+
+    const tipo =
+        document.getElementById("multiTipo");
+
+    const archivo =
+        document.getElementById("multiArchivo");
+
+    const activo =
+        document.getElementById("multiActivo");
+
+
+    if (descripcion) {
+
+        descripcion.value = "";
+
+    }
+
+
+    if (tipo) {
+
+        tipo.value = "imagen";
+
+    }
+
+
+    if (archivo) {
+
+        archivo.value = "";
+
+    }
+
+
+    if (activo) {
+
+        activo.checked = true;
+
+    }
+
+
+    // ==========================================
+    // OCULTAR ARCHIVO ACTUAL
+    // ==========================================
+
+    const preview =
+        document.getElementById(
+            "previewArchivoActual"
+        );
+
+    if (preview) {
+
+        preview.style.display = "none";
+
+        preview.innerHTML = "";
+
+    }
+
+
+    // ==========================================
+    // TÍTULO
+    // ==========================================
+
+    const titulo =
+        document.querySelector(
+            "#modalMultimediaNuevo h3"
+        );
+
+    if (titulo) {
+
+        titulo.textContent =
+            "Nuevo archivo";
+
+    }
+
+
+    // ==========================================
+    // ABRIR MODAL
+    // ==========================================
+
+    modal.style.display = "flex";
 
 }
