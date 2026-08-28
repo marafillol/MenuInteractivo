@@ -21,8 +21,27 @@
     background-color: #0a2645;
 }
 
+/* Fondo de mar en su propia capa: así el blur/opacidad para pruebas
+   no afecta al texto ni al resto del contenido (que están encima). */
+.pantalla-bienvenida::after{
+    content: "";
+    position: absolute;
+    inset: -20px; /* se agranda un poco para que el blur no deje bordes nítidos */
+    z-index: -1;
+
+    background-image: url("../img/mar.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    opacity: 1;       /* <- ir probando este valor (0 a 1) si querés atenuarlo */
+    filter: blur(0px); /* <- ir probando este valor (px) si querés desenfocarlo */
+
+    pointer-events: none;
+}
+
 /* Líneas decorativas de fondo: se ubican detrás del contenido y de la
-   viñeta, cubriendo toda la pantalla para acompañar la composición. */
+   viñeta, cubriendo toda la pantalla para acompañar la composición. 
 .lineas-decorativas{
     position: absolute;
     inset: 0;
@@ -34,15 +53,15 @@
     background-size: cover;
 
     pointer-events: none;
-}
+}*/
 
-.efecto-vigneta{
+/*.efecto-vigneta{
     position: absolute;
     inset: 0;
     z-index: 1;
 
     pointer-events: none;
-}
+}*/
 
 .contenido-bienvenida{
     position: relative;
@@ -58,12 +77,46 @@
     margin: 0 auto;
     padding: clamp(28px, 5vw, 56px) clamp(24px, 6vw, 64px);
 
+    /* ===================================================
+       CUADRO AZUL (estilo tomado de la tarjeta de login)
+       Descomentar este bloque y comentar el de "vidrio"
+       de abajo para volver a este estilo.
+    =================================================== */
+    /*
+    background: rgba(10, 38, 71, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(12px);
+    */
 
-    background: rgba(0, 0, 0, 0.18);
-    border-radius: 18px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(3px);
+    /* ===================================================
+       CUADRO VIDRIO (sin color, solo blur) - ACTIVO
+       Ir probando los valores de blur, border y box-shadow.
+    =================================================== */
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 15px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(20px); /* <- ir probando este valor (px) */
 }
+
+/* Borde interno decorativo, igual que en la tarjeta de login.
+   Es parte del "cuadro azul" de arriba; comentado por ahora
+   porque no pega con el estilo vidrio sin color. Descomentar
+   si se vuelve al estilo azul. */
+/*
+.contenido-bienvenida::before{
+    content: "";
+    position: absolute;
+    inset: 10px;
+
+    border: 1px solid rgba(216, 198, 161, 0.25);
+    border-radius: 10px;
+
+    pointer-events: none;
+}
+*/
 
 /* Logo del museo, centrado arriba del texto. */
 .logo-museo{
@@ -142,7 +195,7 @@
 
     .contenido-bienvenida{
         padding: 28px 20px;
-        border-radius: 14px;
+        border-radius: 15px;
     }
 
     .logo-museo{

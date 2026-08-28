@@ -5,7 +5,7 @@
 
 const fade = {
   id: 'fade',
-  defaultDuration: 400,
+  defaultDuration: 800,
   defaultEasing: 'ease',
 
   run(ctx) {
