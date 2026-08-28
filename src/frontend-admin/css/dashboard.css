@@ -1,7 +1,19 @@
+
 /* =========================================================
    DASHBOARD - MENUINTERACTIVO
    CENTRO DE DOCUMENTACIÓN HISTÓRICA
-   ========================================================= */
+
+   DISTRIBUCIÓN:
+   - Cabecera
+   - Resumen
+   - Accesos rápidos
+   - Actividad reciente
+   - Estadísticas
+   - Estado del contenido
+
+   ESTÉTICA ORIGINAL CONSERVADA
+   Azul institucional + celeste + dorado
+========================================================= */
 
 
 /* =========================================================
@@ -39,17 +51,36 @@
 
 
 /* =========================================================
-   CONTENEDOR PRINCIPAL
+   CONTENEDOR
 ========================================================= */
 
 .ventana.dashboard {
 
     width:100%;
+    max-width:none;
+
     box-sizing:border-box;
+
+    padding:0;
 
     background:transparent;
 
     color:var(--dash-azul-oscuro);
+
+}
+
+
+/* =========================================================
+   BLOQUES PRINCIPALES
+========================================================= */
+
+.dashboard .dashboard-bloque {
+
+    width:100%;
+
+    margin:0 0 28px;
+
+    box-sizing:border-box;
 
 }
 
@@ -64,14 +95,12 @@
 
     display:flex;
     align-items:center;
-    justify-content:space-between;
 
-    gap:30px;
+    min-height:122px;
 
-    min-height:150px;
+    margin-bottom:28px;
 
-    margin-bottom:32px;
-    padding:28px 32px;
+    padding:24px 28px;
 
     box-sizing:border-box;
 
@@ -84,20 +113,21 @@
         );
 
     border:1px solid rgba(22,58,97,.4);
-    border-left:7px solid var(--dash-dorado);
 
-    border-radius:16px;
+    border-left:6px solid var(--dash-dorado);
+
+    border-radius:14px;
 
     overflow:hidden;
 
     box-shadow:
-        0 10px 28px rgba(22,58,97,.22);
+        0 8px 22px rgba(22,58,97,.18);
 
 }
 
 
 /* =========================================================
-   DECORACIÓN DE CABECERA
+   DECORACIÓN CABECERA
 ========================================================= */
 
 .dashboard .cabecera-dashboard::before {
@@ -106,15 +136,15 @@
 
     position:absolute;
 
-    width:280px;
-    height:280px;
+    width:230px;
+    height:230px;
 
-    right:-100px;
-    top:-150px;
+    right:-80px;
+    top:-130px;
 
     border-radius:50%;
 
-    border:35px solid rgba(129,210,247,.08);
+    border:30px solid rgba(129,210,247,.08);
 
     pointer-events:none;
 
@@ -143,18 +173,20 @@
 
 
 /* =========================================================
-   CONTENIDO DE CABECERA
+   CONTENIDO CABECERA
 ========================================================= */
 
 .dashboard .dashboard-encabezado-contenido {
 
     position:relative;
+
     z-index:2;
 
     display:flex;
+
     align-items:center;
 
-    gap:20px;
+    gap:17px;
 
     min-width:0;
 
@@ -163,29 +195,32 @@
 
 .dashboard .dashboard-icono-titulo {
 
-    width:64px;
-    height:64px;
-    min-width:64px;
+    width:56px;
+    height:56px;
+
+    min-width:56px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
     background:var(--dash-dorado);
+
     color:var(--dash-azul-oscuro);
 
-    border-radius:14px;
+    border-radius:12px;
 
     box-shadow:
-        0 6px 15px rgba(0,0,0,.2);
+        0 5px 13px rgba(0,0,0,.2);
 
 }
 
 
 .dashboard .dashboard-icono-titulo svg {
 
-    width:32px;
-    height:32px;
+    width:28px;
+    height:28px;
 
     stroke-width:1.8;
 
@@ -196,14 +231,15 @@
 
     display:block;
 
-    margin-bottom:5px;
+    margin-bottom:4px;
 
     color:var(--dash-azul-claro);
 
-    font-size:11px;
+    font-size:9px;
+
     font-weight:700;
 
-    letter-spacing:1.8px;
+    letter-spacing:1.7px;
 
 }
 
@@ -216,38 +252,44 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:32px;
+    font-size:28px;
+
     font-weight:700;
 
-    letter-spacing:.5px;
+    letter-spacing:.4px;
 
 }
 
 
 .dashboard .descripcion-dashboard {
 
-    margin:8px 0 0;
+    margin:5px 0 0;
 
     color:var(--dash-azul-suave);
 
-    font-size:14px;
-    line-height:1.5;
+    font-size:12px;
+
+    line-height:1.4;
 
 }
 
 
 /* =========================================================
-   TITULOS GENERALES DE SECCIÓN
+   TITULOS DE SECCIÓN
 ========================================================= */
 
 .dashboard .dashboard-seccion-titulo {
 
     display:flex;
+
     align-items:center;
     justify-content:space-between;
 
-    margin:30px 0 15px;
-    padding:0 4px 10px;
+    gap:15px;
+
+    margin:0 0 13px;
+
+    padding:0 3px 9px;
 
     border-bottom:2px solid #B9D0DF;
 
@@ -256,20 +298,22 @@
 
 .dashboard .dashboard-seccion-titulo > div {
 
-    display:flex;
-    flex-direction:column;
+    min-width:0;
 
 }
 
 
 .dashboard .dashboard-seccion-titulo span {
 
+    display:block;
+
     color:var(--dash-azul-medio);
 
-    font-size:10px;
+    font-size:9px;
+
     font-weight:800;
 
-    letter-spacing:1.8px;
+    letter-spacing:1.7px;
 
 }
 
@@ -282,25 +326,19 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:20px;
+    font-size:18px;
 
     font-weight:700;
 
-}
-
-
-.dashboard .dashboard-seccion-titulo > i {
-
-    width:22px;
-    height:22px;
-
-    color:var(--dash-azul-medio);
+    line-height:1.2;
 
 }
+
+
 
 
 /* =========================================================
-   RESUMEN GENERAL
+   RESUMEN
 ========================================================= */
 
 .dashboard .grid-dashboard {
@@ -308,27 +346,32 @@
     display:grid;
 
     grid-template-columns:
-        repeat(5, minmax(150px,1fr));
+        repeat(5, minmax(0,1fr));
 
-    gap:16px;
-
-    margin-bottom:10px;
+    gap:12px;
 
 }
 
+
+/* =========================================================
+   TARJETAS DE RESUMEN
+========================================================= */
 
 .dashboard .tarjeta-dashboard {
 
     position:relative;
 
     display:flex;
+
     align-items:center;
 
-    gap:14px;
+    gap:12px;
 
-    min-height:105px;
+    min-width:0;
 
-    padding:18px;
+    min-height:92px;
+
+    padding:14px;
 
     box-sizing:border-box;
 
@@ -340,12 +383,13 @@
         );
 
     border:1px solid #39739B;
-    border-radius:13px;
+
+    border-radius:11px;
 
     overflow:hidden;
 
     box-shadow:
-        0 7px 18px rgba(22,58,97,.18);
+        0 6px 15px rgba(22,58,97,.16);
 
     transition:
         transform .2s ease,
@@ -361,11 +405,11 @@
 
     position:absolute;
 
-    width:90px;
-    height:90px;
+    width:75px;
+    height:75px;
 
-    right:-35px;
-    bottom:-45px;
+    right:-30px;
+    bottom:-38px;
 
     border-radius:50%;
 
@@ -376,12 +420,12 @@
 
 .dashboard .tarjeta-dashboard:hover {
 
-    transform:translateY(-4px);
+    transform:translateY(-3px);
 
     border-color:var(--dash-azul-claro);
 
     box-shadow:
-        0 12px 25px rgba(22,58,97,.28);
+        0 10px 21px rgba(22,58,97,.23);
 
 }
 
@@ -389,28 +433,32 @@
 .dashboard .icono-dashboard {
 
     position:relative;
+
     z-index:2;
 
-    width:48px;
-    height:48px;
-    min-width:48px;
+    width:42px;
+    height:42px;
+
+    min-width:42px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
     background:var(--dash-dorado);
+
     color:var(--dash-azul-oscuro);
 
-    border-radius:11px;
+    border-radius:9px;
 
 }
 
 
 .dashboard .icono-dashboard svg {
 
-    width:23px;
-    height:23px;
+    width:21px;
+    height:21px;
 
     stroke-width:2;
 
@@ -420,6 +468,7 @@
 .dashboard .tarjeta-dashboard-info {
 
     position:relative;
+
     z-index:2;
 
     min-width:0;
@@ -433,11 +482,13 @@
 
     color:var(--dash-azul-suave);
 
-    font-size:12px;
+    font-size:10px;
+
     font-weight:600;
 
     text-transform:uppercase;
-    letter-spacing:.7px;
+
+    letter-spacing:.6px;
 
 }
 
@@ -450,7 +501,8 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:29px;
+    font-size:25px;
+
     line-height:1;
 
     font-weight:700;
@@ -462,12 +514,19 @@
 
     display:block;
 
-    margin-top:5px;
+    margin-top:4px;
 
     color:#9FC4DA;
 
-    font-size:10px;
+    font-size:9px;
+
     line-height:1.2;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
 
 }
 
@@ -481,12 +540,16 @@
     display:grid;
 
     grid-template-columns:
-        repeat(2, minmax(280px,1fr));
+        repeat(4, minmax(0,1fr));
 
     gap:12px;
 
 }
 
+
+/* =========================================================
+   BOTÓN ACCESO
+========================================================= */
 
 .dashboard .acceso-dashboard {
 
@@ -496,12 +559,15 @@
 
     align-items:center;
 
-    gap:14px;
+    gap:11px;
 
     width:100%;
-    min-height:75px;
 
-    padding:14px 16px;
+    min-width:0;
+
+    min-height:70px;
+
+    padding:12px 13px;
 
     box-sizing:border-box;
 
@@ -512,14 +578,14 @@
     background:#FFFFFF;
 
     border:1px solid #B7CCDA;
-    border-left:5px solid var(--dash-azul-medio);
 
-    border-radius:10px;
+    border-left:4px solid var(--dash-azul-medio);
+
+    border-radius:9px;
 
     color:var(--dash-azul-oscuro);
 
-    box-shadow:
-        var(--dash-sombra-card);
+    box-shadow:var(--dash-sombra-card);
 
     transition:
         background .2s ease,
@@ -536,35 +602,44 @@
 
     border-color:var(--dash-azul-claro);
 
-    transform:translateX(3px);
+    transform:translateY(-2px);
 
     box-shadow:
-        0 6px 15px rgba(22,58,97,.14);
+        0 6px 15px rgba(22,58,97,.13);
 
 }
 
 
 .dashboard .acceso-icono {
 
-    width:42px;
-    height:42px;
+    width:38px;
+    height:38px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
     background:var(--dash-azul-suave);
+
     color:var(--dash-azul-oscuro);
 
-    border-radius:9px;
+    border-radius:8px;
 
 }
 
 
 .dashboard .acceso-icono svg {
 
-    width:21px;
-    height:21px;
+    width:19px;
+    height:19px;
+
+}
+
+
+.dashboard .acceso-contenido {
+
+    min-width:0;
 
 }
 
@@ -575,7 +650,9 @@
 
     color:var(--dash-azul-oscuro);
 
-    font-size:13px;
+    font-size:12px;
+
+    line-height:1.2;
 
 }
 
@@ -584,19 +661,23 @@
 
     display:block;
 
-    margin-top:4px;
+    margin-top:3px;
 
     color:var(--dash-texto-suave);
 
-    font-size:11px;
+    font-size:9px;
+
+    line-height:1.25;
 
 }
 
 
 .dashboard .acceso-flecha {
 
-    width:18px;
-    height:18px;
+    width:16px;
+    height:16px;
+
+    flex:0 0 16px;
 
     color:var(--dash-azul-medio);
 
@@ -608,36 +689,32 @@
 
 .dashboard .acceso-dashboard:hover .acceso-flecha {
 
-    transform:translateX(4px);
+    transform:translateX(3px);
 
 }
 
 
 /* =========================================================
-   CONTENIDO RECIENTE
-   CONTENEDOR GENERAL
+   ACTIVIDAD RECIENTE
 ========================================================= */
 
-.dashboard-panel-reciente {
+.dashboard .dashboard-panel-reciente {
 
     display:grid;
 
     grid-template-columns:
         repeat(3, minmax(0,1fr));
 
-    gap:16px;
+    gap:12px;
 
 }
 
 
 /* =========================================================
-   BLOQUES DE CONTENIDO RECIENTE
-
-   IMPORTANTE:
-   Se diferencia de los bloques de estadísticas y estado.
+   BLOQUES
 ========================================================= */
 
-.dashboard-panel-reciente .bloque-dashboard {
+.dashboard .bloque-dashboard {
 
     position:relative;
 
@@ -645,53 +722,34 @@
 
     background:#FFFFFF;
 
-    border:1px solid #C9D9E4;
+    border:1px solid var(--dash-borde);
 
-    border-radius:12px;
+    border-radius:11px;
 
     overflow:hidden;
 
     box-shadow:
-        0 4px 13px rgba(22,58,97,.07);
-
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease,
-        border-color .2s ease;
-
-}
-
-
-.dashboard-panel-reciente .bloque-dashboard:hover {
-
-    transform:translateY(-2px);
-
-    border-color:#AFC8D9;
-
-    box-shadow:
-        0 7px 18px rgba(22,58,97,.11);
+        var(--dash-sombra);
 
 }
 
 
 /* =========================================================
-   CABECERA DE CADA LISTA RECIENTE
-
-   Más compacta para que no parezca
-   otro título principal del dashboard.
+   CABECERA BLOQUE
 ========================================================= */
 
-.dashboard-panel-reciente
-.bloque-dashboard-cabecera {
+.dashboard .bloque-dashboard-cabecera {
 
     display:flex;
 
     align-items:center;
     justify-content:space-between;
 
-    min-height:62px;
+    gap:10px;
 
-    padding:12px 15px;
+    min-height:56px;
+
+    padding:10px 13px;
 
     box-sizing:border-box;
 
@@ -707,46 +765,37 @@
 }
 
 
-/* contenedor izquierdo */
-
-.dashboard-panel-reciente
-.bloque-dashboard-cabecera > div {
+.dashboard .bloque-dashboard-cabecera > div {
 
     min-width:0;
 
 }
 
 
-/* etiqueta */
-
-.dashboard-panel-reciente
-.bloque-etiqueta {
+.dashboard .bloque-etiqueta {
 
     display:block;
 
-    margin-bottom:3px;
+    margin-bottom:2px;
 
     color:#7893A5;
 
-    font-size:8px;
+    font-size:7px;
 
     font-weight:800;
 
-    letter-spacing:1.5px;
+    letter-spacing:1.4px;
 
 }
 
 
-/* título de lista */
-
-.dashboard-panel-reciente
-.bloque-dashboard-cabecera h3 {
+.dashboard .bloque-dashboard-cabecera h3 {
 
     display:flex;
 
     align-items:center;
 
-    gap:7px;
+    gap:6px;
 
     margin:0;
 
@@ -754,7 +803,7 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:14px;
+    font-size:13px;
 
     font-weight:700;
 
@@ -763,30 +812,24 @@
 }
 
 
-/* icono pequeño del título */
+.dashboard .bloque-dashboard-cabecera h3 svg {
 
-.dashboard-panel-reciente
-.bloque-dashboard-cabecera h3 svg {
+    width:15px;
+    height:15px;
 
-    width:16px;
-    height:16px;
-
-    flex:0 0 16px;
+    flex:0 0 15px;
 
     color:#28658F;
 
 }
 
 
-/* icono decorativo */
+.dashboard .bloque-icono {
 
-.dashboard-panel-reciente
-.bloque-icono {
+    width:18px;
+    height:18px;
 
-    width:19px;
-    height:19px;
-
-    flex:0 0 19px;
+    flex:0 0 18px;
 
     color:#A5BBC9;
 
@@ -794,42 +837,39 @@
 
 
 /* =========================================================
-   LISTA DE ACTIVIDAD
+   LISTAS
 ========================================================= */
 
-.dashboard-panel-reciente .dashboard-lista {
+.dashboard .dashboard-lista {
 
     display:flex;
 
     flex-direction:column;
 
-    gap:7px;
+    gap:6px;
 
-    min-height:120px;
+    min-height:112px;
 
-    padding:10px;
+    padding:9px;
 
     box-sizing:border-box;
 
 }
 
 
-/* =========================================================
-   ELEMENTO INDIVIDUAL
-========================================================= */
-
-.dashboard-panel-reciente
-.item-dashboard {
+.dashboard .item-dashboard {
 
     display:flex;
 
     align-items:center;
 
-    gap:10px;
+    gap:8px;
 
-    min-height:48px;
+    min-width:0;
 
-    padding:8px 10px;
+    min-height:43px;
+
+    padding:7px 8px;
 
     box-sizing:border-box;
 
@@ -839,7 +879,7 @@
 
     border-left:3px solid var(--dash-azul-medio);
 
-    border-radius:8px;
+    border-radius:7px;
 
     box-shadow:
         0 2px 5px rgba(22,58,97,.035);
@@ -852,8 +892,7 @@
 }
 
 
-.dashboard-panel-reciente
-.item-dashboard:hover {
+.dashboard .item-dashboard:hover {
 
     transform:translateX(2px);
 
@@ -862,26 +901,21 @@
 }
 
 
-/* nombre */
-
-.dashboard-panel-reciente
-.item-dashboard > strong {
+.dashboard .item-dashboard > strong {
 
     display:flex;
 
     align-items:center;
 
-    gap:8px;
+    gap:7px;
 
     flex:1;
 
     min-width:0;
 
-    margin:0;
-
     color:#284F69;
 
-    font-size:11px;
+    font-size:10px;
 
     font-weight:700;
 
@@ -894,33 +928,21 @@
 }
 
 
-/* icono */
+.dashboard .item-dashboard > strong svg {
 
-.dashboard-panel-reciente
-.item-dashboard > strong svg {
+    width:14px;
+    height:14px;
 
-    width:16px;
-    height:16px;
-
-    flex:0 0 16px;
-
-    padding:5px;
-
-    box-sizing:content-box;
-
-    border-radius:6px;
+    flex:0 0 14px;
 
 }
 
 
-/* dato secundario */
-
-.dashboard-panel-reciente
-.item-dashboard > span {
+.dashboard .item-dashboard > span {
 
     flex-shrink:0;
 
-    padding:4px 7px;
+    padding:3px 6px;
 
     border-radius:5px;
 
@@ -928,7 +950,7 @@
 
     color:#6A8190;
 
-    font-size:9px;
+    font-size:8px;
 
     font-weight:600;
 
@@ -936,95 +958,45 @@
 
 
 /* =========================================================
-   IDENTIDAD - FICHAS
+   COLORES DE ACTIVIDAD
 ========================================================= */
 
-.dashboard-panel-reciente
-#listaFichas .item-dashboard {
+.dashboard #listaFichas .item-dashboard {
 
     border-left-color:#C99A45;
 
 }
 
 
-.dashboard-panel-reciente
-#listaFichas .item-dashboard > strong svg {
+.dashboard #listaFichas .item-dashboard > strong svg {
 
     color:#A97B2D;
 
-    background:#F8F0DD;
-
 }
 
 
-.dashboard-panel-reciente
-#listaFichas .item-dashboard > span {
-
-    background:#F7F0E0;
-
-    color:#96702D;
-
-}
-
-
-/* =========================================================
-   IDENTIDAD - MENÚS
-========================================================= */
-
-.dashboard-panel-reciente
-#listaMenus .item-dashboard {
+.dashboard #listaMenus .item-dashboard {
 
     border-left-color:#28658F;
 
 }
 
 
-.dashboard-panel-reciente
-#listaMenus .item-dashboard > strong svg {
-
-    color:#28658F;
-
-    background:#E5F1F8;
-
-}
-
-
-.dashboard-panel-reciente
-#listaMenus .item-dashboard > span {
-
-    background:#EAF3F8;
+.dashboard #listaMenus .item-dashboard > strong svg {
 
     color:#28658F;
 
 }
 
 
-/* =========================================================
-   IDENTIDAD - MULTIMEDIA
-========================================================= */
-
-.dashboard-panel-reciente
-#listaMultimedia .item-dashboard {
+.dashboard #listaMultimedia .item-dashboard {
 
     border-left-color:#7A6FA3;
 
 }
 
 
-.dashboard-panel-reciente
-#listaMultimedia .item-dashboard > strong svg {
-
-    color:#665B8D;
-
-    background:#EEEAF7;
-
-}
-
-
-.dashboard-panel-reciente
-#listaMultimedia .item-dashboard > span {
-
-    background:#F0EDF8;
+.dashboard #listaMultimedia .item-dashboard > strong svg {
 
     color:#665B8D;
 
@@ -1032,201 +1004,24 @@
 
 
 /* =========================================================
-   ESTADO VACÍO
+   ESTADÍSTICAS
 ========================================================= */
 
-.dashboard-panel-reciente
-.dashboard-sin-datos {
-
-    display:flex;
-
-    align-items:center;
-    justify-content:center;
-
-    gap:7px;
-
-    min-height:75px;
-
-    padding:12px;
-
-    box-sizing:border-box;
-
-    background:#F8FAFC;
-
-    border:1px dashed #C8D6E0;
-
-    border-radius:8px;
-
-    color:#7B909F;
-
-    font-size:10px;
-
-    font-style:italic;
-
-}
-
-
-.dashboard-panel-reciente
-.dashboard-sin-datos svg {
-
-    width:15px;
-    height:15px;
-
-    color:#829BAB;
-
-}
-
-
-/* =========================================================
-   PANELES GENERALES
-========================================================= */
-
-.dashboard .panel-dashboard {
+.dashboard .dashboard-estadisticas {
 
     display:grid;
 
     grid-template-columns:
-        repeat(3, minmax(250px,1fr));
-
-    gap:16px;
-
-}
-
-
-/* =========================================================
-   BLOQUES GENERALES
-========================================================= */
-
-.dashboard .bloque-dashboard {
-
-    position:relative;
-
-    min-width:0;
-
-    background:#FFFFFF;
-
-    border:1px solid var(--dash-borde);
-
-    border-radius:13px;
-
-    overflow:hidden;
-
-    box-shadow:
-        var(--dash-sombra);
-
-}
-
-
-/* =========================================================
-   CABECERA DE BLOQUES GENERALES
-
-   NO se aplica sobre contenido reciente.
-========================================================= */
-
-.dashboard .panel-dashboard
-.bloque-dashboard::before {
-
-    content:"";
-
-    display:block;
-
-    height:4px;
-
-    background:
-        linear-gradient(
-            90deg,
-            var(--dash-azul-oscuro),
-            var(--dash-azul-medio),
-            var(--dash-azul-claro)
-        );
-
-}
-
-
-.dashboard .panel-dashboard
-.bloque-dashboard-cabecera {
-
-    display:flex;
-
-    align-items:center;
-    justify-content:space-between;
+        repeat(2, minmax(0,1fr));
 
     gap:12px;
 
-    padding:16px 18px 12px;
-
-    border-bottom:1px solid var(--dash-borde-suave);
-
 }
 
-
-.dashboard .panel-dashboard
-.bloque-etiqueta {
-
-    display:block;
-
-    margin-bottom:3px;
-
-    color:#7291A5;
-
-    font-size:9px;
-
-    font-weight:800;
-
-    letter-spacing:1.5px;
-
-}
-
-
-.dashboard .panel-dashboard
-.bloque-dashboard-cabecera h3 {
-
-    display:flex;
-
-    align-items:center;
-
-    gap:7px;
-
-    margin:0;
-
-    color:var(--dash-azul-oscuro);
-
-    font-family:"Cinzel", Georgia, serif;
-
-    font-size:16px;
-
-}
-
-
-.dashboard .panel-dashboard
-.bloque-dashboard-cabecera h3 svg {
-
-    width:17px;
-    height:17px;
-
-    color:var(--dash-azul-medio);
-
-}
-
-
-.dashboard .panel-dashboard
-.bloque-icono {
-
-    width:20px;
-    height:20px;
-
-    color:#A1BCCC;
-
-}
-
-
-/* =========================================================
-   GRÁFICOS
-========================================================= */
 
 .dashboard .bloque-grafico {
 
-    min-height:240px;
+    min-height:220px;
 
 }
 
@@ -1237,16 +1032,20 @@
 
     flex-direction:column;
 
-    gap:12px;
+    gap:11px;
 
-    padding:18px;
+    padding:14px 16px;
 
 }
 
 
+/* =========================================================
+   BARRAS
+========================================================= */
+
 .dashboard .dashboard-barra-item {
 
-    margin-bottom:4px;
+    margin-bottom:3px;
 
 }
 
@@ -1260,11 +1059,11 @@
 
     gap:10px;
 
-    margin-bottom:5px;
+    margin-bottom:4px;
 
     color:#365D76;
 
-    font-size:11px;
+    font-size:10px;
 
     font-weight:600;
 
@@ -1273,7 +1072,7 @@
 
 .dashboard .dashboard-barra-fondo {
 
-    height:10px;
+    height:9px;
 
     background:#DCE8EF;
 
@@ -1305,44 +1104,49 @@
 
 }
 
+
 /* =========================================================
    ESTADO DEL CONTENIDO
 ========================================================= */
 
 .dashboard .bloque-estado {
 
-    margin-bottom:10px;
+    width:100%;
+
+    margin:0;
 
     padding:0;
 
     background:#F8FBFD;
 
     border:1px solid #C8D9E5;
+
     border-left:5px solid var(--dash-azul-oscuro);
 
-    border-radius:15px;
+    border-radius:12px;
 
     overflow:hidden;
 
     box-shadow:
-        0 7px 20px rgba(22,58,97,.08);
+        0 6px 17px rgba(22,58,97,.08);
 
 }
 
 
 /* =========================================================
-   CABECERA
+   CABECERA ESTADO
 ========================================================= */
 
 .dashboard .estado-cabecera {
 
     display:flex;
+
     align-items:center;
     justify-content:space-between;
 
-    gap:25px;
+    gap:20px;
 
-    padding:20px 22px;
+    padding:16px 18px;
 
     background:#FFFFFF;
 
@@ -1354,9 +1158,10 @@
 .dashboard .estado-cabecera-info {
 
     display:flex;
+
     align-items:center;
 
-    gap:14px;
+    gap:12px;
 
     min-width:0;
 
@@ -1365,12 +1170,13 @@
 
 .dashboard .estado-cabecera-icono {
 
-    width:44px;
-    height:44px;
+    width:40px;
+    height:40px;
 
-    flex:0 0 44px;
+    flex:0 0 40px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
@@ -1378,7 +1184,7 @@
 
     border:1px solid #C8DDE9;
 
-    border-radius:10px;
+    border-radius:9px;
 
     color:var(--dash-azul-medio);
 
@@ -1387,15 +1193,8 @@
 
 .dashboard .estado-cabecera-icono svg {
 
-    width:21px;
-    height:21px;
-
-}
-
-
-.dashboard .estado-cabecera .bloque-etiqueta {
-
-    margin-bottom:3px;
+    width:19px;
+    height:19px;
 
 }
 
@@ -1408,18 +1207,18 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:19px;
+    font-size:17px;
 
 }
 
 
 .dashboard .estado-cabecera p {
 
-    margin:4px 0 0;
+    margin:3px 0 0;
 
     color:#718694;
 
-    font-size:11px;
+    font-size:10px;
 
 }
 
@@ -1431,13 +1230,14 @@
 .dashboard .estado-indicador {
 
     display:flex;
+
     align-items:center;
 
-    gap:8px;
+    gap:7px;
 
     flex-shrink:0;
 
-    padding:8px 13px;
+    padding:7px 11px;
 
     background:#EAF7EF;
 
@@ -1447,7 +1247,8 @@
 
     color:#286344;
 
-    font-size:11px;
+    font-size:10px;
+
     font-weight:700;
 
 }
@@ -1455,8 +1256,8 @@
 
 .dashboard .estado-indicador span {
 
-    width:8px;
-    height:8px;
+    width:7px;
+    height:7px;
 
     border-radius:50%;
 
@@ -1469,7 +1270,7 @@
 
 
 /* =========================================================
-   RESUMEN
+   ESTADOS
 ========================================================= */
 
 .dashboard .dashboard-estados {
@@ -1479,9 +1280,9 @@
     grid-template-columns:
         repeat(4, minmax(0,1fr));
 
-    gap:12px;
+    gap:10px;
 
-    padding:16px 20px;
+    padding:13px 15px;
 
     background:#F5F9FC;
 
@@ -1491,15 +1292,16 @@
 .dashboard .estado-contenido-card {
 
     display:flex;
+
     align-items:center;
 
-    gap:11px;
+    gap:9px;
 
     min-width:0;
 
-    min-height:78px;
+    min-height:68px;
 
-    padding:12px 13px;
+    padding:10px;
 
     box-sizing:border-box;
 
@@ -1507,7 +1309,7 @@
 
     border:1px solid #D5E2EA;
 
-    border-radius:10px;
+    border-radius:9px;
 
     box-shadow:
         0 2px 7px rgba(22,58,97,.045);
@@ -1527,19 +1329,20 @@
     border-color:#B2CBDC;
 
     box-shadow:
-        0 6px 14px rgba(22,58,97,.09);
+        0 5px 13px rgba(22,58,97,.09);
 
 }
 
 
 .dashboard .estado-contenido-icono {
 
-    width:39px;
-    height:39px;
+    width:35px;
+    height:35px;
 
-    flex:0 0 39px;
+    flex:0 0 35px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
@@ -1556,8 +1359,8 @@
 
 .dashboard .estado-contenido-icono svg {
 
-    width:19px;
-    height:19px;
+    width:17px;
+    height:17px;
 
 }
 
@@ -1574,12 +1377,13 @@
 .dashboard .estado-contenido-titulo {
 
     display:flex;
+
     align-items:center;
     justify-content:space-between;
 
     gap:5px;
 
-    margin-bottom:7px;
+    margin-bottom:5px;
 
 }
 
@@ -1588,10 +1392,12 @@
 
     color:var(--dash-azul-oscuro);
 
-    font-size:12px;
+    font-size:10px;
 
     white-space:nowrap;
+
     overflow:hidden;
+
     text-overflow:ellipsis;
 
 }
@@ -1600,13 +1406,15 @@
 .dashboard .estado-activo {
 
     display:flex;
+
     align-items:center;
 
     gap:4px;
 
     color:#397052;
 
-    font-size:8px;
+    font-size:7px;
+
     font-weight:800;
 
     text-transform:uppercase;
@@ -1630,7 +1438,7 @@
 
     display:flex;
 
-    gap:5px;
+    gap:4px;
 
 }
 
@@ -1638,30 +1446,31 @@
 .dashboard .estado-dato {
 
     display:flex;
+
     align-items:center;
 
-    gap:4px;
+    gap:3px;
 
-    padding:4px 6px;
+    padding:3px 5px;
 
     border-radius:5px;
 
-    font-size:9px;
+    font-size:8px;
 
 }
 
 
 .dashboard .estado-dato svg {
 
-    width:11px;
-    height:11px;
+    width:10px;
+    height:10px;
 
 }
 
 
 .dashboard .estado-dato strong {
 
-    font-size:11px;
+    font-size:10px;
 
 }
 
@@ -1689,14 +1498,14 @@
 
 
 /* =========================================================
-   CONTENIDO NO VISIBLE
+   CONTENIDO OCULTO
 ========================================================= */
 
 .dashboard .contenido-oculto {
 
     margin:0;
 
-    padding:18px 20px 20px;
+    padding:15px;
 
     background:#FFFFFF;
 
@@ -1705,19 +1514,16 @@
 }
 
 
-/* =========================================================
-   TÍTULO CONTENIDO NO VISIBLE
-========================================================= */
-
 .dashboard .contenido-oculto-titulo {
 
     display:flex;
+
     align-items:flex-end;
     justify-content:space-between;
 
-    gap:20px;
+    gap:15px;
 
-    margin-bottom:12px;
+    margin-bottom:10px;
 
 }
 
@@ -1725,9 +1531,10 @@
 .dashboard .contenido-oculto-titulo h3 {
 
     display:flex;
+
     align-items:center;
 
-    gap:7px;
+    gap:6px;
 
     margin:3px 0 0;
 
@@ -1735,15 +1542,15 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:16px;
+    font-size:15px;
 
 }
 
 
 .dashboard .contenido-oculto-titulo h3 svg {
 
-    width:17px;
-    height:17px;
+    width:16px;
+    height:16px;
 
     color:#607E91;
 
@@ -1754,13 +1561,13 @@
 
     color:#8193A0;
 
-    font-size:10px;
+    font-size:9px;
 
 }
 
 
 /* =========================================================
-   GRID DE CONTENIDO OCULTO
+   GRID OCULTO
 ========================================================= */
 
 .dashboard .contenido-oculto-grid {
@@ -1768,15 +1575,15 @@
     display:grid;
 
     grid-template-columns:
-        repeat(2, minmax(0,1fr));
+        repeat(4, minmax(0,1fr));
 
-    gap:10px;
+    gap:9px;
 
 }
 
 
 /* =========================================================
-   GRUPO
+   GRUPO OCULTO
 ========================================================= */
 
 .dashboard .contenido-oculto-grupo {
@@ -1787,7 +1594,7 @@
 
     border:1px solid #D8E3EA;
 
-    border-radius:9px;
+    border-radius:8px;
 
     overflow:hidden;
 
@@ -1795,18 +1602,19 @@
 
 
 /* =========================================================
-   CABECERA DE GRUPO
+   CABECERA GRUPO
 ========================================================= */
 
 .dashboard .contenido-oculto-cabecera {
 
     display:flex;
+
     align-items:center;
     justify-content:space-between;
 
-    gap:12px;
+    gap:8px;
 
-    padding:10px 12px;
+    padding:8px 10px;
 
     background:#F3F7FA;
 
@@ -1820,7 +1628,7 @@
 
     margin-bottom:2px;
 
-    font-size:7px;
+    font-size:6px;
 
 }
 
@@ -1828,9 +1636,10 @@
 .dashboard .contenido-oculto-cabecera h4 {
 
     display:flex;
+
     align-items:center;
 
-    gap:6px;
+    gap:5px;
 
     margin:0;
 
@@ -1838,15 +1647,15 @@
 
     font-family:"Cinzel", Georgia, serif;
 
-    font-size:12px;
+    font-size:11px;
 
 }
 
 
 .dashboard .contenido-oculto-cabecera h4 svg {
 
-    width:15px;
-    height:15px;
+    width:14px;
+    height:14px;
 
     color:#607E91;
 
@@ -1860,13 +1669,14 @@
 .dashboard .contador-oculto {
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
-    min-width:27px;
-    height:27px;
+    min-width:25px;
+    height:25px;
 
-    padding:0 7px;
+    padding:0 6px;
 
     box-sizing:border-box;
 
@@ -1878,24 +1688,26 @@
 
     color:var(--dash-azul-oscuro);
 
-    font-size:10px;
+    font-size:9px;
+
     font-weight:800;
 
 }
 
 
 /* =========================================================
-   LISTA
+   LISTA OCULTA
 ========================================================= */
 
 .dashboard .lista-fichas-ocultas {
 
     display:flex;
+
     flex-direction:column;
 
-    gap:5px;
+    gap:4px;
 
-    padding:7px;
+    padding:6px;
 
 }
 
@@ -1903,15 +1715,19 @@
 .dashboard .ficha-oculta {
 
     display:flex;
+
     align-items:center;
 
-    gap:9px;
+    gap:7px;
 
-    padding:7px 8px;
+    min-width:0;
+
+    padding:6px 7px;
 
     background:#FFFFFF;
 
     border:1px solid #DCE5EB;
+
     border-left:3px solid #8299A9;
 
     border-radius:6px;
@@ -1921,12 +1737,13 @@
 
 .dashboard .ficha-oculta-icono {
 
-    width:29px;
-    height:29px;
+    width:27px;
+    height:27px;
 
-    flex:0 0 29px;
+    flex:0 0 27px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
@@ -1941,8 +1758,8 @@
 
 .dashboard .ficha-oculta-icono svg {
 
-    width:15px;
-    height:15px;
+    width:14px;
+    height:14px;
 
 }
 
@@ -1962,11 +1779,14 @@
 
     color:#36566B;
 
-    font-size:10px;
+    font-size:9px;
+
     font-weight:700;
 
     white-space:nowrap;
+
     overflow:hidden;
+
     text-overflow:ellipsis;
 
 }
@@ -1980,7 +1800,7 @@
 
     color:#81919D;
 
-    font-size:9px;
+    font-size:8px;
 
 }
 
@@ -1988,11 +1808,12 @@
 .dashboard .ficha-oculta-estado {
 
     display:inline-flex;
+
     align-items:center;
 
-    gap:4px;
+    gap:3px;
 
-    padding:4px 6px;
+    padding:3px 5px;
 
     background:#EDF1F4;
 
@@ -2002,7 +1823,8 @@
 
     color:#64727D;
 
-    font-size:8px;
+    font-size:7px;
+
     font-weight:700;
 
 }
@@ -2012,8 +1834,8 @@
 
     content:"";
 
-    width:5px;
-    height:5px;
+    width:4px;
+    height:4px;
 
     border-radius:50%;
 
@@ -2028,9 +1850,10 @@
 
 .dashboard .lista-fichas-ocultas:empty {
 
-    min-height:42px;
+    min-height:38px;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
@@ -2043,7 +1866,7 @@
 
     color:#8A9AA5;
 
-    font-size:9px;
+    font-size:8px;
 
     font-style:italic;
 
@@ -2051,94 +1874,7 @@
 
 
 /* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:1050px) {
-
-    .dashboard .dashboard-estados {
-
-        grid-template-columns:
-            repeat(2, minmax(0,1fr));
-
-    }
-
-}
-
-
-@media(max-width:750px) {
-
-    .dashboard .estado-cabecera {
-
-        align-items:flex-start;
-
-        flex-direction:column;
-
-    }
-
-
-    .dashboard .estado-indicador {
-
-        width:max-content;
-
-    }
-
-
-    .dashboard .contenido-oculto-grid {
-
-        grid-template-columns:1fr;
-
-    }
-
-}
-
-
-@media(max-width:600px) {
-
-    .dashboard .dashboard-estados {
-
-        grid-template-columns:1fr;
-
-        padding:12px;
-
-    }
-
-
-    .dashboard .estado-cabecera {
-
-        padding:16px;
-
-    }
-
-
-    .dashboard .contenido-oculto {
-
-        padding:14px;
-
-    }
-
-
-    .dashboard .contenido-oculto-titulo {
-
-        align-items:flex-start;
-
-        flex-direction:column;
-
-        gap:4px;
-
-    }
-
-
-    .dashboard .ficha-oculta-estado {
-
-        display:none;
-
-    }
-
-}
-
-/* =========================================================
-   FOCUS / ACCESIBILIDAD
+   FOCUS
 ========================================================= */
 
 .dashboard button:focus-visible {
@@ -2151,10 +1887,54 @@
 
 
 /* =========================================================
-   RESPONSIVE - ESTADO
+   RESPONSIVE
 ========================================================= */
 
-@media(max-width:1050px) {
+@media(max-width:1150px) {
+
+    .dashboard .grid-dashboard {
+
+        grid-template-columns:
+            repeat(3, minmax(0,1fr));
+
+    }
+
+
+    .dashboard .dashboard-accesos {
+
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
+
+    }
+
+
+    .dashboard .contenido-oculto-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
+
+    }
+
+}
+
+
+@media(max-width:950px) {
+
+    .dashboard .dashboard-panel-reciente {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .dashboard .dashboard-estadisticas {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
 
     .dashboard .dashboard-estados {
 
@@ -2168,8 +1948,70 @@
 
 @media(max-width:700px) {
 
-    .dashboard .bloque-estado
-    .bloque-dashboard-cabecera {
+    .dashboard .cabecera-dashboard {
+
+        min-height:auto;
+
+        padding:20px;
+
+    }
+
+
+    .dashboard .dashboard-encabezado-contenido {
+
+        align-items:flex-start;
+
+    }
+
+
+    .dashboard .dashboard-icono-titulo {
+
+        width:48px;
+        height:48px;
+
+        min-width:48px;
+
+    }
+
+
+    .dashboard .dashboard-icono-titulo svg {
+
+        width:24px;
+        height:24px;
+
+    }
+
+
+    .dashboard .titulo-seccion {
+
+        font-size:23px;
+
+    }
+
+
+    .dashboard .descripcion-dashboard {
+
+        font-size:11px;
+
+    }
+
+
+    .dashboard .grid-dashboard {
+
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
+
+    }
+
+
+    .dashboard .dashboard-accesos {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .dashboard .estado-cabecera {
 
         align-items:flex-start;
 
@@ -2189,74 +2031,72 @@
 
         grid-template-columns:1fr;
 
-    }
-
-
-    .dashboard .contenido-oculto {
-
-        margin-left:14px;
-        margin-right:14px;
+        padding:11px;
 
     }
 
 
-    .dashboard .ficha-oculta {
+    .dashboard .contenido-oculto-grid {
 
-        align-items:flex-start;
-
-    }
-
-
-    .dashboard .ficha-oculta-estado {
-
-        display:none;
+        grid-template-columns:1fr;
 
     }
+
+
 
 }
 
 
-@media(max-width:600px) {
+@media(max-width:450px) {
 
-    .dashboard .bloque-estado
-    .bloque-dashboard-cabecera {
+    .dashboard .grid-dashboard {
 
-        padding:17px;
+        grid-template-columns:1fr;
 
     }
 
 
-    .dashboard .dashboard-estados {
+    .dashboard .cabecera-dashboard {
 
-        padding:14px;
+        padding:16px;
+
+    }
+
+
+    .dashboard .dashboard-encabezado-contenido {
+
+        gap:12px;
+
+    }
+
+
+    .dashboard .dashboard-icono-titulo {
+
+        width:44px;
+        height:44px;
+
+        min-width:44px;
+
+    }
+
+
+    .dashboard .titulo-seccion {
+
+        font-size:21px;
+
+    }
+
+
+    .dashboard .dashboard-seccion-titulo h3 {
+
+        font-size:16px;
 
     }
 
 
     .dashboard .contenido-oculto {
 
-        margin:0 14px 14px;
-
-    }
-
-
-    .dashboard .contenido-oculto-cabecera {
-
-        padding:9px 11px;
-
-    }
-
-
-    .dashboard .contenido-oculto-cabecera h4 {
-
-        font-size:13px;
-
-    }
-
-
-    .dashboard .ficha-oculta {
-
-        padding:8px;
+        padding:12px;
 
     }
 
@@ -2272,8 +2112,470 @@
     .dashboard * {
 
         transition:none !important;
+
         animation:none !important;
 
     }
+
+}
+
+/* =========================================================
+   TÍTULOS DE SECCIÓN
+   ÍCONO JUNTO AL TÍTULO
+========================================================= */
+
+.dashboard .dashboard-seccion-titulo {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    gap:10px;
+
+    margin:30px 0 15px;
+
+    padding:0 4px 10px;
+
+    border-bottom:2px solid #B9D0DF;
+
+}
+
+
+/* Contenedor del título */
+
+.dashboard .dashboard-seccion-titulo > div {
+
+    display:flex;
+
+    flex-direction:row;
+
+    align-items:center;
+
+    gap:0;
+
+}
+
+
+/* Título */
+
+.dashboard .dashboard-seccion-titulo h3 {
+
+    margin:0;
+
+    color:var(--dash-azul-oscuro);
+
+    font-family:"Cinzel", Georgia, serif;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    line-height:1.2;
+
+}
+
+
+/* =========================================================
+   DASHBOARD — TAMAÑO FINAL
+========================================================= */
+
+.ventana.dashboard {
+
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 20px auto;
+
+    padding: 28px 30px;
+
+    box-sizing: border-box;
+
+    background: #FFFFFF;
+
+    border: 1px solid #D5E2EA;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 18px rgba(22,58,97,.08);
+
+}
+
+
+/* =========================================================
+   CONTENIDO INTERNO
+========================================================= */
+
+.ventana.dashboard > * {
+
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.dashboard .cabecera-dashboard {
+
+    width: 100%;
+
+    margin: 0 0 28px;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   BLOQUES
+========================================================= */
+
+.dashboard .dashboard-bloque {
+
+    width: 100%;
+
+    margin-left: 0;
+    margin-right: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   SEPARACIÓN ENTRE SECCIONES
+========================================================= */
+
+.dashboard .dashboard-bloque + .dashboard-bloque {
+
+    margin-top: 28px;
+
+}
+
+
+/* =========================================================
+   GRILLAS
+========================================================= */
+
+.dashboard .grid-dashboard,
+.dashboard .dashboard-accesos,
+.dashboard .dashboard-panel-reciente,
+.dashboard .dashboard-estadisticas,
+.dashboard .dashboard-estados,
+.dashboard .contenido-oculto-grid {
+
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   EVITAR DESBORDES
+========================================================= */
+
+.dashboard .tarjeta-dashboard,
+.dashboard .acceso-dashboard,
+.dashboard .bloque-dashboard,
+.dashboard .bloque-estado,
+.dashboard .contenido-oculto-grupo {
+
+    min-width: 0;
+    max-width: 100%;
+
+}
+
+
+/* =========================================================
+   GRÁFICOS
+========================================================= */
+
+.dashboard .dashboard-grafico-barras {
+
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   CONTENIDO OCULTO
+========================================================= */
+
+.dashboard .contenido-oculto {
+
+    width: 100%;
+    max-width: 100%;
+
+    margin-left: 0;
+    margin-right: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   LISTAS
+========================================================= */
+
+.dashboard .dashboard-lista,
+.dashboard .lista-fichas-ocultas {
+
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1150px) {
+
+    .ventana.dashboard {
+
+        max-width: calc(100% - 30px);
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .ventana.dashboard {
+
+        width: calc(100% - 20px);
+
+        max-width: none;
+
+        margin: 10px auto;
+
+        padding: 18px;
+
+    }
+
+}
+
+
+
+/* =========================================================
+   AJUSTES FINALES DEL DASHBOARD
+========================================================= */
+
+
+/* =========================================================
+   QUITAR INDICADOR "ACTIVO"
+========================================================= */
+
+/*
+   Oculta cualquier indicador de estado "Activo"
+   que pueda seguir siendo generado por el JS.
+*/
+
+.dashboard .estado-activo {
+
+    display:none !important;
+
+}
+
+
+/* También evita que el espacio del indicador
+   afecte la distribución de la tarjeta */
+
+.dashboard .estado-contenido-titulo {
+
+    justify-content:flex-start;
+
+}
+
+
+/* =========================================================
+   MENSAJES DE LISTAS VACÍAS
+========================================================= */
+
+/*
+   Mensajes como:
+   "No hay menús"
+   "No hay fichas"
+   "No hay multimedia"
+
+   Se muestran con una tipografía más institucional
+   y acorde al estilo histórico del dashboard.
+*/
+
+.dashboard .dashboard-lista:empty {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:112px;
+
+}
+
+
+.dashboard .dashboard-lista:empty::after {
+
+    content:"No hay contenido disponible";
+
+    display:block;
+
+    color:#7893A5;
+
+    font-family:"Cinzel", Georgia, serif;
+
+    font-size:10px;
+
+    font-weight:600;
+
+    letter-spacing:.3px;
+
+    text-align:center;
+
+    font-style:normal;
+
+    opacity:.9;
+
+}
+
+
+/* =========================================================
+   MENSAJES VACÍOS DE CONTENIDO OCULTO
+========================================================= */
+
+.dashboard .lista-fichas-ocultas:empty {
+
+    min-height:45px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+.dashboard .lista-fichas-ocultas:empty::after {
+
+    content:"No hay elementos ocultos";
+
+    display:block;
+
+    color:#8295A2;
+
+    font-family:"Cinzel", Georgia, serif;
+
+    font-size:8px;
+
+    font-weight:500;
+
+    letter-spacing:.25px;
+
+    text-align:center;
+
+    font-style:normal;
+
+}
+
+
+/* =========================================================
+   MENSAJES GENERADOS POR JAVASCRIPT
+========================================================= */
+
+/*
+   Si dashboard.js crea un mensaje con clases comunes,
+   estas reglas permiten mantener la misma estética.
+*/
+
+.dashboard .mensaje-vacio,
+.dashboard .sin-contenido,
+.dashboard .empty-message,
+.dashboard .lista-vacia {
+
+    color:#7893A5;
+
+    font-family:"Cinzel", Georgia, serif;
+
+    font-size:10px;
+
+    font-weight:500;
+
+    letter-spacing:.25px;
+
+    text-align:center;
+
+    font-style:normal;
+
+}
+
+/* =========================================================
+   MENSAJES SIN DATOS
+   Tipografía más acorde al dashboard
+========================================================= */
+
+.dashboard .dashboard-sin-datos,
+.dashboard .sin-fichas-ocultas {
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+}
+
+
+/* Título del mensaje */
+
+.dashboard .dashboard-sin-datos strong,
+.dashboard .sin-fichas-ocultas strong {
+
+    font-family:
+        "Cinzel",
+        Georgia,
+        serif;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    color:var(--dash-azul-oscuro);
+
+}
+
+
+/* Texto secundario */
+
+.dashboard .dashboard-sin-datos span,
+.dashboard .sin-fichas-ocultas span {
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size:9px;
+
+    font-weight:500;
+
+    color:var(--dash-texto-suave);
 
 }

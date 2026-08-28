@@ -56,12 +56,7 @@ function actualizarIconos(){
 
     });
 
-    const avatar = document.querySelector(".avatar");
 
-    if(avatar && !avatar.querySelector("svg")){
-        avatar.innerHTML =
-        '<i data-lucide="user-round" aria-hidden="true"></i>';
-    }
 
     const cerrarSesion =
     document.getElementById("cerrarSesion");
