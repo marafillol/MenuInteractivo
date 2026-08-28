@@ -863,13 +863,7 @@ function mostrarEstadoContenido(
                                 ${tipo.nombre}
                             </strong>
 
-                            <span class="estado-activo">
 
-                                <span></span>
-
-                                Activo
-
-                            </span>
 
                         </div>
 

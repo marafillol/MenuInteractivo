@@ -1,7 +1,9 @@
+
 /* =========================================================
    SIDEBAR - PANEL ADMINISTRATIVO
    MENU INTERACTIVO | MUSEO MALVINAS
-   Diseño institucional moderno
+   ESTILO: ARCHIVO HISTÓRICO / INSTITUCIONAL
+   AJUSTADO PARA ZOOM 100%
 ========================================================= */
 
 
@@ -10,6 +12,7 @@
 ========================================================= */
 
 :root {
+
     --sidebar-bg: #102d4d;
     --sidebar-bg-dark: #0b223b;
     --sidebar-bg-light: #163a61;
@@ -38,8 +41,9 @@
 
 .panel-admin .sidebar {
 
-    width: 270px;
-    min-width: 270px;
+    width: 235px;
+    min-width: 235px;
+
     height: 100vh;
 
     display: flex;
@@ -55,14 +59,19 @@
             var(--sidebar-bg-dark) 100%
         );
 
-    border-right: 1px solid var(--sidebar-border);
+    border-right:
+        1px solid var(--sidebar-border);
 
     box-shadow:
-        8px 0 28px rgba(5, 20, 35, 0.22);
+        7px 0 24px rgba(5, 20, 35, 0.22);
 
     overflow: hidden;
 
     z-index: 20;
+
+    transition:
+        width .25s ease,
+        min-width .25s ease;
 }
 
 
@@ -81,8 +90,8 @@
     background:
         repeating-linear-gradient(
             45deg,
-            rgba(255, 255, 255, 0.018) 0px,
-            rgba(255, 255, 255, 0.018) 1px,
+            rgba(255,255,255,.018) 0px,
+            rgba(255,255,255,.018) 1px,
             transparent 1px,
             transparent 8px
         );
@@ -92,8 +101,6 @@
     z-index: 0;
 }
 
-
-/* Todo el contenido queda por encima de la textura */
 
 .panel-admin .sidebar > * {
 
@@ -109,7 +116,8 @@
 
 .panel-admin .sidebar .logo {
 
-    padding: 28px 20px 24px;
+    padding:
+        20px 16px 17px;
 
     display: flex;
 
@@ -122,24 +130,30 @@
     text-align: center;
 
     border-bottom:
-        1px solid rgba(129, 210, 247, 0.16);
+        1px solid rgba(129,210,247,.16);
 }
 
-/* MENU */
+
+/* =========================================================
+   TITULO MENU INTERACTIVO
+========================================================= */
 
 .panel-admin .sidebar .logo h2 {
 
     margin: 0;
 
-    font-family: "Cinzel", Georgia, serif;
+    font-family:
+        "Cinzel",
+        Georgia,
+        serif;
 
-    font-size: 21px;
+    font-size: 17px;
 
     font-weight: 700;
 
     line-height: 1.2;
 
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
 
     text-transform: uppercase;
 
@@ -149,59 +163,72 @@
 }
 
 
+/* =========================================================
+   LOGO MUSEO
+========================================================= */
+
 .panel-admin .sidebar .logo img {
 
     display: block;
 
-    width: 82px;
+    width: 66px;
+    height: 66px;
 
-    height: 82px;
-
-    margin: 18px auto 14px;
+    margin:
+        12px auto 10px;
 
     object-fit: contain;
 
     filter:
         drop-shadow(
-            0 4px 8px rgba(0, 0, 0, 0.25)
+            0 4px 8px rgba(0,0,0,.25)
         );
 
     transition:
-        transform 0.3s ease,
-        filter 0.3s ease;
+        width .25s ease,
+        height .25s ease,
+        margin .25s ease,
+        transform .25s ease,
+        filter .25s ease;
 }
 
 
 .panel-admin .sidebar .logo img:hover {
 
-    transform: scale(1.04);
+    transform:
+        scale(1.04);
 
     filter:
         drop-shadow(
-            0 5px 12px rgba(219, 176, 96, 0.25)
+            0 5px 12px rgba(219,176,96,.25)
         );
 }
 
 
-/* INTERACTIVO */
+/* =========================================================
+   TEXTO SECUNDARIO DEL LOGO
+========================================================= */
 
 .panel-admin .sidebar .logo span {
 
     display: block;
 
-    max-width: 210px;
+    max-width: 200px;
 
     margin: 0;
 
-    font-family: "Roboto", Arial, sans-serif;
+    font-family:
+        "Roboto",
+        Arial,
+        sans-serif;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 500;
 
-    line-height: 1.5;
+    line-height: 1.4;
 
-    letter-spacing: 1.8px;
+    letter-spacing: 1.5px;
 
     text-transform: uppercase;
 
@@ -219,13 +246,14 @@
 
     height: 1px;
 
-    margin: 0 20px;
+    margin:
+        0 17px;
 
     background:
         linear-gradient(
             90deg,
             transparent,
-            rgba(219, 176, 96, 0.35),
+            rgba(219,176,96,.35),
             transparent
         );
 }
@@ -243,7 +271,8 @@
 
     flex-direction: column;
 
-    padding: 18px 12px;
+    padding:
+        13px 10px;
 
     overflow-y: auto;
 
@@ -252,86 +281,110 @@
     scrollbar-width: thin;
 
     scrollbar-color:
-        rgba(219, 176, 96, 0.55)
+        rgba(219,176,96,.55)
         transparent;
 }
 
+/* =========================================================
+   SCROLLBAR SIDEBAR
+   SE PUEDE DESLIZAR, PERO LA BARRA NO SE VE
+========================================================= */
 
-/* Scrollbar Chrome / Edge */
+.panel-admin .sidebar nav {
 
-.panel-admin .sidebar nav::-webkit-scrollbar {
+    overflow-y: auto;
+    overflow-x: hidden;
 
-    width: 6px;
+    /* Firefox */
+    scrollbar-width: none;
+
+    /* IE / Edge antiguos */
+    -ms-overflow-style: none;
 }
 
 
-.panel-admin .sidebar nav::-webkit-scrollbar-track {
 
-    background: transparent;
-}
-
-
-.panel-admin .sidebar nav::-webkit-scrollbar-thumb {
-
-    background: rgba(219, 176, 96, 0.5);
-
-    border-radius: 10px;
-}
-
-
-.panel-admin .sidebar nav::-webkit-scrollbar-thumb:hover {
-
-    background: var(--sidebar-gold);
-}
 
 
 /* =========================================================
-   ITEMS DEL MENÚ
+   TAMBIÉN OCULTAR SCROLLBAR DEL CONTENIDO
+   SIGUE FUNCIONANDO EL SCROLL
+========================================================= */
+
+.panel-admin #contenido {
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Firefox */
+    scrollbar-width: none;
+
+    /* IE / Edge */
+    -ms-overflow-style: none;
+}
+
+
+.panel-admin #contenido::-webkit-scrollbar {
+
+    display: none;
+
+    width: 0;
+    height: 0;
+}
+
+/* =========================================================
+   ITEMS
 ========================================================= */
 
 .panel-admin .sidebar .item {
 
     width: 100%;
 
-    min-height: 46px;
+    min-height: 40px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 13px;
+    gap: 11px;
 
     position: relative;
 
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 
-    padding: 12px 14px;
+    padding:
+        9px 12px;
 
-    border: 1px solid transparent;
+    border:
+        1px solid transparent;
 
-    border-radius: 7px;
+    border-radius: 6px;
 
     background: transparent;
 
-    color: var(--sidebar-text);
+    color:
+        var(--sidebar-text);
 
     cursor: pointer;
 
-    font-family: "Roboto", Arial, sans-serif;
+    font-family:
+        "Roboto",
+        Arial,
+        sans-serif;
 
-    font-size: 14px;
+    font-size: 13px;
 
     font-weight: 400;
 
-    letter-spacing: 0;
+    letter-spacing: .1px;
 
     text-align: left;
 
     transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+        background .2s ease,
+        color .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
 
     overflow: hidden;
 
@@ -340,7 +393,7 @@
 
 
 /* =========================================================
-   BARRA LATERAL DEL ITEM
+   INDICADOR LATERAL
 ========================================================= */
 
 .panel-admin .sidebar .item::before {
@@ -351,23 +404,25 @@
 
     left: 0;
 
-    top: 7px;
+    top: 6px;
 
-    bottom: 7px;
+    bottom: 6px;
 
     width: 3px;
 
     border-radius:
         0 3px 3px 0;
 
-    background: var(--sidebar-gold);
+    background:
+        var(--sidebar-gold);
 
-    transform: scaleY(0);
+    transform:
+        scaleY(0);
 
     transform-origin: center;
 
     transition:
-        transform 0.2s ease;
+        transform .2s ease;
 }
 
 
@@ -377,50 +432,59 @@
 
 .panel-admin .sidebar .item:hover {
 
-    background: var(--sidebar-hover);
+    background:
+        var(--sidebar-hover);
 
     border-color:
-        rgba(129, 210, 247, 0.08);
+        rgba(129,210,247,.08);
 
-    color: #ffffff;
+    color:
+        #ffffff;
 
-    transform: translateX(2px);
+    transform:
+        translateX(2px);
 }
 
 
 .panel-admin .sidebar .item:hover::before {
 
-    transform: scaleY(0.65);
+    transform:
+        scaleY(.65);
 
-    background: var(--sidebar-blue);
+    background:
+        var(--sidebar-blue);
 }
 
 
 /* =========================================================
-   ITEM ACTIVO
+   ACTIVO
 ========================================================= */
 
 .panel-admin .sidebar .item.activo {
 
-    background: var(--sidebar-active);
+    background:
+        var(--sidebar-active);
 
     border-color:
-        rgba(219, 176, 96, 0.12);
+        rgba(219,176,96,.12);
 
-    color: #ffffff;
+    color:
+        #ffffff;
 
     font-weight: 600;
 
     box-shadow:
-        inset 0 0 20px rgba(219, 176, 96, 0.025);
+        inset 0 0 20px rgba(219,176,96,.025);
 }
 
 
 .panel-admin .sidebar .item.activo::before {
 
-    transform: scaleY(1);
+    transform:
+        scaleY(1);
 
-    background: var(--sidebar-gold);
+    background:
+        var(--sidebar-gold);
 }
 
 
@@ -431,46 +495,47 @@
 .panel-admin .sidebar .item i,
 .panel-admin .sidebar .item svg {
 
-    flex: 0 0 21px;
+    flex:
+        0 0 19px;
 
-    width: 21px;
+    width: 19px;
 
-    height: 21px;
+    height: 19px;
 
-    color: var(--sidebar-text-muted);
+    color:
+        var(--sidebar-text-muted);
 
     stroke-width: 1.8;
 
     transition:
-        color 0.2s ease,
-        transform 0.2s ease;
+        color .2s ease,
+        transform .2s ease;
 }
 
-
-/* Icono al pasar el mouse */
 
 .panel-admin .sidebar .item:hover i,
 .panel-admin .sidebar .item:hover svg {
 
-    color: var(--sidebar-blue);
+    color:
+        var(--sidebar-blue);
 
-    transform: scale(1.04);
+    transform:
+        scale(1.04);
 }
 
-
-/* Icono activo */
 
 .panel-admin .sidebar .item.activo i,
 .panel-admin .sidebar .item.activo svg {
 
-    color: var(--sidebar-gold);
+    color:
+        var(--sidebar-gold);
 
     stroke-width: 2;
 }
 
 
 /* =========================================================
-   FOCUS - ACCESIBILIDAD
+   FOCUS
 ========================================================= */
 
 .panel-admin .sidebar .item:focus {
@@ -484,7 +549,8 @@
     outline:
         2px solid var(--sidebar-blue);
 
-    outline-offset: -2px;
+    outline-offset:
+        -2px;
 }
 
 
@@ -494,13 +560,14 @@
 
 .panel-admin .sidebar-footer {
 
-    padding: 14px 12px 16px;
+    padding:
+        10px 10px 12px;
 
     border-top:
-        1px solid rgba(129, 210, 247, 0.13);
+        1px solid rgba(129,210,247,.13);
 
     background:
-        rgba(5, 20, 35, 0.12);
+        rgba(5,20,35,.12);
 }
 
 
@@ -512,7 +579,7 @@
 
     width: 100%;
 
-    min-height: 44px;
+    min-height: 40px;
 
     display: flex;
 
@@ -520,55 +587,56 @@
 
     justify-content: center;
 
-    gap: 10px;
+    gap: 9px;
 
-    padding: 11px 14px;
+    padding:
+        9px 12px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.08);
+        1px solid rgba(255,255,255,.08);
 
-    border-radius: 7px;
+    border-radius: 6px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(139, 58, 58, 0.88),
-            rgba(92, 36, 36, 0.88)
+            rgba(139,58,58,.88),
+            rgba(92,36,36,.88)
         );
 
-    color: #ffffff;
+    color:
+        #ffffff;
 
     cursor: pointer;
 
-    font-family: "Roboto", Arial, sans-serif;
+    font-family:
+        "Roboto",
+        Arial,
+        sans-serif;
 
-    font-size: 13px;
+    font-size: 12px;
 
     font-weight: 500;
 
-    letter-spacing: 0.3px;
+    letter-spacing: .2px;
 
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
 
-/* Icono cerrar sesión */
-
 .panel-admin #cerrarSesion svg {
 
-    width: 18px;
+    width: 17px;
 
-    height: 18px;
+    height: 17px;
 
     stroke-width: 2;
 }
 
-
-/* Hover */
 
 .panel-admin #cerrarSesion:hover {
 
@@ -580,16 +648,15 @@
         );
 
     border-color:
-        rgba(255, 255, 255, 0.16);
+        rgba(255,255,255,.16);
 
-    transform: translateY(-1px);
+    transform:
+        translateY(-1px);
 
     box-shadow:
-        0 6px 16px rgba(0, 0, 0, 0.22);
+        0 6px 16px rgba(0,0,0,.22);
 }
 
-
-/* Focus */
 
 .panel-admin #cerrarSesion:focus {
 
@@ -602,24 +669,173 @@
     outline:
         2px solid var(--sidebar-blue);
 
-    outline-offset: 2px;
+    outline-offset:
+        2px;
 }
 
 
 /* =========================================================
-   ANIMACIONES SUTILES
+   SIDEBAR PLEGADO
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
+.panel-admin.sidebar-plegada .sidebar {
 
-    .panel-admin .sidebar .item,
-    .panel-admin .sidebar .item::before,
-    .panel-admin .sidebar .item i,
-    .panel-admin .sidebar .item svg,
-    .panel-admin #cerrarSesion {
+    width: 68px;
 
-        transition: none;
-    }
+    min-width: 68px;
+}
+
+
+/* =========================================================
+   LOGO PLEGADO
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar .logo {
+
+    padding:
+        16px 6px 14px;
+}
+
+
+.panel-admin.sidebar-plegada .sidebar .logo h2,
+.panel-admin.sidebar-plegada .sidebar .logo span {
+
+    display: none;
+}
+
+
+.panel-admin.sidebar-plegada .sidebar .logo img {
+
+    width: 42px;
+
+    height: 42px;
+
+    margin: 0;
+
+    object-fit: contain;
+}
+
+
+/* =========================================================
+   NAVEGACIÓN PLEGADA
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar nav {
+
+    padding:
+        13px 8px;
+}
+
+
+/* =========================================================
+   ITEMS PLEGADOS
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar .item {
+
+    width: 48px;
+
+    min-width: 48px;
+
+    height: 44px;
+
+    min-height: 44px;
+
+    justify-content: center;
+
+    padding: 9px;
+
+    margin:
+        0 auto 5px;
+
+    gap: 0;
+
+    font-size: 0;
+
+    border-radius: 6px;
+}
+
+
+/* =========================================================
+   ICONOS PLEGADOS
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar .item i,
+.panel-admin.sidebar-plegada .sidebar .item svg {
+
+    flex:
+        0 0 19px;
+
+    width: 19px;
+
+    height: 19px;
+}
+
+
+/* =========================================================
+   INDICADOR ACTIVO PLEGADO
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar .item::before {
+
+    left: 0;
+
+    top: 7px;
+
+    bottom: 7px;
+
+    width: 3px;
+}
+
+
+.panel-admin.sidebar-plegada .sidebar .item:hover {
+
+    transform: none;
+}
+
+
+/* =========================================================
+   FOOTER PLEGADO
+========================================================= */
+
+.panel-admin.sidebar-plegada .sidebar-footer {
+
+    padding:
+        9px 8px 12px;
+}
+
+
+.panel-admin.sidebar-plegada #cerrarSesion {
+
+    width: 48px;
+
+    min-width: 48px;
+
+    height: 42px;
+
+    min-height: 42px;
+
+    margin:
+        0 auto;
+
+    padding:
+        9px;
+
+    gap: 0;
+}
+
+
+.panel-admin.sidebar-plegada #cerrarSesion span {
+
+    display: none;
+}
+
+
+.panel-admin.sidebar-plegada #cerrarSesion svg {
+
+    width: 18px;
+
+    height: 18px;
 }
 
 
@@ -627,31 +843,48 @@
    TABLETS
 ========================================================= */
 
-@media (max-width: 1000px) {
+@media (max-width: 1000px) and (min-width: 701px) {
 
     .panel-admin .sidebar {
 
-        width: 240px;
+        width: 215px;
 
-        min-width: 240px;
+        min-width: 215px;
     }
+
 
     .panel-admin .sidebar .logo {
 
         padding:
-            26px 20px 22px;
+            18px 14px 15px;
     }
+
 
     .panel-admin .sidebar .logo h2 {
 
-        font-size: 21px;
-
-        letter-spacing: 2px;
+        font-size: 16px;
     }
+
+
+    .panel-admin .sidebar .logo img {
+
+        width: 60px;
+
+        height: 60px;
+
+        margin:
+            10px auto 8px;
+    }
+
 
     .panel-admin .sidebar .item {
 
-        font-size: 13px;
+        font-size: 12.5px;
+
+        min-height: 39px;
+
+        padding:
+            8px 11px;
     }
 }
 
@@ -668,9 +901,9 @@
 
         min-width: 100%;
 
-        height: auto;
+        height: 64px;
 
-        max-height: none;
+        min-height: 64px;
 
         border-right: none;
 
@@ -678,37 +911,15 @@
             1px solid var(--sidebar-border);
 
         box-shadow:
-            0 5px 18px rgba(5, 20, 35, 0.2);
+            0 5px 18px rgba(5,20,35,.2);
     }
 
 
-    .panel-admin .sidebar .logo {
+    .panel-admin .sidebar .logo,
+    .panel-admin .sidebar .separador,
+    .panel-admin .sidebar-footer {
 
-        padding:
-            20px 18px 16px;
-
-        text-align: center;
-    }
-
-
-    .panel-admin .sidebar .logo h2 {
-
-        font-size: 20px;
-    }
-
-
-    .panel-admin .sidebar .logo span {
-
-        font-size: 9px;
-
-        letter-spacing: 2px;
-    }
-
-
-    .panel-admin .sidebar .separador {
-
-        margin:
-            0 16px;
+        display: none;
     }
 
 
@@ -718,9 +929,12 @@
 
         flex-direction: row;
 
-        gap: 6px;
+        align-items: center;
 
-        padding: 10px;
+        gap: 5px;
+
+        padding:
+            7px;
 
         overflow-x: auto;
 
@@ -730,32 +944,36 @@
 
     .panel-admin .sidebar .item {
 
-        flex: 0 0 54px;
+        flex:
+            0 0 48px;
 
-        width: 54px;
+        width: 48px;
 
-        min-width: 54px;
+        min-width: 48px;
 
-        min-height: 50px;
+        height: 48px;
+
+        min-height: 48px;
 
         justify-content: center;
 
-        padding: 12px 8px;
+        padding: 9px;
 
         margin: 0;
 
         gap: 0;
 
-        border-radius: 7px;
-
         font-size: 0;
+
+        border-radius: 6px;
     }
 
 
     .panel-admin .sidebar .item i,
     .panel-admin .sidebar .item svg {
 
-        flex: 0 0 21px;
+        flex:
+            0 0 19px;
     }
 
 
@@ -763,9 +981,9 @@
 
         top: auto;
 
-        left: 7px;
+        left: 6px;
 
-        right: 7px;
+        right: 6px;
 
         bottom: 0;
 
@@ -775,15 +993,13 @@
 
         transform:
             scaleX(0);
-
-        transform-origin: center;
     }
 
 
     .panel-admin .sidebar .item:hover::before {
 
         transform:
-            scaleX(0.6);
+            scaleX(.6);
     }
 
 
@@ -791,33 +1007,6 @@
 
         transform:
             scaleX(1);
-    }
-
-
-    .panel-admin .sidebar-footer {
-
-        padding:
-            10px;
-    }
-
-
-    .panel-admin #cerrarSesion {
-
-        width: 54px;
-
-        min-width: 54px;
-
-        height: 44px;
-
-        margin: 0 auto;
-
-        padding: 10px;
-    }
-
-
-    .panel-admin #cerrarSesion span {
-
-        display: none;
     }
 }
 
@@ -828,248 +1017,50 @@
 
 @media (max-width: 400px) {
 
+    .panel-admin .sidebar {
+
+        height: 58px;
+
+        min-height: 58px;
+    }
+
+
     .panel-admin .sidebar nav {
 
-        gap: 4px;
+        gap: 3px;
 
-        padding: 8px;
+        padding: 5px;
     }
 
 
     .panel-admin .sidebar .item {
 
-        flex-basis: 48px;
+        flex-basis: 44px;
 
-        width: 48px;
+        width: 44px;
 
-        min-width: 48px;
+        min-width: 44px;
 
-        min-height: 46px;
-    }
+        height: 44px;
 
-
-    .panel-admin #cerrarSesion {
-
-        width: 48px;
-
-        min-width: 48px;
+        min-height: 44px;
     }
 }
 
 
-
-
 /* =========================================================
-   SIDEBAR PLEGADO
-   Compatible con panel.js
+   REDUCIR MOVIMIENTO
 ========================================================= */
 
-
-/* =========================================================
-   LOGO PLEGADO
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar .logo {
-
-    padding: 20px 8px 18px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    text-align: center;
-}
-
-
-/* Ocultar título */
-
-.panel-admin.sidebar-plegada .sidebar .logo h2 {
-
-    display: none;
-}
-
-
-/* Ocultar subtítulo */
-
-.panel-admin.sidebar-plegada .sidebar .logo span {
-
-    display: none;
-}
-
-
-/* Logo pequeño */
-
-.panel-admin.sidebar-plegada .sidebar .logo img {
-
-    width: 46px;
-
-    height: 46px;
-
-    margin: 0;
-
-    object-fit: contain;
-
-    filter:
-        drop-shadow(
-            0 3px 7px rgba(0, 0, 0, 0.25)
-        );
-}
-
-
-/* =========================================================
-   ANCHO DEL SIDEBAR PLEGADO
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar {
-
-    width: 76px;
-
-    min-width: 76px;
-}
-
-
-/* =========================================================
-   NAVEGACIÓN PLEGADA
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar nav {
-
-    padding: 16px 10px;
-}
-
-
-/* =========================================================
-   ITEMS PLEGADOS
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar .item {
-
-    width: 52px;
-
-    min-width: 52px;
-
-    height: 48px;
-
-    min-height: 48px;
-
-    justify-content: center;
-
-    padding: 10px;
-
-    margin: 0 auto 6px;
-
-    gap: 0;
-
-    font-size: 0;
-
-    border-radius: 7px;
-}
-
-
-/* =========================================================
-   ICONOS PLEGADOS
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar .item i,
-.panel-admin.sidebar-plegada .sidebar .item svg {
-
-    flex: 0 0 21px;
-
-    width: 21px;
-
-    height: 21px;
-}
-
-
-/* =========================================================
-   INDICADOR ITEM ACTIVO
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar .item::before {
-
-    left: 0;
-
-    top: 9px;
-
-    bottom: 9px;
-
-    width: 3px;
-}
-
-
-/* =========================================================
-   HOVER PLEGADO
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar .item:hover {
-
-    transform: none;
-}
-
-
-/* =========================================================
-   FOOTER PLEGADO
-========================================================= */
-
-.panel-admin.sidebar-plegada .sidebar-footer {
-
-    padding: 12px 10px 16px;
-}
-
-
-/* =========================================================
-   CERRAR SESIÓN PLEGADO
-========================================================= */
-
-.panel-admin.sidebar-plegada #cerrarSesion {
-
-    width: 52px;
-
-    min-width: 52px;
-
-    height: 46px;
-
-    min-height: 46px;
-
-    margin: 0 auto;
-
-    padding: 10px;
-
-    gap: 0;
-}
-
-
-/* Ocultar texto */
-
-.panel-admin.sidebar-plegada #cerrarSesion span {
-
-    display: none;
-}
-
-
-/* Icono */
-
-.panel-admin.sidebar-plegada #cerrarSesion svg {
-
-    width: 19px;
-
-    height: 19px;
-}
-
-
-/* =========================================================
-   ANIMACIÓN DEL LOGO
-========================================================= */
-
-.panel-admin .sidebar .logo img {
-
-    transition:
-        width 0.25s ease,
-        height 0.25s ease,
-        margin 0.25s ease,
-        transform 0.25s ease;
+@media (prefers-reduced-motion: reduce) {
+
+    .panel-admin .sidebar .item,
+    .panel-admin .sidebar .item::before,
+    .panel-admin .sidebar .item i,
+    .panel-admin .sidebar .item svg,
+    .panel-admin #cerrarSesion,
+    .panel-admin .sidebar .logo img {
+
+        transition: none;
+    }
 }
