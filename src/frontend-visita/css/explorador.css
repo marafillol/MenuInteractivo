@@ -96,7 +96,7 @@
         0 0,
         100% 0,
 
-        100% 40%,
+        10% 90%,
         95% 55%,
         90% 45%,
         84% 80%,
@@ -104,7 +104,7 @@
         72% 100%,
         65% 70%,
         58% 85%,
-        52% 55%,
+        22% 55%,
         46% 75%,
         39% 95%,
         32% 65%,
@@ -680,13 +680,65 @@
 .cabecera{
     min-height:74px;
     padding:18px 48px;
-    background:var(--color-primario);
-    border-bottom:1px solid rgba(255,255,255,.22);
+
+    background-image:
+        linear-gradient(
+            rgba(10, 38, 71, .55),
+            rgba(10, 38, 71, .55)
+        ),
+        url("../img/mar.png");
+    background-size:cover;
+    background-position:center;
+
     box-shadow:0 2px 18px rgba(22,58,97,.22);
 }
 
 .cabecera::before{
-    display:none;
+    content:"";
+    position:absolute;
+    z-index:2;
+    left:0;
+    bottom:-14px; /* cuánto entra el papel al contenido de abajo, ir probando */
+    width:100%;
+    height:46px; /* alto total de la franja ondulada; a más alto, más entra en el mar de arriba */
+
+    /* misma textura lisa que el fondo del contenido (sin tinte):
+       así el borde de abajo de esta franja se funde solo, y el
+       contraste real queda contra el mar de arriba. */
+    background-image:url("../img/pergamino.png");
+    background-size:cover;
+    background-position:center top;
+
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));
+
+    /* la onda arranca directamente desde arriba (sin tramo recto);
+       todo lo que queda afuera del polígono se ve transparente y
+       deja pasar el mar de la cabecera. Ir probando los % de alto
+       para cambiar la forma de la rotura. */
+    clip-path:polygon(
+        0% 55%,
+        6% 42%,
+        12% 62%,
+        18% 40%,
+        24% 58%,
+        30% 42%,
+        36% 60%,
+        42% 46%,
+        48% 64%,
+        54% 42%,
+        60% 58%,
+        66% 44%,
+        72% 62%,
+        78% 40%,
+        84% 58%,
+        90% 46%,
+        96% 60%,
+        100% 50%,
+        100% 100%,
+        0% 100%
+    );
+
+    pointer-events:none;
 }
 
 .cabecera h1{

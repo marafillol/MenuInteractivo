@@ -223,3 +223,24 @@ function cerrarVistaPrevia(){
     document.body.classList.remove("vistaAbierta");
 
 }
+
+// =======================================================
+// CERRAR AL HACER CLICK FUERA DE LA FICHA
+// =======================================================
+// Delegado en "document" (no directo en #fondoVista) porque
+// #fondoVista se recrea cada vez que se vuelve a abrir el
+// explorador; con delegación el listener sigue funcionando
+// aunque el elemento original ya no exista.
+//
+// El chequeo "evento.target.id === 'fondoVista'" es clave:
+// sin él, un click DENTRO de la ficha (que burbujea hasta acá)
+// también la cerraría.
+document.addEventListener("click", (evento)=>{
+
+    if(evento.target.id === "fondoVista"){
+
+        cerrarVistaPrevia();
+
+    }
+
+});
