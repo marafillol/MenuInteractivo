@@ -1,12 +1,9 @@
+
 <section class="ventana ventana-multimedia">
 
-    <!-- =======================================
-     CABECERA MULTIMEDIA
-======================================== -->
-
-    <!-- =================================================
-     CABECERA GENERAL
-================================================= -->
+    <!-- =========================================================
+         CABECERA GENERAL
+    ========================================================= -->
 
     <div
             id="cabeceraMultimediaGeneral"
@@ -18,14 +15,12 @@
                 Gestión de Multimedia
             </h2>
 
-
-
         </div>
-
 
         <button
                 id="nuevoMultimedia"
                 class="btn-nuevo-multimedia"
+                type="button"
                 onclick="nuevoMultimedia()">
 
             + Nuevo archivo
@@ -35,18 +30,19 @@
     </div>
 
 
-    <!-- =================================================
+    <!-- =========================================================
          CABECERA DE MULTIMEDIA DE UNA FICHA
-    ================================================= -->
+    ========================================================= -->
 
     <div
             id="cabeceraMultimediaFicha"
             class="cabecera-multimedia-ficha"
-            style="display:none;">
+            style="display: none;">
 
         <button
                 id="barraVolverFicha"
                 class="btn-volver-multimedia"
+                type="button"
                 onclick="volverFicha()">
 
             ← Volver a fichas
@@ -60,13 +56,10 @@
                 Multimedia asociada a la ficha
             </h2>
 
-            <p id="nombreFichaMultimedia">
-            </p>
+            <p id="nombreFichaMultimedia"></p>
 
         </div>
 
-
-        <!-- NUEVO ARCHIVO PARA ESTA FICHA -->
 
         <button
                 id="nuevoMultimediaFicha"
@@ -81,21 +74,14 @@
     </div>
 
 
-
-
-
-    <!-- =======================================
-     PANEL CUANDO VIENE DESDE UNA FICHA
-======================================== -->
-
-    <!-- =======================================
-     MULTIMEDIA DE UNA FICHA
-======================================== -->
+    <!-- =========================================================
+         MULTIMEDIA ASOCIADA A UNA FICHA
+    ========================================================= -->
 
     <div
             id="panelFichaMultimedia"
             class="panel-ficha-multimedia-contenedor"
-            style="display:none;">
+            style="display: none;">
 
         <div
                 id="listaMultimedia"
@@ -105,10 +91,9 @@
     </div>
 
 
-
-    <!-- =======================================
-         VISTA GENERAL
-    ======================================== -->
+    <!-- =========================================================
+         VISTA GENERAL DE MULTIMEDIA
+    ========================================================= -->
 
     <div id="vistaGeneralMultimedia">
 
@@ -120,10 +105,9 @@
     </div>
 
 
-
-    <!-- =======================================
-     MODAL VISTA PREVIA MULTIMEDIA
-======================================== -->
+    <!-- =========================================================
+         MODAL — VISTA PREVIA MULTIMEDIA
+    ========================================================= -->
 
     <div
             id="modalVistaMultimedia"
@@ -132,31 +116,36 @@
         <div class="contenido-modal-multimedia vista-modal">
 
 
+            <!-- CERRAR -->
+
             <button
                     class="cerrar-multimedia"
                     type="button"
                     aria-label="Cerrar vista previa multimedia"
                     onclick="cerrarVistaMultimedia()">
 
-                <i data-lucide="x" aria-hidden="true"></i>
+                <i
+                        data-lucide="x"
+                        aria-hidden="true">
+                </i>
 
             </button>
 
 
+            <!-- CABECERA -->
+
             <div class="cabecera-vista-multimedia">
 
                 <h2>
-                    <i  aria-hidden="true"></i> Vista previa multimedia
+                    Vista previa multimedia
                 </h2>
 
-
             </div>
 
 
+            <!-- CONTENIDO DINÁMICO -->
 
-            <div id="contenidoVistaMultimedia">
-
-            </div>
+            <div id="contenidoVistaMultimedia"></div>
 
 
         </div>
@@ -164,9 +153,9 @@
     </div>
 
 
-    <!-- =======================================
-         NUEVO MULTIMEDIA
-    ======================================== -->
+    <!-- =========================================================
+         MODAL — NUEVO / EDITAR MULTIMEDIA
+    ========================================================= -->
 
     <div
             id="modalMultimediaNuevo"
@@ -174,63 +163,110 @@
 
         <div class="contenido-modal-multimedia">
 
+
+            <!-- CERRAR -->
+
             <button
                     class="cerrar-multimedia"
                     type="button"
                     aria-label="Cerrar nuevo archivo"
                     onclick="cerrarNuevoMultimedia()">
 
-                <i data-lucide="x" aria-hidden="true"></i>
+                <i
+                        data-lucide="x"
+                        aria-hidden="true">
+                </i>
 
             </button>
+
+
+            <!-- TÍTULO -->
 
             <h3>
                 Nuevo archivo
             </h3>
 
+
+            <!-- FICHA -->
+
             <div id="contenedorFichaMultimedia">
 
-                <label>Ficha</label>
+                <label for="multiFicha">
+                    Ficha
+                </label>
 
                 <select id="multiFicha"></select>
 
             </div>
 
-            <label>Descripción</label>
+
+            <!-- DESCRIPCIÓN -->
+
+            <label for="multiDescripcion">
+                Descripción
+            </label>
 
             <input
                     type="text"
                     id="multiDescripcion"
                     placeholder="Descripción del archivo">
 
-            <label>Tipo</label>
+
+            <!-- TIPO -->
+
+            <label for="multiTipo">
+                Tipo
+            </label>
 
             <select id="multiTipo">
 
-                <option value="imagen">Imagen</option>
+                <option value="imagen">
+                    Imagen
+                </option>
 
-                <option value="video">Video</option>
+                <option value="video">
+                    Video
+                </option>
 
-                <option value="audio">Audio</option>
+                <option value="audio">
+                    Audio
+                </option>
 
-                <option value="pdf">PDF</option>
+                <option value="pdf">
+                    PDF
+                </option>
 
             </select>
 
-            <label>Archivo</label>
+
+            <!-- ARCHIVO -->
+
+            <label for="multiArchivo">
+                Archivo
+            </label>
 
             <input
                     type="file"
                     id="multiArchivo">
 
-            <div id="previewArchivoActual" class="preview-archivo-actual" style="display:none;">
 
-                <h4>Archivo actual</h4>
+            <!-- PREVIEW DEL ARCHIVO ACTUAL -->
+
+            <div
+                    id="previewArchivoActual"
+                    class="preview-archivo-actual"
+                    style="display: none;">
+
+                <h4>
+                    Archivo actual
+                </h4>
 
                 <div id="contenidoPreviewArchivo"></div>
 
             </div>
 
+
+            <!-- ESTADO -->
 
             <label class="checkbox-label">
 
@@ -243,27 +279,38 @@
 
             </label>
 
+
+            <!-- ACCIONES -->
+
             <div class="acciones-modal-multimedia">
 
-                <button onclick="guardarMultimedia()">
+                <button
+                        type="button"
+                        onclick="guardarMultimedia()">
+
                     Guardar
+
                 </button>
 
-                <button onclick="cerrarNuevoMultimedia()">
+                <button
+                        type="button"
+                        onclick="cerrarNuevoMultimedia()">
+
                     Cancelar
+
                 </button>
 
             </div>
+
 
         </div>
 
     </div>
 
 
-
-    <!-- =======================================
-         ELIMINAR MULTIMEDIA
-    ======================================== -->
+    <!-- =========================================================
+         MODAL — ELIMINAR MULTIMEDIA
+    ========================================================= -->
 
     <div
             id="modalEliminarMultimedia"
@@ -271,27 +318,43 @@
 
         <div class="contenido-modal-multimedia">
 
+
+            <!-- CERRAR -->
+
             <button
                     class="cerrar-multimedia"
                     type="button"
-                    aria-label="Cerrar eliminacion de multimedia"
+                    aria-label="Cerrar eliminación de multimedia"
                     onclick="cerrarEliminarMultimedia()">
 
-                <i data-lucide="x" aria-hidden="true"></i>
+                <i
+                        data-lucide="x"
+                        aria-hidden="true">
+                </i>
 
             </button>
+
+
+            <!-- TÍTULO -->
 
             <h3>
                 Eliminar multimedia
             </h3>
 
+
+            <!-- MENSAJE -->
+
             <p>
-                 ¿Desea eliminar este archivo multimedia?
+                ¿Desea eliminar este archivo multimedia?
             </p>
+
+
+            <!-- ACCIONES -->
 
             <div class="acciones-modal-multimedia">
 
                 <button
+                        type="button"
                         class="btn-eliminar-multimedia"
                         onclick="confirmarEliminarMultimedia()">
 
@@ -300,6 +363,7 @@
                 </button>
 
                 <button
+                        type="button"
                         class="btn-ver-multimedia"
                         onclick="cerrarEliminarMultimedia()">
 
@@ -309,20 +373,24 @@
 
             </div>
 
+
         </div>
 
     </div>
 
 
-    <!-- =======================================
-     MENSAJES
-======================================= -->
+    <!-- =========================================================
+         MODAL — MENSAJES / VALIDACIONES
+    ========================================================= -->
 
     <div
             id="modalMensaje"
             class="modal-multimedia">
 
         <div class="contenido-modal-multimedia">
+
+
+            <!-- CABECERA DEL MENSAJE -->
 
             <div class="encabezado-modal">
 
@@ -336,20 +404,30 @@
                         aria-label="Cerrar mensaje"
                         onclick="cerrarMensaje()">
 
-                    <i data-lucide="x" aria-hidden="true"></i>
+                    <i
+                            data-lucide="x"
+                            aria-hidden="true">
+                    </i>
 
                 </button>
 
             </div>
+
+
+            <!-- MENSAJE -->
 
             <p
                     id="textoMensaje"
                     class="mensaje-confirmacion">
             </p>
 
+
+            <!-- ACCIÓN -->
+
             <div class="acciones-modal-multimedia">
 
                 <button
+                        type="button"
                         class="btn-ver-multimedia"
                         onclick="cerrarMensaje()">
 
@@ -359,21 +437,25 @@
 
             </div>
 
+
         </div>
 
     </div>
 
 
-
-    <!-- =======================================
-     VISOR COMPLETO PDF
-======================================= -->
+    <!-- =========================================================
+         MODAL — DOCUMENTO PDF COMPLETO
+    ========================================================= -->
 
     <div
             id="modalDocumentoCompleto"
             class="modal-multimedia">
 
-        <div class="contenido-modal-multimedia documento-completo-multimedia">
+        <div
+                class="contenido-modal-multimedia documento-completo-multimedia">
+
+
+            <!-- CERRAR -->
 
             <button
                     class="cerrar-multimedia"
@@ -381,18 +463,28 @@
                     aria-label="Cerrar documento"
                     onclick="cerrarDocumentoCompleto()">
 
-                <i data-lucide="x" aria-hidden="true"></i>
+                <i
+                        data-lucide="x"
+                        aria-hidden="true">
+                </i>
 
             </button>
+
+
+            <!-- TÍTULO -->
 
             <h2>
                 Documento completo
             </h2>
 
+
+            <!-- VISOR -->
+
             <iframe
                     id="visorDocumentoCompleto"
                     class="visor-documento-completo">
             </iframe>
+
 
         </div>
 

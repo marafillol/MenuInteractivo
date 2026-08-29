@@ -1,11 +1,14 @@
 <section class="ventana ventana-etiquetas">
 
+    <!-- =========================================================
+         CABECERA
+    ========================================================== -->
+
     <div class="cabecera-etiquetas">
 
         <h2 class="titulo-etiquetas">
             Gestión de Etiquetas
         </h2>
-
 
         <button
                 id="nuevaEtiqueta"
@@ -19,20 +22,19 @@
     </div>
 
 
-
-
+    <!-- =========================================================
+         LISTA DE ETIQUETAS
+    ========================================================== -->
 
     <div
             id="gridEtiquetas"
             class="grid-etiquetas-panel">
-
     </div>
 
 
-
-    <!-- ==========================================
-                    MODAL CREAR / EDITAR
-    =========================================== -->
+    <!-- =========================================================
+         MODAL — NUEVA / EDITAR ETIQUETA
+    ========================================================== -->
 
     <div
             id="modalEtiqueta"
@@ -49,18 +51,19 @@
                 <button
                         id="cerrarModalEtiqueta"
                         class="cerrar-modal-etiqueta"
-                        type="button">
+                        type="button"
+                        aria-label="Cerrar">
+
                     ✕
+
                 </button>
 
             </div>
 
 
-            <!-- CONTENIDO INTERNO -->
-
             <div class="cuerpo-modal-etiqueta">
 
-                <label>
+                <label for="nombreEtiqueta">
                     Nombre
                 </label>
 
@@ -70,17 +73,20 @@
                         placeholder="Ej: Batalla de Puerto Argentino">
 
 
-                <label>
+                <label for="descripcionEtiqueta">
                     Descripción
                 </label>
 
                 <textarea
                         id="descripcionEtiqueta"
                         rows="6"
-                        placeholder="Descripción de la etiqueta"></textarea>
+                        placeholder="Descripción de la etiqueta">
+                </textarea>
 
 
-                <label class="checkbox-etiqueta">
+                <label
+                        class="checkbox-etiqueta"
+                        for="activoEtiqueta">
 
                     <input
                             id="activoEtiqueta"
@@ -98,14 +104,18 @@
                             id="guardarEtiqueta"
                             class="btn-guardar"
                             type="button">
+
                         Guardar
+
                     </button>
 
                     <button
                             id="cancelarEtiqueta"
                             class="btn-cancelar"
                             type="button">
+
                         Cancelar
+
                     </button>
 
                 </div>
@@ -117,10 +127,9 @@
     </div>
 
 
-
-    <!-- ==========================================
-                    MODAL VISTA PREVIA
-    =========================================== -->
+    <!-- =========================================================
+         MODAL — VISTA PREVIA
+    ========================================================== -->
 
     <div
             id="modalVistaEtiqueta"
@@ -137,8 +146,11 @@
                 <button
                         id="cerrarVistaEtiqueta"
                         class="cerrar-modal-etiqueta"
-                        type="button">
+                        type="button"
+                        aria-label="Cerrar vista previa">
+
                     ✕
+
                 </button>
 
             </div>
@@ -146,7 +158,7 @@
 
             <div class="cuerpo-modal-etiqueta">
 
-                <label>
+                <label for="vistaIdEtiqueta">
                     ID
                 </label>
 
@@ -156,7 +168,7 @@
                         readonly>
 
 
-                <label>
+                <label for="vistaNombreEtiqueta">
                     Nombre
                 </label>
 
@@ -166,14 +178,15 @@
                         readonly>
 
 
-                <label>
+                <label for="vistaDescripcionEtiqueta">
                     Descripción
                 </label>
 
                 <textarea
                         id="vistaDescripcionEtiqueta"
                         rows="6"
-                        readonly></textarea>
+                        readonly>
+                </textarea>
 
 
                 <label>
@@ -192,7 +205,9 @@
                             id="btnCerrarVistaEtiqueta"
                             class="btn-cancelar"
                             type="button">
+
                         Cerrar
+
                     </button>
 
                 </div>
@@ -204,38 +219,35 @@
     </div>
 
 
-
-
-
-
-    <!-- =========================
-     MODAL ELIMINAR
-========================== -->
+    <!-- =========================================================
+         MODAL — ELIMINAR
+    ========================================================== -->
 
     <div
             id="modalEliminarEtiqueta"
             class="modal-etiqueta">
 
-        <div class="contenido-modal-etiqueta confirmacion-etiqueta">
+        <div
+                class="contenido-modal-etiqueta confirmacion-etiqueta">
 
             <div class="encabezado-modal-etiqueta">
 
                 <h3>
-
                     Eliminar etiqueta
-
                 </h3>
 
                 <button
                         id="cerrarEliminarEtiqueta"
                         class="cerrar-modal-etiqueta"
-                        type="button">
+                        type="button"
+                        aria-label="Cerrar eliminación">
 
                     ✕
 
                 </button>
 
             </div>
+
 
             <p class="mensaje-confirmacion-etiqueta">
 
@@ -246,6 +258,7 @@
                 <strong id="nombreEliminarEtiqueta"></strong>
 
             </p>
+
 
             <div class="acciones-modal-etiqueta">
 
@@ -274,16 +287,16 @@
     </div>
 
 
-    <!-- ==========================================
-                MODAL MENSAJE
-=========================================== -->
+    <!-- =========================================================
+         MODAL — MENSAJE
+    ========================================================== -->
 
     <div
             id="modalMensaje"
             class="modal-etiqueta">
 
-        <div class="contenido-modal-etiqueta confirmacion-etiqueta">
-
+        <div
+                class="contenido-modal-etiqueta confirmacion-etiqueta">
 
             <div class="encabezado-modal-etiqueta">
 
@@ -291,10 +304,10 @@
                     Mensaje
                 </h3>
 
-
                 <button
                         class="cerrar-modal-etiqueta"
                         type="button"
+                        aria-label="Cerrar mensaje"
                         onclick="cerrarMensaje()">
 
                     ✕
@@ -304,13 +317,10 @@
             </div>
 
 
-
             <p
                     id="textoMensaje"
                     class="mensaje-confirmacion-etiqueta">
-
             </p>
-
 
 
             <div class="acciones-modal-etiqueta">
@@ -325,7 +335,6 @@
                 </button>
 
             </div>
-
 
         </div>
 

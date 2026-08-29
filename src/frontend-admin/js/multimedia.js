@@ -1,94 +1,165 @@
+/* =========================================================
+   MULTIMEDIA.JS
+   Museo Malvinas
+   Gestión de archivos multimedia
+   Versión limpia y consolidada
+========================================================= */
+
 console.log("Modulo multimedia cargado");
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
 
 let multimediaEditando = null;
 let multimediaEliminar = null;
 
-async function cargarMultimedia(){
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+/**
+ * Inicializa los iconos Lucide si están disponibles.
+ */
+function actualizarIconosLucide() {
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+
+}
+
+
+/**
+ * Obtiene un elemento por ID.
+ */
+function obtenerElemento(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+/**
+ * Convierte una ruta de archivo de la base de datos
+ * en una ruta utilizable desde el navegador.
+ */
+function obtenerRutaMultimedia(ruta) {
+
+    if (!ruta) {
+        return "";
+    }
+
+    return "/" + ruta.replace(/^public\//, "");
+
+}
+
+
+/* =========================================================
+   CARGAR MULTIMEDIA
+========================================================= */
+
+async function cargarMultimedia() {
 
     const panel =
-        document.getElementById("panelFichaMultimedia");
+        obtenerElemento("panelFichaMultimedia");
 
     const vistaGeneral =
-        document.getElementById("vistaGeneralMultimedia");
+        obtenerElemento("vistaGeneralMultimedia");
 
     const cabeceraGeneral =
-        document.getElementById("cabeceraMultimediaGeneral");
+        obtenerElemento("cabeceraMultimediaGeneral");
 
     const cabeceraFicha =
-        document.getElementById("cabeceraMultimediaFicha");
+        obtenerElemento("cabeceraMultimediaFicha");
 
     const botonNuevo =
-        document.getElementById("nuevoMultimedia");
+        obtenerElemento("nuevoMultimedia");
+
+    const botonNuevoFicha =
+        obtenerElemento("nuevoMultimediaFicha");
 
     const titulo =
-        document.getElementById("tituloMultimedia");
-
-    const subtitulo =
-        document.getElementById("subtituloMultimedia");
+        obtenerElemento("tituloMultimedia");
 
 
-    try{
+    try {
 
         let url = "/api/multimedia";
 
 
         /* =================================================
-           MULTIMEDIA ASOCIADA A UNA FICHA
+           MULTIMEDIA DE UNA FICHA
         ================================================= */
 
-        if(fichaSeleccionada){
+        if (fichaSeleccionada) {
 
-            url = `/api/multimedia/ficha/${fichaSeleccionada}`;
+            url =
+                `/api/multimedia/ficha/${fichaSeleccionada}`;
 
-            /* ==========================================
-               MOSTRAR CABECERA DE LA FICHA
-            ========================================== */
 
-            panel.style.display = "block";
+            if (panel) {
+                panel.style.display = "block";
+            }
 
-            vistaGeneral.style.display = "none";
+            if (vistaGeneral) {
+                vistaGeneral.style.display = "none";
+            }
 
-            cabeceraGeneral.style.display = "none";
+            if (cabeceraGeneral) {
+                cabeceraGeneral.style.display = "none";
+            }
 
-            cabeceraFicha.style.display = "flex";
+            if (cabeceraFicha) {
+                cabeceraFicha.style.display = "flex";
+            }
 
-            botonNuevo.style.display = "none";
+            if (botonNuevo) {
+                botonNuevo.style.display = "none";
+            }
 
-            const botonNuevoFicha =
-                document.getElementById("nuevoMultimediaFicha");
-
-            if(botonNuevoFicha){
+            if (botonNuevoFicha) {
                 botonNuevoFicha.style.display = "inline-flex";
             }
 
 
-            /* ==========================================
+            /* =============================================
                OBTENER NOMBRE DE LA FICHA
-            ========================================== */
+            ============================================= */
 
-            try{
+            try {
 
                 const respuestaFicha =
                     await window.fetchProtegido(
                         `/api/fichas/${fichaSeleccionada}`
                     );
 
+
+                if (!respuestaFicha.ok) {
+                    throw new Error(
+                        `Error HTTP ${respuestaFicha.status}`
+                    );
+                }
+
+
                 const ficha =
                     await respuestaFicha.json();
 
 
                 const tituloFicha =
-                    document.getElementById(
+                    obtenerElemento(
                         "tituloFichaMultimedia"
                     );
 
                 const nombreFicha =
-                    document.getElementById(
+                    obtenerElemento(
                         "nombreFichaMultimedia"
                     );
 
 
-                if(tituloFicha){
+                if (tituloFicha) {
 
                     tituloFicha.textContent =
                         "Multimedia asociada a la ficha";
@@ -96,15 +167,16 @@ async function cargarMultimedia(){
                 }
 
 
-                if(nombreFicha){
+                if (nombreFicha) {
 
                     nombreFicha.textContent =
-                        ficha.titulo || "Ficha sin nombre";
+                        ficha.titulo ||
+                        "Ficha sin nombre";
 
                 }
 
 
-            }catch(error){
+            } catch (error) {
 
                 console.error(
                     "Error obteniendo nombre de la ficha:",
@@ -120,42 +192,52 @@ async function cargarMultimedia(){
            MULTIMEDIA GENERAL
         ================================================= */
 
-        else{
+        else {
 
-            const botonNuevoFicha =
-                document.getElementById("nuevoMultimediaFicha");
-
-            if(botonNuevoFicha){
+            if (botonNuevoFicha) {
                 botonNuevoFicha.style.display = "none";
             }
 
-            panel.style.display = "none";
+            if (panel) {
+                panel.style.display = "none";
+            }
 
-            vistaGeneral.style.display = "block";
+            if (vistaGeneral) {
+                vistaGeneral.style.display = "block";
+            }
 
-            cabeceraGeneral.style.display = "flex";
+            if (cabeceraGeneral) {
+                cabeceraGeneral.style.display = "flex";
+            }
 
-            cabeceraFicha.style.display = "none";
+            if (cabeceraFicha) {
+                cabeceraFicha.style.display = "none";
+            }
 
-            botonNuevo.style.display = "inline-flex";
+            if (botonNuevo) {
+                botonNuevo.style.display = "inline-flex";
+            }
+
+            if (titulo) {
+                titulo.textContent =
+                    "Gestión de Multimedia";
+            }
 
 
-            titulo.textContent =
-                "Gestión de Multimedia";
+            const listaGeneral =
+                obtenerElemento(
+                    "listaMultimedia"
+                );
 
-
-
-
-
-            document.getElementById(
-                "listaMultimedia"
-            ).innerHTML = "";
+            if (listaGeneral) {
+                listaGeneral.innerHTML = "";
+            }
 
         }
 
 
         /* =================================================
-           CONSULTAR MULTIMEDIA
+           CONSULTAR API
         ================================================= */
 
         console.log(
@@ -168,7 +250,7 @@ async function cargarMultimedia(){
             await window.fetchProtegido(url);
 
 
-        if(!respuesta.ok){
+        if (!respuesta.ok) {
 
             throw new Error(
                 `Error HTTP ${respuesta.status}`
@@ -192,30 +274,16 @@ async function cargarMultimedia(){
 
 
         /* =================================================
-           ELEGIR CONTENEDOR
+           CONTENEDOR
         ================================================= */
 
-        let contenedor;
+        const contenedor =
+            fichaSeleccionada
+                ? obtenerElemento("listaMultimedia")
+                : obtenerElemento("listaMultimediaGeneral");
 
 
-        if(fichaSeleccionada){
-
-            contenedor =
-                document.getElementById(
-                    "listaMultimedia"
-                );
-
-        }else{
-
-            contenedor =
-                document.getElementById(
-                    "listaMultimediaGeneral"
-                );
-
-        }
-
-
-        if(!contenedor){
+        if (!contenedor) {
 
             console.error(
                 "No existe el contenedor de multimedia"
@@ -233,7 +301,10 @@ async function cargarMultimedia(){
            SIN MULTIMEDIA
         ================================================= */
 
-        if(!Array.isArray(multimedia) || multimedia.length === 0){
+        if (
+            !Array.isArray(multimedia) ||
+            multimedia.length === 0
+        ) {
 
             contenedor.innerHTML = `
 
@@ -247,7 +318,6 @@ async function cargarMultimedia(){
                         </i>
 
                     </span>
-
 
                     <div>
 
@@ -267,12 +337,7 @@ async function cargarMultimedia(){
             `;
 
 
-            if(window.lucide){
-
-                window.lucide.createIcons();
-
-            }
-
+            actualizarIconosLucide();
 
             return;
 
@@ -285,119 +350,31 @@ async function cargarMultimedia(){
 
         multimedia.forEach(item => {
 
-            let vista = "";
-
-
-            /* ---------------------------------------------
-               IMAGEN
-            --------------------------------------------- */
-
-            if(item.tipo_multi === "imagen"){
-
-                vista = `
-
-                    <img
-                        src="/${item.ruta_archivo}"
-                        class="thumb-multi"
-                        onerror="
-                            this.src='/imagenes/default.png'
-                        ">
-
-                `;
-
-            }
-
-
-            /* ---------------------------------------------
-               VIDEO
-            --------------------------------------------- */
-
-            else if(item.tipo_multi === "video"){
-
-                vista = `
-
-                    <video
-                        class="thumb-multi"
-                        muted
-                        preload="metadata">
-
-                        <source
-                            src="/${item.ruta_archivo}"
-                            type="video/mp4">
-
-                    </video>
-
-                `;
-
-            }
-
-
-            /* ---------------------------------------------
-               AUDIO
-            --------------------------------------------- */
-
-            else if(item.tipo_multi === "audio"){
-
-                vista = `
-
-                    <div class="thumb-audio">
-
-                        <i
-                            data-lucide="music"
-                            aria-hidden="true">
-                        </i>
-
-                    </div>
-
-                `;
-
-            }
-
-
-            /* ---------------------------------------------
-               PDF
-            --------------------------------------------- */
-
-            else{
-
-                vista = `
-
-                    <div class="thumb-pdf">
-
-                        <i
-                            data-lucide="file-text"
-                            aria-hidden="true">
-                        </i>
-
-                    </div>
-
-                `;
-
-            }
-
-
-            const iconosPorTipo = {
-
-                imagen: "image",
-                video: "video",
-                audio: "music",
-                pdf: "file-text"
-
-            };
+            const vista =
+                generarVistaMiniatura(item);
 
 
             const icono =
-                iconosPorTipo[item.tipo_multi] ||
-                "folder";
+                obtenerIconoMultimedia(
+                    item.tipo_multi
+                );
 
 
-            /* ---------------------------------------------
-               TARJETA
-            --------------------------------------------- */
+            const tipo =
+                item.tipo_multi
+                    ? item.tipo_multi.charAt(0).toUpperCase()
+                        + item.tipo_multi.slice(1)
+                    : "Archivo";
+
+
+            const descripcion =
+                item.descripcion ||
+                "Sin descripción";
+
 
             contenedor.innerHTML += `
 
-                <article class="tarjeta-multimedia">
+                <article class="tarjeta-multimedia ${item.activo == 0 ? "multimedia-desactivada" : ""}">
 
 
                     <div class="multimedia-preview">
@@ -427,23 +404,14 @@ async function cargarMultimedia(){
 
                                 <h3 class="titulo-multimedia">
 
-                                    ${
-                                        item.tipo_multi
-                                            .charAt(0)
-                                            .toUpperCase()
-                                        +
-                                        item.tipo_multi.slice(1)
-                                    }
+                                    ${tipo}
 
                                 </h3>
 
 
                                 <small class="descripcion-tipo">
 
-                                    ${
-                                        item.descripcion ||
-                                        "Sin descripción"
-                                    }
+                                    ${descripcion}
 
                                 </small>
 
@@ -487,6 +455,7 @@ async function cargarMultimedia(){
 
 
                             <button
+                                type="button"
                                 class="btn-vista"
                                 onclick="
                                     vistaPreviaMultimedia(
@@ -499,34 +468,40 @@ async function cargarMultimedia(){
                             </button>
 
 
-                            ${!esConsulta ? `
+                            ${
+                                !esConsulta
+                                    ? `
 
-                                <button
-                                    class="btn-editar"
-                                    onclick="
-                                        editarMultimedia(
-                                            ${item.id_multi}
-                                        )
-                                    ">
+                                        <button
+                                            type="button"
+                                            class="btn-editar"
+                                            onclick="
+                                                editarMultimedia(
+                                                    ${item.id_multi}
+                                                )
+                                            ">
 
-                                    Editar
+                                            Editar
 
-                                </button>
+                                        </button>
 
 
-                                <button
-                                    class="btn-eliminar"
-                                    onclick="
-                                        eliminarMultimedia(
-                                            ${item.id_multi}
-                                        )
-                                    ">
+                                        <button
+                                            type="button"
+                                            class="btn-eliminar"
+                                            onclick="
+                                                eliminarMultimedia(
+                                                    ${item.id_multi}
+                                                )
+                                            ">
 
-                                    Eliminar
+                                            Eliminar
 
-                                </button>
+                                        </button>
 
-                            ` : ""}
+                                    `
+                                    : ""
+                            }
 
 
                         </div>
@@ -542,18 +517,10 @@ async function cargarMultimedia(){
         });
 
 
-        /* =================================================
-           ICONOS
-        ================================================= */
-
-        if(window.lucide){
-
-            window.lucide.createIcons();
-
-        }
+        actualizarIconosLucide();
 
 
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Error cargando multimedia:",
@@ -564,9 +531,130 @@ async function cargarMultimedia(){
 
 }
 
-// ===================================
-// VISTA PREVIA MULTIMEDIA
-// ===================================
+
+/* =========================================================
+   MINIATURAS
+========================================================= */
+
+function generarVistaMiniatura(item) {
+
+    const ruta =
+        obtenerRutaMultimedia(
+            item.ruta_archivo
+        );
+
+
+    switch (item.tipo_multi) {
+
+        case "imagen":
+
+            return `
+
+                <img
+                    src="${ruta}"
+                    class="thumb-multi"
+                    alt="Imagen multimedia"
+                    onerror="
+                        this.src='/imagenes/default.png'
+                    ">
+
+            `;
+
+
+        case "video":
+
+            return `
+
+                <video
+                    class="thumb-multi"
+                    muted
+                    preload="metadata">
+
+                    <source
+                        src="${ruta}"
+                        type="video/mp4">
+
+                </video>
+
+            `;
+
+
+        case "audio":
+
+            return `
+
+                <div class="thumb-audio">
+
+                    <i
+                        data-lucide="music"
+                        aria-hidden="true">
+                    </i>
+
+                </div>
+
+            `;
+
+
+        case "pdf":
+
+            return `
+
+                <div class="thumb-pdf">
+
+                    <i
+                        data-lucide="file-text"
+                        aria-hidden="true">
+                    </i>
+
+                </div>
+
+            `;
+
+
+        default:
+
+            return `
+
+                <div class="thumb-pdf">
+
+                    <i
+                        data-lucide="folder"
+                        aria-hidden="true">
+                    </i>
+
+                </div>
+
+            `;
+
+    }
+
+}
+
+
+/* =========================================================
+   ICONO SEGÚN TIPO
+========================================================= */
+
+function obtenerIconoMultimedia(tipo) {
+
+    const iconos = {
+
+        imagen: "image",
+        video: "video",
+        audio: "music",
+        pdf: "file-text"
+
+    };
+
+
+    return iconos[tipo] || "folder";
+
+}
+
+
+/* =========================================================
+   VISTA PREVIA MULTIMEDIA
+========================================================= */
 
 async function vistaPreviaMultimedia(id_multi) {
 
@@ -577,170 +665,195 @@ async function vistaPreviaMultimedia(id_multi) {
                 `/api/multimedia/${id_multi}`
             );
 
+
         if (!respuesta.ok) {
-            throw new Error(`Error HTTP ${respuesta.status}`);
+
+            throw new Error(
+                `Error HTTP ${respuesta.status}`
+            );
+
         }
 
-        const item = await respuesta.json();
+
+        const item =
+            await respuesta.json();
+
 
         if (!item) {
 
-            alert("No se encontró el archivo.");
+            mostrarMensaje(
+                "Archivo no encontrado",
+                "No se encontró el archivo multimedia."
+            );
+
             return;
 
         }
 
 
-        /* =================================================
-           RUTA
-        ================================================= */
-
         const ruta =
-            "/" + item.ruta_archivo.replace("public/", "");
+            obtenerRutaMultimedia(
+                item.ruta_archivo
+            );
 
-
-        /* =================================================
-           VISOR DEL ARCHIVO
-        ================================================= */
 
         let visor = "";
 
 
-        switch (item.tipo_multi) {
+        /* =================================================
+           IMAGEN
+        ================================================= */
 
+        if (item.tipo_multi === "imagen") {
 
-            /* ---------------------------------------------
-               IMAGEN
-            --------------------------------------------- */
+            visor = `
 
-            case "imagen":
+                <img
+                    src="${ruta}"
+                    class="preview-imagen-multi"
+                    alt="Imagen multimedia"
+                    onerror="
+                        this.src='/imagenes/default.png'
+                    ">
 
-                visor = `
-                    <img
-                        src="${ruta}"
-                        class="preview-imagen-multi"
-                        alt="Imagen multimedia"
-                        onerror="this.src='/imagenes/default.png'">
-                `;
-
-                break;
-
-
-            /* ---------------------------------------------
-               VIDEO
-            --------------------------------------------- */
-
-            case "video":
-
-                visor = `
-                    <video
-                        controls
-                        preload="metadata"
-                        class="preview-video-multi">
-
-                        <source src="${ruta}">
-
-                        Tu navegador no soporta video.
-
-                    </video>
-                `;
-
-                break;
-
-
-            /* ---------------------------------------------
-               AUDIO
-            --------------------------------------------- */
-
-            case "audio":
-
-                visor = `
-                    <div class="preview-audio-contenedor">
-
-                        <div class="preview-audio-icono">
-
-                            <i
-                                data-lucide="music"
-                                aria-hidden="true">
-                            </i>
-
-                        </div>
-
-                        <audio
-                            controls
-                            class="preview-audio-multi">
-
-                            <source src="${ruta}">
-
-                            Tu navegador no soporta audio.
-
-                        </audio>
-
-                    </div>
-                `;
-
-                break;
-
-
-            /* ---------------------------------------------
-               PDF
-            --------------------------------------------- */
-
-            case "pdf":
-
-                visor = `
-                    <div class="preview-pdf-contenedor">
-
-                        <iframe
-                            src="${ruta}"
-                            class="preview-pdf-multi">
-                        </iframe>
-
-                    </div>
-                `;
-
-                break;
-
-
-            /* ---------------------------------------------
-               OTRO
-            --------------------------------------------- */
-
-            default:
-
-                visor = `
-                    <div class="preview-archivo-generico">
-
-                        <i
-                            data-lucide="file"
-                            aria-hidden="true">
-                        </i>
-
-                        <span>
-                            Archivo multimedia
-                        </span>
-
-                    </div>
-                `;
+            `;
 
         }
 
 
         /* =================================================
-           CONTENIDO COMPLETO DEL MODAL
+           VIDEO
         ================================================= */
 
-        document.getElementById(
-            "contenidoVistaMultimedia"
-        ).innerHTML = `
+        else if (item.tipo_multi === "video") {
 
+            visor = `
+
+                <video
+                    controls
+                    preload="metadata"
+                    class="preview-video-multi">
+
+                    <source src="${ruta}">
+
+                    Tu navegador no soporta video.
+
+                </video>
+
+            `;
+
+        }
+
+
+        /* =================================================
+           AUDIO
+        ================================================= */
+
+        else if (item.tipo_multi === "audio") {
+
+            visor = `
+
+                <div class="preview-audio-contenedor">
+
+                    <div class="preview-audio-icono">
+
+                        <i
+                            data-lucide="music"
+                            aria-hidden="true">
+                        </i>
+
+                    </div>
+
+                    <audio
+                        controls
+                        class="preview-audio-multi">
+
+                        <source src="${ruta}">
+
+                        Tu navegador no soporta audio.
+
+                    </audio>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /* =================================================
+           PDF
+        ================================================= */
+
+        else if (item.tipo_multi === "pdf") {
+
+            visor = `
+
+                <div class="preview-pdf-contenedor">
+
+                    <iframe
+                        src="${ruta}"
+                        class="preview-pdf-multi">
+                    </iframe>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /* =================================================
+           OTRO
+        ================================================= */
+
+        else {
+
+            visor = `
+
+                <div class="preview-archivo-generico">
+
+                    <i
+                        data-lucide="file"
+                        aria-hidden="true">
+                    </i>
+
+                    <span>
+                        Archivo multimedia
+                    </span>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /* =================================================
+           CONTENIDO DEL MODAL
+        ================================================= */
+
+        const contenido =
+            obtenerElemento(
+                "contenidoVistaMultimedia"
+            );
+
+
+        if (!contenido) {
+
+            console.error(
+                "No existe contenidoVistaMultimedia"
+            );
+
+            return;
+
+        }
+
+
+        contenido.innerHTML = `
 
             <div class="vista-previa-multimedia-panel">
 
-
-                <!-- =================================================
-                     DOCUMENTO / ARCHIVO
-                ================================================= -->
 
                 <section class="visor-multimedia-panel">
 
@@ -748,7 +861,10 @@ async function vistaPreviaMultimedia(id_multi) {
                     <div class="titulo-visor-multimedia">
 
                         <span>
-                            ${item.tipo_multi.toUpperCase()}
+                            ${(
+                                item.tipo_multi ||
+                                "archivo"
+                            ).toUpperCase()}
                         </span>
 
                     </div>
@@ -764,11 +880,6 @@ async function vistaPreviaMultimedia(id_multi) {
                 </section>
 
 
-
-                <!-- =================================================
-                     DATOS
-                ================================================= -->
-
                 <section class="informacion-multimedia-panel">
 
 
@@ -782,6 +893,7 @@ async function vistaPreviaMultimedia(id_multi) {
                             </i>
 
                         </div>
+
 
                         <div>
 
@@ -836,10 +948,9 @@ async function vistaPreviaMultimedia(id_multi) {
                             <strong>
                                 ${
                                     item.tipo_multi
-                                        .charAt(0)
-                                        .toUpperCase()
-                                    +
-                                    item.tipo_multi.slice(1)
+                                        ? item.tipo_multi.charAt(0).toUpperCase()
+                                            + item.tipo_multi.slice(1)
+                                        : "Archivo"
                                 }
                             </strong>
 
@@ -853,7 +964,10 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.descripcion || "Sin descripción"}
+                                ${
+                                    item.descripcion ||
+                                    "Sin descripción"
+                                }
                             </strong>
 
                         </div>
@@ -866,9 +980,11 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.activo == 1
-                                    ? "Activo"
-                                    : "Inactivo"}
+                                ${
+                                    item.activo == 1
+                                        ? "Activo"
+                                        : "Inactivo"
+                                }
                             </strong>
 
                         </div>
@@ -903,8 +1019,6 @@ async function vistaPreviaMultimedia(id_multi) {
                     </div>
 
 
-                    <!-- UBICACIÓN -->
-
                     <div class="ruta-multimedia">
 
                         <span>
@@ -912,7 +1026,7 @@ async function vistaPreviaMultimedia(id_multi) {
                         </span>
 
                         <code>
-                            ${item.ruta_archivo}
+                            ${item.ruta_archivo || "-"}
                         </code>
 
                     </div>
@@ -926,24 +1040,24 @@ async function vistaPreviaMultimedia(id_multi) {
         `;
 
 
-        /* =================================================
-           ICONOS
-        ================================================= */
-
-        if (window.lucide) {
-
-            window.lucide.createIcons();
-
-        }
+        actualizarIconosLucide();
 
 
         /* =================================================
            ABRIR MODAL
         ================================================= */
 
-        document.getElementById(
-            "modalVistaMultimedia"
-        ).style.display = "flex";
+        const modal =
+            obtenerElemento(
+                "modalVistaMultimedia"
+            );
+
+
+        if (modal) {
+
+            modal.style.display = "flex";
+
+        }
 
 
     } catch (error) {
@@ -957,124 +1071,249 @@ async function vistaPreviaMultimedia(id_multi) {
 
 }
 
-function cerrarVistaMultimedia(){
+
+/* =========================================================
+   CERRAR VISTA PREVIA
+========================================================= */
+
+function cerrarVistaMultimedia() {
 
     const modal =
-    document.getElementById("modalVistaMultimedia");
+        obtenerElemento(
+            "modalVistaMultimedia"
+        );
 
-    // Detener videos
-    modal.querySelectorAll("video").forEach(video=>{
 
-        video.pause();
-        video.currentTime = 0;
+    if (!modal) {
+        return;
+    }
 
-    });
 
-    // Detener audios
-    modal.querySelectorAll("audio").forEach(audio=>{
+    /* Detener videos */
 
-        audio.pause();
-        audio.currentTime = 0;
+    modal
+        .querySelectorAll("video")
+        .forEach(video => {
 
-    });
+            video.pause();
+            video.currentTime = 0;
 
-    // Vaciar el contenido para destruir el reproductor
-    document.getElementById(
-        "contenidoVistaMultimedia"
-    ).innerHTML = "";
+        });
+
+
+    /* Detener audios */
+
+    modal
+        .querySelectorAll("audio")
+        .forEach(audio => {
+
+            audio.pause();
+            audio.currentTime = 0;
+
+        });
+
+
+    /* Eliminar contenido */
+
+    const contenido =
+        obtenerElemento(
+            "contenidoVistaMultimedia"
+        );
+
+
+    if (contenido) {
+
+        contenido.innerHTML = "";
+
+    }
+
 
     modal.style.display = "none";
 
-    const preview =
-    document.getElementById("previewArchivoActual");
 
-    if(preview){
+    /* Limpiar preview de archivo actual */
+
+    const preview =
+        obtenerElemento(
+            "previewArchivoActual"
+        );
+
+
+    if (preview) {
 
         preview.style.display = "none";
-
         preview.innerHTML = "";
 
     }
 
 }
 
+
+/* =========================================================
+   NUEVO MULTIMEDIA — GENERAL
+========================================================= */
+
 function nuevoMultimedia() {
 
     const modal =
-        document.getElementById("modalMultimediaNuevo");
+        obtenerElemento(
+            "modalMultimediaNuevo"
+        );
+
 
     if (!modal) {
-        console.error("No se encontró modalMultimediaNuevo");
+
+        console.error(
+            "No se encontró modalMultimediaNuevo"
+        );
+
         return;
+
     }
 
-    // Estamos en multimedia general
+
     window.multimediaFichaActual = false;
 
-    // Mostrar selector de ficha
-    const contenedorFicha =
-        document.getElementById("contenedorFichaMultimedia");
-
-    if (contenedorFicha) {
-        contenedorFicha.style.display = "block";
-    }
-
-    // Cargar fichas
-    cargarFichasMultimedia();
-
-    // Estado nuevo
     multimediaEditando = null;
 
-    document.querySelector(
-        "#modalMultimediaNuevo h3"
-    ).textContent = "Nuevo archivo";
+
+    /* Mostrar selector de ficha */
+
+    const contenedorFicha =
+        obtenerElemento(
+            "contenedorFichaMultimedia"
+        );
+
+
+    if (contenedorFicha) {
+
+        contenedorFicha.style.display = "block";
+
+    }
+
+
+    /* Cargar fichas */
+
+    cargarFichasMultimedia();
+
+
+    /* Título */
+
+    const titulo =
+        modal.querySelector("h3");
+
+
+    if (titulo) {
+
+        titulo.textContent =
+            "Nuevo archivo";
+
+    }
+
 
     modal.style.display = "flex";
-}
-
-async function cargarFichasMultimedia(){
-
-    const respuesta=
-    await window.fetchProtegido("/api/fichas");
-
-    const fichas=
-    await respuesta.json();
-
-    const select=
-    document.getElementById("multiFicha");
-
-    select.innerHTML="";
-
-    fichas.forEach(f=>{
-
-        select.innerHTML += `
-
-            <option value="${f.id_ficha}">
-
-                ${f.titulo}
-
-            </option>
-
-        `;
-
-    });
 
 }
 
 
+/* =========================================================
+   CARGAR FICHAS PARA SELECTOR
+========================================================= */
+
+async function cargarFichasMultimedia() {
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/fichas"
+            );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `Error HTTP ${respuesta.status}`
+            );
+
+        }
+
+
+        const fichas =
+            await respuesta.json();
+
+
+        const select =
+            obtenerElemento(
+                "multiFicha"
+            );
+
+
+        if (!select) {
+
+            console.error(
+                "No existe el selector multiFicha"
+            );
+
+            return;
+
+        }
+
+
+        select.innerHTML = "";
+
+
+        if (!Array.isArray(fichas)) {
+            return;
+        }
+
+
+        fichas.forEach(ficha => {
+
+            select.innerHTML += `
+
+                <option value="${ficha.id_ficha}">
+
+                    ${ficha.titulo}
+
+                </option>
+
+            `;
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando fichas:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GUARDAR MULTIMEDIA
+========================================================= */
 
 async function guardarMultimedia() {
 
     const archivoInput =
-        document.getElementById("multiArchivo");
+        obtenerElemento(
+            "multiArchivo"
+        );
+
 
     const archivo =
         archivoInput?.files[0];
 
 
-    // ==========================================
-    // VALIDAR ARCHIVO
-    // ==========================================
+    /* =================================================
+       VALIDAR ARCHIVO
+    ================================================= */
 
     if (!multimediaEditando && !archivo) {
 
@@ -1083,41 +1322,35 @@ async function guardarMultimedia() {
             "Debe seleccionar un archivo multimedia."
         );
 
+
         if (archivoInput) {
             archivoInput.focus();
         }
 
+
         return;
+
     }
 
 
-    // ==========================================
-    // DETERMINAR FICHA
-    // ==========================================
+    /* =================================================
+       DETERMINAR FICHA
+    ================================================= */
 
     let idFicha;
 
 
-    /*
-     * Si estamos entrando desde una ficha,
-     * usamos directamente fichaSeleccionada.
-     */
-
     if (window.multimediaFichaActual) {
 
-        idFicha = fichaSeleccionada;
+        idFicha =
+            fichaSeleccionada;
 
-    }
-
-    /*
-     * Si estamos en multimedia general,
-     * usamos el selector.
-     */
-
-    else {
+    } else {
 
         const selectFicha =
-            document.getElementById("multiFicha");
+            obtenerElemento(
+                "multiFicha"
+            );
 
         idFicha =
             selectFicha?.value;
@@ -1125,9 +1358,9 @@ async function guardarMultimedia() {
     }
 
 
-    // ==========================================
-    // VALIDAR FICHA
-    // ==========================================
+    /* =================================================
+       VALIDAR FICHA
+    ================================================= */
 
     if (!idFicha) {
 
@@ -1137,6 +1370,7 @@ async function guardarMultimedia() {
         );
 
         return;
+
     }
 
 
@@ -1144,15 +1378,16 @@ async function guardarMultimedia() {
         "Guardando multimedia:",
         {
             idFicha,
-            fichaDesdeSeleccion: window.multimediaFichaActual,
+            fichaDesdeSeleccion:
+                window.multimediaFichaActual,
             archivo: archivo?.name
         }
     );
 
 
-    // ==========================================
-    // CREAR FORM DATA
-    // ==========================================
+    /* =================================================
+       FORM DATA
+    ================================================= */
 
     const formulario =
         new FormData();
@@ -1166,25 +1401,25 @@ async function guardarMultimedia() {
 
     formulario.append(
         "descripcion",
-        document.getElementById(
+        obtenerElemento(
             "multiDescripcion"
-        ).value
+        )?.value || ""
     );
 
 
     formulario.append(
         "tipo_multi",
-        document.getElementById(
+        obtenerElemento(
             "multiTipo"
-        ).value
+        )?.value || ""
     );
 
 
     formulario.append(
         "activo",
-        document.getElementById(
+        obtenerElemento(
             "multiActivo"
-        ).checked
+        )?.checked
             ? 1
             : 0
     );
@@ -1200,9 +1435,9 @@ async function guardarMultimedia() {
     }
 
 
-    // ==========================================
-    // URL Y MÉTODO
-    // ==========================================
+    /* =================================================
+       URL Y MÉTODO
+    ================================================= */
 
     const url =
         multimediaEditando
@@ -1228,15 +1463,16 @@ async function guardarMultimedia() {
             );
 
 
-        // ======================================
-        // LEER RESPUESTA DE FORMA SEGURA
-        // ======================================
+        /* =================================================
+           RESPUESTA SEGURA
+        ================================================= */
 
         const texto =
             await respuesta.text();
 
 
         let resultado = {};
+
 
         try {
 
@@ -1252,6 +1488,7 @@ async function guardarMultimedia() {
                 texto
             );
 
+
             throw new Error(
                 `El servidor respondió HTTP ${respuesta.status}`
             );
@@ -1259,9 +1496,9 @@ async function guardarMultimedia() {
         }
 
 
-        // ======================================
-        // ERROR HTTP
-        // ======================================
+        /* =================================================
+           ERROR HTTP
+        ================================================= */
 
         if (!respuesta.ok) {
 
@@ -1270,19 +1507,22 @@ async function guardarMultimedia() {
                 resultado
             );
 
+
             mostrarMensaje(
                 "Error",
                 resultado.error ||
                 "No se pudo guardar la multimedia."
             );
 
+
             return;
+
         }
 
 
-        // ======================================
-        // GUARDADO CORRECTO
-        // ======================================
+        /* =================================================
+           GUARDADO CORRECTO
+        ================================================= */
 
         console.log(
             "Multimedia guardada correctamente:",
@@ -1298,6 +1538,7 @@ async function guardarMultimedia() {
                 "#modalMultimediaNuevo h3"
             );
 
+
         if (titulo) {
 
             titulo.textContent =
@@ -1309,7 +1550,6 @@ async function guardarMultimedia() {
         cerrarNuevoMultimedia();
 
 
-        // Recargar multimedia
         await cargarMultimedia();
 
 
@@ -1332,49 +1572,118 @@ async function guardarMultimedia() {
 }
 
 
+/* =========================================================
+   MENSAJES
+========================================================= */
 
-function cerrarMensaje(){
-
-    document
-        .getElementById("modalMensaje")
-        .style.display = "none";
-
-}
-
-function cerrarNuevoMultimedia(){
-
-    multimediaEditando = null;
+function mostrarMensaje(titulo, mensaje) {
 
     const modal =
-        document.getElementById("modalMultimediaNuevo");
+        obtenerElemento(
+            "modalMensaje"
+        );
 
-    if(modal){
-        modal.style.display = "none";
+
+    if (!modal) {
+
+        alert(
+            `${titulo}\n\n${mensaje}`
+        );
+
+        return;
+
     }
 
 
-    // ==========================================
-    // RESTAURAR SELECTOR DE FICHA
-    // ==========================================
+    const tituloElemento =
+        obtenerElemento(
+            "tituloMensaje"
+        );
+
+
+    const textoElemento =
+        obtenerElemento(
+            "textoMensaje"
+        );
+
+
+    if (tituloElemento) {
+
+        tituloElemento.textContent =
+            titulo;
+
+    }
+
+
+    if (textoElemento) {
+
+        textoElemento.textContent =
+            mensaje;
+
+    }
+
+
+    modal.style.display = "flex";
+
+}
+
+
+function cerrarMensaje() {
+
+    const modal =
+        obtenerElemento(
+            "modalMensaje"
+        );
+
+
+    if (modal) {
+
+        modal.style.display = "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   CERRAR NUEVO / EDITAR MULTIMEDIA
+========================================================= */
+
+function cerrarNuevoMultimedia() {
+
+    multimediaEditando = null;
+
+
+    const modal =
+        obtenerElemento(
+            "modalMultimediaNuevo"
+        );
+
+
+    if (modal) {
+
+        modal.style.display = "none";
+
+    }
+
+
+    /* =================================================
+       RESTAURAR SELECTOR DE FICHA
+    ================================================= */
 
     const contenedorFicha =
-        document.getElementById("contenedorFichaMultimedia");
+        obtenerElemento(
+            "contenedorFichaMultimedia"
+        );
 
-    if(contenedorFicha){
 
-        /*
-           Si seguimos dentro de una ficha,
-           permanece oculto.
+    if (contenedorFicha) {
 
-           Si estamos en multimedia general,
-           vuelve a mostrarse.
-        */
-
-        if(fichaSeleccionada){
+        if (fichaSeleccionada) {
 
             contenedorFicha.style.display = "none";
 
-        }else{
+        } else {
 
             contenedorFicha.style.display = "block";
 
@@ -1386,351 +1695,269 @@ function cerrarNuevoMultimedia(){
     window.multimediaFichaActual = false;
 
 
-    // ==========================================
-    // LIMPIAR CAMPOS
-    // ==========================================
+    /* =================================================
+       LIMPIAR CAMPOS
+    ================================================= */
 
     const ficha =
-        document.getElementById("multiFicha");
+        obtenerElemento(
+            "multiFicha"
+        );
 
-    if(ficha){
+
+    if (ficha) {
         ficha.selectedIndex = 0;
     }
 
 
     const descripcion =
-        document.getElementById("multiDescripcion");
+        obtenerElemento(
+            "multiDescripcion"
+        );
 
-    if(descripcion){
+
+    if (descripcion) {
         descripcion.value = "";
     }
 
 
     const tipo =
-        document.getElementById("multiTipo");
+        obtenerElemento(
+            "multiTipo"
+        );
 
-    if(tipo){
+
+    if (tipo) {
         tipo.selectedIndex = 0;
     }
 
 
     const activo =
-        document.getElementById("multiActivo");
+        obtenerElemento(
+            "multiActivo"
+        );
 
-    if(activo){
+
+    if (activo) {
         activo.checked = true;
     }
 
 
     const archivo =
-        document.getElementById("multiArchivo");
+        obtenerElemento(
+            "multiArchivo"
+        );
 
-    if(archivo){
+
+    if (archivo) {
         archivo.value = "";
     }
 
 
-    // ==========================================
-    // ELIMINAR PREVIEW
-    // ==========================================
+    /* =================================================
+       ELIMINAR PREVIEW
+    ================================================= */
 
     const preview =
-        document.getElementById("previewArchivoActual");
+        obtenerElemento(
+            "previewArchivoActual"
+        );
 
-    if(preview){
+
+    if (preview) {
 
         preview.style.display = "none";
-
         preview.innerHTML = "";
 
     }
 
 
     const infoArchivo =
-        document.getElementById("archivoActual");
+        obtenerElemento(
+            "archivoActual"
+        );
 
-    if(infoArchivo){
+
+    if (infoArchivo) {
+
         infoArchivo.remove();
+
     }
 
+
+    /* =================================================
+       RESTAURAR TÍTULO
+    ================================================= */
 
     const titulo =
         document.querySelector(
             "#modalMultimediaNuevo h3"
         );
 
-    if(titulo){
-        titulo.textContent = "Nuevo archivo";
-    }
 
-}
+    if (titulo) {
 
-function volverFicha(){
-
-    cargarVentana(
-        "fichas",
-        true
-    );
-
-}
-
-
-// ===================================
-// ELIMINAR MULTIMEDIA
-// ===================================
-function eliminarMultimedia(id_multi){
-
-    multimediaEliminar = id_multi;
-
-    document
-    .getElementById("modalEliminarMultimedia")
-    .style.display = "flex";
-
-}
-
-function cerrarEliminarMultimedia(){
-
-    multimediaEliminar = null;
-
-    document
-    .getElementById("modalEliminarMultimedia")
-    .style.display = "none";
-
-}
-
-async function confirmarEliminarMultimedia(){
-
-    if(!multimediaEliminar){
-        return;
-    }
-
-    try{
-
-        const respuesta =
-        await window.fetchProtegido(
-
-            `/api/multimedia/${multimediaEliminar}`,
-
-            {
-                method:"DELETE"
-            }
-
-        );
-
-        const resultado =
-        await respuesta.json();
-
-        if(!respuesta.ok){
-
-            cerrarEliminarMultimedia();
-
-            alert(resultado.error);
-
-            return;
-
-        }
-
-        cerrarEliminarMultimedia();
-
-        cargarMultimedia();
-
-    }catch(error){
-
-        console.error(error);
+        titulo.textContent =
+            "Nuevo archivo";
 
     }
 
 }
 
 
-function abrirDocumentoCompleto(ruta){
+/* =========================================================
+   EDITAR MULTIMEDIA
+========================================================= */
 
-    document.getElementById(
-        "visorDocumentoCompleto"
-    ).src = ruta;
+async function editarMultimedia(id) {
 
-    document.getElementById(
-        "modalDocumentoCompleto"
-    ).style.display = "flex";
-
-}
-
-function cerrarDocumentoCompleto(){
-
-    document.getElementById(
-        "visorDocumentoCompleto"
-    ).src = "";
-
-    document.getElementById(
-        "modalDocumentoCompleto"
-    ).style.display = "none";
-
-}
-
-
-
-function mostrarMensaje(titulo, mensaje){
-
-    const modal =
-    document.getElementById("modalMensaje");
-
-
-    if(!modal){
-
-        alert(`${titulo}\n\n${mensaje}`);
-        return;
-
-    }
-
-
-    document.getElementById("tituloMensaje")
-    .textContent = titulo;
-
-
-    document.getElementById("textoMensaje")
-    .textContent = mensaje;
-
-
-    modal.style.display = "flex";
-
-}
-
-
-async function editarMultimedia(id){
-
-    try{
+    try {
 
         multimediaEditando = id;
 
+
         const respuesta =
-        await window.fetchProtegido(`/api/multimedia/${id}`);
+            await window.fetchProtegido(
+                `/api/multimedia/${id}`
+            );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `Error HTTP ${respuesta.status}`
+            );
+
+        }
+
 
         const item =
-        await respuesta.json();
+            await respuesta.json();
+
 
         await cargarFichasMultimedia();
 
-        document.getElementById("multiFicha").value =
-            item.id_ficha;
 
-        document.getElementById("multiDescripcion").value =
-            item.descripcion || "";
+        /* =================================================
+           CAMPOS
+        ================================================= */
 
-        document.getElementById("multiTipo").value =
-            item.tipo_multi;
+        const ficha =
+            obtenerElemento(
+                "multiFicha"
+            );
 
-        document.getElementById("multiActivo").checked =
-            item.activo == 1;
 
-        document.getElementById("multiArchivo").value = "";
+        if (ficha) {
+
+            ficha.value =
+                item.id_ficha;
+
+        }
+
+
+        const descripcion =
+            obtenerElemento(
+                "multiDescripcion"
+            );
+
+
+        if (descripcion) {
+
+            descripcion.value =
+                item.descripcion || "";
+
+        }
+
+
+        const tipo =
+            obtenerElemento(
+                "multiTipo"
+            );
+
+
+        if (tipo) {
+
+            tipo.value =
+                item.tipo_multi;
+
+        }
+
+
+        const activo =
+            obtenerElemento(
+                "multiActivo"
+            );
+
+
+        if (activo) {
+
+            activo.checked =
+                item.activo == 1;
+
+        }
+
+
+        const archivo =
+            obtenerElemento(
+                "multiArchivo"
+            );
+
+
+        if (archivo) {
+
+            archivo.value = "";
+
+        }
+
+
+        /* =================================================
+           PREVIEW ARCHIVO ACTUAL
+        ================================================= */
 
         let preview =
-        document.getElementById("previewArchivoActual");
+            obtenerElemento(
+                "previewArchivoActual"
+            );
 
-        if(!preview){
 
-            preview = document.createElement("div");
+        if (!preview) {
 
-            preview.id = "previewArchivoActual";
+            preview =
+                document.createElement("div");
 
-            preview.className = "preview-archivo-actual";
 
-            document
-                .getElementById("multiArchivo")
-                .parentNode
-                .appendChild(preview);
+            preview.id =
+                "previewArchivoActual";
+
+
+            preview.className =
+                "preview-archivo-actual";
+
+
+            if (archivo?.parentNode) {
+
+                archivo.parentNode.appendChild(
+                    preview
+                );
+
+            }
 
         }
+
 
         const ruta =
-        "/" + item.ruta_archivo.replace("public/","");
+            obtenerRutaMultimedia(
+                item.ruta_archivo
+            );
 
-        let vista = "";
 
-        switch(item.tipo_multi){
+        const vista =
+            generarVistaEdicion(
+                item,
+                ruta
+            );
 
-            case "imagen":
-
-                vista = `
-                    <img
-                        src="${ruta}"
-                        class="preview-imagen-multi"
-                        style="
-                            max-width:260px;
-                            max-height:220px;
-                            border-radius:10px;
-                            border:2px solid #705438;
-                            display:block;
-                            margin:auto;
-                        ">
-                `;
-                break;
-
-            case "video":
-
-                vista = `
-                    <video
-                        controls
-                        style="
-                            width:320px;
-                            border-radius:10px;
-                            display:block;
-                            margin:auto;
-                        ">
-
-                        <source src="${ruta}">
-
-                    </video>
-                `;
-                break;
-
-            case "audio":
-
-                vista = `
-                    <div style="text-align:center">
-
-                        <div style="font-size:60px;margin-bottom:10px;">
-                            <i data-lucide="music" aria-hidden="true"></i>
-                        </div>
-
-                        <audio controls style="width:100%;">
-
-                            <source src="${ruta}">
-
-                        </audio>
-
-                    </div>
-                `;
-                break;
-
-            case "pdf":
-
-                vista = `
-                    <iframe
-                        src="${ruta}"
-                        style="
-                            width:100%;
-                            height:350px;
-                            border:none;
-                            border-radius:8px;
-                            background:white;
-                        ">
-                    </iframe>
-                `;
-                break;
-
-            default:
-
-                vista = `
-                    <div style="
-                        text-align:center;
-                        font-size:60px;
-                    ">
-                        <i data-lucide="folder" aria-hidden="true"></i>
-                    </div>
-                `;
-
-        }
 
         preview.innerHTML = `
 
@@ -1746,13 +1973,18 @@ async function editarMultimedia(id){
 
                 <strong>Ficha asociada:</strong>
 
-                ${item.ficha}
+                ${item.ficha || "-"}
 
             </p>
 
             ${vista}
 
-            <p style="margin-top:15px;color:#666;">
+            <p
+                style="
+                    margin-top:15px;
+                    color:#666;
+                "
+            >
 
                 Si seleccionás otro archivo,
                 reemplazará al actual.
@@ -1761,50 +1993,219 @@ async function editarMultimedia(id){
 
         `;
 
+
         preview.style.display = "block";
 
-        if(window.lucide){
-            window.lucide.createIcons();
+
+        actualizarIconosLucide();
+
+
+        /* =================================================
+           TÍTULO
+        ================================================= */
+
+        const titulo =
+            document.querySelector(
+                "#modalMultimediaNuevo h3"
+            );
+
+
+        if (titulo) {
+
+            titulo.textContent =
+                "Editar multimedia";
+
         }
 
-        document.querySelector(
-            "#modalMultimediaNuevo h3"
-        ).textContent = "Editar multimedia";
 
-        document.getElementById(
-            "modalMultimediaNuevo"
-        ).style.display = "flex";
+        /* =================================================
+           ABRIR MODAL
+        ================================================= */
 
-    }catch(error){
+        const modal =
+            obtenerElemento(
+                "modalMultimediaNuevo"
+            );
 
-        console.error(error);
+
+        if (modal) {
+
+            modal.style.display = "flex";
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error editando multimedia:",
+            error
+        );
+
+
+        mostrarMensaje(
+            "Error",
+            "No se pudo cargar la multimedia para editar."
+        );
 
     }
 
 }
 
-function cargarMultimediaGeneral(){
 
-    fichaSeleccionada = null;
+/* =========================================================
+   PREVIEW PARA EDICIÓN
+========================================================= */
 
-    cargarMultimedia();
+function generarVistaEdicion(item, ruta) {
+
+    switch (item.tipo_multi) {
+
+        case "imagen":
+
+            return `
+
+                <img
+                    src="${ruta}"
+                    class="preview-imagen-multi"
+                    style="
+                        max-width:260px;
+                        max-height:220px;
+                        border-radius:10px;
+                        border:2px solid #705438;
+                        display:block;
+                        margin:auto;
+                    "
+                    alt="Archivo actual">
+
+            `;
+
+
+        case "video":
+
+            return `
+
+                <video
+                    controls
+                    style="
+                        width:320px;
+                        max-width:100%;
+                        border-radius:10px;
+                        display:block;
+                        margin:auto;
+                    ">
+
+                    <source src="${ruta}">
+
+                </video>
+
+            `;
+
+
+        case "audio":
+
+            return `
+
+                <div style="text-align:center">
+
+                    <div
+                        style="
+                            font-size:60px;
+                            margin-bottom:10px;
+                        "
+                    >
+
+                        <i
+                            data-lucide="music"
+                            aria-hidden="true">
+                        </i>
+
+                    </div>
+
+
+                    <audio
+                        controls
+                        style="width:100%;">
+
+                        <source src="${ruta}">
+
+                    </audio>
+
+                </div>
+
+            `;
+
+
+        case "pdf":
+
+            return `
+
+                <iframe
+                    src="${ruta}"
+                    style="
+                        width:100%;
+                        height:350px;
+                        border:none;
+                        border-radius:8px;
+                        background:white;
+                    "
+                    title="PDF actual">
+                </iframe>
+
+            `;
+
+
+        default:
+
+            return `
+
+                <div
+                    style="
+                        text-align:center;
+                        font-size:60px;
+                    "
+                >
+
+                    <i
+                        data-lucide="folder"
+                        aria-hidden="true">
+                    </i>
+
+                </div>
+
+            `;
+
+    }
 
 }
 
+
+/* =========================================================
+   NUEVO MULTIMEDIA DESDE UNA FICHA
+========================================================= */
 
 function nuevoMultimediaDesdeFicha() {
 
     const modal =
-        document.getElementById("modalMultimediaNuevo");
+        obtenerElemento(
+            "modalMultimediaNuevo"
+        );
+
 
     if (!modal) {
-        console.error("No se encontró modalMultimediaNuevo");
+
+        console.error(
+            "No se encontró modalMultimediaNuevo"
+        );
+
         return;
+
     }
 
-    // ==========================================
-    // VERIFICAR FICHA ACTUAL
-    // ==========================================
+
+    /* =================================================
+       VERIFICAR FICHA
+    ================================================= */
 
     if (!fichaSeleccionada) {
 
@@ -1812,12 +2213,15 @@ function nuevoMultimediaDesdeFicha() {
             "No hay una ficha seleccionada."
         );
 
+
         mostrarMensaje(
             "Error",
             "No se pudo determinar la ficha asociada."
         );
 
+
         return;
+
     }
 
 
@@ -1827,102 +2231,106 @@ function nuevoMultimediaDesdeFicha() {
     );
 
 
-    // ==========================================
-    // ESTAMOS CREANDO DESDE UNA FICHA
-    // ==========================================
+    /* =================================================
+       ESTADO
+    ================================================= */
 
     window.multimediaFichaActual = true;
 
     multimediaEditando = null;
 
 
-    // ==========================================
-    // OCULTAR SELECTOR DE FICHA
-    // ==========================================
+    /* =================================================
+       OCULTAR SELECTOR
+    ================================================= */
 
     const contenedorFicha =
-        document.getElementById(
+        obtenerElemento(
             "contenedorFichaMultimedia"
         );
 
+
     if (contenedorFicha) {
 
-        contenedorFicha.style.display = "none";
+        contenedorFicha.style.display =
+            "none";
 
     }
 
 
-    // ==========================================
-    // LIMPIAR FORMULARIO
-    // ==========================================
+    /* =================================================
+       LIMPIAR FORMULARIO
+    ================================================= */
 
     const descripcion =
-        document.getElementById("multiDescripcion");
+        obtenerElemento(
+            "multiDescripcion"
+        );
+
 
     const tipo =
-        document.getElementById("multiTipo");
+        obtenerElemento(
+            "multiTipo"
+        );
+
 
     const archivo =
-        document.getElementById("multiArchivo");
+        obtenerElemento(
+            "multiArchivo"
+        );
+
 
     const activo =
-        document.getElementById("multiActivo");
+        obtenerElemento(
+            "multiActivo"
+        );
 
 
     if (descripcion) {
-
         descripcion.value = "";
-
     }
 
 
     if (tipo) {
-
         tipo.value = "imagen";
-
     }
 
 
     if (archivo) {
-
         archivo.value = "";
-
     }
 
 
     if (activo) {
-
         activo.checked = true;
-
     }
 
 
-    // ==========================================
-    // OCULTAR ARCHIVO ACTUAL
-    // ==========================================
+    /* =================================================
+       OCULTAR ARCHIVO ACTUAL
+    ================================================= */
 
     const preview =
-        document.getElementById(
+        obtenerElemento(
             "previewArchivoActual"
         );
+
 
     if (preview) {
 
         preview.style.display = "none";
-
         preview.innerHTML = "";
 
     }
 
 
-    // ==========================================
-    // TÍTULO
-    // ==========================================
+    /* =================================================
+       TÍTULO
+    ================================================= */
 
     const titulo =
-        document.querySelector(
-            "#modalMultimediaNuevo h3"
-        );
+        modal.querySelector("h3");
+
 
     if (titulo) {
 
@@ -1932,10 +2340,307 @@ function nuevoMultimediaDesdeFicha() {
     }
 
 
-    // ==========================================
-    // ABRIR MODAL
-    // ==========================================
+    /* =================================================
+       ABRIR MODAL
+    ================================================= */
 
     modal.style.display = "flex";
 
 }
+
+
+/* =========================================================
+   MULTIMEDIA GENERAL
+========================================================= */
+
+function cargarMultimediaGeneral() {
+
+    fichaSeleccionada = null;
+
+    cargarMultimedia();
+
+}
+
+
+/* =========================================================
+   ELIMINAR MULTIMEDIA
+========================================================= */
+
+function eliminarMultimedia(id_multi) {
+
+    multimediaEliminar =
+        id_multi;
+
+
+    const modal =
+        obtenerElemento(
+            "modalEliminarMultimedia"
+        );
+
+
+    if (modal) {
+
+        modal.style.display =
+            "flex";
+
+    }
+
+}
+
+
+/* =========================================================
+   CERRAR ELIMINACIÓN
+========================================================= */
+
+function cerrarEliminarMultimedia() {
+
+    multimediaEliminar =
+        null;
+
+
+    const modal =
+        obtenerElemento(
+            "modalEliminarMultimedia"
+        );
+
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   CONFIRMAR ELIMINACIÓN
+========================================================= */
+
+async function confirmarEliminarMultimedia() {
+
+    if (!multimediaEliminar) {
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+
+                `/api/multimedia/${multimediaEliminar}`,
+
+                {
+                    method: "DELETE"
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            cerrarEliminarMultimedia();
+
+
+            mostrarMensaje(
+                "Error",
+                resultado.error ||
+                "No se pudo eliminar la multimedia."
+            );
+
+
+            return;
+
+        }
+
+
+        cerrarEliminarMultimedia();
+
+
+        await cargarMultimedia();
+
+
+    } catch (error) {
+
+        console.error(
+            "Error eliminando multimedia:",
+            error
+        );
+
+
+        mostrarMensaje(
+            "Error",
+            "Ocurrió un error al eliminar la multimedia."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DOCUMENTO COMPLETO
+========================================================= */
+
+function abrirDocumentoCompleto(ruta) {
+
+    const visor =
+        obtenerElemento(
+            "visorDocumentoCompleto"
+        );
+
+
+    const modal =
+        obtenerElemento(
+            "modalDocumentoCompleto"
+        );
+
+
+    if (visor) {
+
+        visor.src =
+            ruta;
+
+    }
+
+
+    if (modal) {
+
+        modal.style.display =
+            "flex";
+
+    }
+
+}
+
+
+function cerrarDocumentoCompleto() {
+
+    const visor =
+        obtenerElemento(
+            "visorDocumentoCompleto"
+        );
+
+
+    const modal =
+        obtenerElemento(
+            "modalDocumentoCompleto"
+        );
+
+
+    if (visor) {
+
+        visor.src =
+            "";
+
+    }
+
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   VOLVER A FICHA
+========================================================= */
+
+function volverFicha() {
+
+    cargarVentana(
+        "fichas",
+        true
+    );
+
+}
+
+
+// =========================================================
+// CERRAR MODALES AL HACER CLIC FUERA
+// =========================================================
+
+document.addEventListener("click", function (event) {
+
+    const modal = event.target.closest(".modal-multimedia");
+
+    if (!modal) {
+        return;
+    }
+
+    // Solo si se hizo clic exactamente en el fondo
+    if (event.target !== modal) {
+        return;
+    }
+
+
+    // =====================================================
+    // VISTA PREVIA
+    // =====================================================
+
+    if (modal.id === "modalVistaMultimedia") {
+
+        cerrarVistaMultimedia();
+
+        return;
+    }
+
+
+    // =====================================================
+    // NUEVO / EDITAR
+    // =====================================================
+
+    if (modal.id === "modalMultimediaNuevo") {
+
+        cerrarNuevoMultimedia();
+
+        return;
+    }
+
+
+    // =====================================================
+    // ELIMINAR
+    // =====================================================
+
+    if (modal.id === "modalEliminarMultimedia") {
+
+        cerrarEliminarMultimedia();
+
+        return;
+    }
+
+
+    // =====================================================
+    // MENSAJE
+    // =====================================================
+
+    if (modal.id === "modalMensaje") {
+
+        cerrarMensaje();
+
+        return;
+    }
+
+
+    // =====================================================
+    // DOCUMENTO COMPLETO
+    // =====================================================
+
+    if (modal.id === "modalDocumentoCompleto") {
+
+        cerrarDocumentoCompleto();
+
+        return;
+    }
+
+});

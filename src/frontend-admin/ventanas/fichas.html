@@ -1,9 +1,9 @@
+
 <section class="ventana ventana-fichas">
 
-
-    <!-- =========================
+    <!-- =========================================================
          CABECERA
-    ========================= -->
+    ========================================================== -->
 
     <div class="cabecera-fichas">
 
@@ -17,69 +17,50 @@
 
         </div>
 
-
         <button
                 class="btn-nuevo"
-                id="nuevaFicha">
-
+                id="nuevaFicha"
+        >
             + Nueva ficha
-
         </button>
-
 
         <button
                 id="barraVolver"
                 class="btn-ver btn-volver"
                 onclick="volverMenus()"
-                style="display:none">
-
-            ←
-
+                style="display: none;"
+        >
+            ← Volver al menú
         </button>
-
-
-
 
     </div>
 
 
+    <!-- =========================================================
+         MODAL - SELECCIONAR TIPO DE FICHA
+    ========================================================== -->
 
-
-
-
-
-    <!-- =================================================
-         MODAL SELECCION TIPO
-    ================================================= -->
-
-
-    <div id="modalTipoFicha" class="modal">
-
+    <div
+            id="modalTipoFicha"
+            class="modal"
+    >
 
         <div class="modal-contenido">
 
-
             <button
                     class="cerrar"
-                    onclick="cerrarTipoFicha()">
-
+                    onclick="cerrarTipoFicha()"
+            >
                 ✖
-
             </button>
-
-
 
             <h3>
                 Seleccionar tipo de ficha
             </h3>
 
-
-
-            <label>
+            <label for="tipoFicha">
                 Tipo de contenido
             </label>
-
-
 
             <select id="tipoFicha">
 
@@ -87,273 +68,174 @@
                     Seleccionar...
                 </option>
 
-
             </select>
 
-
-
         </div>
-
 
     </div>
 
 
+    <!-- =========================================================
+         MODAL - CREAR / EDITAR FICHA
+    ========================================================== -->
 
-
-
-
-
-
-    <!-- =================================================
-         MODAL CREAR / EDITAR FICHA
-    ================================================= -->
-
-
-    <div id="modalFicha" class="modal">
-
+    <div
+            id="modalFicha"
+            class="modal"
+    >
 
         <div class="modal-ficha-contenido">
 
-
-
             <button
                     class="cerrar"
-                    onclick="cerrarFicha()">
-
+                    onclick="cerrarFicha()"
+            >
                 ✖
-
             </button>
 
-
-
-
             <h3 id="tituloModalFicha">
-
                 Nueva ficha
-
             </h3>
 
 
-
-
+            <!-- TIPO DE FICHA -->
 
             <div class="tipo-ficha">
-
 
                 <strong>
                     Tipo:
                 </strong>
 
-
                 <span id="nombreTipoFicha"></span>
-
 
             </div>
 
 
-
-
-
-
-
-
-            <!-- DATOS DINAMICOS -->
-
+            <!-- =================================================
+                 DATOS DINÁMICOS
+            ================================================== -->
 
             <h4
                     id="tituloDatosEspecificos"
-                    class="titulo-subseccion">
-
+                    class="titulo-subseccion"
+            >
                 Datos específicos
-
             </h4>
 
+            <div id="camposDinamicos"></div>
 
 
-            <div id="camposDinamicos">
-
-            </div>
-
-
-
-
-
-
-
-
-            <!-- DATOS GENERALES -->
-
+            <!-- =================================================
+                 INFORMACIÓN GENERAL
+            ================================================== -->
 
             <h4 class="titulo-subseccion">
-
                 Información general
-
             </h4>
 
-
-
-
-            <label>
+            <label for="tituloFicha">
                 Título
             </label>
-
 
             <input
                     type="text"
                     id="tituloFicha"
-                    placeholder="Nombre de la ficha">
+                    placeholder="Nombre de la ficha"
+            >
 
 
-
-
-
-            <label>
+            <label for="resumenFicha">
                 Resumen
             </label>
 
-
             <textarea
                     id="resumenFicha"
-                    placeholder="Descripción breve">
-
-            </textarea>
-
+                    placeholder="Descripción breve"
+            ></textarea>
 
 
-
-
-
-            <label>
+            <label for="textoFicha">
                 Texto completo
             </label>
 
-
             <textarea
                     id="textoFicha"
-                    placeholder="Contenido completo">
-
-            </textarea>
-
+                    placeholder="Contenido completo"
+            ></textarea>
 
 
-
-
-
-
-
-
-            <!-- IMAGEN -->
-
+            <!-- =================================================
+                 IMAGEN
+            ================================================== -->
 
             <h4 class="titulo-subseccion">
-
                 Imagen
-
             </h4>
 
-
-
-            <div
-                    id="contenedorImagenActual">
-
+            <div id="contenedorImagenActual">
 
                 <label>
-
                     Imagen actual
-
                 </label>
 
-
-
                 <div class="imagen-actual-ficha">
-
 
                     <img
                             id="imagenActualFicha"
                             src=""
-                            style="display:none">
-
+                            style="display: none;"
+                    >
 
                 </div>
 
-
             </div>
 
-
-
-
             <label id="labelImagenFicha">
-
                 Seleccionar imagen
-
             </label>
-
-
 
             <input
                     type="file"
                     id="imagenFicha"
-                    accept="image/*">
+                    accept="image/*"
+            >
 
 
-
-
-
-
+            <!-- VISIBILIDAD -->
 
             <label class="check-visible">
-
 
                 <input
                         type="checkbox"
                         id="visibleFicha"
-                        checked>
-
+                        checked
+                >
 
                 Visible
-
 
             </label>
 
 
-
-
-
-
-
-
-
-            <!-- ETIQUETAS -->
-
+            <!-- =================================================
+                 ETIQUETAS
+            ================================================== -->
 
             <h4 class="titulo-subseccion">
-
                 Etiquetas
-
             </h4>
-
-
 
             <div
                     id="listaEtiquetasFicha"
-                    class="lista-etiquetas-ficha">
-
-            </div>
-
+                    class="lista-etiquetas-ficha"
+            ></div>
 
 
-
-
-
-
-
-
-            <!-- ================================================= FICHAS RELACIONADAS ================================================= -->
+            <!-- =================================================
+                 FICHAS RELACIONADAS
+            ================================================== -->
 
             <h4 class="titulo-subseccion relaciones-titulo">
-
                 Fichas relacionadas
-
             </h4>
 
             <div class="relaciones-panel">
@@ -361,7 +243,6 @@
                 <!-- AGREGAR RELACIÓN -->
 
                 <div class="relacion-nueva">
-
 
                     <div class="campo-relacion">
 
@@ -420,517 +301,295 @@
                     <button
                             type="button"
                             class="btn-agregar-relacion"
-                            onclick="agregarRelacionFicha()">
-
+                            onclick="agregarRelacionFicha()"
+                    >
                         + Agregar relación
-
                     </button>
-
 
                 </div>
 
 
-                <!-- RELACIONES YA AGREGADAS -->
+                <!-- RELACIONES REGISTRADAS -->
 
                 <div class="relaciones-registradas">
 
-                    <div class="titulo-relaciones-registradas">
-
-
-
-                    </div>
-
+                    <div class="titulo-relaciones-registradas"></div>
 
                     <div
                             id="listaRelacionesFicha"
-                            class="lista-relaciones-ficha">
-
-                    </div>
+                            class="lista-relaciones-ficha"
+                    ></div>
 
                 </div>
 
             </div>
 
 
-
-
-
-
-
-
-            <!-- BOTONES -->
-
+            <!-- =================================================
+                 ACCIONES DEL MODAL
+            ================================================== -->
 
             <div class="acciones-modal">
-
 
                 <button
                         id="btnGuardarFicha"
                         class="btn-guardar-ficha"
-                        onclick="guardarFicha()">
-
-
-                </button>
+                        onclick="guardarFicha()"
+                ></button>
 
                 <button
-                        onclick="cerrarFicha()">
-
+                        type="button"
+                        onclick="cerrarFicha()"
+                >
                     Cancelar
-
                 </button>
+
             </div>
+
         </div>
 
     </div>
 
 
-
-
-
-
-
-
-
-    <!-- =================================================
-         LISTADO
-    ================================================= -->
-
+    <!-- =========================================================
+         LISTADO DE FICHAS
+    ========================================================== -->
 
     <div
             id="listaFichas"
-            class="grid-fichas">
-    </div>
+            class="grid-fichas"
+    ></div>
 
 
+    <!-- =========================================================
+         MODAL - VISTA PREVIA
+    ========================================================== -->
 
-
-
-
-
-
-
-    <!-- =================================================
-         VISTA PREVIA
-    ================================================= -->
-
-
-    <div id="modalVistaFicha" class="modal">
-
-
+    <div
+            id="modalVistaFicha"
+            class="modal"
+    >
 
         <div class="modal-contenido">
 
-
-
             <button
                     class="cerrar"
-                    onclick="cerrarVistaFicha()">
-
+                    onclick="cerrarVistaFicha()"
+            >
                 ✖
-
             </button>
 
-
-
-
-
-
             <h3>
-
                 Expediente de ficha
-
             </h3>
-
-
-
-
 
 
             <div class="preview-ficha">
 
-
-
-
+                <!-- IMAGEN -->
 
                 <div class="preview-imagen-ficha">
 
-
                     <img
                             id="vpFichaImagen"
-                            src="">
-
+                            src=""
+                    >
 
                 </div>
 
 
+                <!-- TÍTULO -->
+
+                <h2 id="vpFichaTitulo"></h2>
 
 
-
-
-
-                <h2 id="vpFichaTitulo">
-
-                </h2>
-
-
-
-
-
+                <!-- RESUMEN -->
 
                 <p
                         id="vpFichaResumen"
-                        class="preview-resumen">
-
-                </p>
-
+                        class="preview-resumen"
+                ></p>
 
 
-
-
-
-
-
+                <!-- DATOS ESPECÍFICOS -->
 
                 <h4>
-
                     Datos específicos
-
                 </h4>
 
+                <div id="vpCamposDinamicos"></div>
 
 
-                <div
-                        id="vpCamposDinamicos">
-
-                </div>
-
-
-
-
-
-
+                <!-- HISTORIA -->
 
                 <h4>
-
                     Historia
-
                 </h4>
-
-
 
                 <div class="preview-texto">
 
-
-                    <p id="vpFichaTexto">
-
-                    </p>
-
+                    <p id="vpFichaTexto"></p>
 
                 </div>
 
 
-
-
-
-
-
+                <!-- INFORMACIÓN ADMINISTRATIVA -->
 
                 <h4>
-
                     Información administrativa
-
                 </h4>
-
-
-
-
 
                 <div class="preview-info">
 
-
-
                     <p>
-
                         <strong>ID:</strong>
-
                         <span id="vpFichaId"></span>
-
                     </p>
 
-
-
-
                     <p>
-
                         <strong>Menú:</strong>
-
                         <span id="vpFichaMenu"></span>
-
                     </p>
 
-
-
-
-
                     <p>
-
                         <strong>Visible:</strong>
-
                         <span id="vpFichaVisible"></span>
-
                     </p>
 
-
-
-
-
-
                     <p>
-
                         <strong>Usuario:</strong>
-
                         <span id="vpFichaUsuario"></span>
-
                     </p>
 
-
-
-
-
-
                     <p>
-
                         <strong>Creado:</strong>
-
                         <span id="vpFichaCreado"></span>
-
                     </p>
-
-
-
-
 
                     <p>
-
                         <strong>Actualizado:</strong>
-
                         <span id="vpFichaActualizado"></span>
-
                     </p>
-
-
 
                 </div>
 
 
-
-
-
-
-
+                <!-- ETIQUETAS -->
 
                 <h4>
-
                     Etiquetas
-
                 </h4>
-
-
 
                 <div
                         id="vistaEtiquetasFicha"
-                        class="contenedor-etiquetas-vista">
-
-                </div>
-
+                        class="contenedor-etiquetas-vista"
+                ></div>
 
 
-
-
-
-
-
+                <!-- FICHAS RELACIONADAS -->
 
                 <h4>
-
                     Fichas relacionadas
-
                 </h4>
-
-
-
 
                 <div
                         id="vistaRelacionesFicha"
-                        class="lista-relaciones-ficha">
-
-                </div>
-
-
-
-
+                        class="lista-relaciones-ficha"
+                ></div>
 
             </div>
 
-
-
-
-
         </div>
-
 
     </div>
 
 
+    <!-- =========================================================
+         MODAL - ELIMINAR FICHA
+    ========================================================== -->
 
-
-
-
-
-
-
-    <!-- =================================================
-         ELIMINAR
-    ================================================= -->
-
-
-    <div id="modalEliminarFicha" class="modal">
-
+    <div
+            id="modalEliminarFicha"
+            class="modal"
+    >
 
         <div class="modal-contenido">
 
-
-
             <button
                     class="cerrar"
-                    onclick="cerrarEliminarFicha()">
-
+                    onclick="cerrarEliminarFicha()"
+            >
                 ✖
-
             </button>
 
-
-
-
             <h3>
-
                 Eliminar ficha
-
             </h3>
 
-
-
-
             <p id="mensajeEliminarFicha">
-
                 ¿Desea eliminar esta ficha?
-
             </p>
 
-
-
-
-
             <div class="acciones-modal">
-
 
                 <button
                         class="btn-eliminar"
-                        onclick="confirmarEliminarFicha()">
-
+                        onclick="confirmarEliminarFicha()"
+                >
                     Eliminar
-
                 </button>
-
-
-
 
                 <button
+                        type="button"
                         class="btn-ver"
-                        onclick="cerrarEliminarFicha()">
-
+                        onclick="cerrarEliminarFicha()"
+                >
                     Cancelar
-
                 </button>
-
-
 
             </div>
 
-
-
         </div>
-
-
 
     </div>
 
 
+    <!-- =========================================================
+         MODAL - MENSAJES
+    ========================================================== -->
 
-
-
-
-
-
-
-    <!-- =================================================
-         MENSAJE
-    ================================================= -->
-
-
-    <div id="modalMensajeFicha" class="modal">
-
+    <div
+            id="modalMensajeFicha"
+            class="modal"
+    >
 
         <div class="modal-contenido">
 
-
             <button
                     class="cerrar"
-                    onclick="cerrarMensaje()">
-
+                    onclick="cerrarMensajeFicha()"
+            >
                 ✖
-
             </button>
 
+            <h3 id="tituloMensaje"></h3>
 
-
-
-            <h3 id="tituloMensaje">
-
-            </h3>
-
-
-
-
-            <p id="textoMensaje">
-
-            </p>
-
-
+            <p id="textoMensaje"></p>
 
             <div class="acciones-modal">
 
-
                 <button
+                        type="button"
                         class="btn-ver"
-                        onclick="cerrarMensaje()">
-
+                        onclick="cerrarMensajeFicha()"
+                >
                     Aceptar
-
                 </button>
-
-
 
             </div>
 
-
-
         </div>
 
-
     </div>
-
-
-
 
 </section>

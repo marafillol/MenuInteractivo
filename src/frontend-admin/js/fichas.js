@@ -3,8 +3,16 @@ console.log("Modulo fichas cargado");
 let fichaEliminar = null;
 let fichaEditando = null;
 
-// Relaciones antes de guardar
+// =========================================================
+// RELACIONES PENDIENTES
+// =========================================================
+
+// Relaciones que quedarán guardadas al actualizar.
 let relacionesPendientes = [];
+
+// Relaciones existentes que el usuario quitó con la X.
+// Se eliminan realmente de la BD recién al guardar.
+let relacionesEliminadasPendientes = [];
 
 
 /* =========================================================
@@ -542,17 +550,24 @@ async function vistaPreviaFicha(id_ficha) {
 
                 contenedorEtiquetas.innerHTML += `
 
-                    <span class="etiqueta-vista">
+                    <span class="etiqueta-vista ${
+                        etiqueta.activo
+                            ? ""
+                            : "etiqueta-vista-desactivada"
+                    }">
                         ${etiqueta.nombre}
                     </span>
 
                 `;
+
             });
         }
 
 
         /*
+         * =====================================================
          * FICHAS RELACIONADAS
+         * =====================================================
          */
 
         const respuestaRelaciones =
@@ -561,17 +576,20 @@ async function vistaPreviaFicha(id_ficha) {
             );
 
 
-        const relaciones =
-            await respuestaRelaciones.json();
-
-
         const contenedorRelaciones =
             document.getElementById(
                 "vistaRelacionesFicha"
             );
 
 
-        if (contenedorRelaciones) {
+        if (
+            respuestaRelaciones.ok &&
+            contenedorRelaciones
+        ) {
+
+            const relaciones =
+                await respuestaRelaciones.json();
+
 
             contenedorRelaciones.innerHTML =
                 "";
@@ -580,28 +598,147 @@ async function vistaPreviaFicha(id_ficha) {
             if (relaciones.length === 0) {
 
                 contenedorRelaciones.innerHTML =
-                    "<span class='sin-relaciones'>Sin fichas relacionadas</span>";
+                    `
+                    <span class="sin-relaciones">
+                        Sin fichas relacionadas
+                    </span>
+                    `;
 
             } else {
 
-                relaciones.forEach(relacion => {
+                /*
+                 * Obtenemos los datos completos de cada
+                 * ficha relacionada para conseguir también
+                 * su imagen.
+                 */
 
-                    contenedorRelaciones.innerHTML += `
+                const fichasRelacionadas =
+                    await Promise.all(
 
-                        <div class="relacion-vista">
+                        relaciones.map(
+                            async relacion => {
 
-                            <strong>
-                                ${relacion.titulo}
-                            </strong>
+                                try {
 
-                            <span>
-                                ${relacion.tipo_relacion}
-                            </span>
+                                    const respuestaFicha =
+                                        await window.fetchProtegido(
+                                            `/api/fichas/${relacion.id_ficha_destino}`
+                                        );
 
-                        </div>
 
-                    `;
-                });
+                                    if (respuestaFicha.ok) {
+
+                                        const fichaRelacionada =
+                                            await respuestaFicha.json();
+
+
+                                        return {
+                                            ...relacion,
+
+                                            titulo:
+                                                fichaRelacionada.titulo ||
+                                                relacion.titulo ||
+                                                "Sin título",
+
+                                            imagen:
+                                                fichaRelacionada.imagen ||
+                                                null,
+
+                                            visible:
+                                                fichaRelacionada.visible
+                                        };
+                                    }
+
+                                } catch (error) {
+
+                                    console.error(
+                                        "Error obteniendo ficha relacionada:",
+                                        error
+                                    );
+                                }
+
+
+                                return relacion;
+                            }
+                        )
+                    );
+
+
+                /*
+                 * MOSTRAR MINI FICHAS
+                 */
+
+                fichasRelacionadas.forEach(
+                    relacion => {
+
+                        const imagen =
+                            relacion.imagen
+                                ? "/" +
+                                  relacion.imagen.replace(
+                                      "public/",
+                                      ""
+                                  )
+                                : "/imagenes/default.png";
+
+
+                        contenedorRelaciones.innerHTML += `
+
+                            <article class="relacion-vista ${
+                                relacion.visible == 0
+                                    ? "relacion-vista-desactivada"
+                                    : ""
+                            }">
+
+                                <div class="relacion-vista-imagen">
+
+                                    <img
+                                        src="${imagen}"
+
+                                        alt="${
+                                            relacion.titulo ||
+                                            "Ficha"
+                                        }"
+
+                                        onerror="
+                                            this.onerror=null;
+                                            this.src='/imagenes/default.png';
+                                        "
+                                    >
+
+                                </div>
+
+
+                                <div class="relacion-vista-contenido">
+
+                                    <span class="relacion-vista-id">
+                                        FICHA #${
+                                            relacion.id_ficha_destino
+                                        }
+                                    </span>
+
+
+                                    <strong>
+                                        ${
+                                            relacion.titulo ||
+                                            "Sin título"
+                                        }
+                                    </strong>
+
+
+                                    <span class="relacion-vista-tipo">
+                                        ${
+                                            relacion.tipo_relacion ||
+                                            "Sin relación"
+                                        }
+                                    </span>
+
+                                </div>
+
+                            </article>
+
+                        `;
+                    }
+                );
             }
         }
 
@@ -983,28 +1120,86 @@ async function editarFicha(id_ficha) {
                 await respuestaRelaciones.json();
 
 
-            relacionesPendientes =
-                relaciones.map(r => ({
+            /* =====================================================
+               REINICIAR RELACIONES PENDIENTES
+            ===================================================== */
+
+            relacionesPendientes = [];
+
+            relacionesEliminadasPendientes = [];
+
+
+            /* =====================================================
+               ELIMINAR DUPLICADOS
+
+               Una ficha destino solamente puede aparecer una vez.
+            ===================================================== */
+
+            const fichasYaRelacionadas =
+                new Set();
+
+
+            relaciones.forEach(relacion => {
+
+                const idDestino =
+                    Number(
+                        relacion.id_ficha_destino
+                    );
+
+
+                if (!idDestino) {
+                    return;
+                }
+
+
+                /*
+                 * Si ya tenemos esta ficha,
+                 * ignoramos la relación duplicada.
+                 */
+
+                if (
+                    fichasYaRelacionadas.has(
+                        idDestino
+                    )
+                ) {
+
+                    return;
+                }
+
+
+                fichasYaRelacionadas.add(
+                    idDestino
+                );
+
+
+                relacionesPendientes.push({
 
                     id_relacion:
-                        r.id_relacion,
+                        relacion.id_relacion,
 
                     id_ficha_destino:
-                        r.id_ficha_destino,
+                        idDestino,
 
                     tipo_relacion:
-                        r.tipo_relacion,
+                        relacion.tipo_relacion,
 
                     titulo:
-                        r.titulo ||
-                        r.ficha_relacionada ||
-                        `Ficha ${r.id_ficha_destino}`
+                        relacion.titulo ||
+                        relacion.ficha_relacionada ||
+                        `Ficha ${idDestino}`
 
-                }));
+                });
+
+            });
+
+
+            /* =====================================================
+               MOSTRAR UNA SOLA VEZ
+            ===================================================== */
+
+            await mostrarRelacionesPendientes();
+
         }
-
-
-        mostrarRelacionesPendientes();
 
 
         /*
@@ -1306,8 +1501,9 @@ async function abrirNuevaFicha() {
             fichaEditando =
                 null;
 
-            relacionesPendientes =
-                [];
+            relacionesPendientes = [];
+
+            relacionesEliminadasPendientes = [];
 
 
             document.getElementById(
@@ -1869,53 +2065,134 @@ async function guardarFicha() {
         );
 
 
+        /* =====================================================
+           RELACIONES
+        ===================================================== */
+
+        /*
+         * Primero eliminamos de la BD las relaciones
+         * que el usuario quitó con la X.
+         */
+
+        /* =====================================================
+           RELACIONES
+        ===================================================== */
+
+
         /*
          * =====================================================
-         * RELACIONES
+         * 1. ELIMINAR RELACIONES QUITADAS
          * =====================================================
          */
 
-        const relaciones =
-            relacionesPendientes.map(
-                r => ({
+        for (
+            const idRelacion
+            of relacionesEliminadasPendientes
+        ) {
 
-                    id_ficha_destino:
-                        r.id_ficha_destino,
+            try {
 
-                    tipo_relacion:
-                        r.tipo_relacion
+                const respuestaEliminar =
+                    await window.fetchProtegido(
 
-                })
-            );
+                        `/api/relacion-ficha/${idRelacion}`,
+
+                        {
+                            method: "DELETE"
+                        }
+                    );
 
 
-        const respuestaRelaciones =
-            await window.fetchProtegido(
+                if (!respuestaEliminar.ok) {
 
-                `/api/relacion-ficha/${idGuardado}`,
+                    console.error(
+                        "No se pudo eliminar la relación:",
+                        idRelacion
+                    );
 
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        relaciones:
-                            relaciones
-                    })
                 }
-            );
 
+            } catch (error) {
 
-        if (!respuestaRelaciones.ok) {
-
-            console.error(
-                "Error guardando relaciones"
-            );
+                console.error(
+                    "Error eliminando relación:",
+                    error
+                );
+            }
         }
+
+
+        /*
+         * =====================================================
+         * 2. SOLO RELACIONES NUEVAS
+         * =====================================================
+         *
+         * Las que tienen id_relacion ya existían en BD.
+         *
+         * Las que tienen id_relacion === null son nuevas.
+         */
+
+        const relacionesNuevas =
+            relacionesPendientes
+                .filter(
+                    relacion =>
+                        !relacion.id_relacion
+                )
+                .map(
+                    relacion => ({
+
+                        id_ficha_destino:
+                            relacion.id_ficha_destino,
+
+                        tipo_relacion:
+                            relacion.tipo_relacion
+
+                    })
+                );
+
+
+        /*
+         * =====================================================
+         * 3. GUARDAR NUEVAS RELACIONES
+         * =====================================================
+         */
+
+        if (
+            relacionesNuevas.length > 0
+        ) {
+
+            const respuestaRelaciones =
+                await window.fetchProtegido(
+
+                    `/api/relacion-ficha/${idGuardado}`,
+
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            relaciones:
+                                relacionesNuevas
+
+                        })
+                    }
+                );
+
+
+            if (!respuestaRelaciones.ok) {
+
+                console.error(
+                    "Error guardando relaciones."
+                );
+
+            }
+        }
+
 
 
         /*
@@ -1924,12 +2201,11 @@ async function guardarFicha() {
          * =====================================================
          */
 
-        relacionesPendientes =
-            [];
+        relacionesPendientes = [];
 
+        relacionesEliminadasPendientes = [];
 
-        fichaEditando =
-            null;
+        fichaEditando = null;
 
 
         cerrarFicha();
@@ -2206,8 +2482,9 @@ async function cambioTipoFicha(
             null;
 
 
-        relacionesPendientes =
-            [];
+        relacionesPendientes = [];
+
+        relacionesEliminadasPendientes = [];
 
 
         document.getElementById(
@@ -2666,11 +2943,12 @@ async function confirmarEliminarFicha() {
 }
 
 
+
 /* =========================================================
-   CERRAR MENSAJE
+   CERRAR MENSAJE FICHA
 ========================================================= */
 
-function cerrarMensaje() {
+function cerrarMensajeFicha() {
 
     const modal =
         document.getElementById(
@@ -2732,37 +3010,38 @@ async function cargarEtiquetasFicha(
             "";
 
 
-        etiquetas
-            .filter(
-                etiqueta =>
-                    etiqueta.activo
-            )
-            .forEach(etiqueta => {
+        etiquetas.forEach(etiqueta => {
 
-                contenedor.innerHTML += `
+            contenedor.innerHTML += `
 
-                    <label class="item-etiqueta">
+                <label
+                    class="item-etiqueta ${
+                        etiqueta.activo
+                            ? ""
+                            : "etiqueta-desactivada"
+                    }"
+                >
 
-                        <input
-                            type="checkbox"
-                            class="checkbox-etiqueta"
-                            value="${etiqueta.id_etiqueta}"
+                    <input
+                        type="checkbox"
+                        class="checkbox-etiqueta"
+                        value="${etiqueta.id_etiqueta}"
 
-                            ${
-                                seleccionadas.includes(
-                                    etiqueta.id_etiqueta
-                                )
-                                    ? "checked"
-                                    : ""
-                            }
-                        >
+                        ${
+                            seleccionadas.includes(
+                                etiqueta.id_etiqueta
+                            )
+                                ? "checked"
+                                : ""
+                        }
+                    >
 
-                        ${etiqueta.nombre}
+                    ${etiqueta.nombre}
 
-                    </label>
+                </label>
 
-                `;
-            });
+            `;
+        });
 
 
     } catch (error) {
@@ -3016,32 +3295,20 @@ async function cargarRelacionesFicha(
     });
 }
 
-
-/* =========================================================
-   AGREGAR RELACIÓN
-========================================================= */
-
 async function agregarRelacionFicha() {
 
     const select =
-        document.getElementById(
-            "fichaRelacion"
-        );
-
+        document.getElementById("fichaRelacion");
 
     if (!select) {
         return;
     }
 
-
     const destino =
-        select.value;
-
+        Number(select.value);
 
     const tipo =
-        document.getElementById(
-            "tipoRelacion"
-        ).value;
+        document.getElementById("tipoRelacion")?.value;
 
 
     if (!destino) {
@@ -3050,7 +3317,6 @@ async function agregarRelacionFicha() {
             "Ficha requerida",
             "Debe seleccionar una ficha para crear la relación."
         );
-
 
         return;
     }
@@ -3063,52 +3329,97 @@ async function agregarRelacionFicha() {
             "Debe seleccionar qué relación existe entre las fichas antes de agregarla."
         );
 
-
         return;
     }
 
 
-    const existe =
+    /*
+     * =====================================================
+     * ¿YA EXISTE ACTUALMENTE?
+     * =====================================================
+     */
+
+    const yaExiste =
         relacionesPendientes.some(
             relacion =>
-                Number(
-                    relacion.id_ficha_destino
-                ) ===
-                Number(destino)
-                &&
-                relacion.tipo_relacion ===
-                tipo
+                Number(relacion.id_ficha_destino) === destino
         );
 
 
-    if (existe) {
+    if (yaExiste) {
 
         mostrarMensaje(
-            "Relación duplicada",
-            "Esta relación ya fue agregada."
+            "Ficha ya relacionada",
+            "Esta ficha ya está relacionada. No puede relacionarse con la misma ficha más de una vez."
         );
 
+        select.value = "";
 
         return;
     }
 
+
+    /*
+     * =====================================================
+     * SI EXISTÍA EN BD Y FUE ELIMINADA
+     *
+     * Quitamos su ID de la lista de eliminaciones.
+     *
+     * De esta forma, si el usuario elimina una relación
+     * y después se arrepiente antes de guardar, no se
+     * elimina de la BD.
+     * =====================================================
+     */
+
+    const relacionesEliminadasFiltradas =
+        [];
+
+    for (
+        const idRelacion
+        of relacionesEliminadasPendientes
+    ) {
+
+        /*
+         * No podemos saber el destino solamente con el ID
+         * de relación, por eso buscamos primero la relación
+         * original si todavía existe en memoria.
+         */
+
+        relacionesEliminadasFiltradas.push(
+            idRelacion
+        );
+    }
+
+
+    /*
+     * =====================================================
+     * OBTENER TÍTULO
+     * =====================================================
+     */
 
     const opcion =
         select.options[
             select.selectedIndex
         ];
 
-
     const titulo =
         opcion
-            ? opcion.text.trim()
-            : `Ficha ID: ${destino}`;
+            ? opcion.textContent.trim()
+            : `Ficha ${destino}`;
 
+
+    /*
+     * =====================================================
+     * AGREGAR RELACIÓN NUEVA
+     * =====================================================
+     */
 
     relacionesPendientes.push({
 
+        id_relacion: null,
+
         id_ficha_destino:
-            Number(destino),
+            destino,
 
         tipo_relacion:
             tipo,
@@ -3119,19 +3430,28 @@ async function agregarRelacionFicha() {
     });
 
 
-    mostrarRelacionesPendientes();
+    await mostrarRelacionesPendientes();
 
 
-    select.value =
-        "";
+    select.value = "";
+
+
+    const tipoRelacion =
+        document.getElementById(
+            "tipoRelacion"
+        );
+
+    if (tipoRelacion) {
+        tipoRelacion.value = "";
+    }
 }
-
 
 /* =========================================================
    MOSTRAR RELACIONES PENDIENTES
+   MINI FICHAS
 ========================================================= */
 
-function mostrarRelacionesPendientes() {
+async function mostrarRelacionesPendientes() {
 
     const contenedor =
         document.getElementById(
@@ -3144,65 +3464,243 @@ function mostrarRelacionesPendientes() {
     }
 
 
-    contenedor.innerHTML =
-        "";
+    contenedor.innerHTML = "";
 
 
     if (
-        relacionesPendientes.length ===
-        0
+        !relacionesPendientes ||
+        relacionesPendientes.length === 0
     ) {
 
         contenedor.innerHTML =
             "<span class='sin-relaciones'>No hay relaciones agregadas</span>";
 
-
         return;
     }
 
 
+    /*
+     * =====================================================
+     * ELIMINAR DUPLICADOS ANTES DE MOSTRAR
+     * =====================================================
+     *
+     * Una ficha destino solamente puede aparecer una vez.
+     */
+
+    const unicas = [];
+
+    const idsUsados = new Set();
+
+
     relacionesPendientes.forEach(
+        relacion => {
+
+            const idDestino =
+                Number(
+                    relacion.id_ficha_destino
+                );
+
+
+            if (!idDestino) {
+                return;
+            }
+
+
+            if (
+                idsUsados.has(
+                    idDestino
+                )
+            ) {
+
+                return;
+            }
+
+
+            idsUsados.add(
+                idDestino
+            );
+
+
+            unicas.push(
+                relacion
+            );
+        }
+    );
+
+
+    /*
+     * Actualizamos el array para que
+     * tampoco queden duplicados internamente.
+     */
+
+    relacionesPendientes =
+        unicas;
+
+
+    /*
+     * =====================================================
+     * OBTENER DATOS COMPLETOS
+     * =====================================================
+     */
+
+    const fichasCompletas =
+        await Promise.all(
+
+            relacionesPendientes.map(
+                async relacion => {
+
+                    try {
+
+                        const respuesta =
+                            await window.fetchProtegido(
+
+                                `/api/fichas/${relacion.id_ficha_destino}`
+
+                            );
+
+
+                        if (
+                            respuesta.ok
+                        ) {
+
+                            const ficha =
+                                await respuesta.json();
+
+
+                            return {
+
+                                ...relacion,
+
+                                titulo:
+                                    ficha.titulo ||
+                                    relacion.titulo ||
+                                    "Sin título",
+
+                                imagen:
+                                    ficha.imagen ||
+                                    null,
+
+                                visible:
+                                    ficha.visible
+
+                            };
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error obteniendo ficha relacionada:",
+                            error
+                        );
+                    }
+
+
+                    return relacion;
+
+                }
+            )
+        );
+
+
+    /*
+     * =====================================================
+     * MOSTRAR MINI FICHAS
+     * =====================================================
+     */
+
+    fichasCompletas.forEach(
         (relacion, index) => {
+
+            const imagen =
+                relacion.imagen
+
+                    ? "/" +
+                      relacion.imagen.replace(
+                          "public/",
+                          ""
+                      )
+
+                    : "/imagenes/default.png";
+
 
             contenedor.innerHTML += `
 
-                <div class="item-relacion-ficha">
+                <article class="mini-ficha-relacion ${
+                    relacion.visible == 0
+                        ? "mini-ficha-desactivada"
+                        : ""
+                }">
 
-                    <span>
-                        ${
-                            relacion.titulo ||
-                            `Ficha ID: ${relacion.id_ficha_destino}`
-                        }
-                    </span>
+                    <div class="mini-ficha-imagen">
+
+                        <img
+                            src="${imagen}"
+
+                            alt="${
+                                relacion.titulo ||
+                                "Ficha"
+                            }"
+
+                            onerror="
+                                this.onerror=null;
+                                this.src='/imagenes/default.png';
+                            "
+                        >
+
+                    </div>
 
 
-                    <small>
-                        ${relacion.tipo_relacion}
-                    </small>
+                    <div class="mini-ficha-contenido">
+
+                        <span class="mini-ficha-id">
+                            FICHA #${
+                                relacion.id_ficha_destino
+                            }
+                        </span>
+
+
+                        <h4>
+                            ${
+                                relacion.titulo ||
+                                "Sin título"
+                            }
+                        </h4>
+
+
+                        <span class="mini-ficha-tipo">
+                            ${
+                                relacion.tipo_relacion ||
+                                "Sin relación"
+                            }
+                        </span>
+
+                    </div>
 
 
                     <button
-                        class="btn-eliminar"
+                        type="button"
+                        class="mini-ficha-eliminar"
 
                         onclick="
                             eliminarRelacionFichaEditar(
                                 ${index}
                             )
                         "
+
+                        title="Eliminar relación"
                     >
-                        ✖
+                        ×
                     </button>
 
-                </div>
+                </article>
 
             `;
         }
     );
 }
-
-
 /* =========================================================
-   ELIMINAR RELACIÓN
+   ELIMINAR RELACIÓN DE LA VISTA
+   NO ELIMINA DE LA BD TODAVÍA
 ========================================================= */
 
 async function eliminarRelacionFichaEditar(
@@ -3219,53 +3717,26 @@ async function eliminarRelacionFichaEditar(
 
 
     /*
-     * Si ya existe en BD
+     * Si existe en BD, guardamos su ID
+     * para eliminarla cuando se actualice.
      */
 
-    if (relacion.id_relacion) {
+    if (
+        relacion.id_relacion &&
+        !relacionesEliminadasPendientes.includes(
+            relacion.id_relacion
+        )
+    ) {
 
-        try {
-
-            const respuesta =
-                await window.fetchProtegido(
-
-                    `/api/relacion-ficha/${relacion.id_relacion}`,
-
-                    {
-                        method: "DELETE"
-                    }
-                );
-
-
-            if (!respuesta.ok) {
-
-                const error =
-                    await respuesta.json();
-
-
-                mostrarMensaje(
-                    "Error",
-                    error.error ||
-                    "No se pudo eliminar la relación."
-                );
-
-
-                return;
-            }
-
-
-        } catch (error) {
-
-            console.error(
-                "Error eliminando relación:",
-                error
-            );
-
-
-            return;
-        }
+        relacionesEliminadasPendientes.push(
+            relacion.id_relacion
+        );
     }
 
+
+    /*
+     * La quitamos solamente de la memoria.
+     */
 
     relacionesPendientes.splice(
         index,
@@ -3273,7 +3744,11 @@ async function eliminarRelacionFichaEditar(
     );
 
 
-    mostrarRelacionesPendientes();
+    /*
+     * Actualizamos visualmente.
+     */
+
+    await mostrarRelacionesPendientes();
 }
 
 

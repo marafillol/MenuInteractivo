@@ -1,5 +1,21 @@
 
 /* =========================================================
+   FICHAS.CSS
+   Museo Malvinas, Antártida y Atlántico Sur
+   ESTILO: EXPEDIENTE HISTÓRICO / ARCHIVO
+   Versión limpia y consolidada
+========================================================= */
+
+
+/* =========================================================
+   FICHAS.CSS
+   Museo Malvinas
+   ESTILO: EXPEDIENTE MILITAR / ARCHIVO HISTÓRICO
+   Versión consolidada y limpia
+========================================================= */
+
+
+/* =========================================================
    VARIABLES
 ========================================================= */
 
@@ -36,7 +52,7 @@
 
 
 /* =========================================================
-   CABECERA
+   ENCABEZADO
 ========================================================= */
 
 .ventana-fichas .cabecera-fichas {
@@ -44,290 +60,155 @@
 
     display: flex;
     align-items: center;
+    justify-content: space-between;
 
     width: 100%;
-    min-height: 82px;
 
-    padding: 12px 22px 12px 8px;
+    margin: 0 0 30px;
+    padding: 0 0 18px;
 
     box-sizing: border-box;
 
-    gap: 0;
+    gap: 20px;
 
-    background: transparent;
+    border-bottom: 1px solid rgba(22, 58, 97, .20);
+}
 
-    border-bottom: 1px solid rgba(80, 70, 55, .18);
+.ventana-fichas .cabecera-fichas::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+
+    width: 110px;
+    height: 3px;
+
+    background: var(--ficha-dorado);
 }
 
 
 /* =========================================================
-   CONTENEDOR DEL TÍTULO
-   Espacio reservado para la flecha
+   ORDEN DEL ENCABEZADO
 ========================================================= */
 
-.ventana-fichas .titulo-fichas {
+.ventana-fichas .cabecera-fichas #barraVolver {
+    order: 1;
+
+    align-self: center;
+
+    flex: 0 0 auto;
+    flex-shrink: 0;
+
+    margin: 0;
+}
+
+.ventana-fichas .cabecera-fichas .titulo-fichas {
     order: 2;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-self: center;
 
-    flex: 1;
+    flex: 1 1 auto;
 
     min-width: 0;
 
-    margin: 0 0 0 115px;
-    padding: 0 20px 0 0;
-
-    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
+.ventana-fichas .cabecera-fichas #nuevaFicha {
+    order: 3;
+
+    align-self: center;
+
+    flex: 0 0 auto;
+    flex-shrink: 0;
+
+    margin: 0 0 0 auto;
+}
+
+
 /* =========================================================
-   TÍTULO PRINCIPAL — FICHAS
+   TÍTULO
 ========================================================= */
 
-.ventana-fichas #tituloFichas,
-.ventana-fichas .titulo-fichas h2 {
+.ventana-fichas #tituloFichas {
+    display: block;
+
     margin: 0;
     padding: 0;
 
-    color: #294f73;
+    color: var(--ficha-azul);
 
-    font-family: "Courier New", Courier, monospace;
-    font-size: 27px;
+    font-family: "Cinzel", Georgia, "Times New Roman", serif;
+    font-size: 25px;
     font-weight: 700;
 
-    line-height: 1.1;
-    letter-spacing: 1.2px;
+    line-height: 1.15;
+    letter-spacing: .4px;
 
-    text-transform: uppercase;
+    text-align: left;
 
     text-shadow:
         0 1px 0 rgba(255, 255, 255, .65);
 }
 
-
-/* =========================================================
-   SUBTÍTULO / NOMBRE DEL MENÚ
-========================================================= */
-
 .ventana-fichas #subtituloFichas {
-    display: block;
-
-    min-width: 0;
-
-    margin: 6px 0 0;
+    margin: 4px 0 0 3px;
     padding: 0;
 
-    color: #756b5c;
-
-    font-family: "Courier New", Courier, monospace;
-    font-size: 12px;
-    font-weight: 600;
-
-    line-height: 1.2;
-    letter-spacing: 1.8px;
-
-    text-transform: uppercase;
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   SUBTÍTULO — ELEMENTOS INTERNOS
-========================================================= */
-
-.ventana-fichas #subtituloFichas strong {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 4px 8px;
-
-    background: #e8eef3;
-
-    border: 1px solid #b7c2cc;
-    border-left: 3px solid var(--ficha-dorado);
-    border-radius: 4px;
-
-    color: #294f73;
+    color: var(--menu-dorado, var(--ficha-dorado));
 
     font-family: "Courier New", monospace;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
 
-    letter-spacing: .6px;
+    line-height: 1.1;
+    letter-spacing: 1px;
 
     text-transform: uppercase;
+    text-align: left;
 }
 
-
-/* =========================================================
-   IDENTIFICADOR DEL MENÚ
-========================================================= */
-
-.ventana-fichas .identificador-menu-fichas {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 25px;
-    height: 25px;
-
-    background: #315b7d;
-
-    border-radius: 4px;
-
-    color: white;
-
-    font-size: 13px;
+.ventana-fichas.viendo-menu .titulo-fichas {
+    padding: 0 12px;
 }
 
-
-/* =========================================================
-   DESCRIPCIÓN DEL MENÚ
-========================================================= */
-
-.ventana-fichas .descripcion-contexto-fichas {
-    color: #737d85;
-
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-
-    font-style: italic;
-}
-
-/* =========================================================
-   BOTÓN VOLVER A MENÚS
-   Flecha grande — integrada al encabezado
-========================================================= */
-
-.ventana-fichas #barraVolver,
-.ventana-fichas .btn-volver {
-    position: absolute;
-
-    left: 14px;
-    top: 50%;
-
-    z-index: 10;
-
-    transform: translateY(-50%);
-
-    width: 58px;
-    min-width: 58px;
-    height: 42px;
-
-    margin: 0;
-    padding: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    box-sizing: border-box;
-
-    border: 1px solid #294f73;
-    border-radius: 5px;
-
-    background: #163a61;
-    color: #ffffff;
-
-    font-family: Arial, sans-serif;
-    font-size: 0;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 2px 6px rgba(16, 45, 75, .20);
-
-    transition:
-        background .18s ease,
-        box-shadow .18s ease,
-        transform .18s ease;
-}
-
-/* Flecha centrada visualmente */
-.ventana-fichas #barraVolver::before,
-.ventana-fichas .btn-volver::before {
-    content: "←";
-
-    position: absolute;
-    left: 50%;
-    top: 50%;
-
-    transform: translate(-50%, -58%);
-
-    color: #ffffff;
-
-    font-family: Arial, sans-serif;
-    font-size: 30px;
-    font-weight: 400;
-
-    line-height: 1;
-    margin: 0;
-    padding: 0;
-}
-
-/* Hover */
-.ventana-fichas #barraVolver:hover,
-.ventana-fichas .btn-volver:hover {
-    background: #294f73;
-
-    transform: translateY(-50%) translateX(-1px);
-
-    box-shadow:
-        0 4px 10px rgba(16, 45, 75, .28);
-}
-
-/* Si el botón está oculto por JS */
-.ventana-fichas #barraVolver {
-    display: none;
-}
 
 /* =========================================================
    BOTÓN NUEVA FICHA
 ========================================================= */
 
 .ventana-fichas #nuevaFicha {
-    order: 3;
-
-    flex: 0 0 auto;
-
-    margin-left: 26px;
-}
-
-
-.ventana-fichas .cabecera-fichas .btn-nuevo,
-.ventana-fichas .btn-nueva-ficha {
-    display: inline-flex;
-
+    display: flex;
     align-items: center;
     justify-content: center;
 
-    gap: 7px;
+    min-height: 42px;
 
-    flex-shrink: 0;
+    padding: 11px 20px;
 
-    padding: 9px 15px;
+    box-sizing: border-box;
 
     background: var(--ficha-azul);
-    color: white;
+    color: #fff;
 
     border: 1px solid var(--ficha-azul-oscuro);
-    border-radius: 5px;
+    border-radius: 6px;
 
-    font-family: inherit;
-    font-size: 12px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
     font-weight: 600;
 
-    line-height: 1;
+    line-height: 1.2;
+    letter-spacing: .3px;
+
+    white-space: nowrap;
 
     cursor: pointer;
 
-    box-shadow: 0 2px 5px rgba(16, 45, 75, .16);
+    box-shadow:
+        0 3px 7px rgba(16, 45, 75, .18);
 
     transition:
         background .2s ease,
@@ -335,58 +216,104 @@
         box-shadow .2s ease;
 }
 
-
-.ventana-fichas .cabecera-fichas .btn-nuevo:hover,
-.ventana-fichas .btn-nueva-ficha:hover {
+.ventana-fichas #nuevaFicha:hover {
     background: var(--ficha-azul-medio);
 
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 
     box-shadow:
-        0 4px 9px rgba(16, 45, 75, .20);
-}
-
-
-.ventana-fichas .cabecera-fichas .btn-nuevo:active,
-.ventana-fichas .btn-nueva-ficha:active {
-    transform: translateY(0);
+        0 6px 12px rgba(16, 45, 75, .22);
 }
 
 
 /* =========================================================
-   EVITAR CHOQUE DEL TÍTULO CON LOS BOTONES
+   BOTÓN VOLVER
 ========================================================= */
 
-@media (min-width: 801px) {
+.ventana-fichas #barraVolver {
+    display: none;
+    align-items: center;
+    justify-content: center;
 
-    .ventana-fichas .titulo-fichas {
-        max-width: calc(100% - 300px);
-    }
+    width: auto;
+    min-width: 145px;
+    height: 42px;
 
-}
+    padding: 0 16px;
 
-
-/* =========================================================
-   GRILLA DE FICHAS
-   DINÁMICA — se adapta automáticamente al ancho disponible
-========================================================= */
-
-.ventana-fichas #listaFichas {
-    width: 100%;
     box-sizing: border-box;
 
+    background: var(--ficha-azul);
+    color: #fff;
+
+    border: 1px solid var(--ficha-azul-oscuro);
+    border-radius: 6px;
+
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1;
+    letter-spacing: .2px;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 7px rgba(16, 45, 75, .18);
+
+    transition:
+        background .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.ventana-fichas #barraVolver[style*="display: block"],
+.ventana-fichas #barraVolver[style*="display:flex"],
+.ventana-fichas #barraVolver[style*="display: flex"] {
+    display: flex !important;
+}
+
+.ventana-fichas #barraVolver:hover {
+    background: var(--ficha-azul-medio);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 12px rgba(16, 45, 75, .22);
+}
+
+.ventana-fichas .cabecera-fichas .btn-ver {
+    position: static;
+    inset: auto;
+    transform: none;
+}
+
+
+/* =========================================================
+   GRILLA PRINCIPAL DE FICHAS
+========================================================= */
+
+.ventana-fichas #listaFichas,
+#listaFichas.grid-fichas {
     display: grid;
 
     grid-template-columns:
-        repeat(auto-fit, minmax(300px, 1fr));
+        repeat(auto-fill, minmax(300px, 1fr));
 
-    gap: 20px;
+    width: 100%;
+
+    gap: 24px;
+
+    box-sizing: border-box;
 
     overflow: visible;
 }
 
+
 /* =========================================================
-   TARJETA
+   TARJETA DE FICHA
 ========================================================= */
 
 .ventana-fichas .ficha-tarjeta {
@@ -394,6 +321,9 @@
 
     display: flex;
     flex-direction: column;
+
+    width: 100%;
+    min-width: 0;
 
     min-height: 470px;
     height: 100%;
@@ -419,7 +349,6 @@
         transform .25s ease,
         box-shadow .25s ease;
 }
-
 
 .ventana-fichas .ficha-tarjeta:hover {
     transform: translateY(-5px);
@@ -477,7 +406,6 @@
     border-bottom: 3px solid var(--ficha-dorado);
 }
 
-
 .ventana-fichas .ficha-imagen img {
     display: block;
 
@@ -488,7 +416,6 @@
 
     transition: transform .4s ease;
 }
-
 
 .ventana-fichas .ficha-tarjeta:hover .ficha-imagen img {
     transform: scale(1.04);
@@ -508,11 +435,6 @@
     padding: 20px;
 }
 
-
-/* =========================================================
-   ETIQUETA DE TÍTULO
-========================================================= */
-
 .ventana-fichas .campo-titulo-ficha {
     display: block;
 
@@ -528,11 +450,6 @@
     text-transform: uppercase;
 }
 
-
-/* =========================================================
-   NOMBRE DE LA FICHA
-========================================================= */
-
 .ventana-fichas .ficha-info h3 {
     margin: 5px 0 12px;
     padding-bottom: 10px;
@@ -547,11 +464,6 @@
 
     border-bottom: 1px solid rgba(168, 137, 82, .45);
 }
-
-
-/* =========================================================
-   DESCRIPCIÓN
-========================================================= */
 
 .ventana-fichas .ficha-info p {
     flex: 1;
@@ -589,7 +501,6 @@
     padding-top: 18px;
 }
 
-
 .ventana-fichas .ficha-acciones button {
     flex: 1;
 
@@ -610,9 +521,10 @@
 
     cursor: pointer;
 
-    transition: .22s ease;
+    transition:
+        transform .22s ease,
+        filter .22s ease;
 }
-
 
 .ventana-fichas .ficha-acciones button:hover {
     transform: translateY(-2px);
@@ -621,30 +533,27 @@
 
 
 /* =========================================================
-   COLORES BOTONES
+   COLORES DE BOTONES
 ========================================================= */
 
 .ventana-fichas .ficha-btn-vista {
     background: var(--ficha-azul-medio);
-    color: white;
+    color: #fff;
 }
-
 
 .ventana-fichas .ficha-btn-editar {
     background: var(--ficha-dorado);
     color: var(--ficha-texto);
 }
 
-
 .ventana-fichas .ficha-btn-eliminar {
     background: #6f3a3a;
-    color: white;
+    color: #fff;
 }
-
 
 .ventana-fichas .ficha-btn-ver {
     background: #52718c;
-    color: white;
+    color: #fff;
 }
 
 
@@ -672,7 +581,7 @@
 
 
 /* =========================================================
-   MODALES — BASE
+   MODALES — CAPA GENERAL
 ========================================================= */
 
 .ventana-fichas .modal {
@@ -680,24 +589,22 @@
     inset: 0;
 
     display: none;
-
     align-items: center;
     justify-content: center;
 
     width: 100%;
     height: 100%;
 
-    box-sizing: border-box;
-
     padding: 20px;
 
-    background: rgba(17, 30, 45, .72);
+    box-sizing: border-box;
+
+    background: rgba(10, 25, 40, .68);
 
     backdrop-filter: blur(3px);
 
-    z-index: 9999;
+    z-index: 200000;
 }
-
 
 .ventana-fichas .modal[style*="display: flex"] {
     display: flex;
@@ -717,181 +624,58 @@
 
     box-sizing: border-box;
 
-    padding: 30px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background: var(--ficha-papel-claro);
-
-    border: 1px solid var(--ficha-borde);
-    border-radius: 8px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .35);
-
-    animation: aparecerModalFicha .25s ease;
-}
-
-
-/* =========================================================
-   BOTÓN CERRAR GENÉRICO
-========================================================= */
-
-.ventana-fichas .modal .cerrar {
-    position: absolute;
-
-    top: 12px;
-    right: 12px;
-
-    z-index: 20;
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     padding: 0;
 
-    background: transparent;
-
-    border: 1px solid rgba(255, 255, 255, .35);
-    border-radius: 5px;
-
-    color: white;
-
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   NUEVA / EDITAR FICHA
-========================================================= */
-
-.ventana-fichas #modalFicha {
-    position: fixed !important;
-    inset: 0 !important;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 25px;
-
-    box-sizing: border-box;
-
-    background: rgba(17, 30, 45, .72) !important;
-
-    backdrop-filter: blur(3px);
-
-    z-index: 10020 !important;
-}
-
-
-.ventana-fichas #modalFicha[style*="display: flex"] {
-    display: flex;
-}
-
-
-/* =========================================================
-   CONTENIDO NUEVA / EDITAR FICHA
-========================================================= */
-
-.ventana-fichas #modalFicha .modal-ficha-contenido {
-    position: relative;
-
-    width: 720px;
-    max-width: min(94vw, 720px);
-    max-height: 92vh;
-
-    box-sizing: border-box;
-
     overflow-y: auto;
     overflow-x: hidden;
 
-    background: #f1ecdc !important;
-    background-image: none !important;
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .99),
+            rgba(238, 233, 215, .99)
+        );
 
-    opacity: 1;
-
-    border: 1px solid #8997a4;
+    border: 1px solid #8b9aaa;
     border-radius: 6px;
 
     box-shadow:
-        0 22px 55px rgba(0, 0, 0, .38),
+        0 20px 50px rgba(0, 0, 0, .35),
         0 4px 10px rgba(0, 0, 0, .18);
 
-    animation: nuevaFichaAparecer .25s ease;
+    animation: expedienteModalFicha .25s ease;
 
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-
-.ventana-fichas #modalFicha .modal-ficha-contenido::-webkit-scrollbar {
+.ventana-fichas .modal .modal-contenido::-webkit-scrollbar,
+.ventana-fichas .modal-ficha-contenido::-webkit-scrollbar {
     display: none;
 }
 
 
 /* =========================================================
-   BARRA SUPERIOR NUEVA FICHA
+   BOTÓN CERRAR — TODOS LOS MODALES
 ========================================================= */
 
-.ventana-fichas #modalFicha .modal-ficha-contenido::before {
-    content: "ARCHIVO  ·  REGISTRO DE FICHA";
-
-    display: flex;
-    align-items: center;
-
-    width: 100%;
-    min-height: 40px;
-
-    box-sizing: border-box;
-
-    padding: 11px 26px;
-
-    background: #163a61;
-
-    color: #eef3f7;
-
-    border-bottom: 4px solid var(--ficha-dorado);
-
-    font-family: "Courier New", monospace;
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-}
-
-
-/* =========================================================
-   BOTÓN CERRAR NUEVA FICHA
-========================================================= */
-
-.ventana-fichas #modalFicha .modal-ficha-contenido > .cerrar {
+.ventana-fichas .modal .cerrar {
     position: absolute;
 
-    top: 51px;
+    top: 50px;
     right: 18px;
 
     z-index: 50;
-
-    width: 36px;
-    height: 36px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
+    width: 34px;
+    height: 34px;
+
     padding: 0;
+
+    box-sizing: border-box;
 
     background: #dce4ea;
     color: #3d5368;
@@ -899,62 +683,256 @@
     border: 1px solid #8fa0af;
     border-radius: 4px;
 
+    font-family: Arial, sans-serif;
     font-size: 15px;
+
+    line-height: 1;
 
     cursor: pointer;
 
     transition: .2s ease;
 }
 
-
-.ventana-fichas #modalFicha .modal-ficha-contenido > .cerrar:hover {
+.ventana-fichas .modal .cerrar:hover {
     background: #cbd6df;
 
     border-color: #71879a;
 
     color: #263f56;
+
+    transform: scale(1.04);
 }
 
 
 /* =========================================================
-   TÍTULO NUEVA FICHA
+   MODAL TIPO DE FICHA
 ========================================================= */
+
+.ventana-fichas #modalTipoFicha {
+    z-index: 200001;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido {
+    width: 430px;
+    max-width: 92vw;
+    max-height: 85vh;
+
+    overflow: visible;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido::before,
+.ventana-fichas #modalFicha .modal-ficha-contenido::before,
+.ventana-fichas #modalEliminarFicha .modal-contenido::before,
+.ventana-fichas #modalMensajeFicha .modal-contenido::before {
+    display: block;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            90deg,
+            #163a61 0%,
+            #294f70 70%,
+            #315e81 100%
+        );
+
+    border-bottom: 4px solid var(--ficha-dorado);
+
+    color: #eef3f7;
+
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1.8px;
+
+    text-transform: uppercase;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido::before {
+    content: "EXPEDIENTE · TIPO DE FICHA";
+
+    padding: 11px 28px;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido h3 {
+    margin: 0;
+
+    padding: 20px 55px 13px 28px;
+
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 21px;
+    font-weight: 700;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido h3::after,
+.ventana-fichas #modalEliminarFicha h3::after,
+.ventana-fichas #modalMensajeFicha #tituloMensaje::after {
+    content: "";
+
+    display: block;
+
+    height: 3px;
+
+    margin-top: 8px;
+
+    background: var(--ficha-dorado);
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido h3::after {
+    width: 42px;
+}
+
+.ventana-fichas #modalTipoFicha .modal-contenido label {
+    display: block;
+
+    margin: 20px 28px 7px;
+
+    color: #43586b;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1.1px;
+
+    text-transform: uppercase;
+}
+
+.ventana-fichas #modalTipoFicha #tipoFicha {
+    display: block;
+
+    width: calc(100% - 56px);
+    height: 46px;
+
+    margin: 0 28px 26px;
+    padding: 0 13px;
+
+    box-sizing: border-box;
+
+    background: #fbfaf5;
+    color: #263d52;
+
+    border: 1px solid #b5bdc4;
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+.ventana-fichas #modalTipoFicha #tipoFicha:hover {
+    background: #fff;
+    border-color: #71879a;
+}
+
+.ventana-fichas #modalTipoFicha #tipoFicha:focus {
+    border-color: #52718f;
+
+    box-shadow:
+        0 0 0 2px rgba(82, 113, 143, .13);
+}
+
+.ventana-fichas #modalTipoFicha #tipoFicha option {
+    background: #fffdf7;
+    color: #29445e;
+    padding: 8px;
+}
+
+.ventana-fichas #modalTipoFicha .cerrar {
+    top: 50px;
+    right: 19px;
+}
+
+
+/* =========================================================
+   MODAL NUEVA / EDITAR FICHA
+========================================================= */
+
+.ventana-fichas #modalFicha {
+    z-index: 200002;
+}
+
+.ventana-fichas #modalFicha .modal-ficha-contenido {
+    position: relative;
+
+    width: 720px;
+    max-width: 94vw;
+    max-height: 88vh;
+
+    box-sizing: border-box;
+
+    padding: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    background:
+        linear-gradient(
+            rgba(247, 243, 230, .99),
+            rgba(238, 233, 215, .99)
+        );
+
+    border: 1px solid #8b9aaa;
+    border-radius: 6px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .32),
+        0 4px 10px rgba(0, 0, 0, .18);
+
+    animation: expedienteModalFicha .25s ease;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.ventana-fichas #modalFicha .modal-ficha-contenido::before {
+    content: "EXPEDIENTE · REGISTRO DE FICHA";
+
+    padding: 11px 30px;
+}
+
+.ventana-fichas #modalFicha .modal-ficha-contenido > .cerrar {
+    top: 51px;
+    right: 18px;
+}
 
 .ventana-fichas #modalFicha #tituloModalFicha {
     margin: 0;
 
     min-height: 78px;
 
-    padding: 22px 78px 18px 28px;
+    padding: 20px 65px 14px 30px;
 
     box-sizing: border-box;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    background: #f1ecdc;
 
     color: #294f73;
 
     font-family: "Cinzel", Georgia, serif;
-    font-size: 25px;
+    font-size: 23px;
     font-weight: 700;
 
     line-height: 1.2;
-
     letter-spacing: .5px;
 
     border-bottom: 1px solid #c7c0ad;
 }
-
 
 .ventana-fichas #modalFicha #tituloModalFicha::after {
     content: "";
 
     display: block;
 
-    width: 58px;
+    width: 48px;
     height: 3px;
 
     margin-top: 9px;
@@ -980,19 +958,17 @@
 
     min-height: 44px;
 
-    box-sizing: border-box;
-
     margin: 18px 28px 24px;
     padding: 10px 14px;
+
+    box-sizing: border-box;
 
     background: #e5e7e3;
 
     border: 1px solid #c1c6c5;
     border-left: 4px solid #71879a;
-
     border-radius: 4px;
 }
-
 
 .ventana-fichas #modalFicha .tipo-ficha strong {
     color: #687580;
@@ -1004,7 +980,6 @@
 
     text-transform: uppercase;
 }
-
 
 .ventana-fichas #modalFicha .tipo-ficha span {
     min-width: 0;
@@ -1045,14 +1020,12 @@
     font-weight: 700;
 
     line-height: 1.2;
-
     letter-spacing: 1.4px;
 
     text-transform: uppercase;
 
     border-bottom: 1px solid #b8bec4;
 }
-
 
 .ventana-fichas #modalFicha .titulo-subseccion::before {
     content: "";
@@ -1069,10 +1042,11 @@
 
 
 /* =========================================================
-   LABELS GENERALES
+   LABELS DEL FORMULARIO
 ========================================================= */
 
-.ventana-fichas #modalFicha .modal-ficha-contenido > label:not(.check-visible) {
+.ventana-fichas #modalFicha
+.modal-ficha-contenido > label:not(.check-visible) {
     display: block;
 
     margin: 16px 28px 7px;
@@ -1083,7 +1057,6 @@
     font-weight: 700;
 
     line-height: 1.25;
-
     letter-spacing: 1.1px;
 
     text-transform: uppercase;
@@ -1097,14 +1070,14 @@
 .ventana-fichas #modalFicha input[type="text"],
 .ventana-fichas #modalFicha textarea,
 .ventana-fichas #modalFicha select {
-    box-sizing: border-box;
-
     width: calc(100% - 56px);
 
     margin-left: 28px;
     margin-right: 28px;
 
     padding: 11px 13px;
+
+    box-sizing: border-box;
 
     background: #fffdf7;
     color: #29445e;
@@ -1123,18 +1096,16 @@
         background .2s ease;
 }
 
-
 .ventana-fichas #modalFicha input[type="text"]:focus,
 .ventana-fichas #modalFicha textarea:focus,
 .ventana-fichas #modalFicha select:focus {
-    background: #ffffff;
+    background: #fff;
 
     border-color: #52718f;
 
     box-shadow:
         0 0 0 2px rgba(82, 113, 143, .12);
 }
-
 
 .ventana-fichas #modalFicha textarea {
     min-height: 85px;
@@ -1162,22 +1133,19 @@
     box-sizing: border-box;
 }
 
-
 .ventana-fichas #modalFicha #camposDinamicos > div {
     min-width: 0;
 
-    box-sizing: border-box;
-
     padding: 13px;
+
+    box-sizing: border-box;
 
     background: #f8f4e9;
 
     border: 1px solid #c4c6c3;
     border-top: 2px solid #71879a;
-
     border-radius: 4px;
 }
-
 
 .ventana-fichas #modalFicha #camposDinamicos > div label {
     display: block;
@@ -1193,12 +1161,10 @@
     font-weight: bold;
 
     line-height: 1.25;
-
     letter-spacing: 1px;
 
     text-transform: uppercase;
 }
-
 
 .ventana-fichas #modalFicha #camposDinamicos > div input,
 .ventana-fichas #modalFicha #camposDinamicos > div textarea,
@@ -1206,7 +1172,6 @@
     width: 100%;
 
     margin: 0;
-
     padding: 9px 10px;
 
     box-sizing: border-box;
@@ -1220,7 +1185,6 @@
 
 /* =========================================================
    IMAGEN ACTUAL
-   COMPLETA / GRANDE / CENTRADA
 ========================================================= */
 
 .ventana-fichas #modalFicha #contenedorImagenActual {
@@ -1233,16 +1197,8 @@
 
     box-sizing: border-box;
 
-    background: transparent;
-
-    border: none;
-    border-radius: 0;
-
-    box-shadow: none;
-
-    overflow: visible !important;
+    overflow: visible;
 }
-
 
 .ventana-fichas #modalFicha #contenedorImagenActual label {
     display: block;
@@ -1259,16 +1215,13 @@
     font-weight: bold;
 
     line-height: 1.2;
-
     letter-spacing: 1.2px;
 
     text-transform: uppercase;
 }
 
-
 .ventana-fichas #modalFicha .imagen-actual-ficha {
     display: flex;
-
     align-items: center;
     justify-content: center;
 
@@ -1279,31 +1232,20 @@
 
     background: transparent;
 
-    border: none;
-    box-shadow: none;
-
     box-sizing: border-box;
 
-    overflow: visible !important;
+    overflow: visible;
 }
-
-
-/* IMPORTANTE:
-   Una sola regla para la imagen.
-   Se eliminó la antigua regla de 180x130
-   que pisaba la de 380px.
-*/
 
 .ventana-fichas #modalFicha .imagen-actual-ficha img {
     display: block;
 
-    width: 380px !important;
-    max-width: 100% !important;
+    width: 380px;
+    max-width: 100%;
 
-    height: auto !important;
-    max-height: none !important;
+    height: auto;
 
-    object-fit: contain !important;
+    object-fit: contain;
     object-position: center;
 
     margin: 0;
@@ -1321,14 +1263,13 @@
 
 
 /* =========================================================
-   INPUT ARCHIVO
+   INPUT DE ARCHIVO
 ========================================================= */
 
 .ventana-fichas #modalFicha input[type="file"] {
     width: calc(100% - 56px);
 
-    margin-left: 28px;
-    margin-right: 28px;
+    margin: 0 28px;
 
     padding: 10px;
 
@@ -1353,7 +1294,6 @@
 
 .ventana-fichas #modalFicha .check-visible {
     display: flex !important;
-
     align-items: center;
 
     gap: 9px;
@@ -1377,7 +1317,6 @@
 
     cursor: pointer;
 }
-
 
 .ventana-fichas #modalFicha .check-visible input {
     width: 16px !important;
@@ -1412,7 +1351,6 @@
     border-radius: 4px;
 }
 
-
 .ventana-fichas .item-etiqueta {
     display: flex;
     align-items: center;
@@ -1435,18 +1373,95 @@
     transition: .2s ease;
 }
 
-
 .ventana-fichas .item-etiqueta:hover {
     background: #e4dac5;
 
     border-color: var(--ficha-dorado);
 }
 
-
 .ventana-fichas .checkbox-etiqueta {
     accent-color: var(--ficha-azul);
-
     cursor: pointer;
+}
+
+
+/* =========================================================
+   ETIQUETAS DESACTIVADAS
+========================================================= */
+
+.item-etiqueta.etiqueta-inactiva,
+.item-etiqueta.etiqueta-desactivada {
+    filter: grayscale(100%);
+    opacity: .55;
+}
+
+.item-etiqueta.etiqueta-inactiva .nombre-etiqueta {
+    color: #555;
+}
+
+.item-etiqueta.etiqueta-inactiva input {
+    filter: grayscale(100%);
+}
+
+.item-etiqueta.etiqueta-desactivada {
+    color: #555;
+    background: #eeeeee;
+    border: 1px solid #999;
+}
+
+.item-etiqueta.etiqueta-desactivada input {
+    accent-color: #555;
+}
+
+
+/* =========================================================
+   ETIQUETAS — VISTA PREVIA
+========================================================= */
+
+.contenedor-etiquetas-vista {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.etiqueta-vista,
+.etiqueta-vista-desactivada {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 10px;
+
+    box-sizing: border-box;
+
+    background: #e8dfc5;
+
+    border: 1px solid #b6a47b;
+    border-left: 3px solid #163a61;
+
+    border-radius: 3px;
+
+    color: #163a61;
+
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    font-weight: bold;
+
+    line-height: 1;
+}
+
+.etiqueta-vista.etiqueta-inactiva,
+.etiqueta-vista-desactivada {
+    filter: grayscale(100%);
+}
+
+.sin-etiquetas {
+    color: #777;
+
+    font-size: 12px;
+    font-style: italic;
 }
 
 
@@ -1469,7 +1484,6 @@
     box-shadow:
         0 1px 3px rgba(30, 45, 60, .06);
 }
-
 
 .ventana-fichas #modalFicha .relaciones-panel::before {
     content: "FICHAS RELACIONADAS";
@@ -1497,7 +1511,7 @@
 
 
 /* =========================================================
-   FORMULARIO NUEVA RELACIÓN
+   NUEVA RELACIÓN
 ========================================================= */
 
 .ventana-fichas #modalFicha .relacion-nueva {
@@ -1519,11 +1533,9 @@
     border-bottom: 1px solid #d1cabb;
 }
 
-
 .ventana-fichas #modalFicha .campo-relacion {
     min-width: 0;
 }
-
 
 .ventana-fichas #modalFicha .campo-relacion label {
     display: block;
@@ -1539,12 +1551,10 @@
     font-weight: 700;
 
     line-height: 1.2;
-
     letter-spacing: 1px;
 
     text-transform: uppercase;
 }
-
 
 .ventana-fichas #modalFicha .campo-relacion select {
     display: block;
@@ -1553,7 +1563,6 @@
     height: 38px;
 
     margin: 0;
-
     padding: 8px 10px;
 
     box-sizing: border-box;
@@ -1577,11 +1586,9 @@
         box-shadow .2s ease;
 }
 
-
 .ventana-fichas #modalFicha .campo-relacion select:hover {
     border-color: #8d9ca8;
 }
-
 
 .ventana-fichas #modalFicha .campo-relacion select:focus {
     border-color: var(--ficha-azul-medio);
@@ -1607,7 +1614,7 @@
     border: 1px solid var(--ficha-azul-oscuro);
     border-radius: 4px;
 
-    color: white;
+    color: #fff;
 
     font-family: Arial, sans-serif;
     font-size: 11px;
@@ -1622,10 +1629,8 @@
         transform .2s ease;
 }
 
-
 .ventana-fichas #modalFicha .btn-agregar-relacion:hover {
     background: var(--ficha-azul-medio);
-
     transform: translateY(-1px);
 }
 
@@ -1642,10 +1647,8 @@
     background: #f1ecdc;
 }
 
-
 .ventana-fichas #modalFicha .titulo-relaciones-registradas {
     display: flex;
-
     align-items: center;
     justify-content: space-between;
 
@@ -1669,14 +1672,8 @@
     text-transform: uppercase;
 }
 
-
-/* =========================================================
-   CONTADOR RELACIONES
-========================================================= */
-
 .ventana-fichas #modalFicha .contador-relaciones {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
 
@@ -1700,230 +1697,34 @@
 }
 
 
-/* =========================================================
-   LISTA RELACIONES — MODAL
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha {
-    display: flex;
-    flex-direction: column;
-
-    gap: 6px;
-
-    width: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    box-sizing: border-box;
-
-    overflow: visible;
-}
 
 
 /* =========================================================
-   CADA RELACIÓN — MODAL
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha > div {
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        max-content
-        30px;
-
-    align-items: center;
-
-    gap: 10px;
-
-    width: 100%;
-    min-width: 0;
-    min-height: 46px;
-
-    padding: 8px 9px;
-
-    box-sizing: border-box;
-
-    background: #faf8f1;
-
-    border: 1px solid #c8c5bc;
-    border-left: 3px solid var(--ficha-dorado);
-
-    border-radius: 4px;
-
-    box-shadow:
-        0 1px 2px rgba(30, 45, 60, .05);
-
-    transition:
-        background .2s ease,
-        border-color .2s ease;
-}
-
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha > div:hover {
-    background: #f5f1e6;
-
-    border-color: #aaaead;
-
-    border-left-color: var(--ficha-azul-medio);
-}
-
-
-/* =========================================================
-   NOMBRE RELACIÓN — MODAL
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha > div strong {
-    display: block;
-
-    min-width: 0;
-
-    overflow: hidden;
-
-    color: #29445e;
-
-    font-family: Georgia, serif;
-    font-size: 13px;
-    font-weight: 700;
-
-    line-height: 1.3;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   TEXTO SECUNDARIO
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha > div span {
-    display: block;
-
-    min-width: 0;
-
-    color: #65717a;
-
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-
-    line-height: 1.3;
-}
-
-
-/* =========================================================
-   TIPO RELACIÓN — MODAL
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha .tipo-relacion {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    max-width: 150px;
-
-    padding: 4px 7px;
-
-    box-sizing: border-box;
-
-    background: #e8e3d6;
-
-    border: 1px solid #c8c0ae;
-    border-radius: 3px;
-
-    color: #5d6570;
-
-    font-family: "Courier New", monospace;
-    font-size: 8px;
-    font-weight: 700;
-
-    letter-spacing: .5px;
-
-    text-transform: uppercase;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   BOTÓN ELIMINAR RELACIÓN
-========================================================= */
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha button {
-    width: 30px;
-    height: 30px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    box-sizing: border-box;
-
-    background: #eee0dc;
-
-    border: 1px solid #c4aaa3;
-    border-radius: 4px;
-
-    color: #75443c;
-
-    font-size: 12px;
-
-    cursor: pointer;
-
-    transition:
-        background .2s ease,
-        border-color .2s ease,
-        transform .2s ease;
-}
-
-
-.ventana-fichas #modalFicha .lista-relaciones-ficha button:hover {
-    background: #dfcbc6;
-
-    border-color: #a9847b;
-
-    transform: scale(1.04);
-}
-
-
-
-
-/* =========================================================
-   ACCIONES DEL MODAL
+   ACCIONES DE MODALES
 ========================================================= */
 
 .ventana-fichas .acciones-modal {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
 
     gap: 10px;
 
-    margin: 30px 28px 26px;
+    margin: 0 28px 22px;
+    padding-top: 16px;
 
-    padding-top: 18px;
-
-    border-top: 1px solid #c7c0b2;
+    border-top: 1px solid #c8c2b2;
 }
 
-
 .ventana-fichas .acciones-modal button {
-    min-width: 110px;
+    min-width: 105px;
 
-    padding: 10px 18px;
+    padding: 10px 17px;
 
-    background: #d5dce1;
-    color: #3f5365;
+    background: #315b7d;
+    color: #fff;
 
-    border: 1px solid #aab6bf;
+    border: 1px solid #294d6a;
     border-radius: 4px;
 
     font-family: Arial, sans-serif;
@@ -1935,280 +1736,16 @@
     transition: .2s ease;
 }
 
-
 .ventana-fichas .acciones-modal button:hover {
-    background: #c5d0d8;
+    background: #274c69;
 
     transform: translateY(-1px);
 }
 
-
 .ventana-fichas #modalFicha .acciones-modal #btnGuardarFicha {
     background: #315b7d;
-
-    color: white;
-
     border-color: #294d6a;
-}
-
-
-.ventana-fichas #modalFicha .acciones-modal #btnGuardarFicha:hover {
-    background: #274c69;
-}
-
-
-/* =========================================================
-   MODAL SELECCIONAR TIPO DE FICHA
-========================================================= */
-
-.ventana-fichas #modalTipoFicha {
-    position: fixed !important;
-    inset: 0 !important;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    box-sizing: border-box;
-
-    background: rgba(17, 30, 45, .72) !important;
-
-    backdrop-filter: blur(3px);
-
-    z-index: 10050 !important;
-}
-
-
-.ventana-fichas #modalTipoFicha[style*="display: flex"] {
-    display: flex;
-}
-
-
-/* =========================================================
-   CONTENIDO TIPO DE FICHA
-========================================================= */
-
-.ventana-fichas #modalTipoFicha .modal-contenido {
-    position: relative;
-
-    width: 470px;
-    max-width: 95%;
-
-    padding: 0 !important;
-
-    box-sizing: border-box;
-
-    overflow: hidden;
-
-    background: #f1ecdc !important;
-    background-image: none !important;
-
-    opacity: 1;
-
-    border: 1px solid #8997a4;
-    border-radius: 5px;
-
-    box-shadow:
-        0 22px 50px rgba(0, 0, 0, .38);
-
-    animation: aparecerTipoFicha .22s ease;
-}
-
-
-/* =========================================================
-   BARRA TIPO DE FICHA
-========================================================= */
-
-.ventana-fichas #modalTipoFicha .modal-contenido::before {
-    content: "ARCHIVO  ·  NUEVA FICHA";
-
-    display: block;
-
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 13px 28px;
-
-    background: #163a61;
-
-    color: #f4f6f7;
-
-    border-bottom: 4px solid var(--ficha-dorado);
-
-    font-family: "Courier New", monospace;
-    font-size: 10px;
-    font-weight: bold;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-}
-
-
-/* =========================================================
-   TÍTULO TIPO DE FICHA
-========================================================= */
-
-.ventana-fichas #modalTipoFicha .modal-contenido h3 {
-    margin: 0 !important;
-
-    padding: 25px 60px 17px 28px;
-
-    background: #f1ecdc;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-    font-size: 23px;
-    font-weight: 700;
-
-    letter-spacing: .5px;
-
-    border-bottom: 1px solid #c5c0b1;
-}
-
-
-.ventana-fichas #modalTipoFicha .modal-contenido h3::after {
-    content: "";
-
-    display: block;
-
-    width: 48px;
-    height: 3px;
-
-    margin-top: 10px;
-
-    background: var(--ficha-dorado);
-}
-
-
-/* =========================================================
-   LABEL TIPO
-========================================================= */
-
-.ventana-fichas #modalTipoFicha .modal-contenido h3 + label {
-    display: block;
-
-    margin: 24px 28px 8px;
-
-    color: #526575;
-
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.3px;
-
-    text-transform: uppercase;
-}
-
-
-/* =========================================================
-   SELECT TIPO
-========================================================= */
-
-.ventana-fichas #modalTipoFicha #tipoFicha {
-    display: block;
-
-    width: calc(100% - 56px);
-    height: 46px;
-
-    margin: 0 28px 28px;
-
-    padding: 0 13px;
-
-    box-sizing: border-box;
-
-    background: #fffdf7 !important;
-    background-image: none !important;
-
-    color: #29445e !important;
-
-    border: 1px solid #aeb7bd;
-    border-radius: 4px;
-
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-
-    outline: none;
-
-    cursor: pointer;
-
-    transition: .2s ease;
-}
-
-
-.ventana-fichas #modalTipoFicha #tipoFicha:hover {
-    background: #ffffff !important;
-
-    border-color: #71879a;
-}
-
-
-.ventana-fichas #modalTipoFicha #tipoFicha:focus {
-    background: #ffffff !important;
-
-    border-color: #52718f;
-
-    box-shadow:
-        0 0 0 2px rgba(82, 113, 143, .13);
-}
-
-
-.ventana-fichas #modalTipoFicha #tipoFicha option {
-    background: #fffdf7;
-    color: #29445e;
-
-    padding: 8px;
-}
-
-
-/* =========================================================
-   CERRAR TIPO DE FICHA
-========================================================= */
-
-.ventana-fichas #modalTipoFicha .cerrar {
-    position: absolute;
-
-    top: 50px;
-    right: 19px;
-
-    z-index: 20;
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    background: #dce4ea;
-
-    color: #3d5368;
-
-    border: 1px solid #8fa0af;
-    border-radius: 4px;
-
-    font-size: 14px;
-
-    cursor: pointer;
-
-    transition: .2s ease;
-}
-
-
-.ventana-fichas #modalTipoFicha .cerrar:hover {
-    background: #cbd6df;
-
-    border-color: #71879a;
-
-    color: #263f56;
+    color: #fff;
 }
 
 
@@ -2217,77 +1754,27 @@
 ========================================================= */
 
 .ventana-fichas #modalVistaFicha {
-    position: fixed;
-    inset: 0;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 25px;
-
-    box-sizing: border-box;
-
-    background: rgba(17, 30, 45, .68);
-
-    backdrop-filter: blur(3px);
-
-    z-index: 10000;
+    z-index: 200003;
 }
-
-
-.ventana-fichas #modalVistaFicha[style*="display: flex"] {
-    display: flex;
-}
-
-
-/* =========================================================
-   CONTENIDO VISTA PREVIA
-========================================================= */
 
 .ventana-fichas #modalVistaFicha .modal-contenido {
-    position: relative;
-
-    width: 680px;
-    max-width: 100%;
-    max-height: 90vh;
-
-    box-sizing: border-box;
+    width: 700px;
+    max-width: 94vw;
+    max-height: 88vh;
 
     padding: 0;
 
-    overflow-y: auto;
-    overflow-x: hidden;
-
     background:
         linear-gradient(
-            rgba(245, 240, 225, .98),
-            rgba(239, 233, 215, .98)
+            rgba(245, 240, 225, .99),
+            rgba(239, 233, 215, .99)
         );
 
-    border: 1px solid #9ca8b5;
-    border-radius: 8px;
+    border-color: #8b9aaa;
 
-    box-shadow:
-        0 18px 45px rgba(20, 40, 60, .28),
-        0 3px 8px rgba(20, 40, 60, .15);
-
-    animation: vistaFichaExpediente .25s ease;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
-
-
-.ventana-fichas #modalVistaFicha .modal-contenido::-webkit-scrollbar {
-    display: none;
-}
-
-
-/* =========================================================
-   CABECERA VISTA PREVIA
-========================================================= */
 
 .ventana-fichas #modalVistaFicha .modal-contenido > h3 {
     display: flex;
@@ -2297,7 +1784,6 @@
     height: 68px;
 
     margin: 0;
-
     padding: 0 75px 0 30px;
 
     box-sizing: border-box;
@@ -2312,7 +1798,7 @@
 
     border-bottom: 4px solid var(--ficha-dorado);
 
-    color: white;
+    color: #fff;
 
     font-family: "Courier New", monospace;
     font-size: 13px;
@@ -2323,54 +1809,21 @@
     text-transform: uppercase;
 }
 
-
-/* =========================================================
-   CERRAR VISTA PREVIA
-========================================================= */
 .ventana-fichas #modalVistaFicha .cerrar {
-
-    position: absolute;
-
     top: 9px;
     right: 16px;
 
-    z-index: 20;
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-    margin: 0;
-
-    box-sizing: border-box;
-
-    border: 1px solid rgba(255, 255, 255, .45);
-
-    border-radius: 5px;
-
     background: rgba(10, 30, 48, .28);
 
-    color: #ffffff;
+    border-color: rgba(255, 255, 255, .45);
 
-    font-size: 15px;
-
-    line-height: 1;
-
-    cursor: pointer;
+    color: #fff;
 }
-
 
 .ventana-fichas #modalVistaFicha .cerrar:hover {
     background: rgba(255, 255, 255, .16);
 
     border-color: rgba(255, 255, 255, .85);
-
-    transform: scale(1.04);
 }
 
 
@@ -2383,9 +1836,9 @@
 
     width: 100%;
 
-    box-sizing: border-box;
-
     padding: 26px 30px 32px;
+
+    box-sizing: border-box;
 
     color: var(--ficha-texto);
 
@@ -2399,23 +1852,13 @@
 
 .ventana-fichas #modalVistaFicha .preview-imagen-ficha {
     display: flex;
-
     align-items: center;
     justify-content: center;
 
     width: 100%;
 
     margin: 2px 0 24px;
-    padding: 0;
-
-    background: transparent;
-
-    border: none;
-    border-radius: 0;
-
-    box-shadow: none;
 }
-
 
 .ventana-fichas #modalVistaFicha .preview-imagen-ficha img {
     display: block;
@@ -2431,7 +1874,6 @@
 
     border: 5px solid #f6f2e7;
     outline: 1px solid #7d8993;
-
     border-radius: 4px;
 
     box-shadow:
@@ -2441,7 +1883,6 @@
         transform .25s ease,
         box-shadow .25s ease;
 }
-
 
 .ventana-fichas #modalVistaFicha .preview-imagen-ficha img:hover {
     transform: scale(1.015);
@@ -2457,7 +1898,6 @@
 
 .ventana-fichas #modalVistaFicha #vpFichaTitulo {
     margin: 4px 0 0;
-
     padding-bottom: 9px;
 
     color: #244d73;
@@ -2467,14 +1907,10 @@
     font-weight: bold;
 
     line-height: 1.2;
-
     letter-spacing: .5px;
-
-    text-align: left;
 
     border-bottom: 1px solid #8c9aa5;
 }
-
 
 .ventana-fichas #modalVistaFicha #vpFichaTitulo::after {
     content: "";
@@ -2496,14 +1932,12 @@
 
 .ventana-fichas #modalVistaFicha .preview-resumen {
     margin: 14px 0 21px;
-
     padding: 12px 15px;
 
     background: #f6f2e7;
 
     border: 1px solid #c7c8c2;
     border-left: 3px solid #71879a;
-
     border-radius: 3px;
 
     color: #46515a;
@@ -2519,7 +1953,7 @@
 
 
 /* =========================================================
-   TÍTULOS SECCIÓN PREVIEW
+   TÍTULOS DE SECCIÓN PREVIEW
 ========================================================= */
 
 .ventana-fichas #modalVistaFicha .preview-ficha > h4 {
@@ -2541,16 +1975,11 @@
 
     text-transform: uppercase;
 
-    text-align: left;
-
     border-bottom: 1px solid #b8bec4;
 }
 
-
 .ventana-fichas #modalVistaFicha .preview-ficha > h4::before {
     content: "";
-
-    display: inline-block;
 
     width: 6px;
     height: 6px;
@@ -2578,15 +2007,14 @@
     margin-top: 12px;
 }
 
-
 .ventana-fichas #vpCamposDinamicos > div {
     position: relative;
 
     min-height: 70px;
 
-    box-sizing: border-box;
-
     padding: 10px 13px 11px;
+
+    box-sizing: border-box;
 
     background:
         linear-gradient(
@@ -2597,10 +2025,7 @@
 
     border: 1px solid #c4c7c5;
     border-left: 3px solid #71879a;
-
     border-radius: 4px;
-
-    text-align: left;
 
     box-shadow:
         0 2px 5px rgba(30, 45, 60, .07);
@@ -2610,7 +2035,6 @@
         box-shadow .2s ease,
         border-color .2s ease;
 }
-
 
 .ventana-fichas #vpCamposDinamicos > div:hover {
     transform: translateY(-2px);
@@ -2623,7 +2047,6 @@
     box-shadow:
         0 5px 10px rgba(30, 45, 60, .12);
 }
-
 
 .ventana-fichas #vpCamposDinamicos > div h4,
 .ventana-fichas #vpCamposDinamicos > div strong,
@@ -2640,14 +2063,12 @@
     font-weight: bold;
 
     line-height: 1.2;
-
     letter-spacing: 1.1px;
 
     text-transform: uppercase;
 
     border: none;
 }
-
 
 .ventana-fichas #vpCamposDinamicos > div span,
 .ventana-fichas #vpCamposDinamicos > div p {
@@ -2669,7 +2090,6 @@
     border: none;
 }
 
-
 .ventana-fichas #vpCamposDinamicos > div::after {
     content: "";
 
@@ -2686,7 +2106,6 @@
     opacity: .55;
 }
 
-
 .ventana-fichas #vpCamposDinamicos > div.campo-largo {
     grid-column: 1 / -1;
 }
@@ -2698,20 +2117,17 @@
 
 .ventana-fichas #modalVistaFicha .preview-texto {
     margin: 0;
-
     padding: 16px 18px;
 
     background: #f8f5ec;
 
     border: 1px solid #c7c8c2;
     border-left: 3px solid #71879a;
-
     border-radius: 4px;
 
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, .7);
 }
-
 
 .ventana-fichas #modalVistaFicha #vpFichaTexto {
     margin: 0;
@@ -2724,13 +2140,11 @@
     line-height: 1.7;
 
     white-space: pre-line;
-
-    text-align: left;
 }
 
 
 /* =========================================================
-   INFORMACIÓN ADMINISTRATIVA
+   INFORMACIÓN ADMINISTRATIVA PREVIEW
 ========================================================= */
 
 .ventana-fichas #modalVistaFicha .preview-info {
@@ -2741,7 +2155,6 @@
 
     gap: 8px;
 }
-
 
 .ventana-fichas #modalVistaFicha .preview-info p {
     position: relative;
@@ -2766,7 +2179,6 @@
     line-height: 1.4;
 }
 
-
 .ventana-fichas #modalVistaFicha .preview-info strong {
     display: block;
 
@@ -2782,432 +2194,384 @@
     text-transform: uppercase;
 }
 
-
 .ventana-fichas #modalVistaFicha .preview-info span {
     color: #29445e;
 }
 
 
+
 /* =========================================================
-   ETIQUETAS PREVIEW
+   MINI FICHA RELACIONADA
 ========================================================= */
 
-.ventana-fichas .contenedor-etiquetas-vista {
+#vistaRelacionesFicha .ficha-relacionada {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
 
-    gap: 7px;
+    width: 100%;
+    min-width: 0;
+
+    padding: 12px;
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(22, 58, 97, 0.35);
+    border-radius: 5px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.12);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 
-.ventana-fichas .etiqueta-vista {
-    display: inline-flex;
-    align-items: center;
+/* Efecto al pasar el mouse */
+#vistaRelacionesFicha .ficha-relacionada:hover {
+    transform: translateY(-2px);
 
-    padding: 6px 11px;
+    box-shadow:
+        0 4px 9px rgba(0, 0, 0, 0.18);
+}
 
-    background: #e8dfcb;
 
-    border: 1px solid #c4b38d;
+/* =========================================================
+   IMAGEN DE LA MINI FICHA
+========================================================= */
+
+#vistaRelacionesFicha .ficha-relacionada img {
+    display: block;
+
+    width: 100%;
+    height: 125px;
+
+    max-width: 100%;
+    max-height: 125px;
+
+    object-fit: cover;
+
+    margin: 0 0 10px 0;
+    padding: 0;
+
     border-radius: 3px;
 
-    color: #4f5d67;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENIDO DE LA MINI FICHA
+========================================================= */
+
+#vistaRelacionesFicha .ficha-relacionada .relacion-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    min-width: 0;
+}
+
+
+/* Nombre de la ficha */
+#vistaRelacionesFicha .ficha-relacionada .relacion-nombre {
+    margin: 0;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+
+    line-height: 1.25;
+
+    color: #163a61;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* Tipo de relación */
+#vistaRelacionesFicha .ficha-relacionada .relacion-tipo {
+    margin: 0;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    line-height: 1.2;
+
+    color: #666;
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+
+/* =========================================================
+   SI LA IMAGEN VIENE DENTRO DE UN CONTENEDOR
+========================================================= */
+
+#vistaRelacionesFicha .ficha-relacionada .imagen-relacionada {
+    width: 100%;
+    height: 125px;
+
+    margin-bottom: 10px;
+
+    overflow: hidden;
+
+    border-radius: 3px;
+}
+
+
+#vistaRelacionesFicha .ficha-relacionada .imagen-relacionada img {
+    width: 100%;
+    height: 100%;
+
+    max-width: none;
+    max-height: none;
+
+    object-fit: cover;
+
+    margin: 0;
+}
+
+
+/* =========================================================
+   SIN IMAGEN
+========================================================= */
+
+#vistaRelacionesFicha .ficha-relacionada .sin-imagen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 125px;
+
+    margin-bottom: 10px;
+
+    background: #e7e3da;
+    border: 1px dashed #aaa;
+    border-radius: 3px;
+
+    color: #777;
+
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+
+
+/* =========================================================
+   FICHA DESACTIVADA
+========================================================= */
+
+.ventana-fichas .ficha-tarjeta.ficha-desactivada {
+    filter: grayscale(100%);
+    opacity: .72;
+}
+
+.ventana-fichas .ficha-tarjeta.ficha-desactivada:hover {
+    filter: grayscale(100%);
+}
+
+.ventana-fichas
+.ficha-tarjeta.ficha-desactivada
+.ficha-imagen img,
+.ventana-fichas
+.ficha-tarjeta.ficha-desactivada
+.ficha-acciones button,
+.ventana-fichas
+.ficha-tarjeta.ficha-desactivada::before {
+    filter: grayscale(100%);
+}
+
+.ventana-fichas
+.ficha-tarjeta.ficha-desactivada::after {
+    content: "FICHA DESACTIVADA";
+
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    z-index: 10;
+
+    padding: 5px 9px;
+
+    background: rgba(40, 40, 40, .88);
+    color: #fff;
+
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 4px;
 
     font-family: "Courier New", monospace;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: bold;
 
-    letter-spacing: .7px;
+    letter-spacing: 1px;
 
     text-transform: uppercase;
 }
 
 
-.ventana-fichas .sin-etiquetas {
-    color: #7a7d7d;
+/* =========================================================
+   IMAGEN FICHA INACTIVA
+========================================================= */
 
-    font-family: Georgia, serif;
-    font-size: 13px;
-
-    font-style: italic;
+.imagen-ficha-inactiva {
+    filter: grayscale(100%);
 }
 
 
 /* =========================================================
-   RELACIONES — VISTA PREVIA
-   SIN REF
+   MODAL ELIMINAR
 ========================================================= */
 
-.ventana-fichas #modalVistaFicha .lista-relaciones-ficha {
-    display: flex;
-    flex-direction: column;
+.ventana-fichas #modalEliminarFicha {
+    z-index: 200004;
+}
 
-    gap: 6px;
-
-    width: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    box-sizing: border-box;
-
-    background: transparent;
-
-    border: none;
+.ventana-fichas #modalEliminarFicha .modal-contenido {
+    width: 440px;
+    max-width: 92vw;
 
     overflow: visible;
 }
 
+.ventana-fichas #modalEliminarFicha .modal-contenido::before {
+    content: "EXPEDIENTE · ELIMINACIÓN DE FICHA";
 
-/* =========================================================
-   CADA RELACIÓN — PREVIEW
-========================================================= */
-
-.ventana-fichas #modalVistaFicha .lista-relaciones-ficha > div {
-    position: relative;
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        max-content;
-
-    grid-template-rows:
-        auto
-        auto;
-
-    align-items: center;
-
-    column-gap: 12px;
-    row-gap: 3px;
-
-    width: 100%;
-    min-height: 56px;
-
-    padding: 9px 11px;
-
-    box-sizing: border-box;
-
-    background:
-        linear-gradient(
-            90deg,
-            #faf8f1 0%,
-            #f6f2e7 100%
-        );
-
-    border: 1px solid #c7c8c2;
-    border-left: 3px solid #71879a;
-
-    border-radius: 3px;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .7),
-        0 1px 2px rgba(30, 45, 60, .05);
-
-    transition:
-        background .2s ease,
-        border-color .2s ease,
-        transform .2s ease;
+    padding: 11px 28px;
 }
 
-
-/* =========================================================
-   OCULTAR REFERENCIA "REF"
-========================================================= */
-
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha
-.referencia-relacion {
-    display: none !important;
-}
-
-
-/* =========================================================
-   DECORACIÓN
-========================================================= */
-
-.ventana-fichas #modalVistaFicha .lista-relaciones-ficha > div::before {
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-
-    width: 28px;
-    height: 1px;
-
-    background: var(--ficha-dorado);
-
-    opacity: .7;
-}
-
-
-/* =========================================================
-   HOVER RELACIÓN
-========================================================= */
-
-.ventana-fichas #modalVistaFicha .lista-relaciones-ficha > div:hover {
-    background: #f1ede1;
-
-    border-color: #adb7bd;
-
-    border-left-color: var(--ficha-dorado);
-
-    transform: translateX(2px);
-}
-
-
-/* =========================================================
-   NOMBRE RELACIONADO
-========================================================= */
-
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha > div strong {
-    display: block;
-
-    grid-column: 1;
-    grid-row: 1;
-
-    min-width: 0;
-
+.ventana-fichas #modalEliminarFicha h3 {
     margin: 0;
-    padding-right: 4px;
 
-    overflow: hidden;
+    padding: 21px 60px 13px 28px;
 
-    color: #29445e;
+    color: #294f73;
+
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 22px;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+.ventana-fichas #modalEliminarFicha h3::after {
+    width: 44px;
+}
+
+.ventana-fichas #modalEliminarFicha #mensajeEliminarFicha {
+    margin: 0;
+
+    padding: 20px 28px 15px;
+
+    color: #4b5660;
 
     font-family: Georgia, serif;
-    font-size: 13.5px;
-    font-weight: bold;
+    font-size: 14px;
 
-    line-height: 1.3;
+    line-height: 1.6;
+}
 
-    white-space: nowrap;
-    text-overflow: ellipsis;
+.ventana-fichas #modalEliminarFicha .btn-eliminar {
+    background: #6f3a3a;
+
+    color: #fff;
+
+    border-color: #5b2e2e;
+}
+
+.ventana-fichas #modalEliminarFicha .btn-eliminar:hover {
+    background: #592d2d;
+}
+
+.ventana-fichas #modalEliminarFicha
+.acciones-modal button:not(.btn-eliminar) {
+    background: #d5dce1;
+
+    color: #3f5365;
+
+    border-color: #aab6bf;
 }
 
 
 /* =========================================================
-   INFORMACIÓN SECUNDARIA
+   MODAL MENSAJE / AVISO
 ========================================================= */
 
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha > div span {
-    display: block;
+.ventana-fichas #modalMensajeFicha {
+    z-index: 200005;
+}
 
-    grid-column: 1;
-    grid-row: 2;
+.ventana-fichas #modalMensajeFicha .modal-contenido {
+    width: 430px;
+    max-width: 92vw;
 
-    min-width: 0;
+    overflow: visible;
+}
 
+.ventana-fichas #modalMensajeFicha .modal-contenido::before {
+    content: "EXPEDIENTE · AVISO";
+
+    padding: 11px 28px;
+
+    letter-spacing: 2px;
+}
+
+.ventana-fichas #modalMensajeFicha #tituloMensaje {
     margin: 0;
-    padding-right: 4px;
 
-    color: #78838c;
+    padding: 21px 60px 13px 28px;
 
-    font-family: "Courier New", monospace;
-    font-size: 8px;
+    color: #294f73;
 
-    line-height: 1.3;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
 
-    letter-spacing: .5px;
-
-    text-transform: uppercase;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border-bottom: 1px solid #c7c0ad;
 }
 
-
-/* =========================================================
-   TIPO DE RELACIÓN
-========================================================= */
-
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha .tipo-relacion {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    grid-column: 2;
-    grid-row: 1 / span 2;
-
-    justify-self: end;
-    align-self: center;
-
-    max-width: 145px;
-
-    padding: 5px 9px;
-
-    box-sizing: border-box;
-
-    background: #e8dfcb;
-
-    border: 1px solid #c4b38d;
-    border-radius: 3px;
-
-    color: #536273;
-
-    font-family: "Courier New", monospace;
-    font-size: 8px;
-    font-weight: bold;
-
-    letter-spacing: .7px;
-
-    text-transform: uppercase;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
+.ventana-fichas #modalMensajeFicha #tituloMensaje::after {
+    width: 45px;
 }
 
+.ventana-fichas #modalMensajeFicha #textoMensaje {
+    margin: 0;
 
-/* =========================================================
-   FLECHA DE RELACIÓN
-========================================================= */
+    padding: 20px 28px 15px;
 
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha .flecha-relacion {
-    display: inline-block;
-
-    margin-left: 5px;
-
-    color: var(--ficha-dorado);
-
-    font-size: 16px;
-
-    line-height: 1;
-}
-
-/* =========================================================
-   MENSAJES VACÍOS
-   MISMO ESTILO QUE "SIN ETIQUETAS"
-========================================================= */
-
-/* Sin etiquetas */
-.ventana-fichas .sin-etiquetas,
-
-/* Sin fichas relacionadas */
-.ventana-fichas #modalVistaFicha
-.lista-relaciones-ficha:empty::before,
-
-/* Sin relaciones agregadas en Nueva/Editar ficha */
-.ventana-fichas #modalFicha
-.lista-relaciones-ficha:empty::before {
-
-    color: #7a7d7d;
+    color: #4b5660;
 
     font-family: Georgia, serif;
-    font-size: 13px;
+    font-size: 14px;
 
-    font-style: italic;
-
-    font-weight: normal;
-
-    line-height: 1.4;
+    line-height: 1.6;
 }
 
 
 /* =========================================================
-   SIN FICHAS RELACIONADAS
+   ANIMACIÓN
 ========================================================= */
 
-
-
-
-/* =========================================================
-   SIN RELACIONES AGREGADAS
-========================================================= */
-.ventana-fichas .sin-etiquetas {
-    font-family: "Courier New", Courier, monospace;
-    font-size: 13px;
-    font-style: italic;
-    color: #777;
-}
-/* =========================================================
-   OCULTAR SCROLLBARS
-========================================================= */
-
-.ventana-fichas #modalFicha .modal-ficha-contenido,
-.ventana-fichas #modalVistaFicha .modal-contenido {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-
-.ventana-fichas #modalFicha .modal-ficha-contenido::-webkit-scrollbar,
-.ventana-fichas #modalVistaFicha .modal-contenido::-webkit-scrollbar {
-    display: none;
-}
-
-
-/* =========================================================
-   ANIMACIONES
-========================================================= */
-
-@keyframes aparecerModalFicha {
-
+@keyframes expedienteModalFicha {
     from {
         opacity: 0;
-        transform: translateY(12px) scale(.98);
+
+        transform:
+            translateY(-12px)
+            scale(.985);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+
+        transform:
+            translateY(0)
+            scale(1);
     }
-
-}
-
-
-@keyframes nuevaFichaAparecer {
-
-    from {
-        opacity: 0;
-        transform: translateY(15px) scale(.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
-
-
-@keyframes aparecerTipoFicha {
-
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
-
-
-@keyframes vistaFichaExpediente {
-
-    from {
-        opacity: 0;
-        transform: translateY(15px) scale(.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
 }
 
 
@@ -3221,7 +2585,6 @@
         grid-template-columns:
             repeat(3, minmax(0, 1fr));
     }
-
 }
 
 
@@ -3236,13 +2599,10 @@
             repeat(2, minmax(0, 1fr));
     }
 
-
-    .ventana-fichas #modalFicha
-    .modal-ficha-contenido {
+    .ventana-fichas #modalFicha .modal-ficha-contenido {
         width: 100%;
         max-width: 95vw;
     }
-
 
     .ventana-fichas #modalFicha .relacion-nueva {
         grid-template-columns:
@@ -3250,42 +2610,11 @@
             minmax(135px, .7fr);
     }
 
-
-    .ventana-fichas #modalFicha
-    .btn-agregar-relacion {
+    .ventana-fichas #modalFicha .btn-agregar-relacion {
         grid-column: 1 / -1;
 
         width: 100%;
     }
-
-
-    .ventana-fichas .titulo-fichas {
-        margin-left: 112px;
-    }
-
-
-    .ventana-fichas .titulo-fichas h2 {
-        font-size: 23px;
-    }
-
-
-    .ventana-fichas #subtituloFichas {
-        font-size: 11px;
-        letter-spacing: 1.4px;
-    }
-
-
-    .ventana-fichas .btn-volver {
-        left: 6px;
-
-        width: 58px;
-        min-width: 58px;
-
-        height: 42px;
-
-        font-size: 0;
-    }
-
 }
 
 
@@ -3301,42 +2630,21 @@
         gap: 10px;
     }
 
-
-    .ventana-fichas #modalFicha
-    .btn-agregar-relacion {
+    .ventana-fichas #modalFicha .btn-agregar-relacion {
         grid-column: auto;
 
         width: 100%;
     }
 
 
-    .ventana-fichas #modalFicha
-    .lista-relaciones-ficha > div {
-        grid-template-columns:
-            minmax(0, 1fr)
-            30px;
-
-        gap: 7px;
+    #listaFichas.grid-fichas {
+        grid-template-columns: 1fr;
     }
 
-
-    .ventana-fichas #modalFicha
-    .lista-relaciones-ficha .tipo-relacion {
-        grid-column: 1;
-        grid-row: 2;
-
-        width: fit-content;
-
-        max-width: 100%;
+    .ventana-fichas #listaFichas .ficha-tarjeta {
+        width: 100% !important;
+        max-width: 100% !important;
     }
-
-
-    .ventana-fichas #modalFicha
-    .lista-relaciones-ficha button {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-    }
-
 }
 
 
@@ -3350,17 +2658,14 @@
         grid-template-columns: 1fr;
     }
 
-
     .ventana-fichas #modalFicha #camposDinamicos,
     .ventana-fichas #vpCamposDinamicos {
         grid-template-columns: 1fr;
     }
 
-
     .ventana-fichas #vpCamposDinamicos > div.campo-largo {
         grid-column: auto;
     }
-
 }
 
 
@@ -3371,82 +2676,68 @@
 @media (max-width: 600px) {
 
     /* ---------------------------------------------
-       CABECERA
+       ENCABEZADO
     --------------------------------------------- */
 
     .ventana-fichas .cabecera-fichas {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 14px;
+
         min-height: 82px;
 
         padding-left: 6px;
         padding-right: 14px;
     }
 
-
     .ventana-fichas .titulo-fichas {
-        margin-left: 106px;
+        width: 100%;
     }
 
-
-    .ventana-fichas .titulo-fichas h2 {
+    .ventana-fichas #tituloFichas {
         font-size: 19px;
-
         letter-spacing: 1px;
     }
-
 
     .ventana-fichas #subtituloFichas {
         font-size: 10px;
-
         letter-spacing: 1px;
     }
 
-
-    .ventana-fichas .btn-volver {
-        left: 5px;
-
-        width: 56px;
-        min-width: 56px;
-
-        height: 40px;
-
-        font-size: 0;
-    }
-
-
-    .ventana-fichas .btn-nuevo,
-    .ventana-fichas .btn-nueva-ficha {
-        padding: 8px 10px;
-
-        font-size: 11px;
+    .ventana-fichas #nuevaFicha,
+    .ventana-fichas #barraVolver {
+        width: 100%;
+        margin: 0;
     }
 
 
     /* ---------------------------------------------
-       MODAL NUEVA FICHA
+       MODALES
     --------------------------------------------- */
 
-    .ventana-fichas #modalFicha {
+    .ventana-fichas .modal {
         padding: 12px;
     }
 
 
-    .ventana-fichas #modalFicha
-    .modal-ficha-contenido {
+    /* ---------------------------------------------
+       NUEVA / EDITAR FICHA
+    --------------------------------------------- */
+
+    .ventana-fichas #modalFicha .modal-ficha-contenido {
         width: 100%;
         max-width: 100%;
-        max-height: 95vh;
+        max-height: 94vh;
     }
 
-
-    .ventana-fichas #modalFicha
-    .modal-ficha-contenido > .cerrar {
+    .ventana-fichas #modalFicha .modal-ficha-contenido > .cerrar {
         top: 45px;
         right: 13px;
     }
 
-
-    .ventana-fichas #modalFicha
-    #tituloModalFicha {
+    .ventana-fichas #modalFicha #tituloModalFicha {
         min-height: 72px;
 
         padding:
@@ -3460,7 +2751,7 @@
 
 
     /* ---------------------------------------------
-       CONTENIDO
+       CONTENIDO FORMULARIO
     --------------------------------------------- */
 
     .ventana-fichas #modalFicha .tipo-ficha,
@@ -3473,13 +2764,11 @@
         margin-right: 20px;
     }
 
-
     .ventana-fichas #modalFicha
     .modal-ficha-contenido > label:not(.check-visible) {
         margin-left: 20px;
         margin-right: 20px;
     }
-
 
     .ventana-fichas #modalFicha input[type="text"],
     .ventana-fichas #modalFicha textarea,
@@ -3491,13 +2780,11 @@
         margin-right: 20px;
     }
 
-
     .ventana-fichas #modalFicha .tipo-ficha {
         grid-template-columns: 1fr;
 
         row-gap: 4px;
     }
-
 
     .ventana-fichas #modalFicha .tipo-ficha span {
         white-space: normal;
@@ -3510,11 +2797,10 @@
 
     .ventana-fichas #modalFicha
     .imagen-actual-ficha img {
-        width: 380px !important;
-        max-width: 100% !important;
+        width: 380px;
+        max-width: 100%;
 
-        height: auto !important;
-        max-height: none !important;
+        height: auto;
     }
 
 
@@ -3525,7 +2811,6 @@
     .ventana-fichas #modalFicha .relacion-nueva {
         padding: 12px;
     }
-
 
     .ventana-fichas #modalFicha .relaciones-registradas {
         padding: 12px;
@@ -3543,7 +2828,6 @@
         margin-right: 20px;
     }
 
-
     .ventana-fichas #modalFicha .acciones-modal button {
         width: 100%;
     }
@@ -3554,15 +2838,13 @@
     --------------------------------------------- */
 
     .ventana-fichas #modalTipoFicha {
-        padding: 15px !important;
+        padding: 15px;
     }
-
 
     .ventana-fichas #modalTipoFicha .modal-contenido {
         width: 100%;
         max-width: 430px;
     }
-
 
     .ventana-fichas #modalTipoFicha
     .modal-contenido h3 {
@@ -3575,13 +2857,11 @@
         font-size: 20px;
     }
 
-
     .ventana-fichas #modalTipoFicha
-    .modal-contenido h3 + label {
+    .modal-contenido label {
         margin-left: 20px;
         margin-right: 20px;
     }
-
 
     .ventana-fichas #modalTipoFicha #tipoFicha {
         width: calc(100% - 40px);
@@ -3599,15 +2879,13 @@
         padding: 12px;
     }
 
-
-    .ventana-fichas #modalVistaFicha
-    .modal-contenido {
+    .ventana-fichas #modalVistaFicha .modal-contenido {
         width: 100%;
+        max-width: 100%;
         max-height: 94vh;
 
         border-radius: 6px;
     }
-
 
     .ventana-fichas #modalVistaFicha
     .modal-contenido > h3 {
@@ -3621,7 +2899,6 @@
         letter-spacing: 1.5px;
     }
 
-
     .ventana-fichas #modalVistaFicha .cerrar {
         top: 12px;
         right: 13px;
@@ -3630,11 +2907,9 @@
         height: 34px;
     }
 
-
     .ventana-fichas #modalVistaFicha .preview-ficha {
         padding: 20px;
     }
-
 
     .ventana-fichas #modalVistaFicha
     .preview-imagen-ficha img {
@@ -3644,12 +2919,10 @@
         height: 220px;
     }
 
-
     .ventana-fichas #modalVistaFicha
     #vpFichaTitulo {
         font-size: 24px;
     }
-
 
     .ventana-fichas #modalVistaFicha
     .preview-info {
@@ -3666,1525 +2939,767 @@
     }
 
 
+
+
     /* ---------------------------------------------
-       RELACIONES PREVIEW
+       MODALES AVISO / ELIMINACIÓN
     --------------------------------------------- */
 
-    .ventana-fichas #modalVistaFicha
-    .lista-relaciones-ficha > div {
-        grid-template-columns: 1fr;
-
-        grid-template-rows:
-            auto
-            auto
-            auto;
-
-        gap: 3px 0;
-    }
-
-
-    .ventana-fichas #modalVistaFicha
-    .lista-relaciones-ficha > div strong {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-
-    .ventana-fichas #modalVistaFicha
-    .lista-relaciones-ficha > div span {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-
-    .ventana-fichas #modalVistaFicha
-    .lista-relaciones-ficha .tipo-relacion {
-        grid-column: 1;
-        grid-row: 3;
-
-        justify-self: start;
-
+    .ventana-fichas #modalEliminarFicha .modal-contenido,
+    .ventana-fichas #modalMensajeFicha .modal-contenido {
+        width: 100%;
         max-width: 100%;
     }
-
 }
 
 
 /* =========================================================
-
-/* =========================================================
-   NORMALIZACIÓN FINAL — EVITA SUPERPOSICIONES
-   Este bloque reemplaza cualquier comportamiento ambiguo
-   de las reglas anteriores sin modificar el HTML.
+   FICHAS RELACIONADAS
+   MINI TARJETAS
 ========================================================= */
 
-/* Cabecera estable */
-.ventana-fichas .cabecera-fichas {
+.relaciones-panel {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+
+/* =========================================================
+   IMAGEN
+========================================================= */
+
+.mini-ficha-imagen {
+    width: 100%;
+
+    height: 125px;
+
+    flex: 0 0 125px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #d8d0c0;
+
+    border: 1px solid #aaa08e;
+
+    box-sizing: border-box;
+
+    margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   IMAGEN INTERNA
+========================================================= */
+
+.mini-ficha-imagen img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: cover;
+
+    object-position: center;
+
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.mini-ficha-contenido {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    padding-right: 18px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ID
+========================================================= */
+
+.mini-ficha-id {
+    display: block;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 0.5px;
+
+    color: #6d6253;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.mini-ficha-contenido h4 {
+    margin: 0;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 14px;
+
+    line-height: 1.25;
+
+    color: #26384a;
+
+    word-break: break-word;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   TIPO DE RELACIÓN
+========================================================= */
+
+.mini-ficha-tipo {
+    display: inline-block;
+
+    width: fit-content;
+    max-width: 100%;
+
+    margin-top: 4px;
+
+    padding: 3px 7px;
+
+    background: #d7d0c1;
+
+    border: 1px solid #b7ad9c;
+
+    border-radius: 2px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 10px;
+
+    color: #51493e;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   BOTÓN ELIMINAR
+========================================================= */
+
+.mini-ficha-eliminar {
+    position: absolute;
+
+    top: 6px;
+    right: 6px;
+
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #9c8d78;
+
+    border-radius: 3px;
+
+    background: #e4dccd;
+
+    color: #4b4035;
+
+    font-size: 17px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    z-index: 5;
+}
+
+
+.mini-ficha-eliminar:hover {
+    background: #cfc4b1;
+
+    color: #241f1a;
+}
+
+
+/* =========================================================
+   MENSAJE SIN RELACIONES
+========================================================= */
+
+.sin-relaciones {
+    display: block;
+
+    padding: 14px;
+
+    color: #756b5c;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 12px;
+
+    font-style: italic;
+
+    text-align: center;
+
+    border: 1px dashed #b8aa91;
+
+    background: #eee7d9;
+
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   FICHAS RELACIONADAS
+   MINI FICHAS EN GRILLA
+========================================================= */
+
+.lista-relaciones-ficha {
+    width: 100%;
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(230px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin-top: 12px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MINI FICHA RELACIONADA
+========================================================= */
+
+.mini-ficha-relacion {
     position: relative;
+
+    width: 100%;
+    min-width: 0;
+
     display: flex;
     align-items: center;
-    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 10px;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.96),
+            rgba(232,228,216,.96)
+        );
+
+    border: 1px solid #b7b0a2;
+    border-left: 4px solid #163a61;
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.15);
+
+    min-height: 95px;
+}
+
+
+/* =========================================================
+   IMAGEN
+========================================================= */
+
+.mini-ficha-imagen {
+    flex: 0 0 72px;
+
+    width: 72px;
+    height: 72px;
+
+    overflow: hidden;
+
+    border: 1px solid #aaa;
+
+    background: #ddd;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+}
+
+
+.mini-ficha-imagen img {
+    display: block;
+
     width: 100%;
-    min-height: 82px;
-    margin: 0 0 30px;
-    padding: 12px 22px 18px 8px;
-    box-sizing: border-box;
-    border-bottom: 1px solid rgba(22, 58, 97, .20);
+    height: 100%;
+
+    object-fit: cover;
+
+    max-width: 100%;
+    max-height: 100%;
 }
 
-/* Línea decorativa única */
-.ventana-fichas .cabecera-fichas::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-    width: 110px;
-    height: 3px;
-    background: var(--ficha-dorado);
-}
 
-/* Título: sin márgenes que provoquen corrimientos */
-.ventana-fichas .cabecera-fichas .titulo-fichas {
-    order: 2;
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.mini-ficha-contenido {
     flex: 1 1 auto;
+
     min-width: 0;
-    margin: 0;
-    padding: 0 20px 0 78px;
-    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding-right: 22px;
 }
 
-/* Título principal */
-.ventana-fichas .cabecera-fichas #tituloFichas,
-.ventana-fichas .cabecera-fichas .titulo-fichas h2 {
-    margin: 0;
-    padding: 0;
-    color: #163a61;
-    font-family: "Cinzel", Georgia, serif;
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 1.2;
+
+.mini-ficha-id {
+    display: block;
+
+    font-size: 10px;
+    font-weight: bold;
+
     letter-spacing: .8px;
-    text-transform: none;
+
+    color: #666;
+
+    margin-bottom: 3px;
 }
 
-/* Subtítulo */
-.ventana-fichas .cabecera-fichas #subtituloFichas {
-    min-width: 0;
-    margin: 6px 0 0;
-    padding: 0;
-    color: #5c6470;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
+
+.mini-ficha-contenido h4 {
+    margin: 0 0 5px;
+
+    font-size: 14px;
+    line-height: 1.2;
+
+    color: #163a61;
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Botón volver: SOLO flecha, sin texto */
-.ventana-fichas .cabecera-fichas #barraVolver,
-.ventana-fichas .cabecera-fichas .btn-volver {
+
+.mini-ficha-tipo {
+    display: inline-block;
+
+    font-size: 11px;
+    line-height: 1.2;
+
+    color: #555;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   BOTÓN ELIMINAR
+========================================================= */
+
+.mini-ficha-eliminar {
     position: absolute;
-    left: 0;
-    top: 50%;
-    z-index: 20;
-    transform: translateY(-50%);
-    width: 58px;
-    min-width: 58px;
-    height: 42px;
-    margin: 0;
+
+    top: 6px;
+    right: 6px;
+
+    width: 22px;
+    height: 22px;
+
     padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #555;
+
+    font-size: 18px;
+    line-height: 22px;
+
+    cursor: pointer;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
-    border: 1px solid #294f73;
-    border-radius: 5px;
-    background: #163a61;
-    color: #fff;
-    font-size: 0;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(16, 45, 75, .20);
-    transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
-/* Flecha única y grande */
-.ventana-fichas .cabecera-fichas #barraVolver::before,
-.ventana-fichas .cabecera-fichas .btn-volver::before {
-    content: "←";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -58%);
-    color: #fff;
-    font-family: Arial, sans-serif;
-    font-size: 30px;
-    font-weight: 400;
-    line-height: 1;
-    margin: 0;
-    padding: 0;
-}
 
-/* No mostrar texto residual del botón */
-.ventana-fichas .cabecera-fichas #barraVolver *,
-.ventana-fichas .cabecera-fichas .btn-volver * {
-    display: none !important;
-}
+.mini-ficha-eliminar:hover {
+    color: #9b2c2c;
 
-/* Hover sin desplazarlo */
-.ventana-fichas .cabecera-fichas #barraVolver:hover,
-.ventana-fichas .cabecera-fichas .btn-volver:hover {
-    background: #294f73;
-    transform: translateY(-50%);
-    box-shadow: 0 4px 10px rgba(16, 45, 75, .28);
-}
-
-/* Nueva ficha: separado del título */
-.ventana-fichas #nuevaFicha {
-    order: 3;
-    flex: 0 0 auto;
-    margin-left: 18px;
-}
-
-/* Evita que el título choque con Nueva ficha */
-@media (min-width: 801px) {
-    .ventana-fichas .cabecera-fichas .titulo-fichas {
-        max-width: calc(100% - 260px);
-    }
-}
-
-/* En pantallas chicas, mantener flecha compacta y legible */
-@media (max-width: 850px) {
-    .ventana-fichas .cabecera-fichas .titulo-fichas {
-        padding-left: 70px;
-        max-width: calc(100% - 150px);
-    }
-
-    .ventana-fichas .cabecera-fichas #barraVolver,
-    .ventana-fichas .cabecera-fichas .btn-volver {
-        width: 56px;
-        min-width: 56px;
-        height: 40px;
-    }
-
-    .ventana-fichas .cabecera-fichas #barraVolver::before,
-    .ventana-fichas .cabecera-fichas .btn-volver::before {
-        font-size: 28px;
-    }
-}
-
-@media (max-width: 600px) {
-    .ventana-fichas .cabecera-fichas {
-        min-height: 78px;
-        padding-right: 10px;
-    }
-
-    .ventana-fichas .cabecera-fichas .titulo-fichas {
-        padding-left: 66px;
-        max-width: calc(100% - 110px);
-    }
-
-    .ventana-fichas .cabecera-fichas #tituloFichas,
-    .ventana-fichas .cabecera-fichas .titulo-fichas h2 {
-        font-size: 20px;
-    }
-
-    .ventana-fichas .cabecera-fichas #barraVolver,
-    .ventana-fichas .cabecera-fichas .btn-volver {
-        width: 52px;
-        min-width: 52px;
-        height: 38px;
-    }
-
-    .ventana-fichas .cabecera-fichas #barraVolver::before,
-    .ventana-fichas .cabecera-fichas .btn-volver::before {
-        font-size: 26px;
-    }
-
-    .ventana-fichas #nuevaFicha {
-        margin-left: 8px;
-    }
+    transform: scale(1.1);
 }
 
 
 /* =========================================================
-   ENCABEZADO FICHAS
-   CORRECCIÓN DEFINITIVA
+   MENSAJE SIN RELACIONES
 ========================================================= */
 
-.ventana-fichas .cabecera-fichas {
+.lista-relaciones-ficha .sin-relaciones {
+    display: block;
 
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
+    grid-column: 1 / -1;
 
-    width: 100% !important;
+    padding: 12px;
 
-    margin: 0 0 30px 0 !important;
-    padding: 0 0 18px 0 !important;
+    text-align: center;
 
-    box-sizing: border-box !important;
-
-    position: relative !important;
-
-    border-bottom: 1px solid rgba(22, 58, 97, .20) !important;
-
-    gap: 20px !important;
-}
-
-
-/* Línea dorada exactamente como MENÚS */
-.ventana-fichas .cabecera-fichas::after {
-
-    content: "" !important;
-
-    position: absolute !important;
-
-    left: 0 !important;
-    bottom: -2px !important;
-
-    width: 110px !important;
-    height: 3px !important;
-
-    background: #c5a46d !important;
-
-    transform: none !important;
-}
-
-
-/* =========================================================
-   BLOQUE DEL TÍTULO
-========================================================= */
-
-.ventana-fichas .cabecera-fichas .titulo-fichas {
-
-    flex: 1 1 auto !important;
-
-    min-width: 0 !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    position: static !important;
-
-    transform: none !important;
-}
-
-
-/* =========================================================
-   TÍTULO "GESTIÓN DE FICHAS"
-   IDÉNTICO AL DE MENÚS
-========================================================= */
-
-.ventana-fichas #tituloFichas {
-
-    display: block !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    color: #163A61 !important;
-
-    font-family: "Cinzel", Georgia, serif !important;
-
-    font-size: 28px !important;
-    font-weight: 600 !important;
-
-    line-height: 1.2 !important;
-
-    letter-spacing: .8px !important;
-
-    text-align: left !important;
-
-    position: static !important;
-
-    transform: none !important;
-}
-
-
-/* =========================================================
-   SUBTÍTULO
-========================================================= */
-
-.ventana-fichas #subtituloFichas {
-
-    margin: 5px 0 0 0 !important;
-    padding: 0 !important;
-
-    color: #5c6470 !important;
-
-    font-family: "Courier New", monospace !important;
-
-    font-size: 10px !important;
-
-    line-height: 1.3 !important;
-
-    letter-spacing: 1.2px !important;
-
-    text-transform: uppercase !important;
-
-    text-align: left !important;
-}
-
-
-/* =========================================================
-   NUEVA FICHA
-========================================================= */
-
-.ventana-fichas #nuevaFicha {
-
-    flex: 0 0 auto !important;
-
-    display: flex !important;
-
-    align-items: center !important;
-    justify-content: center !important;
-
-    margin: 0 0 0 auto !important;
-
-    padding: 11px 20px !important;
-
-    min-width: 0 !important;
-    min-height: 42px !important;
-
-    box-sizing: border-box !important;
-
-    background: #163A61 !important;
-
-    color: #ffffff !important;
-
-    border: 1px solid #102d4b !important;
-
-    border-radius: 6px !important;
-
-    font-family: Arial, sans-serif !important;
-
-    font-size: 14px !important;
-    font-weight: 600 !important;
-
-    line-height: 1.2 !important;
-
-    letter-spacing: .3px !important;
-
-    white-space: nowrap !important;
-
-    cursor: pointer !important;
-
-    box-shadow:
-        0 3px 7px rgba(16, 45, 75, .18) !important;
-
-    transform: none;
-}
-
-
-/* Hover */
-.ventana-fichas #nuevaFicha:hover {
-
-    background: #355d80 !important;
-
-    transform: translateY(-2px) !important;
-
-    box-shadow:
-        0 6px 12px rgba(16, 45, 75, .22) !important;
-}
-
-
-/* =========================================================
-   BOTÓN VOLVER
-   ESTE ES EL QUE SE USA EN "VER FICHAS"
-========================================================= */
-
-.ventana-fichas #barraVolver {
-
-    flex: 0 0 auto !important;
-
-    display: none;
-
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: 46px !important;
-    height: 42px !important;
-
-    margin: 0 0 0 auto !important;
-    padding: 0 !important;
-
-    box-sizing: border-box !important;
-
-    background: #163A61 !important;
-
-    color: #ffffff !important;
-
-    border: 1px solid #102d4b !important;
-
-    border-radius: 6px !important;
-
-    font-family: Arial, sans-serif !important;
-
-    font-size: 27px !important;
-    font-weight: 400 !important;
-
-    line-height: 1 !important;
-
-    cursor: pointer !important;
-
-    box-shadow:
-        0 3px 7px rgba(16, 45, 75, .18) !important;
-
-    transform: none !important;
-}
-
-
-/* Cuando JS lo muestra */
-.ventana-fichas #barraVolver:hover {
-
-    background: #355d80 !important;
-
-    transform: translateY(-2px) !important;
-
-    box-shadow:
-        0 6px 12px rgba(16, 45, 75, .22) !important;
-}
-
-
-/* =========================================================
-   MUY IMPORTANTE
-   CUANDO ESTAMOS EN "VER FICHAS":
-
-   No dejar que la flecha ocupe el lugar del título
-   ni que desplace Gestión de Fichas.
-========================================================= */
-
-.ventana-fichas #barraVolver[style*="display: block"],
-.ventana-fichas #barraVolver[style*="display:flex"],
-.ventana-fichas #barraVolver[style*="display: flex"] {
-
-    display: flex !important;
-}
-
-
-/* =========================================================
-   EVITAR QUE REGLAS GENERALES DE BOTONES
-   MUEVAN LA FLECHA
-========================================================= */
-
-.ventana-fichas .cabecera-fichas .btn-ver {
-
-    position: static !important;
-
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-
-    transform: none !important;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 600px) {
-
-    .ventana-fichas .cabecera-fichas {
-
-        flex-direction: column !important;
-
-        align-items: stretch !important;
-
-        gap: 14px !important;
-    }
-
-
-    .ventana-fichas .cabecera-fichas .titulo-fichas {
-
-        width: 100% !important;
-    }
-
-
-    .ventana-fichas #nuevaFicha {
-
-        width: 100% !important;
-
-        margin: 0 !important;
-    }
-
-
-    .ventana-fichas #barraVolver {
-
-        width: 100% !important;
-
-        margin: 0 !important;
-    }
-}
-
-.ventana-fichas .sin-relaciones {
-    font-family: "Courier New", Courier, monospace;
     font-size: 13px;
-    font-style: italic;
-    font-weight: 400;
+
     color: #777;
-}
-/* =========================================================
-   MODALES — SIEMPRE POR ENCIMA DE LA VENTANA
-========================================================= */
 
-.ventana-fichas .modal {
-    position: fixed;
-    inset: 0;
+    border: 1px dashed #aaa;
 
-    z-index: 99999 !important;
-}
-
-/* =========================================================
-   ESTÉTICA DE CARTELES EMERGENTES DE FICHAS
-   SOLO ESTÉTICA — NO MODIFICA SCROLL NI ESTRUCTURA
-========================================================= */
-
-
-/* =========================================================
-   AVISO
-========================================================= */
-
-.ventana-fichas #modalMensajeFicha .modal-contenido {
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 5px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .35),
-        0 4px 10px rgba(0, 0, 0, .18);
+    background: rgba(0,0,0,.03);
 }
 
 
-.ventana-fichas #modalMensajeFicha .modal-contenido::before {
-
-    content: "EXPEDIENTE · AVISO";
-
-    display: block;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #244b6d 0%,
-            #2d587b 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-
-    font-weight: bold;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-}
-
-
-.ventana-fichas #modalMensajeFicha #tituloMensaje {
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalMensajeFicha #textoMensaje {
-
-    color: #4b5660;
-
-    font-family: Georgia, serif;
-
-    line-height: 1.6;
-}
-
-
-.ventana-fichas #modalMensajeFicha .acciones-modal {
-
-    border-top: 1px solid #c8c2b2;
-}
-
-
-.ventana-fichas #modalMensajeFicha .acciones-modal button {
-
-    background: #315b7d;
-
-    color: white;
-
-    border: 1px solid #294d6a;
-
-    border-radius: 4px;
-
-    font-family: Arial, sans-serif;
-
-    font-weight: 700;
-}
-
-
-.ventana-fichas #modalMensajeFicha .acciones-modal button:hover {
-
-    background: #274c69;
-}
-
-
-/* =========================================================
-   ELIMINAR FICHA
-========================================================= */
-
-.ventana-fichas #modalEliminarFicha .modal-contenido {
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 5px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .35),
-        0 4px 10px rgba(0, 0, 0, .18);
-}
-
-
-.ventana-fichas #modalEliminarFicha .modal-contenido::before {
-
-    content: "EXPEDIENTE · ELIMINACIÓN DE FICHA";
-
-    display: block;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #244b6d 0%,
-            #2d587b 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-
-    font-weight: bold;
-
-    letter-spacing: 1.7px;
-
-    text-transform: uppercase;
-}
-
-
-.ventana-fichas #modalEliminarFicha h3 {
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalEliminarFicha #mensajeEliminarFicha {
-
-    color: #4b5660;
-
-    font-family: Georgia, serif;
-
-    line-height: 1.6;
-}
-
-
-.ventana-fichas #modalEliminarFicha .acciones-modal {
-
-    border-top: 1px solid #c8c2b2;
-}
-
-
-.ventana-fichas #modalEliminarFicha .btn-eliminar {
-
-    background: #6f3a3a;
-
-    color: white;
-
-    border: 1px solid #5b2e2e;
-
-    border-radius: 4px;
-
-    font-weight: 700;
-}
-
-
-.ventana-fichas #modalEliminarFicha .btn-eliminar:hover {
-
-    background: #592d2d;
-}
-
-
-.ventana-fichas #modalEliminarFicha
-.acciones-modal button:not(.btn-eliminar) {
-
-    background: #d5dce1;
-
-    color: #3f5365;
-
-    border: 1px solid #aab6bf;
-}
-
-
-/* =========================================================
-   BOTONES CERRAR DE LOS CARTELES
-========================================================= */
-
-
-
-/* =========================================================
-   MODALES EMERGENTES — FICHAS
-   Misma estética que los modales de MENÚ
-   ========================================================= */
-
-
-/* ---------------------------------------------------------
-   CAPA GENERAL DE LOS MODALES
---------------------------------------------------------- */
-
-.ventana-fichas .modal {
-
-    position: fixed;
-
-    inset: 0;
-
-    display: none;
-
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
-
-    box-sizing: border-box;
-
-    background: rgba(10, 25, 40, .68);
-
-    backdrop-filter: blur(3px);
-
-    z-index: 200000;
-}
-
-
-/* =========================================================
-   MODAL SELECCIONAR TIPO
-========================================================= */
-
-.ventana-fichas #modalTipoFicha {
-
-    z-index: 200001;
-}
-
-
-.ventana-fichas #modalTipoFicha .modal-contenido {
-
-    position: relative;
-
-    width: 430px;
-    max-width: 92vw;
-
-    max-height: 85vh;
-
-    box-sizing: border-box;
-
-    padding: 0;
-
-    overflow: visible;
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 20px 45px rgba(0, 0, 0, .30),
-        0 4px 10px rgba(0, 0, 0, .18);
-
-    animation: expedienteModalFicha .25s ease;
-}
-
-
-/* CABECERA */
-
-.ventana-fichas #modalTipoFicha .modal-contenido::before {
-
-    content: "EXPEDIENTE · TIPO DE FICHA";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #163a61 0%,
-            #294f70 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.8px;
-
-    text-transform: uppercase;
-}
-
-
-/* TÍTULO */
-
-.ventana-fichas #modalTipoFicha .modal-contenido h3 {
-
-    margin: 0;
-
-    padding: 20px 55px 13px 28px;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-size: 21px;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalTipoFicha .modal-contenido h3::after {
-
-    content: "";
-
-    display: block;
-
-    width: 42px;
-    height: 3px;
-
-    margin-top: 8px;
-
-    background: #c5a46d;
-}
-
-
-/* CONTENIDO */
-
-.ventana-fichas #modalTipoFicha .modal-contenido label {
-
-    display: block;
-
-    margin: 20px 28px 7px;
-
-    color: #43586b;
-
-    font-family: Arial, sans-serif;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.1px;
-
-    text-transform: uppercase;
-}
-
-
-.ventana-fichas #modalTipoFicha #tipoFicha {
-
-    display: block;
-
-    width: calc(100% - 56px);
-
-    margin: 0 28px 26px;
-
-    padding: 11px 13px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #b5bdc4;
-
-    border-radius: 4px;
-
-    background: #fbfaf5;
-
-    color: #263d52;
-
-    font-size: 14px;
-
-    outline: none;
-}
-
-
-/* =========================================================
-   MODAL NUEVA / EDITAR FICHA
-========================================================= */
-
-.ventana-fichas #modalFicha {
-
-    z-index: 200002;
-}
-
-
-.ventana-fichas #modalFicha .modal-ficha-contenido {
-
-    position: relative;
-
-    width: 720px;
-    max-width: 94vw;
-
-    max-height: 88vh;
-
-    box-sizing: border-box;
-
-    padding: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .32),
-        0 4px 10px rgba(0, 0, 0, .18);
-
-    animation: expedienteModalFicha .25s ease;
-}
-
-
-/* CABECERA */
-
-.ventana-fichas #modalFicha .modal-ficha-contenido::before {
-
-    content: "EXPEDIENTE · REGISTRO DE FICHA";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    padding: 11px 30px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #163a61 0%,
-            #294f70 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.8px;
-
-    text-transform: uppercase;
-}
-
-
-/* TÍTULO */
-
-.ventana-fichas #modalFicha #tituloModalFicha {
-
-    margin: 0;
-
-    padding: 20px 65px 14px 30px;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-size: 23px;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalFicha #tituloModalFicha::after {
-
-    content: "";
-
-    display: block;
-
-    width: 48px;
-    height: 3px;
-
-    margin-top: 9px;
-
-    background: #c5a46d;
-}
-
-
-/* =========================================================
-   CRUZ DE CIERRE
-========================================================= */
-
-/* =========================================================
-   MODAL VISTA DE FICHA
-========================================================= */
-
-.ventana-fichas #modalVistaFicha {
-
-    z-index: 200003;
-}
-
-
-.ventana-fichas #modalVistaFicha .modal-contenido {
-
-    position: relative;
-
-    width: 700px;
-    max-width: 94vw;
-
-    max-height: 88vh;
-
-    box-sizing: border-box;
-
-    padding: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background:
-        linear-gradient(
-            rgba(245, 240, 225, .99),
-            rgba(239, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 20px 50px rgba(20, 40, 60, .30),
-        0 4px 10px rgba(20, 40, 60, .18);
-
-    animation: expedienteModalFicha .25s ease;
-}
-
-
-
-/* =========================================================
-   MODAL ELIMINAR
-========================================================= */
-
-.ventana-fichas #modalEliminarFicha {
-
-    z-index: 200004;
-}
-
-
-.ventana-fichas #modalEliminarFicha .modal-contenido {
-
-    position: relative;
-
-    width: 440px;
-    max-width: 92vw;
-
-    box-sizing: border-box;
-
-    padding: 0;
-
-    overflow: visible;
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .35),
-        0 4px 10px rgba(0, 0, 0, .18);
-
-    animation: expedienteModalFicha .25s ease;
-}
-
-
-/* CABECERA */
-
-.ventana-fichas #modalEliminarFicha .modal-contenido::before {
-
-    content: "EXPEDIENTE · ELIMINACIÓN DE FICHA";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #163a61 0%,
-            #294f70 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.5px;
-}
-
-
-/* TÍTULO */
-
-.ventana-fichas #modalEliminarFicha h3 {
-
-    margin: 0;
-
-    padding: 21px 60px 13px 28px;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-size: 22px;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalEliminarFicha h3::after {
-
-    content: "";
-
-    display: block;
-
-    width: 44px;
-    height: 3px;
-
-    margin-top: 8px;
-
-    background: #c5a46d;
-}
-
-
-/* TEXTO */
-
-.ventana-fichas #modalEliminarFicha #mensajeEliminarFicha {
-
-    margin: 0;
-
-    padding: 20px 28px 15px;
-
-    color: #4b5660;
-
-    font-family: Georgia, serif;
-
-    font-size: 14px;
-
-    line-height: 1.6;
-}
-
-
-/* =========================================================
-   MODAL MENSAJE
-========================================================= */
-
-.ventana-fichas #modalMensajeFicha {
-
-    z-index: 200005;
-}
-
-
-.ventana-fichas #modalMensajeFicha .modal-contenido {
-
-    position: relative;
-
-    width: 430px;
-    max-width: 92vw;
-
-    box-sizing: border-box;
-
-    padding: 0;
-
-    overflow: visible;
-
-    background:
-        linear-gradient(
-            rgba(247, 243, 230, .99),
-            rgba(238, 233, 215, .99)
-        );
-
-    border: 1px solid #8b9aaa;
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, .35),
-        0 4px 10px rgba(0, 0, 0, .18);
-
-    animation: expedienteModalFicha .25s ease;
-}
-
-
-/* CABECERA */
-
-.ventana-fichas #modalMensajeFicha .modal-contenido::before {
-
-    content: "EXPEDIENTE · AVISO";
-
-    display: block;
-
-    box-sizing: border-box;
-
-    padding: 11px 28px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #163a61 0%,
-            #294f70 70%,
-            #315e81 100%
-        );
-
-    border-bottom: 4px solid #c5a46d;
-
-    color: #eef3f7;
-
-    font-family: "Courier New", monospace;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-}
-
-
-/* TÍTULO */
-
-.ventana-fichas #modalMensajeFicha #tituloMensaje {
-
-    margin: 0;
-
-    padding: 21px 60px 13px 28px;
-
-    color: #294f73;
-
-    font-family: "Cinzel", Georgia, serif;
-
-    font-size: 22px;
-
-    font-weight: 700;
-
-    border-bottom: 1px solid #c7c0ad;
-}
-
-
-.ventana-fichas #modalMensajeFicha #tituloMensaje::after {
-
-    content: "";
-
-    display: block;
-
-    width: 45px;
-    height: 3px;
-
-    margin-top: 8px;
-
-    background: #c5a46d;
-}
-
-
-/* TEXTO */
-
-.ventana-fichas #modalMensajeFicha #textoMensaje {
-
-    margin: 0;
-
-    padding: 20px 28px 15px;
-
-    color: #4b5660;
-
-    font-family: Georgia, serif;
-
-    font-size: 14px;
-
-    line-height: 1.6;
-}
-
-
-/* =========================================================
-   BOTONES DE LOS CARTELES
-========================================================= */
-
-.ventana-fichas .acciones-modal {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    align-items: center;
-
-    gap: 10px;
-
-    margin: 0 28px 22px;
-
-    padding-top: 16px;
-
-    border-top: 1px solid #c8c2b2;
-}
-
-
-.ventana-fichas .acciones-modal button {
-
-    min-width: 105px;
-
-    padding: 10px 17px;
-
-    border: 1px solid #294d6a;
-
-    border-radius: 4px;
-
-    background: #315b7d;
-
-    color: #ffffff;
-
-    font-family: Arial, sans-serif;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition: .2s ease;
-}
-
-
-.ventana-fichas .acciones-modal button:hover {
-
-    background: #274c69;
-
-    transform: translateY(-1px);
-}
-/* =========================================================
-   ANIMACIÓN
-========================================================= */
-
-@keyframes expedienteModalFicha {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            translateY(-12px)
-            scale(.985);
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-            translateY(0)
-            scale(1);
-    }
-}
 /* =========================================================
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
 
-    .ventana-fichas .modal {
-
-        padding: 12px;
+    .lista-relaciones-ficha {
+        grid-template-columns:
+            repeat(
+                auto-fill,
+                minmax(200px, 1fr)
+            );
     }
 
+}
 
-    .ventana-fichas #modalFicha .modal-ficha-contenido,
-    .ventana-fichas #modalVistaFicha .modal-contenido {
 
-        width: 100%;
-        max-width: 100%;
+@media (max-width: 480px) {
 
-        max-height: 94vh;
+    .lista-relaciones-ficha {
+        grid-template-columns: 1fr;
     }
 
+}
 
-    .ventana-fichas #modalTipoFicha .modal-contenido,
-    .ventana-fichas #modalEliminarFicha .modal-contenido,
-    .ventana-fichas #modalMensajeFicha .modal-contenido {
+ /* =========================================================
+    FICHAS RELACIONADAS — VISTA PREVIA
+ ========================================================= */
 
-        width: 100%;
-        max-width: 100%;
+#vistaRelacionesFicha.lista-relaciones-ficha {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(230px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin-top: 12px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MINI FICHA EN VISTA PREVIA
+========================================================= */
+
+#vistaRelacionesFicha .relacion-vista {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    min-height: 95px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 10px;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.96),
+            rgba(232,228,216,.96)
+        );
+
+    border: 1px solid #b7b0a2;
+    border-left: 4px solid #163a61;
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.15);
+}
+
+
+/* =========================================================
+   IMAGEN DE LA RELACIÓN
+========================================================= */
+
+#vistaRelacionesFicha .relacion-vista-imagen {
+    flex: 0 0 72px;
+
+    width: 72px;
+    height: 72px;
+
+    overflow: hidden;
+
+    border: 1px solid #aaa;
+
+    background: #ddd;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+}
+
+
+#vistaRelacionesFicha .relacion-vista-imagen img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    max-width: 100%;
+    max-height: 100%;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+#vistaRelacionesFicha .relacion-vista-contenido {
+    flex: 1 1 auto;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding-right: 5px;
+}
+
+
+#vistaRelacionesFicha .relacion-vista-id {
+    display: block;
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: .8px;
+
+    color: #666;
+
+    margin-bottom: 3px;
+}
+
+
+#vistaRelacionesFicha .relacion-vista-contenido strong {
+    display: block;
+
+    font-size: 14px;
+    line-height: 1.2;
+
+    color: #163a61;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+#vistaRelacionesFicha .relacion-vista-tipo {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 11px;
+    line-height: 1.2;
+
+    color: #555;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   SIN RELACIONES
+========================================================= */
+
+#vistaRelacionesFicha .sin-relaciones {
+    grid-column: 1 / -1;
+
+    display: block;
+
+    padding: 12px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    color: #777;
+
+    border: 1px dashed #aaa;
+
+    background: rgba(0,0,0,.03);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    #vistaRelacionesFicha.lista-relaciones-ficha {
+        grid-template-columns:
+            repeat(
+                auto-fill,
+                minmax(200px, 1fr)
+            );
     }
+
+}
+
+
+@media (max-width: 480px) {
+
+    #vistaRelacionesFicha.lista-relaciones-ficha {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* =========================================================
+   FICHAS DESACTIVADAS
+   BLANCO Y NEGRO
+========================================================= */
+
+article.ficha-tarjeta.ficha-desactivada {
+    filter: grayscale(100%) !important;
+}
+
+
+/* Imagen */
+
+article.ficha-tarjeta.ficha-desactivada
+.ficha-imagen img {
+    filter: grayscale(100%) !important;
+}
+
+
+/* Evita que algún hover vuelva a colorearla */
+
+article.ficha-tarjeta.ficha-desactivada:hover {
+    filter: grayscale(100%) !important;
+}
+
+/* =========================================================
+   MINI FICHA RELACIONADA DESACTIVADA
+========================================================= */
+
+.mini-ficha-relacion.mini-ficha-desactivada {
+    filter: grayscale(100%);
+    opacity: 0.65;
+}
+
+
+/* Imagen */
+
+.mini-ficha-relacion.mini-ficha-desactivada
+.mini-ficha-imagen img {
+    filter: grayscale(100%);
+}
+
+
+/* Mantener la cruz visible */
+
+.mini-ficha-relacion.mini-ficha-desactivada
+.mini-ficha-eliminar {
+    filter: grayscale(100%);
+}
+
+
+/* =========================================================
+   MINI FICHA RELACIONADA DESACTIVADA
+   VISTA PREVIA
+========================================================= */
+
+#vistaRelacionesFicha
+.relacion-vista.relacion-vista-desactivada {
+    filter: grayscale(100%);
+    opacity: 0.65;
+}
+
+
+/* Imagen */
+
+#vistaRelacionesFicha
+.relacion-vista.relacion-vista-desactivada
+.relacion-vista-imagen img {
+    filter: grayscale(100%);
 }

@@ -1,14 +1,18 @@
+
 <section id="moduloPlantillas" class="ventana ventana-plantillas">
 
-    <div class="cabecera-plantillas">
+    <!-- =====================================================
+         ENCABEZADO
+    ====================================================== -->
 
+    <div class="cabecera-plantillas">
 
         <h2 class="titulo-plantillas">
             Gestión de Plantillas
         </h2>
 
-
         <button
+                type="button"
                 id="nuevaPlantilla"
                 class="btn-nueva-plantilla">
 
@@ -16,13 +20,12 @@
 
         </button>
 
-
     </div>
 
 
-    <!-- ===========================
-         LISTADO
-    ============================ -->
+    <!-- =====================================================
+         LISTADO DE PLANTILLAS
+    ====================================================== -->
 
     <div
             id="gridPlantillas"
@@ -30,10 +33,9 @@
     </div>
 
 
-
-    <!-- ===========================
-         MODAL PLANTILLA
-    ============================ -->
+    <!-- =====================================================
+         MODAL NUEVA / EDITAR PLANTILLA
+    ====================================================== -->
 
     <div
             id="modalPlantilla"
@@ -42,53 +44,45 @@
         <div class="contenido-modal-plantilla">
 
             <button
+                    type="button"
                     class="cerrar-modal-plantilla"
-                    onclick="cerrarModalPlantilla()">
+                    onclick="cerrarModalPlantilla()"
+                    aria-label="Cerrar">
 
                 ✖
 
             </button>
 
+
             <h2 id="tituloModalPlantilla">
-
                 Nueva plantilla
-
             </h2>
 
 
-
-            <!-- ===========================
-                 DATOS GENERALES
-            ============================ -->
+            <!-- DATOS GENERALES -->
 
             <fieldset class="grupo-plantilla">
 
                 <legend>
-
                     Datos generales
-
                 </legend>
 
-                <label>
-
+                <label for="nombrePlantilla">
                     Nombre
-
                 </label>
 
                 <input
                         type="text"
                         id="nombrePlantilla">
 
-                <label>
 
+                <label for="descripcionPlantilla">
                     Descripción
-
                 </label>
 
                 <textarea
-                        id="descripcionPlantilla">
+                        id="descripcionPlantilla"></textarea>
 
-                </textarea>
 
                 <label class="checkbox-plantilla">
 
@@ -104,45 +98,34 @@
             </fieldset>
 
 
-
-            <!-- ===========================
-                 INTERFAZ
-            ============================ -->
+            <!-- CONFIGURACIÓN DE INTERFAZ -->
 
             <fieldset class="grupo-plantilla">
 
                 <legend>
-
                     Configuración de la interfaz
-
                 </legend>
 
-                <label>
 
+                <label for="vistaPlantilla">
                     Vista
-
                 </label>
 
                 <select id="vistaPlantilla">
 
                     <option value="grid">
-
                         Grid
-
                     </option>
 
                     <option value="lista">
-
                         Lista
-
                     </option>
 
                 </select>
 
-                <label>
 
+                <label for="columnasPlantilla">
                     Columnas
-
                 </label>
 
                 <input
@@ -151,6 +134,7 @@
                         min="1"
                         max="6"
                         value="4">
+
 
                 <label class="checkbox-plantilla">
 
@@ -162,6 +146,7 @@
                     Mostrar imagen
 
                 </label>
+
 
                 <label class="checkbox-plantilla">
 
@@ -177,18 +162,14 @@
             </fieldset>
 
 
-
-            <!-- ===========================
-                 CAMPOS
-            ============================ -->
+            <!-- CAMPOS DE LA FICHA -->
 
             <fieldset class="grupo-plantilla">
 
                 <legend>
-
                     Campos de la ficha
-
                 </legend>
+
 
                 <button
                         type="button"
@@ -199,39 +180,36 @@
 
                 </button>
 
+
                 <div
                         id="listaCamposPlantilla"
                         class="lista-campos-plantilla">
-
                 </div>
 
             </fieldset>
 
 
-
-            <!-- ===========================
-                 VISTA PREVIA
-            ============================ -->
+            <!-- VISTA PREVIA -->
 
             <fieldset class="grupo-plantilla">
 
                 <legend>
-
                     Vista previa
-
                 </legend>
+
 
                 <div
                         id="vistaPreviaPlantilla"
                         class="preview-plantilla">
-
                 </div>
 
             </fieldset>
 
 
+            <!-- GUARDAR -->
 
             <button
+                    type="button"
                     id="btnGuardarPlantilla"
                     class="btn-guardar-plantilla">
 
@@ -244,31 +222,34 @@
     </div>
 
 
-
-    <!-- ===========================
-         MODAL CAMPO
-    ============================ -->
+    <!-- =====================================================
+         MODAL NUEVO / EDITAR CAMPO
+    ====================================================== -->
 
     <div
             id="modalCampoPlantilla"
             class="modal-plantilla">
 
+        <div class="contenido-modal-plantilla-pequeno">
 
-        <div
-                class="contenido-modal-plantilla-pequeno">
+            <button
+                    type="button"
+                    class="cerrar-modal-plantilla"
+                    onclick="cerrarCampoPlantilla()"
+                    aria-label="Cerrar">
+
+                ✖
+
+            </button>
 
 
             <h2>
-
                 Nuevo campo
-
             </h2>
 
 
-            <label>
-
+            <label for="etiquetaCampo">
                 Etiqueta
-
             </label>
 
             <input
@@ -276,11 +257,8 @@
                     type="text">
 
 
-
-            <label>
-
+            <label for="nombreCampo">
                 Nombre interno
-
             </label>
 
             <input
@@ -288,13 +266,9 @@
                     type="text">
 
 
-
-            <label>
-
+            <label for="tipoCampo">
                 Tipo
-
             </label>
-
 
             <select id="tipoCampo">
 
@@ -315,7 +289,7 @@
                 </option>
 
                 <option value="checkbox">
-                    checkbox
+                    Checkbox
                 </option>
 
             </select>
@@ -332,6 +306,7 @@
 
             </label>
 
+
             <label class="checkbox-plantilla">
 
                 <input
@@ -342,6 +317,7 @@
                 Mostrar en vista previa
 
             </label>
+
 
             <label class="checkbox-plantilla">
 
@@ -355,11 +331,10 @@
             </label>
 
 
-
             <div class="acciones-modal-plantilla">
 
-
                 <button
+                        type="button"
                         id="btnGuardarCampo"
                         class="btn-guardar-plantilla">
 
@@ -369,33 +344,40 @@
 
 
                 <button
-                        onclick="cerrarCampoPlantilla()"
-                        class="btn-cancelar-plantilla">
+                        type="button"
+                        class="btn-cancelar-plantilla"
+                        onclick="cerrarCampoPlantilla()">
 
                     Cancelar
 
                 </button>
 
-
             </div>
 
-
         </div>
-
 
     </div>
 
 
-
-
-    <!-- MODAL ELIMINAR CAMPO -->
+    <!-- =====================================================
+         MODAL CONFIRMAR ELIMINACIÓN DE CAMPO
+    ====================================================== -->
 
     <div
             id="modalEliminarCampo"
             class="modal-plantilla">
 
-
         <div class="contenido-modal-confirmacion">
+
+            <button
+                    type="button"
+                    class="cerrar-modal-plantilla"
+                    onclick="cerrarEliminarCampoPlantilla()"
+                    aria-label="Cerrar">
+
+                ✖
+
+            </button>
 
 
             <h3>
@@ -410,8 +392,8 @@
 
             <div class="acciones-modal-plantilla">
 
-
                 <button
+                        type="button"
                         class="btn-cancelar-plantilla"
                         onclick="cerrarEliminarCampoPlantilla()">
 
@@ -420,8 +402,8 @@
                 </button>
 
 
-
                 <button
+                        type="button"
                         class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarCampo()">
 
@@ -429,29 +411,28 @@
 
                 </button>
 
-
             </div>
 
-
         </div>
-
 
     </div>
 
 
-    <!-- MODAL VISTA PREVIA PLANTILLA -->
+    <!-- =====================================================
+         MODAL VISTA PREVIA
+    ====================================================== -->
 
     <div
             id="modalVistaPlantilla"
             class="modal-plantilla">
 
-
         <div class="contenido-modal-preview">
 
-
             <button
+                    type="button"
                     class="cerrar-preview-plantilla"
-                    onclick="cerrarPreviewPlantilla()">
+                    onclick="cerrarPreviewPlantilla()"
+                    aria-label="Cerrar">
 
                 ✖
 
@@ -463,25 +444,34 @@
             </h2>
 
 
-
             <div id="contenidoVistaPlantilla">
-
-
             </div>
 
-
         </div>
-
 
     </div>
 
 
+    <!-- =====================================================
+         MODAL ELIMINAR PLANTILLA
+    ====================================================== -->
 
-    <!-- MODAL ELIMINAR PLANTILLA -->
-
-    <div id="modalEliminarPlantilla" class="modal-plantilla">
+    <div
+            id="modalEliminarPlantilla"
+            class="modal-plantilla">
 
         <div class="contenido-modal-eliminar-plantilla">
+
+            <button
+                    type="button"
+                    class="cerrar-modal-plantilla"
+                    onclick="cerrarEliminarPlantilla()"
+                    aria-label="Cerrar">
+
+                ✖
+
+            </button>
+
 
             <h2 class="titulo-plantillas">
                 Eliminar plantilla
@@ -496,6 +486,7 @@
             <div class="acciones-modal-plantilla">
 
                 <button
+                        type="button"
                         class="btn-cancelar-plantilla"
                         onclick="cerrarEliminarPlantilla()">
 
@@ -505,6 +496,7 @@
 
 
                 <button
+                        type="button"
                         class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarPlantilla()">
 
@@ -519,11 +511,26 @@
     </div>
 
 
-    <!-- MODAL MENSAJE -->
+    <!-- =====================================================
+         MODAL MENSAJE
+    ====================================================== -->
 
-    <div id="modalMensajePlantilla" class="modal-plantilla">
+    <div
+            id="modalMensajePlantilla"
+            class="modal-plantilla">
 
         <div class="contenido-modal-mensaje-plantilla">
+
+            <button
+                    type="button"
+                    class="cerrar-modal-plantilla"
+                    onclick="cerrarMensajePlantilla()"
+                    aria-label="Cerrar">
+
+                ✖
+
+            </button>
+
 
             <h2 id="tituloMensajePlantilla">
                 Aviso
@@ -536,6 +543,7 @@
             <div class="acciones-modal-plantilla">
 
                 <button
+                        type="button"
                         class="btn-aceptar-plantilla"
                         onclick="cerrarMensajePlantilla()">
 
@@ -550,3 +558,4 @@
     </div>
 
 </section>
+

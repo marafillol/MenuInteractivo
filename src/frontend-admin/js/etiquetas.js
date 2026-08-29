@@ -1,366 +1,496 @@
+// =========================================================
+// ETIQUETAS
+// Museo Malvinas
+// Gestión de etiquetas
+// Versión consolidada
+// =========================================================
+
 
 let etiquetaEliminar = null;
 
-async function cargarEtiquetas(){
 
+// =========================================================
+// CARGAR ETIQUETAS
+// =========================================================
 
-    const respuesta =
-    await window.fetchProtegido("/api/etiquetas");
+async function cargarEtiquetas() {
 
+    try {
 
-    const etiquetas =
-    await respuesta.json();
-    const esConsulta = window.usuarioActual?.rol === "consulta";
+        const respuesta =
+            await window.fetchProtegido("/api/etiquetas");
 
+        const etiquetas =
+            await respuesta.json();
 
+        const esConsulta =
+            window.usuarioActual?.rol === "consulta";
 
-    const contenedor =
-    document.getElementById("gridEtiquetas");
+        const contenedor =
+            document.getElementById("gridEtiquetas");
 
+        if (!contenedor) return;
 
+        contenedor.innerHTML = "";
 
+        etiquetas.forEach(etiqueta => {
 
-    contenedor.innerHTML = "";
+            contenedor.innerHTML += `
 
+                <div class="tarjeta-etiqueta ${etiqueta.activo ? "" : "etiqueta-inactiva"}">
 
+                    <div class="info-etiqueta">
 
-    etiquetas.forEach(etiqueta=>{
+                        <h3>
+                            ${etiqueta.nombre}
+                        </h3>
 
+                        <p>
+                            ${etiqueta.descripcion ?? ""}
+                        </p>
 
-        contenedor.innerHTML += `
+                    </div>
 
+                    <div class="acciones-etiqueta">
 
-        <div class="tarjeta-etiqueta">
+                        <button
+                            type="button"
+                            class="btn-vista-previa"
+                            onclick="vistaPreviaEtiqueta(${etiqueta.id_etiqueta})">
 
+                            Vista previa
 
-            <div class="info-etiqueta">
+                        </button>
 
+                        ${!esConsulta ? `
 
-                <h3>
-                    ${etiqueta.nombre}
-                </h3>
+                            <button
+                                type="button"
+                                class="btn-editar"
+                                onclick="editarEtiqueta(${etiqueta.id_etiqueta})">
 
+                                Editar
 
-                <p>
-                    ${etiqueta.descripcion ?? ""}
-                </p>
+                            </button>
 
+                            <button
+                                type="button"
+                                class="btn-eliminar"
+                                onclick="confirmarEliminarEtiqueta(
+                                    ${etiqueta.id_etiqueta},
+                                    '${String(etiqueta.nombre)
+                                        .replace(/'/g, "\\'")}'
+                                )">
 
-            </div>
+                                Eliminar
 
+                            </button>
 
+                        ` : ""}
 
-            <div class="acciones-etiqueta">
+                    </div>
 
+                </div>
 
-                <button
-                class="btn-vista-previa"
-                onclick="vistaPreviaEtiqueta(${etiqueta.id_etiqueta})">
+            `;
 
-                    Vista previa
+        });
 
-                </button>
+    } catch (error) {
 
+        console.error(
+            "Error al cargar etiquetas:",
+            error
+        );
 
-                ${!esConsulta ? `
-                    <button
-                    class="btn-editar"
-                    onclick="editarEtiqueta(${etiqueta.id_etiqueta})">
+        mostrarMensaje(
+            "Error",
+            "No se pudieron cargar las etiquetas."
+        );
 
-                        Editar
-
-                    </button>
-
-
-
-                    <button
-                    class="btn-eliminar"
-                    onclick="confirmarEliminarEtiqueta(${etiqueta.id_etiqueta},'${etiqueta.nombre}')">
-
-                        Eliminar
-
-                    </button>
-                ` : ""}
-
-
-            </div>
-
-
-        </div>
-
-
-        `;
-
-
-    });
-
+    }
 
 }
 
 
+// =========================================================
+// GUARDAR / EDITAR ETIQUETA
+// =========================================================
 
-
-
-async function guardarEtiqueta(){
-
+async function guardarEtiqueta() {
 
     const nombre =
-    document.getElementById("nombreEtiqueta").value.trim();
+        document
+            .getElementById("nombreEtiqueta")
+            ?.value
+            .trim();
 
-
-    if(nombre === ""){
+    if (!nombre) {
 
         mostrarMensaje(
             "Campo obligatorio",
             "Debe ingresar un nombre para la etiqueta."
         );
 
-        document.getElementById("nombreEtiqueta").focus();
+        document
+            .getElementById("nombreEtiqueta")
+            ?.focus();
 
         return;
-
     }
 
 
     const datos = {
 
-        nombre: nombre,
+        nombre,
 
         descripcion:
-        document.getElementById("descripcionEtiqueta").value.trim(),
+            document
+                .getElementById("descripcionEtiqueta")
+                ?.value
+                .trim() || "",
 
         activo:
-        document.getElementById("activoEtiqueta").checked ? 1 : 0
+            document
+                .getElementById("activoEtiqueta")
+                ?.checked
+                ? 1
+                : 0
 
     };
 
 
-
-    let url="/api/etiquetas";
-
-    let metodo="POST";
+    let url = "/api/etiquetas";
+    let metodo = "POST";
 
 
+    if (window.etiquetaEditando) {
 
-    if(window.etiquetaEditando){
+        url += `/${window.etiquetaEditando}`;
 
-
-        url += "/" + window.etiquetaEditando;
-
-        metodo="PUT";
-
+        metodo = "PUT";
 
     }
 
 
+    try {
 
-    await window.fetchProtegido(url,{
+        const respuesta =
+            await window.fetchProtegido(
+                url,
+                {
+                    method: metodo,
 
-        method:metodo,
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-        headers:{
-
-            "Content-Type":"application/json"
-
-        },
-
-        body:
-
-        JSON.stringify(datos)
-
-    });
+                    body:
+                        JSON.stringify(datos)
+                }
+            );
 
 
+        const resultado =
+            await respuesta.json().catch(() => ({}));
 
-    limpiarFormularioEtiqueta();
 
-    document
-    .getElementById("modalEtiqueta")
-    .style.display="none";
+        if (!respuesta.ok) {
 
-    cargarEtiquetas();
+            mostrarMensaje(
+                "Error",
+                resultado.error ||
+                "No se pudo guardar la etiqueta."
+            );
 
+            return;
+        }
+
+
+        limpiarFormularioEtiqueta();
+
+        cerrarModal("modalEtiqueta");
+
+        await cargarEtiquetas();
+
+    } catch (error) {
+
+        console.error(
+            "Error al guardar etiqueta:",
+            error
+        );
+
+        mostrarMensaje(
+            "Error",
+            "No se pudo guardar la etiqueta."
+        );
+
+    }
 
 }
 
 
-function limpiarFormularioEtiqueta(){
+// =========================================================
+// LIMPIAR FORMULARIO
+// =========================================================
 
-    document.getElementById("nombreEtiqueta").value = "";
+function limpiarFormularioEtiqueta() {
 
-    document.getElementById("descripcionEtiqueta").value = "";
+    const nombre =
+        document.getElementById("nombreEtiqueta");
 
-    document.getElementById("activoEtiqueta").checked = true;
+    const descripcion =
+        document.getElementById("descripcionEtiqueta");
+
+    const activo =
+        document.getElementById("activoEtiqueta");
+
+
+    if (nombre)
+        nombre.value = "";
+
+    if (descripcion)
+        descripcion.value = "";
+
+    if (activo)
+        activo.checked = true;
+
 
     window.etiquetaEditando = null;
 
 }
 
 
-function iniciarEtiquetas(){
+// =========================================================
+// ABRIR NUEVA ETIQUETA
+// =========================================================
 
-    cargarEtiquetas();
+function abrirNuevaEtiqueta() {
 
-    document
-    .getElementById("guardarEtiqueta")
-    .addEventListener("click", guardarEtiqueta);
+    limpiarFormularioEtiqueta();
 
-    document
-    .getElementById("nuevaEtiqueta")
-    .addEventListener("click", () => {
-
-        limpiarFormularioEtiqueta();
-
-        document.getElementById("modalEtiqueta").style.display = "flex";
-
-    });
-
-    document
-    .getElementById("cancelarEtiqueta")
-    .addEventListener("click", () => {
-
-        limpiarFormularioEtiqueta();
-
-        document.getElementById("modalEtiqueta").style.display = "none";
-
-    });
-
-    document
-    .getElementById("cerrarModalEtiqueta")
-    .addEventListener("click", () => {
-
-        limpiarFormularioEtiqueta();
-
-        document.getElementById("modalEtiqueta").style.display = "none";
-
-    });
-
-
-    document
-    .getElementById("cerrarVistaEtiqueta")
-    .addEventListener("click",()=>{
-
-        document.getElementById("modalVistaEtiqueta")
-        .style.display="none";
-
-    });
-
-    document
-    .getElementById("btnCerrarVistaEtiqueta")
-    .addEventListener("click",()=>{
-
-        document.getElementById("modalVistaEtiqueta")
-        .style.display="none";
-
-    });
-
-
-    document
-    .getElementById("confirmarEliminarEtiqueta")
-    .addEventListener(
-    "click",
-    eliminarEtiqueta
-    );
-
-    document
-    .getElementById("cancelarEliminarEtiqueta")
-    .addEventListener(
-    "click",
-    ()=>{
-
-        etiquetaEliminar = null;
-
-        document.getElementById("modalEliminarEtiqueta")
-        .style.display="none";
-
-    });
-
-    document
-    .getElementById("cerrarEliminarEtiqueta")
-    .addEventListener(
-    "click",
-    ()=>{
-
-        etiquetaEliminar = null;
-
-        document.getElementById("modalEliminarEtiqueta")
-        .style.display="none";
-
-    });
-}
-
-
-async function vistaPreviaEtiqueta(id){
-
-    const respuesta =
-    await window.fetchProtegido(`/api/etiquetas/${id}`);
-
-    const etiqueta =
-    await respuesta.json();
-
-    document.getElementById("vistaIdEtiqueta").value =
-    etiqueta.id_etiqueta;
-
-    document.getElementById("vistaNombreEtiqueta").value =
-    etiqueta.nombre;
-
-    document.getElementById("vistaDescripcionEtiqueta").value =
-    etiqueta.descripcion ?? "";
-
-    document.getElementById("vistaActivoEtiqueta").textContent =
-        etiqueta.activo ? "Activa" : "Inactiva";
-
-    document.getElementById("modalVistaEtiqueta")
-    .style.display = "flex";
+    abrirModal("modalEtiqueta");
 
 }
 
 
+// =========================================================
+// EDITAR ETIQUETA
+// =========================================================
 
-async function eliminarEtiqueta(){
+async function editarEtiqueta(id) {
 
-    if(!etiquetaEliminar){
-        return;
-    }
-
-    try{
+    try {
 
         const respuesta =
-        await window.fetchProtegido(
+            await window.fetchProtegido(
+                `/api/etiquetas/${id}`
+            );
 
-            `/api/etiquetas/${etiquetaEliminar}`,
+        const etiqueta =
+            await respuesta.json();
 
-            {
-                method:"DELETE"
-            }
 
+        document
+            .getElementById("nombreEtiqueta")
+            .value =
+            etiqueta.nombre || "";
+
+
+        document
+            .getElementById("descripcionEtiqueta")
+            .value =
+            etiqueta.descripcion || "";
+
+
+        document
+            .getElementById("activoEtiqueta")
+            .checked =
+            etiqueta.activo == 1;
+
+
+        window.etiquetaEditando = id;
+
+        abrirModal("modalEtiqueta");
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al editar etiqueta:",
+            error
         );
 
-        const resultado =
-        await respuesta.json();
+        mostrarMensaje(
+            "Error",
+            "No se pudo cargar la etiqueta."
+        );
 
-        if(!respuesta.ok){
+    }
+
+}
+
+
+// =========================================================
+// VISTA PREVIA
+// =========================================================
+
+async function vistaPreviaEtiqueta(id) {
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                `/api/etiquetas/${id}`
+            );
+
+        const etiqueta =
+            await respuesta.json();
+
+
+        const campoId =
+            document.getElementById(
+                "vistaIdEtiqueta"
+            );
+
+        const campoNombre =
+            document.getElementById(
+                "vistaNombreEtiqueta"
+            );
+
+        const campoDescripcion =
+            document.getElementById(
+                "vistaDescripcionEtiqueta"
+            );
+
+        const estado =
+            document.getElementById(
+                "vistaActivoEtiqueta"
+            );
+
+
+        if (campoId)
+            campoId.value =
+                etiqueta.id_etiqueta;
+
+        if (campoNombre)
+            campoNombre.value =
+                etiqueta.nombre || "";
+
+        if (campoDescripcion)
+            campoDescripcion.value =
+                etiqueta.descripcion || "";
+
+        if (estado)
+            estado.textContent =
+                etiqueta.activo
+                    ? "Activa"
+                    : "Inactiva";
+
+
+        abrirModal("modalVistaEtiqueta");
+
+    } catch (error) {
+
+        console.error(
+            "Error en vista previa:",
+            error
+        );
+
+        mostrarMensaje(
+            "Error",
+            "No se pudo cargar la etiqueta."
+        );
+
+    }
+
+}
+
+
+// =========================================================
+// CONFIRMAR ELIMINACIÓN
+// =========================================================
+
+function confirmarEliminarEtiqueta(id, nombre) {
+
+    etiquetaEliminar = id;
+
+
+    const nombreElemento =
+        document.getElementById(
+            "nombreEliminarEtiqueta"
+        );
+
+
+    if (nombreElemento) {
+
+        nombreElemento.textContent =
+            nombre;
+
+    }
+
+
+    abrirModal(
+        "modalEliminarEtiqueta"
+    );
+
+}
+
+
+// =========================================================
+// ELIMINAR ETIQUETA
+// =========================================================
+
+async function eliminarEtiqueta() {
+
+    if (!etiquetaEliminar)
+        return;
+
+
+    try {
+
+        const respuesta =
+            await window.fetchProtegido(
+                `/api/etiquetas/${etiquetaEliminar}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json()
+                .catch(() => ({}));
+
+
+        if (!respuesta.ok) {
 
             mostrarMensaje(
                 "Error",
-                resultado.error
+                resultado.error ||
+                "No se pudo eliminar la etiqueta."
             );
 
             return;
-
         }
+
 
         etiquetaEliminar = null;
 
-        document.getElementById(
+        cerrarModal(
             "modalEliminarEtiqueta"
-        ).style.display = "none";
+        );
 
-        cargarEtiquetas();
+        await cargarEtiquetas();
 
-    }catch(error){
 
-        console.error(error);
+    } catch (error) {
+
+        console.error(
+            "Error al eliminar etiqueta:",
+            error
+        );
 
         mostrarMensaje(
             "Error",
@@ -372,92 +502,333 @@ async function eliminarEtiqueta(){
 }
 
 
+// =========================================================
+// CERRAR MENSAJE
+// =========================================================
 
+function cerrarMensaje() {
 
-
-async function editarEtiqueta(id){
-
-
-    const respuesta =
-    await window.fetchProtegido(`/api/etiquetas/${id}`);
-
-
-
-    const etiqueta = await respuesta.json();
-
-
-
-    document
-    .getElementById("nombreEtiqueta")
-    .value = etiqueta.nombre;
-
-
-
-    document
-    .getElementById("descripcionEtiqueta")
-    .value = etiqueta.descripcion;
-
-
-
-    document
-    .getElementById("modalEtiqueta")
-    .style.display="flex";
-
-
-    document.getElementById("activoEtiqueta").checked =
-        etiqueta.activo == 1;
-
-
-    window.etiquetaEditando=id;
-
+    cerrarModal("modalMensaje");
 
 }
 
 
-function confirmarEliminarEtiqueta(id,nombre){
+// =========================================================
+// MOSTRAR MENSAJE
+// =========================================================
 
-    etiquetaEliminar = id;
-
-    document.getElementById("nombreEliminarEtiqueta")
-    .textContent = nombre;
-
-    document.getElementById("modalEliminarEtiqueta")
-    .style.display = "flex";
-
-}
-
-
-function cerrarMensaje(){
-
-    document
-    .getElementById("modalMensaje")
-    .style.display="none";
-
-}
-
-
-function mostrarMensaje(titulo, mensaje){
+function mostrarMensaje(titulo, mensaje) {
 
     const modal =
-    document.getElementById("modalMensaje");
+        document.getElementById(
+            "modalMensaje"
+        );
 
 
-    if(!modal){
+    if (!modal) {
 
-        alert(`${titulo}\n\n${mensaje}`);
+        alert(
+            `${titulo}\n\n${mensaje}`
+        );
+
         return;
-
     }
 
 
-    document.getElementById("tituloMensaje")
-    .textContent = titulo;
+    const tituloElemento =
+        document.getElementById(
+            "tituloMensaje"
+        );
+
+    const textoElemento =
+        document.getElementById(
+            "textoMensaje"
+        );
 
 
-    document.getElementById("textoMensaje")
-    .textContent = mensaje;
+    if (tituloElemento)
+        tituloElemento.textContent =
+            titulo;
 
+    if (textoElemento)
+        textoElemento.textContent =
+            mensaje;
+
+
+    abrirModal("modalMensaje");
+
+}
+
+
+// =========================================================
+// ABRIR MODAL
+// =========================================================
+
+function abrirModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+    if (!modal)
+        return;
 
     modal.style.display = "flex";
+
+}
+
+
+// =========================================================
+// CERRAR MODAL
+// =========================================================
+
+function cerrarModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+    if (!modal)
+        return;
+
+    modal.style.display = "none";
+
+}
+
+
+// =========================================================
+// INICIALIZAR ETIQUETAS
+// =========================================================
+
+function iniciarEtiquetas() {
+
+    cargarEtiquetas();
+
+
+    // -----------------------------------------------------
+    // NUEVA ETIQUETA
+    // -----------------------------------------------------
+
+    document
+        .getElementById("nuevaEtiqueta")
+        ?.addEventListener(
+            "click",
+            abrirNuevaEtiqueta
+        );
+
+
+    // -----------------------------------------------------
+    // GUARDAR
+    // -----------------------------------------------------
+
+    document
+        .getElementById("guardarEtiqueta")
+        ?.addEventListener(
+            "click",
+            guardarEtiqueta
+        );
+
+
+    // -----------------------------------------------------
+    // CANCELAR
+    // -----------------------------------------------------
+
+    document
+        .getElementById("cancelarEtiqueta")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                limpiarFormularioEtiqueta();
+
+                cerrarModal(
+                    "modalEtiqueta"
+                );
+
+            }
+        );
+
+
+    // -----------------------------------------------------
+    // CERRAR NUEVA / EDITAR
+    // -----------------------------------------------------
+
+    document
+        .getElementById("cerrarModalEtiqueta")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                limpiarFormularioEtiqueta();
+
+                cerrarModal(
+                    "modalEtiqueta"
+                );
+
+            }
+        );
+
+
+    // -----------------------------------------------------
+    // CERRAR VISTA PREVIA
+    // -----------------------------------------------------
+
+    document
+        .getElementById("cerrarVistaEtiqueta")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                cerrarModal(
+                    "modalVistaEtiqueta"
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById("btnCerrarVistaEtiqueta")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                cerrarModal(
+                    "modalVistaEtiqueta"
+                );
+
+            }
+        );
+
+
+    // -----------------------------------------------------
+    // CONFIRMAR ELIMINACIÓN
+    // -----------------------------------------------------
+
+    document
+        .getElementById(
+            "confirmarEliminarEtiqueta"
+        )
+        ?.addEventListener(
+            "click",
+            eliminarEtiqueta
+        );
+
+
+    // -----------------------------------------------------
+    // CANCELAR ELIMINACIÓN
+    // -----------------------------------------------------
+
+    document
+        .getElementById(
+            "cancelarEliminarEtiqueta"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                etiquetaEliminar = null;
+
+                cerrarModal(
+                    "modalEliminarEtiqueta"
+                );
+
+            }
+        );
+
+
+    // -----------------------------------------------------
+    // CERRAR ELIMINACIÓN
+    // -----------------------------------------------------
+
+    document
+        .getElementById(
+            "cerrarEliminarEtiqueta"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                etiquetaEliminar = null;
+
+                cerrarModal(
+                    "modalEliminarEtiqueta"
+                );
+
+            }
+        );
+
+
+    // -----------------------------------------------------
+    // CERRAR MODALES AL HACER CLIC AFUERA
+    // -----------------------------------------------------
+
+    document.addEventListener(
+        "click",
+        manejarClickFueraEtiquetas
+    );
+
+}
+
+
+// =========================================================
+// CLIC FUERA DE LOS MODALES
+// =========================================================
+
+function manejarClickFueraEtiquetas(event) {
+
+    const ids = [
+
+        "modalEtiqueta",
+        "modalVistaEtiqueta",
+        "modalEliminarEtiqueta",
+        "modalMensaje"
+
+    ];
+
+
+    ids.forEach(id => {
+
+        const modal =
+            document.getElementById(id);
+
+        if (!modal)
+            return;
+
+
+        /*
+         * Solo se cierra cuando el clic
+         * fue directamente sobre el fondo.
+         *
+         * Si se hace clic dentro del contenido,
+         * no se cierra.
+         */
+
+        if (
+            event.target === modal &&
+            modal.style.display !== "none"
+        ) {
+
+            if (
+                id === "modalEtiqueta"
+            ) {
+
+                limpiarFormularioEtiqueta();
+
+            }
+
+
+            if (
+                id === "modalEliminarEtiqueta"
+            ) {
+
+                etiquetaEliminar = null;
+
+            }
+
+
+            cerrarModal(id);
+
+        }
+
+    });
 
 }

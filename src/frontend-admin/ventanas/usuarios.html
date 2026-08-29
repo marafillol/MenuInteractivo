@@ -1,126 +1,73 @@
 <section class="ventana ventana-usuarios">
 
-
-    <!-- ==========================
+    <!-- =====================================================
          ENCABEZADO
-    =========================== -->
+    ====================================================== -->
 
     <div class="encabezado-usuarios">
 
-        <div>
-
-            <h2 class="titulo-usuarios">
-                Gestión de Usuarios
-            </h2>
-        </div>
-
+        <h2 class="titulo-usuarios">
+            Gestión de Usuarios
+        </h2>
 
         <button
+                type="button"
                 class="btn-nuevo-usuario"
                 onclick="abrirModalUsuarioUsuarios()"
         >
-
             + Nuevo Usuario
-
         </button>
-
 
     </div>
 
 
-
-
-    <!-- ==========================
-         TABLA USUARIOS
-    =========================== -->
-
+    <!-- =====================================================
+         TABLA DE USUARIOS
+    ====================================================== -->
 
     <div class="contenedor-tabla-usuarios">
 
-
         <table class="tabla-usuarios">
 
-
             <thead>
-
             <tr>
-
-                <th>
-                    Nombre
-                </th>
-
-
-                <th>
-                    Email
-                </th>
-
-
-                <th>
-                    Rol
-                </th>
-
-
-                <th>
-                    Estado
-                </th>
-
-
-                <th>
-                    Acciones
-                </th>
-
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
-
-
             </thead>
 
-
-
-            <tbody id="tablaUsuarios">
-
-            </tbody>
-
-
+            <tbody id="tablaUsuarios"></tbody>
 
         </table>
 
-
     </div>
-
-
 
 </section>
 
 
-
-
-
-
-
-<!-- ==========================
-     MODAL USUARIO
-=========================== -->
-
+<!-- =========================================================
+     MODAL NUEVO / EDITAR USUARIO
+========================================================== -->
 
 <div
         id="modalUsuarioUsuarios"
         class="modal-usuarios"
-        style="display:none;"
+        style="display: none;"
 >
 
-
     <div class="contenido-modal-usuarios">
-
 
         <h2 id="tituloModalUsuarioUsuarios">
             Nuevo Usuario
         </h2>
 
 
-
         <!-- NOMBRE -->
 
-        <label>
+        <label for="nombreUsuarioNuevo">
             Nombre
         </label>
 
@@ -131,11 +78,9 @@
         >
 
 
-
-
         <!-- EMAIL -->
 
-        <label>
+        <label for="emailUsuarioNuevo">
             Email
         </label>
 
@@ -146,17 +91,13 @@
         >
 
 
-
-
-        <!-- PASSWORD -->
+        <!-- CONTRASEÑA -->
 
         <div id="contenedorPassword">
 
-
-            <label>
+            <label for="passwordUsuarioNuevo">
                 Contraseña
             </label>
-
 
             <input
                     id="passwordUsuarioNuevo"
@@ -164,53 +105,39 @@
                     placeholder="Contraseña"
             >
 
-
         </div>
-
-
-
 
 
         <!-- ROL -->
 
-        <label>
+        <label for="rolUsuarioNuevo">
             Rol
         </label>
 
-
         <select id="rolUsuarioNuevo">
-
 
             <option value="admin">
                 Administrador
             </option>
 
-
             <option value="editor">
                 Editor
             </option>
-
 
             <option value="consulta">
                 Consulta
             </option>
 
-
         </select>
 
 
+        <!-- ESTADO -->
 
-
-
-
-        <!-- ACTIVO -->
-
-
-        <label>
+        <label class="checkbox-usuario">
 
             <input
-                    type="checkbox"
                     id="activoUsuarioNuevo"
+                    type="checkbox"
                     checked
             >
 
@@ -219,79 +146,52 @@
         </label>
 
 
-
-
-
-
+        <!-- ACCIONES -->
 
         <div class="acciones-modal-usuarios">
 
-
-
             <button
+                    type="button"
                     onclick="cerrarModalUsuarioUsuarios()"
             >
-
                 Cancelar
-
             </button>
-
-
-
-
 
             <button
-                    onclick="guardarUsuarioUsuarios()"
+                    type="button"
                     class="btn-nuevo-usuario"
+                    onclick="guardarUsuarioUsuarios()"
             >
-
                 Guardar
-
             </button>
-
-
 
         </div>
 
-
-
     </div>
-
-
 
 </div>
 
 
-
-
-
-
-
-<!-- ==========================
-     MODAL CAMBIO PASSWORD
-=========================== -->
-
+<!-- =========================================================
+     MODAL CAMBIO DE CONTRASEÑA
+========================================================== -->
 
 <div
         id="modalPasswordUsuarios"
         class="modal-usuarios"
-        style="display:none;"
+        style="display: none;"
 >
 
-
     <div class="contenido-modal-usuarios">
-
 
         <h2>
             Cambiar contraseña
         </h2>
 
 
-
-        <label>
+        <label for="nuevaPassword">
             Nueva contraseña
         </label>
-
 
         <input
                 id="nuevaPassword"
@@ -300,28 +200,23 @@
         >
 
 
-
+        <!-- ACCIONES -->
 
         <div class="acciones-modal-usuarios">
 
-
             <button
+                    type="button"
                     onclick="cerrarModalPasswordUsuarios()"
             >
-
                 Cancelar
-
             </button>
 
-
-
             <button
-                    onclick="guardarPasswordUsuarios()"
+                    type="button"
                     class="btn-nuevo-usuario"
+                    onclick="guardarPasswordUsuarios()"
             >
-
                 Guardar
-
             </button>
 
         </div>
@@ -331,31 +226,33 @@
 </div>
 
 
-
-<!-- ==========================
-     MODAL MENSAJES
-=========================== -->
+<!-- =========================================================
+     MODAL MENSAJE
+========================================================== -->
 
 <div
         id="modalMensajeUsuarios"
         class="modal-usuarios"
-        style="display:none;"
+        style="display: none;"
 >
 
     <div class="contenido-modal-mensaje-usuarios">
 
-        <h2 id="tituloMensajeUsuarios"></h2>
+        <h2 id="tituloMensajeUsuarios">
+            Mensaje
+        </h2>
 
         <p id="textoMensajeUsuarios"></p>
+
 
         <div class="acciones-modal-usuarios">
 
             <button
                     id="btnAceptarMensajeUsuarios"
-                    class="btn-nuevo-usuario">
-
+                    type="button"
+                    class="btn-nuevo-usuario"
+            >
                 Aceptar
-
             </button>
 
         </div>
@@ -365,15 +262,14 @@
 </div>
 
 
-
-<!-- ==========================
+<!-- =========================================================
      MODAL CONFIRMAR ELIMINACIÓN
-=========================== -->
+========================================================== -->
 
 <div
         id="modalEliminarUsuarios"
         class="modal-usuarios"
-        style="display:none;"
+        style="display: none;"
 >
 
     <div class="contenido-modal-eliminar-usuarios">
@@ -384,21 +280,22 @@
 
         <p id="textoEliminarUsuarios"></p>
 
+
         <div class="acciones-modal-usuarios">
 
             <button
-                    id="btnCancelarEliminarUsuarios">
-
+                    id="btnCancelarEliminarUsuarios"
+                    type="button"
+            >
                 Cancelar
-
             </button>
 
             <button
                     id="btnConfirmarEliminarUsuarios"
-                    class="btn-nuevo-usuario">
-
+                    type="button"
+                    class="btn-nuevo-usuario"
+            >
                 Eliminar
-
             </button>
 
         </div>
