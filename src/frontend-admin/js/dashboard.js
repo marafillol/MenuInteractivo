@@ -9,12 +9,7 @@ const CONFIG_DASHBOARD = {
 
     tipos: {
 
-        menus: {
-            nombre: "Menús",
-            singular: "Menú",
-            icono: "folder-open",
-            clase: "menu"
-        },
+
 
         fichas: {
             nombre: "Fichas",
@@ -926,7 +921,6 @@ function mostrarEstadoContenido(
 }
 
 
-
 // =======================================================
 // CONTENIDO OCULTO
 // =======================================================
@@ -1053,16 +1047,6 @@ function mostrarContenidoOculto(
                                     )}
                                 </span>
 
-
-                                <span
-                                    class="
-                                        badge-dashboard
-                                        badge-${tipoConfig.clase}
-                                    "
-                                >
-                                    ${tipoConfig.singular}
-                                </span>
-
                             </div>
 
 
@@ -1104,24 +1088,7 @@ function mostrarContenidoOculto(
 
 
 
-// =======================================================
-// NOMBRE TIPO
-// =======================================================
 
-function nombreTipo(
-    tipo
-) {
-
-    return {
-
-        menus: "menús",
-        fichas: "fichas",
-        etiquetas: "etiquetas",
-        multimedia: "elementos multimedia"
-
-    }[tipo] || tipo;
-
-}
 
 
 
