@@ -1,0 +1,606 @@
+
+<!-- =========================================================
+     FICHAS · MUSEO MALVINAS
+     ARCHIVO HISTÓRICO MILITAR
+
+     ESTRUCTURA BASE
+
+     • Encabezado de fichas
+     • Área documental
+     • Contenedor dinámico de fichas
+     • Plantilla de una ficha
+     • Visor de ficha completa
+
+     IMPORTANTE:
+     Este archivo NO contiene lógica de base de datos.
+     Este archivo NO conecta con el Explorador.
+     fichas.js se encargará de generar las fichas.
+========================================================= -->
+
+
+<section
+        class="ventana ventana-fichas"
+        id="ventanaFichas">
+
+
+    <!-- =====================================================
+         ENCABEZADO
+    ====================================================== -->
+
+    <header class="encabezado-fichas">
+
+        <div class="encabezado-linea superior"></div>
+
+
+        <div class="encabezado-contenido">
+
+            <div class="marca-archivo">
+
+                <span class="marca-linea"></span>
+
+                <span>
+                    ARCHIVO HISTÓRICO · MALVINAS
+                </span>
+
+                <span class="marca-linea"></span>
+
+            </div>
+
+
+            <h1>
+                FICHAS
+            </h1>
+
+
+            <div class="subtitulo-fichas">
+                REGISTRO DOCUMENTAL · 1982
+            </div>
+
+
+            <div class="separador-titulo">
+
+                <span></span>
+
+                <i class="rombo"></i>
+
+                <span></span>
+
+            </div>
+
+        </div>
+
+
+        <div class="encabezado-linea inferior"></div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         ÁREA PRINCIPAL
+    ====================================================== -->
+
+    <main class="contenido-fichas">
+
+
+        <!-- =================================================
+             ESCRITORIO / FONDO DOCUMENTAL
+        ================================================== -->
+
+        <div
+                class="fondo-documental-fichas"
+                aria-hidden="true">
+
+            <div class="mancha-documental mancha-1"></div>
+
+            <div class="mancha-documental mancha-2"></div>
+
+            <div class="mancha-documental mancha-3"></div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             CABECERA DEL ARCHIVO
+        ================================================== -->
+
+        <div class="cabecera-archivo-fichas">
+
+            <div class="identificacion-archivo">
+
+                <span class="codigo-archivo">
+                    EXP · FICHAS
+                </span>
+
+                <span class="estado-archivo">
+                    ARCHIVO ACTIVO
+                </span>
+
+            </div>
+
+
+            <div
+                    class="contador-fichas"
+                    id="contadorFichas">
+
+                0 REGISTROS
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ÁREA DE FICHAS
+        ================================================== -->
+
+        <section
+                class="area-fichas"
+                aria-label="Archivo de fichas">
+
+
+            <!-- =================================================
+                 CONTENEDOR DINÁMICO
+
+                 fichas.js insertará las fichas acá.
+            ================================================== -->
+
+            <div
+                    id="contenedorFichas"
+                    class="contenedor-fichas">
+
+
+                <!--
+
+                    LAS FICHAS SE GENERAN DESDE fichas.js
+
+                    Ejemplo visual:
+
+                    ┌──────────────┐
+                    │     CLIP     │
+                    │              │
+                    │     FOTO     │
+                    │              │
+                    │    NOMBRE    │
+                    │              │
+                    │    DATOS     │
+                    └──────────────┘
+
+                -->
+
+
+                <!-- Estado inicial -->
+
+                <div
+                        class="estado-fichas"
+                        id="estadoFichas">
+
+                    <div class="estado-icono">
+
+                        <span></span>
+
+                    </div>
+
+                    <p>
+                        CARGANDO ARCHIVO
+                    </p>
+
+                    <small>
+                        ESPERE UN MOMENTO
+                    </small>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SELLO DOCUMENTAL
+        ================================================== -->
+
+        <div
+                class="sello-fichas"
+                aria-hidden="true">
+
+            <span>
+                ARCHIVO
+            </span>
+
+            <strong>
+                1982
+            </strong>
+
+            <span>
+                MALVINAS
+            </span>
+
+        </div>
+
+
+
+        <!-- =================================================
+             MARCA DE ARCHIVO
+        ================================================== -->
+
+        <div
+                class="marca-documental-fichas"
+                aria-hidden="true">
+
+            DOCUMENTACIÓN HISTÓRICA
+            ·
+            REPÚBLICA ARGENTINA
+            ·
+            MALVINAS
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         PLANTILLA DE FICHA
+         -----------------------------------------------------
+         NO se muestra directamente.
+
+         fichas.js podrá clonar esta estructura cuando
+         tenga los datos reales.
+    ====================================================== -->
+
+    <template id="plantillaFicha">
+
+
+        <article
+                class="tarjeta-ficha"
+                data-id=""
+                tabindex="0"
+                role="button"
+                aria-label="Abrir ficha">
+
+
+            <!-- =============================================
+                 HOJA BASE
+            ============================================== -->
+
+            <div
+                    class="hoja-ficha">
+
+
+                <!-- =========================================
+                     CÓDIGO SUPERIOR
+                ========================================== -->
+
+                <div class="codigo-ficha">
+
+                    <span>
+                        EXP.
+                    </span>
+
+                    <span class="numero-ficha">
+                        0000
+                    </span>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     CLIP
+                ========================================== -->
+
+                <div class="clip-ficha">
+
+                    <span class="clip-metal"></span>
+
+                    <span class="clip-brillo"></span>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     FOTOGRAFÍA
+                ========================================== -->
+
+                <div class="imagen-ficha">
+
+                    <img
+                            src="/imagenes/default.png"
+                            alt="">
+
+                    <div
+                            class="marco-fotografia"
+                            aria-hidden="true">
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     INFORMACIÓN
+                ========================================== -->
+
+                <div class="informacion-ficha">
+
+
+                    <div class="categoria-ficha">
+                        REGISTRO PERSONAL
+                    </div>
+
+
+                    <h2 class="nombre-ficha">
+                        Nombre del registro
+                    </h2>
+
+
+                    <div class="linea-ficha"></div>
+
+
+                    <!-- =====================================
+                         DATOS
+                    ====================================== -->
+
+                    <div class="datos-ficha">
+
+
+                        <div class="dato-ficha">
+
+                            <span class="etiqueta-dato">
+                                REGISTRO
+                            </span>
+
+                            <span class="valor-dato">
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="dato-ficha">
+
+                            <span class="etiqueta-dato">
+                                FECHA
+                            </span>
+
+                            <span class="valor-dato">
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="dato-ficha">
+
+                            <span class="etiqueta-dato">
+                                PROCEDENCIA
+                            </span>
+
+                            <span class="valor-dato">
+                                —
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- =====================================
+                         ESTADO
+                    ====================================== -->
+
+                    <div class="estado-ficha">
+
+                        <span class="punto-estado"></span>
+
+                        <span>
+                            DOCUMENTO ACTIVO
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =========================================
+                     PIE DOCUMENTAL
+                ========================================== -->
+
+                <div class="pie-ficha">
+
+                    <span>
+                        MUSEO MALVINAS
+                    </span>
+
+                    <span>
+                        ARCHIVO · 1982
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+        </article>
+
+    </template>
+
+
+
+    <!-- =====================================================
+         VISOR DE FICHA COMPLETA
+         -----------------------------------------------------
+         Permanece oculto hasta que fichas.js lo active.
+    ====================================================== -->
+
+    <div
+            class="visor-ficha"
+            id="visorFicha"
+            aria-hidden="true">
+
+
+        <!-- Fondo -->
+        <div
+                class="visor-fondo"
+                data-cerrar-ficha>
+        </div>
+
+
+
+        <!-- Documento -->
+        <article class="documento-ficha">
+
+
+            <!-- =============================================
+                 ENCABEZADO DEL DOCUMENTO
+            ============================================== -->
+
+            <header class="cabecera-documento-ficha">
+
+
+                <div class="codigo-documento">
+
+                    <span>
+                        EXPEDIENTE
+                    </span>
+
+                    <strong id="visorCodigoFicha">
+                        0000
+                    </strong>
+
+                </div>
+
+
+                <div class="titulo-documento">
+
+                    <span>
+                        ARCHIVO HISTÓRICO
+                    </span>
+
+                    <h2 id="visorTituloFicha">
+                        Ficha
+                    </h2>
+
+                </div>
+
+
+                <button
+                        type="button"
+                        class="cerrar-visor-ficha"
+                        id="cerrarVisorFicha"
+                        aria-label="Cerrar ficha">
+
+                    ×
+
+                </button>
+
+            </header>
+
+
+
+            <!-- =============================================
+                 CUERPO DEL DOCUMENTO
+            ============================================== -->
+
+            <div class="cuerpo-documento-ficha">
+
+
+                <!-- Fotografía -->
+
+                <div class="visor-imagen-ficha">
+
+                    <img
+                            id="visorImagenFicha"
+                            src="/imagenes/default.png"
+                            alt="">
+
+                </div>
+
+
+
+                <!-- Información -->
+
+                <div class="visor-informacion-ficha">
+
+
+                    <div class="visor-categoria">
+                        REGISTRO DOCUMENTAL
+                    </div>
+
+
+                    <h3 id="visorNombreFicha">
+                        Nombre del registro
+                    </h3>
+
+
+                    <div class="visor-linea"></div>
+
+
+                    <!-- Campos dinámicos -->
+
+                    <div
+                            class="visor-campos"
+                            id="visorCamposFicha">
+
+                    </div>
+
+
+                    <!-- Descripción -->
+
+                    <div class="visor-descripcion">
+
+                        <span>
+                            OBSERVACIONES
+                        </span>
+
+                        <p id="visorDescripcionFicha">
+                            —
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 PIE
+            ============================================== -->
+
+            <footer class="pie-documento-ficha">
+
+                <span>
+                    MUSEO MALVINAS
+                </span>
+
+                <span>
+                    DOCUMENTO HISTÓRICO
+                </span>
+
+                <span>
+                    1982
+                </span>
+
+            </footer>
+
+
+        </article>
+
+    </div>
+
+
+
+</section>

@@ -1,41 +1,117 @@
-function mostrarBienvenida() {
 
-    app.innerHTML = `
-    <section class="pantalla-bienvenida">
+// =======================================================
+// BIENVENIDA
+// =======================================================
 
-        <div class="lineas-decorativas"></div>
+async function mostrarBienvenida() {
 
-        <div class="efecto-vigneta"></div>
+    const app =
+        document.getElementById("app");
 
-        <div class="contenido-bienvenida">
 
-            <div class="logo-museo" role="img" aria-label="Museo Malvinas Antártida y Atlántico Sur"></div>
+    if (!app) {
 
-            <p class="eyebrow-bienvenida">Museo Malvinas Antártida y Atlántico Sur</p>
+        console.error(
+            "[bienvenida] No existe #app"
+        );
 
-            <h1>Menú interactivo</h1>
+        return;
 
-            <p class="descripcion-bienvenida">
-                Explora historias, testimonios y documentos de nuestra memoria colectiva.
-            </p>
+    }
 
-            <button id="btnComenzar">
-                Explorar colección
-            </button>
 
-        </div>
+    try {
 
-    </section>
-    `;
+        const respuesta =
+            await fetch(
+                "html/bienvenida.html"
+            );
 
-    // Conecta el botón con la siguiente vista. Se hace acá porque el
-    // elemento recién existe una vez que se corrió el innerHTML de arriba.
-    document.getElementById("btnComenzar")?.addEventListener("click", () => {
-        if (typeof mostrarExplorador === "function") {
-            mostrarExplorador();
-        } else {
-            console.warn("[bienvenida] mostrarExplorador() no está definido todavía.");
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `No se pudo cargar bienvenida.html (${respuesta.status})`
+            );
+
         }
-    });
+
+
+        const html =
+            await respuesta.text();
+
+
+        app.innerHTML =
+            html;
+
+
+        // ===================================================
+        // BOTÓN COMENZAR
+        // ===================================================
+
+        const boton =
+            document.getElementById(
+                "btnComenzar"
+            );
+
+
+        if (boton) {
+
+            boton.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        typeof window.mostrarExplorador ===
+                        "function"
+                    ) {
+
+                        window.mostrarExplorador();
+
+                    } else {
+
+                        console.error(
+                            "[bienvenida] mostrarExplorador() no está disponible."
+                        );
+
+                    }
+
+                }
+            );
+
+        } else {
+
+            console.warn(
+                "[bienvenida] No existe #btnComenzar."
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "[bienvenida] Error cargando la vista:",
+            error
+        );
+
+
+        app.innerHTML = `
+
+            <section class="error-vista">
+
+                <h2>
+                    No se pudo cargar la pantalla de bienvenida
+                </h2>
+
+                <p>
+                    Intente nuevamente.
+                </p>
+
+            </section>
+
+        `;
+
+    }
 
 }

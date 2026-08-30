@@ -1,310 +1,2908 @@
-.tarjetaFicha{
+/* =========================================================
+   FICHAS · MUSEO MALVINAS
+   =========================================================
 
-    width:280px;
+   ESTÉTICA:
+   • Archivo histórico militar
+   • Expediente documental
+   • Papel envejecido
+   • Azul petróleo
+   • Metal gastado
+   • Dorado apagado
+   • Fotografía documental
+   • Sombras profundas
+   • Fichas en cuadrícula
 
-    position:relative;
+   COMPATIBLE CON:
+   fichas.html
+   explorador.html
+   fichas.js
+========================================================= */
 
-    cursor:pointer;
 
-    transition:.25s ease;
+/* =========================================================
+   VARIABLES
+========================================================= */
 
+:root {
+
+    --ficha-azul: #163a61;
+    --ficha-azul-oscuro: #0b2233;
+    --ficha-azul-profundo: #071923;
+
+    --ficha-petroleo: #102c38;
+    --ficha-petroleo-claro: #183d4a;
+
+    --ficha-papel: #c8b996;
+    --ficha-papel-claro: #d8ccb0;
+    --ficha-papel-oscuro: #8c7958;
+
+    --ficha-tinta: #292923;
+    --ficha-tinta-clara: #ddd4bd;
+
+    --ficha-metal: #78817d;
+    --ficha-metal-oscuro: #394542;
+    --ficha-metal-claro: #a8aeaa;
+
+    --ficha-dorado: #a99561;
+    --ficha-dorado-claro: #c6b27a;
+
+    --ficha-rojo: #713c35;
+
+    --ficha-sombra:
+        rgba(0,0,0,.65);
+
+    --ficha-borde:
+        rgba(169,149,97,.40);
 }
 
-.baseFicha{
 
-    width:100%;
+/* =========================================================
+   RESET
+========================================================= */
 
-    display:block;
+.ventana-fichas,
+.ventana-fichas * {
 
-}
-
-.fotoVeterano{
-
-    position:absolute;
-
-    top:80px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    width:170px;
-    height:190px;
-
-    object-fit:cover;
-
+    box-sizing: border-box;
 }
 
 
-.clip{
+/* =========================================================
+   VENTANA PRINCIPAL
+========================================================= */
 
-    position:absolute;
+.ventana-fichas {
 
-    top:16px;
+    position: relative;
 
-    left:50%;
+    width: 100%;
+    min-height: 100vh;
 
-    transform:translateX(-50%) rotate(-8deg);
+    overflow: hidden;
 
-    z-index:20;
+    color: var(--ficha-tinta);
 
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    /* SIN FONDO AZUL */
+    background:
+        #11110f;
 }
 
-.clip img{
 
-    width:50px;
-    height:auto;
+/* =========================================================
+   ENCABEZADO
+========================================================= */
 
-    filter:drop-shadow(2px 4px 5px rgba(0,0,0,.35));
+.encabezado-fichas {
 
-}
+    position: relative;
 
+    z-index: 30;
 
-.tarjetaFicha:nth-child(3n) .clip{
+    width: min(1180px, 92vw);
 
-    transform:translateX(-50%) rotate(-12deg);
+    margin: 0 auto;
 
-}
-
-.tarjetaFicha:nth-child(3n+1) .clip{
-
-    transform:translateX(-50%) rotate(6deg);
-
-}
-
-.tarjetaFicha:nth-child(3n+2) .clip{
-
-    transform:translateX(-50%) rotate(-2deg);
-
-}
-
-/* ==========================================
-   IMAGEN
-========================================== */
-.imagenFicha{
-
-    position:absolute;
-
-    top:75px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    width:140px;
-    height:170px;
-
-    padding:8px;
-
-    background:#eee5d0;
-
-    box-shadow:
-        0 3px 8px rgba(0,0,0,.25);
-
-}
-
-.imagenFicha img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:contain;
-
-        width:100%;
-        height:100%;
-
-        object-fit:contain;
-
-        filter:
-            sepia(25%)
-            contrast(90%)
-            brightness(95%)
-            saturate(75%);
-
-}
-
-.imagenFicha::after{
-
-    content:"";
-
-    position:absolute;
-
-    inset:8px;
+    padding:
+        16px
+        34px
+        13px;
 
     background:
-        rgba(120,90,40,.12);
+        rgba(5,20,27,.32);
 
-    pointer-events:none;
+    border-bottom:
+        1px solid rgba(184,164,111,.30);
 
-}
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.28);
 
-/* ==========================================
-   INFORMACIÓN
-========================================== */
-/* ==========================================
-   TEXTO EXPEDIENTE HISTÓRICO
-========================================== */
-.infoFicha{
-
-    position:absolute;
-
-    top:295px;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    width:220px;
-
-    text-align:center;
-
-}
-
-/* Nombre del veterano */
-
-.infoFicha h3{
-
-    margin:0 0 8px;
-
-    font-family:Georgia, serif;
-
-    font-size:20px;
-
-    font-weight:bold;
-
-    letter-spacing:.5px;
-
-    color:#3b3020;
-
-    text-transform:uppercase;
-
+    backdrop-filter:
+        blur(2px);
 }
 
 
+/* =========================================================
+   LÍNEAS DEL ENCABEZADO
+========================================================= */
 
-/* Categoría / menú */
+.encabezado-fichas
+.encabezado-linea {
 
-.infoFicha p{
+    width: 100%;
+    height: 1px;
 
-    margin:5px 0;
-
-    font-family:Georgia, serif;
-
-    font-size:13px;
-
-    color:#62513a;
-
+    background:
+        rgba(199,181,132,.28);
 }
 
 
+.encabezado-fichas
+.encabezado-linea.superior {
 
-/* Campos visibles */
-
-.camposTarjeta{
-
-    margin-top:10px;
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:3px;
-
+    margin-bottom: 10px;
 }
 
 
-.camposTarjeta small{
+.encabezado-fichas
+.encabezado-linea.inferior {
 
-    font-family:"Courier New", monospace;
-
-    font-size:12px;
-
-    color:#51432d;
-
-    letter-spacing:.3px;
-
+    margin-top: 10px;
 }
 
 
-.camposTarjeta b{
+/* =========================================================
+   CONTENIDO ENCABEZADO
+========================================================= */
 
-    font-weight:bold;
+.encabezado-fichas
+.encabezado-contenido {
 
-    color:#332817;
+    position: relative;
 
+    text-align: center;
 }
 
-/* ==========================================
-   CONTENEDOR
-========================================== */
 
-#contenedorFichas{
+/* =========================================================
+   MARCA
+========================================================= */
 
-    display:grid;
+.encabezado-fichas .marca-archivo {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    color:
+        rgba(202,192,160,.72);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: .28em;
+}
+
+
+.encabezado-fichas .marca-linea {
+
+    width: 35px;
+    height: 1px;
+
+    background:
+        rgba(189,168,113,.42);
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.encabezado-fichas h1 {
+
+    margin:
+        5px 0 2px;
+
+    color:
+        #ddd5bd;
+
+    font-family:
+        "Courier New",
+        Courier,
+        monospace;
+
+    font-size:
+        clamp(27px, 3.4vw, 46px);
+
+    font-weight: 700;
+
+    letter-spacing: .16em;
+
+    line-height: 1;
+
+    white-space: nowrap;
+
+    text-shadow:
+        0 2px 3px rgba(0,0,0,.95),
+        0 0 14px rgba(0,0,0,.5);
+}
+
+
+/* =========================================================
+   SUBTÍTULO
+========================================================= */
+
+.subtitulo-fichas {
+
+    color:
+        rgba(207,199,173,.68);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: .22em;
+}
+
+
+/* =========================================================
+   SEPARADOR
+========================================================= */
+
+.encabezado-fichas .separador-titulo {
+
+    width: 230px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin: 8px auto 0;
+}
+
+
+.encabezado-fichas .separador-titulo span {
+
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        rgba(183,163,111,.35);
+}
+
+
+.encabezado-fichas .rombo {
+
+    width: 7px;
+    height: 7px;
+
+    border:
+        1px solid rgba(177,153,96,.7);
+
+    transform: rotate(45deg);
+}
+
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+========================================================= */
+
+.contenido-fichas {
+
+    position: relative;
+
+    z-index: 5;
+
+    width: min(1500px, 94vw);
+
+    min-height:
+        calc(100vh - 120px);
+
+    margin: 0 auto;
+
+    padding:
+        30px
+        clamp(18px, 3vw, 45px)
+        80px;
+
+    overflow: hidden;
+
+    background:
+        rgba(18,17,15,.94);
+
+    border:
+        1px solid rgba(169,149,97,.20);
+
+    box-shadow:
+        inset 0 0 90px rgba(0,0,0,.55),
+        0 20px 55px rgba(0,0,0,.35);
+}
+
+
+/* =========================================================
+   FONDO DOCUMENTAL
+========================================================= */
+
+.fondo-documental-fichas {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    opacity: .75;
+}
+
+
+.fondo-documental-fichas::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.015) 0,
+            rgba(255,255,255,.015) 1px,
+            transparent 1px,
+            transparent 6px
+        ),
+
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,.018) 0,
+            rgba(0,0,0,.018) 1px,
+            transparent 1px,
+            transparent 8px
+        );
+}
+
+
+/* =========================================================
+   MANCHAS DOCUMENTALES
+========================================================= */
+
+.mancha-documental {
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(35px);
+
+    opacity: .20;
+
+    pointer-events: none;
+}
+
+
+.mancha-1 {
+
+    width: 320px;
+    height: 220px;
+
+    top: 8%;
+    left: 4%;
+
+    background:
+        rgba(126,104,70,.32);
+}
+
+
+.mancha-2 {
+
+    width: 420px;
+    height: 260px;
+
+    right: 4%;
+    top: 38%;
+
+    background:
+        rgba(7,30,39,.55);
+}
+
+
+.mancha-3 {
+
+    width: 300px;
+    height: 240px;
+
+    left: 35%;
+    bottom: 3%;
+
+    background:
+        rgba(169,149,97,.16);
+}
+
+
+/* =========================================================
+   CABECERA DEL ARCHIVO
+========================================================= */
+
+.cabecera-archivo-fichas {
+
+    position: relative;
+
+    z-index: 10;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 24px;
+
+    padding-bottom: 14px;
+
+    border-bottom:
+        1px solid rgba(184,164,111,.25);
+}
+
+
+/* =========================================================
+   IDENTIFICACIÓN
+========================================================= */
+
+.identificacion-archivo {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+
+.codigo-archivo {
+
+    color:
+        var(--ficha-dorado);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: .18em;
+}
+
+
+.estado-archivo {
+
+    color:
+        rgba(210,205,186,.65);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .14em;
+}
+
+
+/* =========================================================
+   CONTADOR
+========================================================= */
+
+.contador-fichas {
+
+    flex-shrink: 0;
+
+    padding:
+        8px
+        12px;
+
+    border:
+        1px solid rgba(169,149,97,.30);
+
+    background:
+        rgba(3,16,22,.48);
+
+    color:
+        rgba(214,204,178,.72);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: .14em;
+}
+
+
+/* =========================================================
+   ÁREA DE FICHAS
+========================================================= */
+
+.area-fichas {
+
+    position: relative;
+
+    z-index: 10;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   CONTENEDOR DE FICHAS
+========================================================= */
+
+.contenedor-fichas {
+
+    position: relative;
+
+    z-index: 20;
+
+    width: 100%;
+
+    display: grid;
 
     grid-template-columns:
-    repeat(auto-fill,minmax(280px,1fr));
+        repeat(
+            auto-fill,
+            minmax(245px, 1fr)
+        );
 
-    gap:35px;
+    gap:
+        28px;
 
-    justify-items:center;
+    align-items: start;
+}
 
-    padding:20px;
+
+/* =========================================================
+   ESTADO INICIAL
+========================================================= */
+
+.estado-fichas {
+
+    grid-column:
+        1 / -1;
+
+    min-height: 250px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    color:
+        rgba(211,205,185,.65);
+
+    text-align: center;
+}
+
+
+.estado-fichas p {
+
+    margin:
+        15px 0 5px;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 11px;
+
+    letter-spacing: .20em;
+}
+
+
+.estado-fichas small {
+
+    color:
+        rgba(190,181,157,.48);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .14em;
+}
+
+
+.estado-icono {
+
+    width: 34px;
+    height: 34px;
+
+    border:
+        1px solid rgba(169,149,97,.45);
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transform: rotate(45deg);
+}
+
+
+.estado-icono span {
+
+    width: 10px;
+    height: 10px;
+
+    border:
+        1px solid rgba(169,149,97,.70);
+}
+
+
+/* =========================================================
+   TARJETA FICHA
+========================================================= */
+
+.tarjeta-ficha {
+
+    position: relative;
+
+    min-width: 0;
+
+    cursor: pointer;
+
+    outline: none;
+
+    transition:
+        transform .22s ease,
+        filter .22s ease;
+}
+
+
+.tarjeta-ficha:hover {
+
+    transform:
+        translateY(-6px);
+
+    filter:
+        brightness(1.06);
+}
+
+
+.tarjeta-ficha:focus-visible {
+
+    outline:
+        2px solid rgba(198,178,122,.75);
+
+    outline-offset: 5px;
+}
+
+
+/* =========================================================
+   HOJA
+========================================================= */
+
+.hoja-ficha {
+
+    position: relative;
+
+    width: 100%;
+
+    min-height: 390px;
+
+    padding:
+        25px
+        18px
+        16px;
+
+    overflow: hidden;
+
+    background:
+
+        linear-gradient(
+            145deg,
+            #d1c29f 0%,
+            #c5b48f 42%,
+            #b5a27d 100%
+        );
+
+    border:
+        1px solid rgba(58,50,37,.50);
+
+    box-shadow:
+
+        0 14px 28px rgba(0,0,0,.58),
+
+        0 3px 6px rgba(0,0,0,.35),
+
+        inset 0 0 0 1px rgba(255,255,255,.18),
+
+        inset 0 0 35px rgba(67,51,30,.25);
+
+    color:
+        var(--ficha-tinta);
+}
+
+
+/* =========================================================
+   TEXTURA DE PAPEL
+========================================================= */
+
+.hoja-ficha::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.035) 0,
+            rgba(255,255,255,.035) 1px,
+            transparent 1px,
+            transparent 5px
+        ),
+
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,.025) 0,
+            rgba(0,0,0,.025) 1px,
+            transparent 1px,
+            transparent 8px
+        ),
+
+        radial-gradient(
+            ellipse at 20% 10%,
+            rgba(255,255,255,.18),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            ellipse at 90% 90%,
+            rgba(58,43,25,.20),
+            transparent 38%
+        );
+
+    opacity: .85;
+}
+
+
+/* =========================================================
+   BORDE INTERIOR
+========================================================= */
+
+.hoja-ficha::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 8px;
+
+    pointer-events: none;
+
+    border:
+        1px dashed rgba(70,57,37,.25);
+}
+
+
+/* =========================================================
+   CÓDIGO
+========================================================= */
+
+.codigo-ficha {
+
+    position: relative;
+
+    z-index: 5;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 12px;
+
+    color:
+        rgba(48,43,34,.70);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: .15em;
+}
+
+
+.numero-ficha {
+
+    color:
+        rgba(67,53,32,.85);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   CLIP
+========================================================= */
+
+.clip-ficha {
+
+    position: absolute;
+
+    z-index: 20;
+
+    top: -5px;
+    left: 50%;
+
+    width: 43px;
+    height: 58px;
+
+    transform:
+        translateX(-50%);
+
+    pointer-events: none;
+}
+
+
+.clip-metal {
+
+    position: absolute;
+
+    left: 9px;
+    top: 0;
+
+    width: 25px;
+    height: 52px;
+
+    border:
+        3px solid var(--ficha-metal-oscuro);
+
+    border-bottom: 0;
+
+    border-radius:
+        13px 13px 0 0;
+
+    transform:
+        rotate(2deg);
+
+    box-shadow:
+        1px 2px 3px rgba(0,0,0,.45);
+}
+
+
+.clip-metal::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: -3px;
+    bottom: -7px;
+
+    width: 25px;
+    height: 11px;
+
+    border-bottom:
+        3px solid var(--ficha-metal-oscuro);
+
+    border-radius:
+        0 0 50% 50%;
+}
+
+
+.clip-brillo {
+
+    position: absolute;
+
+    left: 13px;
+    top: 3px;
+
+    width: 5px;
+    height: 38px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255,255,255,.55),
+            rgba(255,255,255,0)
+        );
+
+    opacity: .55;
+}
+
+
+/* =========================================================
+   FOTOGRAFÍA
+========================================================= */
+
+.imagen-ficha {
+
+    position: relative;
+
+    z-index: 5;
+
+    width: 100%;
+
+    height: 155px;
+
+    margin-bottom: 15px;
+
+    padding: 7px;
+
+    background:
+        #3e403b;
+
+    border:
+        1px solid rgba(41,39,32,.70);
+
+    box-shadow:
+        0 5px 10px rgba(0,0,0,.40),
+        inset 0 0 0 1px rgba(255,255,255,.08);
+
+    overflow: hidden;
+}
+
+
+.imagen-ficha img {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    filter:
+        sepia(.22)
+        contrast(.92)
+        saturate(.70)
+        brightness(.88);
+
+    transition:
+        filter .25s ease,
+        transform .25s ease;
+}
+
+
+.tarjeta-ficha:hover
+.imagen-ficha img {
+
+    filter:
+        sepia(.12)
+        contrast(.98)
+        saturate(.82)
+        brightness(.96);
+
+    transform:
+        scale(1.025);
+}
+
+
+/* =========================================================
+   MARCO FOTOGRÁFICO
+========================================================= */
+
+.marco-fotografia {
+
+    position: absolute;
+
+    inset: 7px;
+
+    pointer-events: none;
+
+    border:
+        1px solid rgba(225,216,186,.20);
+
+    box-shadow:
+        inset 0 0 12px rgba(0,0,0,.45);
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+.informacion-ficha {
+
+    position: relative;
+
+    z-index: 5;
+}
+
+
+/* =========================================================
+   CATEGORÍA
+========================================================= */
+
+.categoria-ficha {
+
+    margin-bottom: 5px;
+
+    color:
+        rgba(65,54,37,.68);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    letter-spacing: .17em;
+}
+
+
+/* =========================================================
+   NOMBRE
+========================================================= */
+
+.nombre-ficha {
+
+    margin:
+        0;
+
+    min-height: 42px;
+
+    color:
+        #282923;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:
+        19px;
+
+    line-height:
+        1.08;
+
+    font-weight:
+        700;
+
+    text-transform:
+        uppercase;
+}
+
+
+/* =========================================================
+   LÍNEA
+========================================================= */
+
+.linea-ficha {
+
+    width: 100%;
+
+    height: 1px;
+
+    margin:
+        9px 0 10px;
+
+    background:
+        rgba(66,54,34,.30);
+}
+
+
+/* =========================================================
+   DATOS
+========================================================= */
+
+.datos-ficha {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 7px;
+}
+
+
+.dato-ficha {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.etiqueta-dato {
+
+    color:
+        rgba(68,57,39,.60);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    letter-spacing: .10em;
+}
+
+
+.valor-dato {
+
+    overflow: hidden;
+
+    color:
+        rgba(42,40,33,.88);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+.estado-ficha {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 12px;
+
+    padding-top: 8px;
+
+    border-top:
+        1px dotted rgba(63,51,32,.30);
+
+    color:
+        rgba(63,54,39,.72);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: .08em;
+}
+
+
+.punto-estado {
+
+    width: 7px;
+    height: 7px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background:
+        #536c52;
+
+    border:
+        1px solid rgba(37,53,35,.60);
+
+    box-shadow:
+        0 0 5px rgba(71,104,68,.45);
+}
+
+
+/* =========================================================
+   PIE
+========================================================= */
+
+.pie-ficha {
+
+    position: absolute;
+
+    z-index: 5;
+
+    left: 18px;
+    right: 18px;
+    bottom: 12px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    color:
+        rgba(65,55,38,.58);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 6px;
+
+    letter-spacing: .08em;
+
+    border-top:
+        1px solid rgba(67,55,37,.18);
+
+    padding-top: 6px;
+}
+
+
+/* =========================================================
+   SELLO DOCUMENTAL
+========================================================= */
+
+.sello-fichas {
+
+    position: absolute;
+
+    right: 4%;
+    bottom: 5%;
+
+    z-index: 2;
+
+    width: 100px;
+    height: 100px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    border:
+        2px solid rgba(113,61,53,.32);
+
+    border-radius: 50%;
+
+    color:
+        rgba(113,61,53,.38);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: .12em;
+
+    transform:
+        rotate(-13deg);
+
+    pointer-events: none;
+
+    opacity: .75;
+}
+
+
+.sello-fichas strong {
+
+    font-size: 19px;
+
+    letter-spacing: .08em;
+}
+
+
+/* =========================================================
+   MARCA DOCUMENTAL
+========================================================= */
+
+.marca-documental-fichas {
+
+    position: absolute;
+
+    left: 50%;
+    bottom: 15px;
+
+    z-index: 2;
+
+    transform:
+        translateX(-50%);
+
+    color:
+        rgba(184,164,111,.26);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: .16em;
+
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   VISOR DE FICHA
+========================================================= */
+
+.visor-ficha {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity .25s ease,
+        visibility .25s ease;
+}
+
+
+/* =========================================================
+   VISOR ACTIVO
+========================================================= */
+
+.visor-ficha.activo,
+.visor-ficha.mostrar {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   FONDO DEL VISOR
+========================================================= */
+
+.visor-fondo {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(2,8,12,.82);
+
+    backdrop-filter:
+        blur(5px);
+}
+
+
+/* =========================================================
+   DOCUMENTO COMPLETO
+========================================================= */
+
+.documento-ficha {
+
+    position: relative;
+
+    z-index: 2;
+
+    width:
+        min(1000px, 94vw);
+
+    max-height:
+        90vh;
+
+    overflow: auto;
+
+    background:
+
+        linear-gradient(
+            145deg,
+            #d2c5a5,
+            #bbaa86
+        );
+
+    border:
+        1px solid rgba(54,47,35,.60);
+
+    box-shadow:
+
+        0 30px 70px rgba(0,0,0,.75),
+
+        inset 0 0 50px rgba(61,46,28,.18);
+
+    color:
+        var(--ficha-tinta);
+}
+
+
+/* =========================================================
+   CABECERA DOCUMENTO
+========================================================= */
+
+.cabecera-documento-ficha {
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        150px 1fr 45px;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding:
+        20px 25px;
+
+    border-bottom:
+        1px solid rgba(58,49,33,.30);
+
+    background:
+        rgba(86,69,45,.08);
+}
+
+
+/* =========================================================
+   CÓDIGO DOCUMENTO
+========================================================= */
+
+.codigo-documento {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    font-family:
+        "Courier New",
+        monospace;
+}
+
+
+.codigo-documento span {
+
+    color:
+        rgba(64,54,38,.62);
+
+    font-size: 7px;
+
+    letter-spacing: .16em;
+}
+
+
+.codigo-documento strong {
+
+    color:
+        rgba(44,41,34,.88);
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   TÍTULO DOCUMENTO
+========================================================= */
+
+.titulo-documento {
+
+    text-align: center;
+}
+
+
+.titulo-documento > span {
+
+    color:
+        rgba(70,58,40,.62);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .18em;
+}
+
+
+.titulo-documento h2 {
+
+    margin:
+        5px 0 0;
+
+    color:
+        #2a2a25;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 24px;
+
+    letter-spacing: .10em;
+}
+
+
+/* =========================================================
+   CERRAR VISOR
+========================================================= */
+
+.cerrar-visor-ficha {
+
+    width: 36px;
+    height: 36px;
+
+    border:
+        1px solid rgba(67,55,37,.38);
+
+    background:
+        rgba(53,43,29,.12);
+
+    color:
+        #3d392f;
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease;
+}
+
+
+.cerrar-visor-ficha:hover {
+
+    background:
+        rgba(65,53,34,.20);
+
+    border-color:
+        rgba(67,55,37,.65);
+}
+
+
+/* =========================================================
+   CUERPO DOCUMENTO
+========================================================= */
+
+.cuerpo-documento-ficha {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(280px, 42%)
+        1fr;
+
+    gap: 30px;
+
+    padding: 30px;
+}
+
+
+/* =========================================================
+   IMAGEN VISOR
+========================================================= */
+
+.visor-imagen-ficha {
+
+    width: 100%;
+
+    min-height: 320px;
+
+    padding: 9px;
+
+    background:
+        #3c3e39;
+
+    border:
+        1px solid rgba(42,39,32,.60);
+
+    box-shadow:
+        0 10px 20px rgba(0,0,0,.40);
+
+    overflow: hidden;
+}
+
+
+.visor-imagen-ficha img {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    min-height: 300px;
+
+    object-fit: cover;
+
+    filter:
+        sepia(.18)
+        saturate(.75)
+        contrast(.94);
+}
+
+
+/* =========================================================
+   INFORMACIÓN VISOR
+========================================================= */
+
+.visor-informacion-ficha {
+
+    min-width: 0;
+}
+
+
+.visor-categoria {
+
+    color:
+        rgba(69,57,38,.68);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .16em;
+}
+
+
+.visor-informacion-ficha h3 {
+
+    margin:
+        7px 0 0;
+
+    color:
+        #292923;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size:
+        clamp(24px, 3vw, 36px);
+
+    line-height: 1.08;
+
+    text-transform: uppercase;
+}
+
+
+.visor-linea {
+
+    width: 100%;
+
+    height: 1px;
+
+    margin:
+        15px 0;
+
+    background:
+        rgba(66,54,34,.28);
+}
+
+
+/* =========================================================
+   CAMPOS VISOR
+========================================================= */
+
+.visor-campos {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 22px;
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN
+========================================================= */
+
+.visor-descripcion {
+
+    padding-top: 15px;
+
+    border-top:
+        1px dotted rgba(66,54,34,.28);
+}
+
+
+.visor-descripcion > span {
+
+    color:
+        rgba(69,57,38,.68);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .15em;
+}
+
+
+.visor-descripcion p {
+
+    margin:
+        10px 0 0;
+
+    color:
+        rgba(43,41,34,.90);
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 15px;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   PIE DOCUMENTO
+========================================================= */
+
+.pie-documento-ficha {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding:
+        12px 25px;
+
+    border-top:
+        1px solid rgba(58,49,33,.28);
+
+    color:
+        rgba(68,57,39,.58);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: .12em;
+}
+
+
+/* =========================================================
+   SCROLL VISOR
+========================================================= */
+
+.documento-ficha::-webkit-scrollbar {
+
+    width: 7px;
+}
+
+
+.documento-ficha::-webkit-scrollbar-track {
+
+    background:
+        rgba(0,0,0,.10);
+}
+
+
+.documento-ficha::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(80,68,46,.45);
+
+    border:
+        1px solid rgba(0,0,0,.15);
+}
+
+
+/* =========================================================
+   RESPONSIVE · HORIZONTAL
+========================================================= */
+
+@media (orientation: landscape) {
+
+    .contenedor-fichas {
+
+        grid-template-columns:
+            repeat(
+                auto-fill,
+                minmax(240px, 1fr)
+            );
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE · VERTICAL
+========================================================= */
+
+@media (orientation: portrait) {
+
+    .encabezado-fichas {
+
+        width: 94vw;
+
+        padding:
+            12px 18px;
+    }
+
+
+    .encabezado-fichas h1 {
+
+        font-size:
+            clamp(22px, 6vw, 34px);
+
+        letter-spacing: .10em;
+    }
+
+
+    .contenido-fichas {
+
+        width: 94vw;
+
+        padding:
+            22px 15px 70px;
+    }
+
+
+    .contenedor-fichas {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 18px;
+    }
+
+
+    .hoja-ficha {
+
+        min-height: 350px;
+
+        padding:
+            23px 13px 14px;
+    }
+
+
+    .imagen-ficha {
+
+        height: 130px;
+    }
+
+
+    .nombre-ficha {
+
+        font-size: 15px;
+    }
+
+
+    .datos-ficha {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .cuerpo-documento-ficha {
+
+        grid-template-columns: 1fr;
+
+        padding: 20px;
+    }
+
+
+    .visor-imagen-ficha {
+
+        min-height: 260px;
+    }
+
+
+    .visor-imagen-ficha img {
+
+        min-height: 240px;
+    }
+
+
+    .cabecera-documento-ficha {
+
+        grid-template-columns:
+            1fr 40px;
+    }
+
+
+    .codigo-documento {
+
+        display: none;
+    }
+
+
+    .titulo-documento {
+
+        text-align: left;
+    }
+}
+
+
+/* =========================================================
+   PANTALLAS PEQUEÑAS
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .encabezado-fichas .marca-archivo {
+
+        font-size: 7px;
+
+        letter-spacing: .14em;
+    }
+
+
+    .encabezado-fichas .marca-linea {
+
+        width: 18px;
+    }
+
+
+    .encabezado-fichas h1 {
+
+        font-size:
+            clamp(20px, 7vw, 29px);
+    }
+
+
+    .encabezado-fichas .separador-titulo {
+
+        width: 150px;
+    }
+
+
+    .cabecera-archivo-fichas {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+
+    .contador-fichas {
+
+        align-self: flex-end;
+    }
+
+
+    .contenedor-fichas {
+
+        grid-template-columns:
+            1fr;
+
+        gap: 20px;
+    }
+
+
+    .hoja-ficha {
+
+        min-height: 410px;
+    }
+
+
+    .imagen-ficha {
+
+        height: 165px;
+    }
+
+
+    .datos-ficha {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+
+    .pie-documento-ficha {
+
+        flex-direction: column;
+
+        text-align: center;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO MUY ESTRECHO
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .contenido-fichas {
+
+        width: 96vw;
+
+        padding:
+            15px 8px 60px;
+    }
+
+
+    .hoja-ficha {
+
+        min-height: 390px;
+    }
+
+
+    .imagen-ficha {
+
+        height: 150px;
+    }
+
+
+    .nombre-ficha {
+
+        font-size: 17px;
+    }
+
+
+    .datos-ficha {
+
+        grid-template-columns:
+            1fr;
+    }
+}
+
+
+/* =========================================================
+   PANTALLAS BAJAS
+========================================================= */
+
+@media (max-height: 650px) {
+
+    .encabezado-fichas {
+
+        padding:
+            8px 20px;
+    }
+
+
+    .encabezado-fichas h1 {
+
+        font-size:
+            clamp(22px, 3vw, 35px);
+    }
+
+
+    .subtitulo-fichas {
+
+        display: none;
+    }
+
+
+    .contenido-fichas {
+
+        padding-top: 20px;
+    }
+
+
+    .hoja-ficha {
+
+        min-height: 350px;
+    }
+
+
+    .imagen-ficha {
+
+        height: 125px;
+    }
+}
+
+
+
+
+
+/* =========================================================
+   FICHAS · EXPLORADOR MALVINAS
+   Estética: archivo militar / expediente histórico
+   Fondo: negro transparente
+   Fichas: azul oscuro + acero + detalles amarillos
+========================================================= */
+
+
+/* =========================================================
+   CONTENEDOR GENERAL
+========================================================= */
+
+.contenedorFichas {
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(220px, 1fr));
+
+    gap: 22px;
+
+    padding: 28px;
+
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+    /* NEGRO TRANSPARENTE */
+    background: rgba(0, 0, 0, 0.48);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        inset 0 0 45px rgba(0,0,0,0.65);
 
 }
 
 
-.clip{
-    background:transparent;
+/* =========================================================
+   SCROLL
+========================================================= */
+
+.contenedorFichas::-webkit-scrollbar {
+    width: 8px;
 }
 
-.clip img{
-    display:block;
-    background:transparent;
+.contenedorFichas::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.35);
 }
 
-/* Ficha documental: hoja de archivo, clip visible y fotografia sin marco blanco. */
-.tarjetaFicha{
-    width:280px;
-    min-height:390px;
-    position:relative;
-    padding:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
+.contenedorFichas::-webkit-scrollbar-thumb {
+
+    background: rgba(180,160,110,0.55);
+
+    border-radius: 3px;
 }
 
-.baseFicha{
-    display:block !important;
-    width:100%;
-    height:auto;
+.contenedorFichas::-webkit-scrollbar-thumb:hover {
+
+    background: rgba(205,185,130,0.75);
+
 }
 
-.clip{
-    display:block !important;
-    z-index:3;
+
+/* =========================================================
+   FICHA
+========================================================= */
+
+.tarjetaFicha {
+
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    aspect-ratio: 0.78;
+
+    cursor: pointer;
+
+    outline: none;
+
+    transition:
+        transform .25s ease,
+        filter .25s ease;
+
 }
 
-.imagenFicha{
-    top:76px;
-    width:142px;
-    height:174px;
-    padding:0 !important;
-    overflow:hidden;
-    background:transparent !important;
-    border:3px solid rgba(67,48,28,.85);
-    box-shadow:0 3px 7px rgba(0,0,0,.28) !important;
+
+/* =========================================================
+   HOJA / FONDO DE LA FICHA
+========================================================= */
+
+.fondoFicha {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            145deg,
+            #35342f 0%,
+            #292925 48%,
+            #1d1d1a 100%
+        );
+
+    border:
+        1px solid
+        rgba(185,171,132,0.45);
+
+    box-shadow:
+
+        0 8px 18px rgba(0,0,0,0.55),
+
+        inset 0 0 0 1px
+        rgba(255,255,255,0.035),
+
+        inset 0 0 30px
+        rgba(0,0,0,0.4);
+
+    z-index: 0;
 }
 
-.imagenFicha img{
-    display:block;
-    width:100%;
-    height:100%;
-    padding:0 !important;
-    object-fit:cover;
-    filter:sepia(20%) contrast(92%) brightness(96%) saturate(78%);
+
+/* textura muy sutil */
+
+.fondoFicha::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: .16;
+
+    background-image:
+
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 3px,
+            rgba(255,255,255,.025) 4px
+        );
+
 }
 
-.imagenFicha::after{
-    display:none !important;
+
+/* =========================================================
+   BORDE INTERIOR
+========================================================= */
+
+.tarjetaFicha::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 7px;
+
+    border:
+
+        1px solid
+        rgba(180,165,125,.22);
+
+    pointer-events: none;
+
+    z-index: 2;
+
 }
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.tarjetaFicha:hover {
+
+    transform:
+        translateY(-6px);
+
+    filter:
+        brightness(1.08);
+
+}
+
+
+.tarjetaFicha:hover .fondoFicha {
+
+    border-color:
+        rgba(215,195,140,.75);
+
+    box-shadow:
+
+        0 14px 28px rgba(0,0,0,.7),
+
+        0 0 0 1px
+        rgba(205,185,125,.12),
+
+        inset 0 0 35px
+        rgba(0,0,0,.4);
+
+}
+
+
+/* =========================================================
+   CLIP
+========================================================= */
+
+.clipFicha {
+
+    position: absolute;
+
+    top: -8px;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    width: 38px;
+
+    height: 22px;
+
+    z-index: 8;
+
+    pointer-events: none;
+
+}
+
+
+.clipFicha img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    filter:
+
+        grayscale(1)
+        contrast(1.15)
+        brightness(.72);
+
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.cabeceraFicha {
+
+    position: absolute;
+
+    top: 15px;
+
+    left: 18px;
+
+    right: 18px;
+
+    z-index: 4;
+
+    display: flex;
+
+    justify-content: space-between;
+
+}
+
+
+.numeroFicha {
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 1.5px;
+
+    color:
+        rgba(214,201,161,.75);
+
+    text-transform: uppercase;
+
+}
+
+
+/* =========================================================
+   FOTOGRAFÍA
+========================================================= */
+
+.imagenFicha {
+
+    position: absolute;
+
+    top: 45px;
+
+    left: 17px;
+
+    right: 17px;
+
+    height: 47%;
+
+    overflow: hidden;
+
+    background:
+        #080d12;
+
+    border:
+
+        1px solid
+        rgba(205,190,150,.4);
+
+    z-index: 3;
+
+    box-shadow:
+
+        inset 0 0 20px
+        rgba(0,0,0,.6);
+
+}
+
+
+.imagenFicha img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    filter:
+
+        grayscale(.18)
+        contrast(1.05)
+        saturate(.8);
+
+    transition:
+        transform .35s ease,
+        filter .35s ease;
+
+}
+
+
+.tarjetaFicha:hover
+.imagenFicha img {
+
+    transform:
+        scale(1.04);
+
+    filter:
+        grayscale(0)
+        contrast(1.08)
+        saturate(.9);
+
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+.infoFicha {
+
+    position: absolute;
+
+    left: 18px;
+
+    right: 18px;
+
+    top: calc(45px + 47% + 13px);
+
+    z-index: 4;
+
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.infoFicha h3 {
+
+    margin: 0;
+
+    color:
+        #eee9dc;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    letter-spacing: .5px;
+
+    text-transform: uppercase;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   CAMPOS
+========================================================= */
+
+.camposTarjeta {
+
+    margin-top: 10px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+}
+
+
+.campoFicha {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    padding-bottom: 3px;
+
+    border-bottom:
+
+        1px solid
+        rgba(255,255,255,.07);
+
+}
+
+
+.etiquetaCampo {
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: 1px;
+
+    color:
+        rgba(193,183,151,.65);
+
+    text-transform: uppercase;
+
+}
+
+
+.valorCampo {
+
+    max-width: 58%;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 8px;
+
+    color:
+        rgba(238,235,225,.8);
+
+}
+
+
+/* =========================================================
+   PIE
+========================================================= */
+
+.pieFicha {
+
+    position: absolute;
+
+    bottom: 12px;
+
+    left: 18px;
+
+    right: 18px;
+
+    z-index: 5;
+
+    padding-top: 7px;
+
+    border-top:
+
+        1px solid
+        rgba(180,165,125,.25);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: 1.2px;
+
+    color:
+        rgba(205,190,145,.65);
+
+    text-align: center;
+
+}
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+.estadoFichas {
+
+    grid-column: 1 / -1;
+
+    min-height: 180px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    color:
+        rgba(235,230,215,.65);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    letter-spacing: 2px;
+
+    font-size: 11px;
+
+}
+
+
+.estado-icono {
+
+    font-size: 25px;
+
+    color:
+        rgba(190,175,130,.7);
+
+}
+
+
+/* =========================================================
+   FOCO TECLADO
+========================================================= */
+
+.tarjetaFicha.ficha-enfocada {
+
+    transform:
+        translateY(-5px);
+
+}
+
+
+.tarjetaFicha.ficha-enfocada .fondoFicha {
+
+    border-color:
+        rgba(225,205,145,.9);
+
+    box-shadow:
+
+        0 0 0 2px
+        rgba(210,190,130,.18),
+
+        0 12px 25px
+        rgba(0,0,0,.65);
+
+}
+
+
+/* =========================================================
+   RESPONSIVE · HORIZONTAL
+========================================================= */
+
+@media (min-width: 1100px) {
+
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(auto-fill, minmax(225px, 1fr));
+
+        gap: 24px;
+
+        padding: 30px;
+
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(3, minmax(180px, 1fr));
+
+        gap: 18px;
+
+        padding: 22px;
+
+    }
+
+}
+
+
+/* =========================================================
+   VERTICAL / TOTEM
+========================================================= */
+
+@media (orientation: portrait) {
+
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(2, minmax(170px, 1fr));
+
+        gap: 18px;
+
+        padding: 18px;
+
+    }
+
+
+    .infoFicha h3 {
+
+        font-size: 13px;
+
+    }
+
+}
+
+
+/* =========================================================
+   PANTALLAS MUY PEQUEÑAS
+========================================================= */
+
+@media (max-width: 520px) {
+
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(2, minmax(140px, 1fr));
+
+        gap: 12px;
+
+        padding: 12px;
+
+    }
+
+
+    .imagenFicha {
+
+        top: 40px;
+
+        left: 13px;
+        right: 13px;
+
+        height: 45%;
+
+    }
+
+
+    .infoFicha {
+
+        left: 14px;
+        right: 14px;
+
+    }
+
+
+    .infoFicha h3 {
+
+        font-size: 11px;
+
+    }
+
+}
+
+
+/* =========================================================
+   DESACTIVADA
+========================================================= */
+
+.tarjetaFicha[data-activa="false"] {
+
+    filter:
+        grayscale(1)
+        opacity(.65);
+
+}
+
+
+.tarjetaFicha[data-activa="false"]:hover {
+
+    filter:
+        grayscale(1)
+        opacity(.8);
+
+}
+

@@ -1,0 +1,399 @@
+
+<!-- =======================================================
+     HISTORIA COMPLETA
+     Museo Malvinas · Archivo Histórico
+
+     Expediente histórico individual
+
+     Este archivo NO contiene lógica.
+     La información será cargada por:
+
+     historiaCompleta.js
+======================================================= -->
+
+
+<section
+        id="historiaCompleta"
+        class="historiaCompleta"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloHistoria"
+>
+
+
+    <!-- ===================================================
+         FONDO / SOMBRA
+    =================================================== -->
+
+    <div
+            class="historiaFondo"
+            aria-hidden="true">
+    </div>
+
+
+    <!-- ===================================================
+         EXPEDIENTE
+    =================================================== -->
+
+    <article
+            class="expedienteHistoria"
+            role="document"
+    >
+
+
+        <!-- =================================================
+             CABECERA
+        ================================================= -->
+
+        <header
+                class="cabeceraHistoria"
+        >
+
+
+            <!-- Número de expediente -->
+
+            <div
+                    class="identificadorHistoria"
+            >
+
+                <span
+                        class="selloHistoria"
+                        aria-hidden="true">
+                    ARCHIVO
+                </span>
+
+                <span
+                        id="numeroHistoria"
+                        class="numeroHistoria"
+                >
+                    EXP. Nº ----
+                </span>
+
+            </div>
+
+
+            <!-- Título -->
+
+            <div
+                    class="tituloCabeceraHistoria"
+            >
+
+                <span
+                        class="subtituloHistoria"
+                >
+                    MUSEO MALVINAS
+                    ·
+                    ARCHIVO HISTÓRICO
+                </span>
+
+
+                <h2
+                        id="tituloHistoria"
+                >
+                    EXPEDIENTE SIN TÍTULO
+                </h2>
+
+            </div>
+
+
+            <!-- Botón cerrar -->
+
+            <button
+                    type="button"
+                    class="cerrarHistoria"
+                    aria-label="Cerrar expediente"
+                    onclick="cerrarHistoriaCompleta()"
+            >
+                <span aria-hidden="true">
+                    ×
+                </span>
+            </button>
+
+
+        </header>
+
+
+        <!-- =================================================
+             CUERPO
+        ================================================= -->
+
+        <div
+                class="cuerpoHistoria"
+        >
+
+
+            <!-- =============================================
+                 ESTADO DE CARGA
+            ============================================== -->
+
+            <div
+                    id="estadoHistoria"
+                    class="estadoHistoria"
+                    hidden
+                    aria-live="polite"
+            >
+                CONSULTANDO EXPEDIENTE...
+            </div>
+
+
+            <!-- =============================================
+                 IDENTIFICACIÓN PRINCIPAL
+            ============================================== -->
+
+            <section
+                    class="identificacionHistoria"
+                    aria-label="Información principal"
+            >
+
+
+                <!-- =========================================
+                     FOTOGRAFÍA
+                ========================================== -->
+
+                <div
+                        class="columnaFotografiaHistoria"
+                >
+
+                    <div
+                            class="marcoFotografiaHistoria"
+                    >
+
+                        <div
+                                class="imagenHistoria"
+                        >
+
+                            <img
+                                    id="imagenHistoria"
+                                    src="/imagenes/default.png"
+                                    alt="Fotografía del expediente"
+                            >
+
+                        </div>
+
+
+                        <div
+                                class="pieFotografiaHistoria"
+                        >
+                            DOCUMENTO FOTOGRÁFICO
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     DATOS
+                ========================================== -->
+
+                <div
+                        class="datosPrincipalesHistoria"
+                >
+
+
+                    <div
+                            class="rotuloSeccionHistoria"
+                    >
+                        DATOS DEL EXPEDIENTE
+                    </div>
+
+
+                    <div
+                            id="camposHistoria"
+                            class="camposHistoria"
+                    >
+                        <!--
+                            Los campos se generan
+                            dinámicamente desde
+                            historiaCompleta.js
+                        -->
+                    </div>
+
+
+                    <!-- =====================================
+                         RESUMEN
+                    ====================================== -->
+
+                    <div
+                            id="resumenHistoria"
+                            class="resumenHistoria"
+                    >
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+            <!-- =============================================
+                 SEPARADOR
+            ============================================== -->
+
+            <div
+                    class="separadorHistoria"
+                    aria-hidden="true"
+            >
+
+                <span></span>
+
+                <b>
+                    EXPEDIENTE
+                </b>
+
+                <span></span>
+
+            </div>
+
+
+            <!-- =============================================
+                 HISTORIA / TEXTO
+            ============================================== -->
+
+            <section
+                    class="seccionHistoria"
+                    aria-labelledby="tituloSeccionHistoria"
+            >
+
+                <div
+                        class="rotuloSeccionHistoria"
+                        id="tituloSeccionHistoria"
+                >
+                    HISTORIA
+                </div>
+
+
+                <div
+                        id="textoHistoria"
+                        class="textoHistoria"
+                >
+                    <!--
+                        El texto completo de la ficha
+                        será insertado por JS.
+                    -->
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 ETIQUETAS
+            ============================================== -->
+
+            <section
+                    class="seccionHistoria seccionEtiquetasHistoria"
+                    aria-label="Etiquetas"
+            >
+
+                <div
+                        class="rotuloSeccionHistoria"
+                >
+                    CLASIFICACIÓN
+                </div>
+
+
+                <div
+                        id="etiquetasHistoria"
+                        class="etiquetasHistoria"
+                >
+                    <!--
+                        Etiquetas dinámicas
+                    -->
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 MATERIAL MULTIMEDIA
+            ============================================== -->
+
+            <section
+                    class="seccionHistoria seccionMultimediaHistoria"
+                    aria-label="Material histórico"
+            >
+
+                <div
+                        class="rotuloSeccionHistoria"
+                >
+                    MATERIAL HISTÓRICO
+                </div>
+
+
+                <div
+                        id="multimediaHistoria"
+                        class="multimediaHistoria"
+                >
+                    <!--
+                        Fotografías, videos,
+                        audios y documentos.
+                    -->
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 FICHAS RELACIONADAS
+            ============================================== -->
+
+            <section
+                    class="seccionHistoria seccionRelacionadasHistoria"
+                    aria-label="Expedientes relacionados"
+            >
+
+                <div
+                        class="rotuloSeccionHistoria"
+                >
+                    EXPEDIENTES RELACIONADOS
+                </div>
+
+
+                <div
+                        id="relacionadasHistoria"
+                        class="relacionadasHistoria"
+                >
+                    <!--
+                        Fichas relacionadas
+                        generadas por JS.
+                    -->
+                </div>
+
+            </section>
+
+
+        </div>
+
+
+        <!-- =================================================
+             PIE DEL EXPEDIENTE
+        ================================================= -->
+
+        <footer
+                class="pieHistoria"
+        >
+
+            <div
+                    class="codigoArchivoHistoria"
+            >
+                MUSEO MALVINAS
+                ·
+                ARCHIVO DOCUMENTAL
+            </div>
+
+
+            <div
+                    class="leyendaArchivoHistoria"
+            >
+                DOCUMENTACIÓN HISTÓRICA
+            </div>
+
+        </footer>
+
+
+    </article>
+
+
+</section>

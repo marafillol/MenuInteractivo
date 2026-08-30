@@ -2,145 +2,144 @@
 <html lang="es">
 
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">
+    <!-- =====================================================
+         CONFIGURACIÓN BÁSICA
+    ====================================================== -->
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Museo Malvinas</title>
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/bienvenida.css">
-    <link rel="stylesheet" href="css/explorador.css">
-    <link rel="stylesheet" href="css/ficha.css">
-    <link rel="stylesheet" href="css/vistaPrevia.css">
-    <link rel="stylesheet" href="css/historiaCompleta.css">
-    <link rel="stylesheet" href="css/transitions.css">
 
+    <!-- =====================================================
+         FUENTES
+    ====================================================== -->
+
+    <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+    >
+
+    <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+    >
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap"
+            rel="stylesheet"
+    >
+
+
+    <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+    >
+
+    <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+    >
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap"
+            rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         ESTILOS PÚBLICOS
+    ====================================================== -->
+
+    <link
+            rel="stylesheet"
+            href="css/estilos.css"
+    >
+
+    <link
+            rel="stylesheet"
+            href="css/bienvenida.css"
+    >
+
+    <link
+            rel="stylesheet"
+            href="css/explorador.css"
+    >
+
+    <link
+            rel="stylesheet"
+            href="css/ficha.css"
+    >
+
+    <link
+            rel="stylesheet"
+            href="css/historiaCompleta.css"
+    >
+
+    <link
+            rel="stylesheet"
+            href="css/transitions.css"
+    >
 
 </head>
 
+
 <body class="cargando-visita">
 
-<div id="app"></div>
 
+<!-- =====================================================
+     APLICACIÓN
+
+     Todas las vistas públicas se renderizan dentro
+     de este contenedor:
+
+     - Bienvenida
+     - Explorador
+     - Fichas
+     - Historia completa
+====================================================== -->
+
+<main id="app"></main>
+
+
+<!-- =====================================================
+     JAVASCRIPT PÚBLICO
+====================================================== -->
+
+<!-- API -->
 <script src="js/api.js"></script>
+
+
+<!-- Pantalla de bienvenida -->
 <script src="js/bienvenida.js"></script>
+
+
+<!-- Explorador / categorías / buscador -->
 <script src="js/explorador.js"></script>
+
+
+<!-- Fichas -->
 <script src="js/fichas.js"></script>
-<script src="js/historiaCompleta.js"></script>
-<script type="module" src="js/app.js"></script>
 
 
-<div id="modalHistoriaCompleta" class="modalHistoria">
-
-    <div class="contenidoHistoria">
-
-
-        <button
-                id="cerrarHistoria"
-                class="cerrarHistoria">
-
-            ✖
-
-        </button>
+<!-- Historia completa + multimedia -->
+<script src="js/historiacompleta.js"></script>
 
 
-        <div id="contenidoHistoriaCompleta">
+<!-- Aplicación y transiciones -->
+<script
+        type="module"
+        src="js/app.js">
+</script>
 
-        </div>
-
-
-    </div>
-
-</div>
-
-
-<div id="visorImagen" class="visorImagen">
-
-
-    <button
-            onclick="cerrarImagenMultimedia()">
-
-        ✖
-
-    </button>
-
-
-    <img
-            id="imagenAmpliada">
-
-
-</div>
-
-<div id="visorVideo" class="visorImagen">
-
-
-    <button
-            onclick="cerrarVideoMultimedia()">
-
-        ✖
-
-    </button>
-
-
-    <video
-            id="videoAmpliado"
-            controls>
-
-    </video>
-
-
-</div>
-
-
-<div id="visorDocumento" class="visorImagen">
-
-
-    <button
-            onclick="cerrarDocumentoMultimedia()">
-
-        ✖
-
-    </button>
-
-
-    <iframe
-            id="documentoAmpliado">
-
-    </iframe>
-
-
-</div>
-
-
-<div id="visorAudio" class="visorImagen">
-
-
-    <button
-            onclick="cerrarAudioMultimedia()">
-
-        ✖
-
-    </button>
-
-
-    <audio
-            id="audioAmpliado"
-            controls>
-
-    </audio>
-
-
-</div>
 
 </body>
 

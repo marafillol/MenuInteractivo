@@ -1,904 +1,3116 @@
-/* ==========================================
-   EXPLORADOR - EXPEDIENTE HISTÓRICO
-========================================== */
 
-.explorador{
+/* =========================================================
+   EXPLORADOR · MUSEO MALVINAS
+   ARCHIVO HISTÓRICO · VETERANOS
+   =========================================================
 
-    width:100%;
-    height:100vh;
+   ESTRUCTURA:
 
-    display:flex;
-    flex-direction:column;
+   FONDO FOTOGRÁFICO
+          ↓
+   RECTÁNGULO / ÁREA DOCUMENTAL
+          ↓
+   FICHAS RECTANGULARES
+          ↓
+   NAVEGACIÓN INFERIOR
 
-     overflow:visible;
+   ESTÉTICA:
+   • Archivo histórico
+   • Expediente militar
+   • Azul petróleo
+   • Papel envejecido
+   • Metal gastado
+   • Documentación de 1982
+========================================================= */
 
 
-    background-image:
+/* =========================================================
+   VARIABLES
+========================================================= */
 
-    linear-gradient(
-        rgba(90,65,35,.25),
-        rgba(90,65,35,.25)
-    ),
+:root {
 
-    url("../img/pergamino.png");
+    --azul-archivo: #071923;
+    --azul-profundo: #091b24;
+    --azul-panel: rgba(8, 27, 35, .94);
+
+    --azul-borde: rgba(181, 160, 104, .35);
+    --azul-linea: rgba(195, 174, 119, .25);
+
+    --papel: #c8b996;
+    --papel-claro: #d8ccb0;
+    --papel-oscuro: #8d7b59;
+
+    --carton: #796247;
+    --carton-oscuro: #514331;
+
+    --tinta: #292a25;
+    --tinta-clara: #d8d1bc;
+
+    --metal: #78817d;
+    --metal-oscuro: #394542;
+
+    --dorado: #a99561;
+
+    --rojo-sello: #783f38;
+}
 
 
-    background-size:cover;
+/* =========================================================
+   RESET
+========================================================= */
 
-    background-position:center;
+* {
+    box-sizing: border-box;
+}
 
+
+html,
+body {
+
+    width: 100%;
+    min-height: 100%;
+
+    margin: 0;
+    padding: 0;
 
 }
 
-/* ==========================================
-   CABECERA ARCHIVO MILITAR
-========================================== */
 
-.cabecera{
+body {
+    overflow: hidden;
 
-    position:relative;
-    z-index:1;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
 
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    background:
+        #000;
+}
 
-    padding:28px 50px;
 
-    min-height:95px;
+/* =========================================================
+   PANTALLA PRINCIPAL
+========================================================= */
+
+.pantalla-veteranos {
+
+    position: relative;
+
+    width: 100%;
+    height: 100dvh;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background-color:
+        #000;
 
     background-image:
-        linear-gradient(
-            rgba(40,35,25,.45),
-            rgba(40,35,25,.45)
+        url("/imagenes/img4.png");
+
+    background-repeat:
+        no-repeat;
+
+    background-size:
+        cover;
+
+    background-position:
+        center center;
+
+    background-attachment:
+        fixed;
+
+    scroll-behavior:
+        smooth;
+}
+
+
+/* =========================================================
+   OSCURECIMIENTO GENERAL
+========================================================= */
+
+.pantalla-veteranos::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    background:
+        rgba(0, 0, 0, .72);
+}
+
+
+/* =========================================================
+   VIÑETA
+========================================================= */
+
+.pantalla-veteranos::after {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 15%,
+            rgba(0,0,0,.08) 55%,
+            rgba(0,0,0,.42) 100%
+        );
+}
+
+
+/* =========================================================
+   TEXTURA
+========================================================= */
+
+.textura-fondo {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100dvh;
+
+    z-index: 3;
+
+    pointer-events: none;
+
+    opacity: .12;
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.025) 0,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px,
+            transparent 6px
         ),
-        url("../img/cabecera-pergamino.png");
 
-    background-size:cover;
-    background-position:center;
-
-    margin-bottom:20px;
-
-    color:#e6d8b8;
-
-
-
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,.025) 0,
+            rgba(0,0,0,.025) 1px,
+            transparent 1px,
+            transparent 8px
+        );
 }
 
-.cabecera::before{
 
-    content:"";
+/* =========================================================
+   ENCABEZADO
+========================================================= */
 
-    position:absolute;
+.encabezado-veteranos {
 
-    z-index:-1;
+    position: fixed;
 
-    left:0;
+    z-index: 300;
 
-    bottom:-20px;
+    top: 0;
+    left: 50%;
 
-    width:100%;
+    transform:
+        translateX(-50%);
 
-    height:40px;
+    width:
+        min(1180px, 92vw);
 
-    background-image:
-        url("../img/cabecera-pergamino.png");
+    padding:
+        16px 34px 13px;
 
-    background-size:cover;
+    background:
+        rgba(5, 20, 27, .32);
 
-    background-position:center bottom;
+    border-bottom:
+        1px solid rgba(184, 164, 111, .30);
 
-    filter:drop-shadow(0 8px 8px rgba(0,0,0,.45));
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.28);
 
-
-    clip-path:polygon(
-
-        0 0,
-        100% 0,
-
-        10% 90%,
-        95% 55%,
-        90% 45%,
-        84% 80%,
-        78% 60%,
-        72% 100%,
-        65% 70%,
-        58% 85%,
-        22% 55%,
-        46% 75%,
-        39% 95%,
-        32% 65%,
-        25% 85%,
-        18% 45%,
-        12% 70%,
-        6% 55%,
-        0 90%
-
-    );
-
+    backdrop-filter:
+        blur(2px);
 }
 
-.cabecera h1{
+
+/* =========================================================
+   LÍNEAS ENCABEZADO
+========================================================= */
+
+.encabezado-linea {
+
+    height: 1px;
+
+    background:
+        rgba(199,181,132,.28);
+}
 
 
-    font-size:34px;
+.encabezado-linea.superior {
+
+    margin-bottom:
+        10px;
+}
 
 
-    letter-spacing:4px;
+.encabezado-linea.inferior {
+
+    margin-top:
+        10px;
+}
 
 
-    text-transform:uppercase;
+/* =========================================================
+   CONTENIDO ENCABEZADO
+========================================================= */
 
+.encabezado-contenido {
+
+    position:
+        relative;
+
+    text-align:
+        center;
+}
+
+
+/* =========================================================
+   MARCA
+========================================================= */
+
+.marca-archivo {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        12px;
+
+    color:
+        rgba(202,192,160,.72);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        9px;
+
+    letter-spacing:
+        .28em;
+}
+
+
+.marca-linea {
+
+    width:
+        35px;
+
+    height:
+        1px;
+
+    background:
+        rgba(189,168,113,.42);
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.encabezado-veteranos h1 {
+
+    margin:
+        5px 0 2px;
+
+    color:
+        #ddd5bd;
+
+    font-family:
+        "Courier New",
+        Courier,
+        monospace;
+
+    font-size:
+        clamp(27px, 3.4vw, 46px);
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .16em;
+
+    line-height:
+        1;
+
+    white-space:
+        nowrap;
 
     text-shadow:
-
-    3px 3px 4px black;
-
-
+        0 2px 3px rgba(0,0,0,.95),
+        0 0 14px rgba(0,0,0,.5);
 }
 
 
+/* =========================================================
+   SUBTÍTULO
+========================================================= */
 
-.cabeceraIzquierda{
+.subtitulo {
 
+    color:
+        rgba(207,199,173,.68);
 
-    display:flex;
+    font-family:
+        "Courier New",
+        monospace;
 
+    font-size:
+        9px;
 
-    align-items:center;
-
-
-    gap:30px;
-
-
+    letter-spacing:
+        .22em;
 }
 
 
+/* =========================================================
+   SEPARADOR
+========================================================= */
 
-.cabeceraDerecha{
+.separador-titulo {
 
+    width:
+        230px;
 
-    display:flex;
+    display:
+        flex;
 
-    align-items:center;
+    align-items:
+        center;
 
-    margin-right:20px;
+    gap:
+        8px;
 
+    margin:
+        8px auto 0;
 }
-/* ==========================================
-   BOTÓN ÍNDICE
-========================================== */
 
 
-#btnIndice{
+.separador-titulo span {
+
+    flex:
+        1;
+
+    height:
+        1px;
+
+    background:
+        rgba(183,163,111,.35);
+}
 
 
-    padding:12px 22px;
+.rombo {
 
+    width:
+        7px;
 
-    background:#514532;
-
-
-    color:#eee0bd;
-
+    height:
+        7px;
 
     border:
+        1px solid rgba(177,153,96,.7);
 
-    1px solid #a48a59;
-
-
-    border-radius:3px;
-
-
-    cursor:pointer;
-
-
-    font-family:Georgia,serif;
-
-
-
-
-
+    transform:
+        rotate(45deg);
 }
 
 
+/* =========================================================
+   CARTEL HOMENAJE
+========================================================= */
 
-#btnIndice:hover{
+.frase-homenaje {
 
+    position:
+        absolute;
 
-    background:#68583d;
+    left:
+        clamp(18px, 3vw, 55px);
 
+    top:
+        14px;
 
-}
+    z-index:
+        320;
 
+    width:
+        180px;
 
+    padding:
+        13px 15px 14px;
 
-/* ==========================================
-   BUSCADOR DOCUMENTO
-========================================== */
+    background:
+        linear-gradient(
+            135deg,
+            rgba(105,82,57,.76),
+            rgba(57,49,39,.68)
+        );
 
-#buscador{
-
-    width:430px;
-
-    height:45px;
-
-    padding:12px 18px;
-
-
-    background:#eee0c0;
-
-
-    color:#332719;
-
+    color:
+        #ddd2b5;
 
     border:
+        1px solid rgba(193,166,111,.34);
 
-    1px solid #80633d;
+    box-shadow:
+        4px 8px 22px rgba(0,0,0,.50);
 
+    backdrop-filter:
+        blur(2px);
 
-    border-radius:3px;
-
-
-    font-family:Georgia,serif;
-
-
-    font-size:17px;
-
-
-
-
+    transform:
+        rotate(-1.2deg);
 }
 
-/* ==========================================
-   PANEL ÍNDICE
-========================================== */
+
+.frase-homenaje::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        5px;
+
+    border:
+        1px dashed rgba(210,192,151,.22);
+
+    pointer-events:
+        none;
+}
 
 
-#panelIndice{
+.frase-homenaje::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        -5px;
+
+    right:
+        11px;
+
+    width:
+        10px;
+
+    height:
+        10px;
+
+    border-radius:
+        50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #c5c9c5,
+            #707774 45%,
+            #303735
+        );
+
+    box-shadow:
+        1px 2px 3px rgba(0,0,0,.55);
+}
 
 
-    position:fixed;
+.logo-homenaje {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    display:
+        block;
+
+    width:
+        43px;
+
+    height:
+        43px;
+
+    margin:
+        0 auto 5px;
+
+    object-fit:
+        contain;
+
+    filter:
+        grayscale(.25)
+        sepia(.18)
+        contrast(.95)
+        drop-shadow(
+            1px 2px 2px rgba(0,0,0,.5)
+        );
+}
 
 
-    top:0;
+.frase-homenaje p {
 
-    left:-320px;
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    margin:
+        0;
+
+    color:
+        #e0d5bb;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size:
+        11px;
+
+    font-style:
+        italic;
+
+    line-height:
+        1.25;
+
+    text-align:
+        center;
+
+    text-shadow:
+        0 1px 2px rgba(0,0,0,.7);
+}
 
 
-    width:320px;
+.frase-homenaje small {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    display:
+        block;
+
+    margin-top:
+        6px;
+
+    color:
+        rgba(213,201,171,.65);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        6px;
+
+    letter-spacing:
+        .10em;
+
+    text-align:
+        center;
+}
 
 
-    height:100vh;
+/* =========================================================
+   CONTENIDO CENTRAL
+   ---------------------------------------------------------
+   ESTE ES EL ESCRITORIO / ÁREA DE ARCHIVO.
+========================================================= */
+
+.contenido-central {
+
+    position:
+        relative;
+
+    z-index:
+        10;
+
+    width:
+        100%;
+
+    min-height:
+        1500px;
+
+    padding:
+        185px
+        clamp(20px, 5vw, 75px)
+        180px;
+
+    background:
+        transparent;
+
+    overflow:
+        visible;
+}
 
 
-    padding:25px;
+/* =========================================================
+   RECTÁNGULO DOCUMENTAL
+   ---------------------------------------------------------
+   ESTE RECTÁNGULO SÍ SE VE.
+
+   LAS FICHAS VAN ENCIMA.
+========================================================= */
 
 
-    box-sizing:border-box;
+/* =========================================================
+   BORDE INTERIOR DEL RECTÁNGULO
+========================================================= */
 
+.mensaje-central::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        10px;
+
+    z-index:
+        0;
+
+    pointer-events:
+        none;
+
+    border:
+        1px dashed rgba(185,165,110,.20);
 
     background:
 
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.012) 0,
+            rgba(255,255,255,.012) 1px,
+            transparent 1px,
+            transparent 7px
+        ),
 
-    linear-gradient(
-        rgba(245,230,195,.85),
-        rgba(205,180,130,.9)
-    );
-
-
-    border-right:
-
-    5px solid #6d5030;
-
-
-    transition:left .35s;
-
-
-
-
-
-    z-index:1000;
-
-
+        radial-gradient(
+            ellipse at center,
+            rgba(255,255,255,.025),
+            transparent 65%
+        );
 }
 
 
+/* =========================================================
+   CONTENIDO DECORATIVO DEL RECTÁNGULO
+========================================================= */
 
-#panelIndice.abierto{
+.numero-archivo {
 
+    position:
+        relative;
 
-    left:0;
+    z-index:
+        3;
 
+    display:
+        block;
 
+    color:
+        rgba(181,161,106,.72);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        9px;
+
+    letter-spacing:
+        .20em;
+
+    margin-bottom:
+        7px;
 }
 
 
+.mensaje-central h2 {
 
-.cabeceraIndice{
+    position:
+        relative;
 
+    z-index:
+        3;
 
-    display:flex;
+    margin:
+        0;
 
-    justify-content:space-between;
+    color:
+        #d8d0b9;
 
-    align-items:center;
+    font-family:
+        "Courier New",
+        monospace;
 
-    margin-bottom:25px;
+    font-size:
+        clamp(20px, 2.5vw, 30px);
 
+    line-height:
+        1.15;
 
+    letter-spacing:
+        .03em;
+
+    text-shadow:
+        0 2px 4px rgba(0,0,0,.75);
 }
 
 
+.mensaje-central > p {
 
-.cabeceraIndice h2{
+    position:
+        relative;
 
+    z-index:
+        3;
 
-    text-transform:uppercase;
+    margin:
+        10px 0 28px;
 
-    letter-spacing:2px;
+    max-width:
+        560px;
 
+    color:
+        rgba(211,204,184,.62);
 
-    color:#4a3620;
+    font-size:
+        12px;
 
-
+    line-height:
+        1.5;
 }
 
 
+/* =========================================================
+   CONTENEDOR DE FICHAS
+   ---------------------------------------------------------
+   IMPORTANTE:
 
-/* cerrar */
+   Las fichas están DENTRO de .mensaje-central.
 
+   Por eso tienen:
+   • position relative
+   • z-index alto
+   • display grid
 
-#btnCerrarIndice{
+   De esta manera quedan SOBRE el rectángulo.
+========================================================= */
 
+#contenedorFichas,
+.contenedorFichas {
 
-    border:none;
+    position:
+        relative;
 
-    background:none;
+    z-index:
+        20;
 
-
-    cursor:pointer;
-
-
-    font-size:25px;
-
-
-    color:#4a3620;
-
-
-}
-
-
-
-/* ==========================================
-   CATEGORÍAS COMO ARCHIVOS
-========================================== */
-
-
-#panelIndice ul{
-
-
-    list-style:none;
-
-    padding:0;
-
-    margin:0;
-
-
-}
-
-
-
-#panelIndice li{
-
-
-    padding:15px;
-
-
-    margin-bottom:10px;
-
-
-    background:
-
-    rgba(255,245,220,.35);
-
-
-    border-left:
-
-    5px solid #765532;
-
-
-    cursor:pointer;
-
-
-    color:#3d2d1c;
-
-
-    transition:.25s;
-
-
-}
-
-
-
-#panelIndice li:hover{
-
-
-    background:#cbb184;
-
-
-    transform:translateX(6px);
-
-
-}
-
-
-
-.seleccionada{
-
-
-    background:#bda16c !important;
-
-
-    font-weight:bold;
-
-
-}
-
-
-
-/* ==========================================
-   ZONA PRINCIPAL
-========================================== */
-
-.contenidoPrincipal{
-
-    flex:1;
-
-    width:100%;
-
-    min-height:0;
-
-    padding:30px;
-
-    box-sizing:border-box;
-
-    display:block;
-
-    overflow-y:auto;
-
-    position:relative;
-
-    z-index:1;
-
-    margin-top:-20px;
-
-}
-
-/* ==========================================
-   FICHAS
-========================================== */
-
-#contenedorFichas{
-
-    width:100%;
-
-    display:grid;
+    display:
+        grid;
 
     grid-template-columns:
-    repeat(auto-fill,minmax(280px,1fr));
+        repeat(
+            auto-fill,
+            minmax(220px, 1fr)
+        );
 
-    gap:35px;
+    gap:
+        28px;
 
-    justify-items:center;
+    width:
+        100%;
 
+    margin:
+        28px auto 0;
+
+    padding:
+        8px 5px 30px;
+
+    align-items:
+        start;
 }
 
 
+/* =========================================================
+   FICHA RECTANGULAR
+   ---------------------------------------------------------
+   ESTA ES LA FICHA QUE QUERÍAS.
 
+   NO ES UNA TIRA.
+   NO OCUPA TODO EL RENGLÓN.
+   ES UNA TARJETA.
+========================================================= */
 
+.tarjeta-ficha {
 
+    position:
+        relative;
 
+    width:
+        100%;
 
+    min-width:
+        0;
 
-/* oculto */
+    height:
+        300px;
 
-.oculto{
+    cursor:
+        pointer;
 
-    display:none;
+    outline:
+        none;
 
+    transition:
+        transform .22s ease,
+        filter .22s ease;
 }
 
 
+/* =========================================================
+   HOJA DE LA FICHA
+========================================================= */
 
-/* ==========================================
-   OCULTAR BARRAS DE SCROLL
-========================================== */
+.hoja-ficha {
 
+    position:
+        relative;
 
-/* Chrome, Edge, Safari */
+    width:
+        100%;
 
-.explorador::-webkit-scrollbar,
-.contenidoPrincipal::-webkit-scrollbar,
-#contenedorFichas::-webkit-scrollbar,
-#visorFicha::-webkit-scrollbar{
+    height:
+        100%;
 
-    display:none;
+    display:
+        flex;
 
-}
+    flex-direction:
+        column;
 
+    padding:
+        13px;
 
-/* Firefox */
+    background:
 
-.explorador,
-.contenidoPrincipal,
-#contenedorFichas,
-#visorFicha{
-
-    scrollbar-width:none;
-
-}
-
-
-/* ==========================================
-   BOTÓN ÍNDICE CON LOGO
-========================================== */
-
-
-#btnIndice{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-}
-
-
-.logoIndice{
-
-    width:28px;
-
-    height:28px;
-
-    object-fit:contain;
-
-}
-
-/* Adaptacion para pantallas tactiles, verticales y horizontales. */
-.explorador{
-    height:100dvh;
-}
-
-#btnIndice:focus-visible,
-#btnCerrarIndice:focus-visible,
-#buscador:focus-visible,
-.categoria:focus-visible,
-.tarjetaFicha:focus-visible{
-    outline:3px solid #DBB060;
-    outline-offset:4px;
-}
-
-@media(max-width:760px){
-    .cabecera{
-        min-height:0;
-        padding:16px 20px;
-        gap:14px;
-        flex-wrap:wrap;
-    }
-
-    .cabeceraIzquierda,
-    .cabeceraDerecha{
-        width:100%;
-        margin-right:0;
-    }
-
-    .cabeceraIzquierda{
-        justify-content:space-between;
-        gap:14px;
-    }
-
-    .cabecera h1{
-        margin:0;
-        font-size:24px;
-        letter-spacing:2px;
-        text-align:right;
-    }
-
-    #btnIndice{
-        flex-shrink:0;
-        padding:10px 14px;
-    }
-
-    #buscador{
-        box-sizing:border-box;
-        width:100%;
-        height:42px;
-    }
-
-    #panelIndice{
-        width:min(320px, 88vw);
-        left:-88vw;
-    }
-
-    #panelIndice.abierto{
-        left:0;
-    }
-
-    .contenidoPrincipal{
-        padding:22px 16px;
-        margin-top:-12px;
-    }
-
-    #contenedorFichas{
-        grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
-        gap:24px;
-        padding:8px 0 24px;
-    }
-}
-
-@media(max-width:430px){
-    .cabecera h1{
-        font-size:20px;
-    }
-
-    .tarjetaFicha{
-        transform:scale(.92);
-        transform-origin:top center;
-        margin-bottom:-28px;
-    }
-}
-
-@media(orientation:landscape) and (max-height:620px){
-    .cabecera{
-        min-height:0;
-        padding:10px 24px;
-        margin-bottom:12px;
-    }
-
-    .cabecera h1{
-        font-size:22px;
-    }
-
-    .contenidoPrincipal{
-        padding:16px 24px;
-        margin-top:-8px;
-    }
-}
-
-/* Estilo actual de la visita, alimentado por la configuración global. */
-.explorador{
-    --color-primario:#163A61;
-    --color-acento:#DBB060;
-    --color-fondo:#F4EDDB;
-    --fondo-visitante:url("../img/pergamino.png");
-    background-image:var(--fondo-visitante);
-    background-attachment:fixed;
-}
-
-.cabecera{
-    min-height:74px;
-    padding:18px 48px;
-
-    background-image:
         linear-gradient(
-            rgba(10, 38, 71, .55),
-            rgba(10, 38, 71, .55)
+            145deg,
+            #d1c19d 0%,
+            #c5b38d 45%,
+            #b4a27c 100%
+        );
+
+    border:
+        1px solid rgba(49,43,31,.55);
+
+    box-shadow:
+
+        0 9px 18px rgba(0,0,0,.42),
+
+        0 2px 4px rgba(0,0,0,.35),
+
+        inset 0 0 0 2px rgba(255,255,255,.16),
+
+        inset 0 0 18px rgba(76,59,34,.18);
+
+    overflow:
+        hidden;
+
+    transition:
+        transform .22s ease,
+        box-shadow .22s ease;
+}
+
+
+/* =========================================================
+   TEXTURA DEL PAPEL DE LA FICHA
+========================================================= */
+
+.hoja-ficha::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        5px;
+
+    z-index:
+        0;
+
+    pointer-events:
+        none;
+
+    border:
+        1px dashed rgba(68,57,38,.22);
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.035) 0,
+            rgba(255,255,255,.035) 1px,
+            transparent 1px,
+            transparent 6px
         ),
-        url("../img/mar.png");
-    background-size:cover;
-    background-position:center;
 
-    box-shadow:0 2px 18px rgba(22,58,97,.22);
+        radial-gradient(
+            ellipse at 20% 10%,
+            rgba(255,255,255,.10),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            ellipse at 90% 90%,
+            rgba(60,45,28,.10),
+            transparent 35%
+        );
 }
 
-.cabecera::before{
-    content:"";
-    position:absolute;
-    z-index:2;
-    left:0;
-    bottom:-14px; /* cuánto entra el papel al contenido de abajo, ir probando */
-    width:100%;
-    height:46px; /* alto total de la franja ondulada; a más alto, más entra en el mar de arriba */
 
-    /* misma textura lisa que el fondo del contenido (sin tinte):
-       así el borde de abajo de esta franja se funde solo, y el
-       contraste real queda contra el mar de arriba. */
-    background-image:url("../img/pergamino.png");
-    background-size:cover;
-    background-position:center top;
+/* =========================================================
+   HOVER FICHA
+========================================================= */
 
-    filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));
+.tarjeta-ficha:hover {
 
-    /* la onda arranca directamente desde arriba (sin tramo recto);
-       todo lo que queda afuera del polígono se ve transparente y
-       deja pasar el mar de la cabecera. Ir probando los % de alto
-       para cambiar la forma de la rotura. */
-    clip-path:polygon(
-        0% 55%,
-        6% 42%,
-        12% 62%,
-        18% 40%,
-        24% 58%,
-        30% 42%,
-        36% 60%,
-        42% 46%,
-        48% 64%,
-        54% 42%,
-        60% 58%,
-        66% 44%,
-        72% 62%,
-        78% 40%,
-        84% 58%,
-        90% 46%,
-        96% 60%,
-        100% 50%,
-        100% 100%,
-        0% 100%
-    );
-
-    pointer-events:none;
+    transform:
+        translateY(-6px);
 }
 
-.cabecera h1{
-    margin:0;
-    font-family:"Cormorant Garamond", Georgia, serif;
-    font-size:36px;
-    letter-spacing:1px;
-    text-shadow:none;
+
+.tarjeta-ficha:hover .hoja-ficha {
+
+    box-shadow:
+
+        0 16px 28px rgba(0,0,0,.55),
+
+        0 3px 7px rgba(0,0,0,.38),
+
+        inset 0 0 0 2px rgba(255,255,255,.18),
+
+        inset 0 0 22px rgba(76,59,34,.20);
 }
 
-#btnIndice{
-    border-color:rgba(255,255,255,.5);
-    background:transparent;
-    border-radius:6px;
+
+.tarjeta-ficha:focus-visible {
+
+    transform:
+        translateY(-5px);
 }
 
-#btnIndice:hover{
-    background:rgba(255,255,255,.14);
+
+.tarjeta-ficha:focus-visible .hoja-ficha {
+
+    outline:
+        2px solid rgba(211,187,126,.80);
+
+    outline-offset:
+        3px;
 }
 
-#buscador{
-    border:1px solid var(--color-acento);
-    border-radius:6px;
-    box-shadow:none;
+
+/* =========================================================
+   CÓDIGO DE FICHA
+========================================================= */
+
+.codigo-ficha {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    flex-shrink:
+        0;
+
+    margin-bottom:
+        8px;
+
+    padding-bottom:
+        6px;
+
+    border-bottom:
+        1px solid rgba(64,53,34,.28);
+
+    color:
+        #514630;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        8px;
+
+    letter-spacing:
+        .10em;
 }
 
-#panelIndice{
-    background:var(--color-fondo);
-    border-right:1px solid var(--color-acento);
-    box-shadow:8px 0 24px rgba(22,58,97,.18);
+
+.numero-ficha {
+
+    font-weight:
+        700;
 }
 
-#panelIndice li{
-    border-left:3px solid transparent;
-    border-radius:4px;
-    background:rgba(255,255,255,.45);
+
+/* =========================================================
+   CLIP
+========================================================= */
+
+.clip-ficha {
+
+    position:
+        absolute;
+
+    z-index:
+        10;
+
+    top:
+        -4px;
+
+    left:
+        50%;
+
+    width:
+        42px;
+
+    height:
+        22px;
+
+    transform:
+        translateX(-50%);
+
+    pointer-events:
+        none;
 }
 
-#panelIndice li:hover,
-#panelIndice .seleccionada{
-    background:rgba(219,176,96,.28) !important;
-    border-left-color:var(--color-primario);
-    transform:none;
+
+.clip-metal {
+
+    position:
+        absolute;
+
+    left:
+        3px;
+
+    top:
+        2px;
+
+    width:
+        36px;
+
+    height:
+        15px;
+
+    border:
+        2px solid #505956;
+
+    border-bottom:
+        0;
+
+    border-radius:
+        9px 9px 0 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            #303634,
+            #8b938e,
+            #424947
+        );
+
+    box-shadow:
+        0 2px 3px rgba(0,0,0,.45);
 }
 
-.contenidoPrincipal{
-    margin-top:0;
+
+.clip-brillo {
+
+    position:
+        absolute;
+
+    left:
+        9px;
+
+    top:
+        4px;
+
+    width:
+        23px;
+
+    height:
+        2px;
+
+    background:
+        rgba(255,255,255,.45);
 }
 
-#contenedorFichas{
-    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
-    gap:24px;
-    align-items:stretch;
+
+/* =========================================================
+   FOTOGRAFÍA
+   ---------------------------------------------------------
+   IMAGEN ARRIBA.
+========================================================= */
+
+.imagen-ficha {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    width:
+        100%;
+
+    height:
+        145px;
+
+    flex-shrink:
+        0;
+
+    overflow:
+        hidden;
+
+    background:
+        #343a38;
+
+    border:
+        5px solid #5c584c;
+
+    box-shadow:
+
+        0 2px 5px rgba(0,0,0,.40),
+
+        inset 0 0 0 1px rgba(0,0,0,.30);
 }
 
-.tarjetaFicha{
-    box-sizing:border-box;
-    width:100%;
-    max-width:320px;
-    min-height:0;
-    padding:0;
-    border:0;
-    border-radius:0;
-    background:transparent;
-    box-shadow:none;
-    transform:none;
+
+.imagen-ficha img {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    filter:
+        sepia(.28)
+        saturate(.72)
+        contrast(.95);
+
+    transition:
+        transform .3s ease,
+        filter .3s ease;
 }
 
-.tarjetaFicha:hover{
-    transform:translateY(-4px);
-    box-shadow:none;
+
+.tarjeta-ficha:hover .imagen-ficha img {
+
+    transform:
+        scale(1.035);
+
+    filter:
+        sepia(.20)
+        saturate(.82)
+        contrast(1);
 }
 
-.baseFicha,
-.clip{
-    display:none;
+
+/* =========================================================
+   MARCO DE FOTOGRAFÍA
+========================================================= */
+
+.marco-fotografia {
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    z-index:
+        3;
+
+    pointer-events:
+        none;
+
+    border:
+        1px solid rgba(235,223,190,.20);
 }
 
-.imagenFicha{
-    position:static;
-    width:100%;
-    height:205px;
-    box-sizing:border-box;
-    padding:0;
-    transform:none;
-    background:rgba(22,58,97,.06);
-    border-radius:5px;
-    box-shadow:none;
+
+/* =========================================================
+   INFORMACIÓN DE LA FICHA
+========================================================= */
+
+.informacion-ficha {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    flex:
+        1;
+
+    min-height:
+        0;
+
+    padding:
+        9px 3px 5px;
+
+    overflow:
+        hidden;
 }
 
-.imagenFicha img{
-    box-sizing:border-box;
-    padding:8px;
-    border-radius:5px;
-    filter:none;
+
+/* =========================================================
+   CATEGORÍA
+========================================================= */
+
+.categoria-ficha {
+
+    margin-bottom:
+        3px;
+
+    color:
+        #6a5a3c;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        7px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .12em;
+
+    text-transform:
+        uppercase;
 }
 
-.imagenFicha::after{
-    display:none;
+
+/* =========================================================
+   NOMBRE
+========================================================= */
+
+.nombre-ficha {
+
+    margin:
+        0;
+
+    color:
+        #272720;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+
+    line-height:
+        1.12;
+
+    white-space:
+        nowrap;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
 }
 
-.infoFicha{
-    position:static;
-    width:auto;
-    margin-top:16px;
-    transform:none;
-    text-align:left;
+
+/* =========================================================
+   LÍNEA
+========================================================= */
+
+.linea-ficha {
+
+    width:
+        100%;
+
+    height:
+        1px;
+
+    margin:
+        7px 0;
+
+    background:
+        rgba(71,59,38,.28);
 }
 
-.infoFicha h3{
-    color:var(--color-primario);
-    font-family:"Cormorant Garamond", Georgia, serif;
-    font-size:25px;
-    letter-spacing:0;
+
+/* =========================================================
+   DATOS
+========================================================= */
+
+.datos-ficha {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        5px 10px;
 }
 
-.camposTarjeta small{
-    color:#3a4a5b;
+
+.dato-ficha {
+
+    min-width:
+        0;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        1px;
 }
 
-.tarjetaFicha:focus-visible,
-#btnIndice:focus-visible,
-#btnCerrarIndice:focus-visible,
-#buscador:focus-visible,
-.categoria:focus-visible{
-    outline-color:var(--color-acento);
+
+.etiqueta-dato {
+
+    color:
+        #766644;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        6px;
+
+    letter-spacing:
+        .08em;
 }
 
-.explorador.sin-buscador #buscador{
-    display:none;
+
+.valor-dato {
+
+    color:
+        #3c382d;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        8px;
+
+    white-space:
+        nowrap;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
 }
 
-.explorador.tarjetas-compactas #contenedorFichas{
-    grid-template-columns:repeat(auto-fill, minmax(205px, 1fr));
-    gap:16px;
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+.estado-ficha {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+    margin-top:
+        7px;
+
+    color:
+        #665b45;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        6px;
+
+    letter-spacing:
+        .06em;
 }
 
-.explorador.tarjetas-compactas .tarjetaFicha{
-    min-height:290px;
-    padding:10px;
+
+.punto-estado {
+
+    width:
+        5px;
+
+    height:
+        5px;
+
+    flex-shrink:
+        0;
+
+    border-radius:
+        50%;
+
+    background:
+        #53614f;
+
+    box-shadow:
+        0 0 0 2px rgba(83,97,79,.12);
 }
 
-.explorador.tarjetas-compactas .imagenFicha{
-    height:165px;
+
+/* =========================================================
+   PIE DE FICHA
+========================================================= */
+
+.pie-ficha {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    flex-shrink:
+        0;
+
+    padding-top:
+        7px;
+
+    border-top:
+        1px solid rgba(70,58,38,.26);
+
+    color:
+        #665a41;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        6px;
+
+    letter-spacing:
+        .07em;
 }
 
-.explorador.tarjetas-compactas .infoFicha{
-    margin-top:11px;
+
+/* =========================================================
+   SELLO DECORATIVO
+========================================================= */
+
+.sello {
+
+    display:
+        none !important;
 }
 
-@media(max-width:760px){
-    .cabecera{
-        padding:16px 20px;
+
+/* =========================================================
+   DOCUMENTOS DECORATIVOS
+========================================================= */
+
+.documento-fondo {
+
+    display:
+        none !important;
+}
+
+
+/* =========================================================
+   BARRA DE NAVEGACIÓN
+========================================================= */
+
+.barra-navegacion {
+
+    position:
+        fixed;
+
+    z-index:
+        400;
+
+    left:
+        50%;
+
+    bottom:
+        16px;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(760px, 82vw);
+
+    min-height:
+        70px;
+
+    display:
+        flex;
+
+    align-items:
+        stretch;
+
+    background:
+        rgba(0,0,0,.72);
+
+    border:
+        1px solid rgba(173,158,113,.34);
+
+    box-shadow:
+        0 8px 28px rgba(0,0,0,.50);
+
+    backdrop-filter:
+        blur(4px);
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.boton-navegacion {
+
+    flex:
+        1;
+
+    border:
+        0;
+
+    border-right:
+        1px solid rgba(193,173,123,.20);
+
+    background:
+        transparent;
+
+    color:
+        #c9c2a9;
+
+    cursor:
+        pointer;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    transition:
+        background .2s ease,
+        color .2s ease;
+}
+
+
+.boton-navegacion:last-child {
+
+    border-right:
+        0;
+}
+
+
+.boton-navegacion:hover,
+.boton-navegacion:focus-visible {
+
+    background:
+        rgba(207,191,144,.08);
+
+    color:
+        #eee5c9;
+
+    outline:
+        none;
+}
+
+
+/* =========================================================
+   ICONOS
+========================================================= */
+
+.icono-boton {
+
+    display:
+        block;
+
+    margin-bottom:
+        4px;
+}
+
+
+.icono-boton svg {
+
+    width:
+        21px;
+
+    height:
+        21px;
+
+    fill:
+        none;
+
+    stroke:
+        #b7a46f;
+
+    stroke-width:
+        1.4;
+}
+
+
+.texto-boton {
+
+    font-size:
+        9px;
+
+    letter-spacing:
+        .22em;
+}
+
+
+/* =========================================================
+   PANELES INFERIORES
+========================================================= */
+
+.panel-inferior {
+
+    position:
+        fixed;
+
+    z-index:
+        500;
+
+    bottom:
+        100px;
+
+    max-height:
+        min(62vh, 560px);
+
+    overflow-y:
+        auto;
+
+    padding:
+        26px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(67,56,43,.96),
+            rgba(45,39,32,.97)
+        );
+
+    border:
+        1px solid rgba(205,184,139,.48);
+
+    box-shadow:
+
+        0 18px 45px rgba(0,0,0,.72),
+
+        0 5px 12px rgba(0,0,0,.45),
+
+        inset 0 0 0 1px rgba(255,255,255,.05),
+
+        inset 0 0 35px rgba(35,25,17,.38);
+
+    opacity:
+        0;
+
+    visibility:
+        hidden;
+
+    pointer-events:
+        none;
+
+    transform:
+        translateY(20px);
+
+    transition:
+        opacity .22s ease,
+        transform .22s ease,
+        visibility .22s ease;
+
+    backdrop-filter:
+        blur(4px);
+}
+
+
+/* =========================================================
+   TEXTURA PANELES
+========================================================= */
+
+.panel-inferior::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        6px;
+
+    z-index:
+        0;
+
+    pointer-events:
+        none;
+
+    border:
+        1px dashed rgba(222,204,164,.25);
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.018) 0,
+            rgba(255,255,255,.018) 1px,
+            transparent 1px,
+            transparent 5px
+        ),
+
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,.018) 0,
+            rgba(0,0,0,.018) 1px,
+            transparent 1px,
+            transparent 8px
+        );
+}
+
+
+/* =========================================================
+   ÍNDICE
+========================================================= */
+
+.panel-indice {
+
+    left:
+        9%;
+
+    width:
+        min(500px, 42vw);
+}
+
+
+.panel-indice.activo {
+
+    opacity:
+        1;
+
+    visibility:
+        visible;
+
+    pointer-events:
+        auto;
+
+    transform:
+        translateY(0);
+}
+
+
+/* =========================================================
+   BÚSQUEDA
+========================================================= */
+
+.panel-busqueda {
+
+    right:
+        9%;
+
+    width:
+        min(500px, 42vw);
+}
+
+
+.panel-busqueda.activo {
+
+    opacity:
+        1;
+
+    visibility:
+        visible;
+
+    pointer-events:
+        auto;
+
+    transform:
+        translateY(0);
+}
+
+
+/* =========================================================
+   CABECERA PANELES
+========================================================= */
+
+.cabecera-panel {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-start;
+
+    gap:
+        15px;
+
+    background:
+        transparent;
+
+    margin:
+        0;
+
+    padding:
+        0;
+}
+
+
+/* =========================================================
+   ETIQUETA PANEL
+========================================================= */
+
+.etiqueta-panel {
+
+    display:
+        block;
+
+    margin-bottom:
+        5px;
+
+    color:
+        #a99561;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        8px;
+
+    letter-spacing:
+        .20em;
+}
+
+
+/* =========================================================
+   TÍTULO PANEL
+========================================================= */
+
+.cabecera-panel h2 {
+
+    margin:
+        0;
+
+    color:
+        #ddd7c5;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        22px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .03em;
+}
+
+
+/* =========================================================
+   LÍNEA PANEL
+========================================================= */
+
+.linea-archivo {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    height:
+        1px;
+
+    margin:
+        13px 0;
+
+    background:
+        rgba(184,164,111,.28);
+}
+
+
+/* =========================================================
+   CERRAR PANEL
+========================================================= */
+
+.cerrar-panel {
+
+    position:
+        relative;
+
+    z-index:
+        5;
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+    flex-shrink:
+        0;
+
+    border:
+        1px solid rgba(184,164,111,.32);
+
+    background:
+        rgba(4,17,23,.55);
+
+    color:
+        #d7ceb6;
+
+    font-size:
+        20px;
+
+    line-height:
+        1;
+
+    cursor:
+        pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease;
+}
+
+
+.cerrar-panel:hover {
+
+    background:
+        rgba(169,149,97,.16);
+
+    border-color:
+        rgba(200,181,128,.55);
+}
+
+
+/* =========================================================
+   CONTENIDO ÍNDICE
+========================================================= */
+
+.contenido-indice {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+}
+
+
+.indice-vacio {
+
+    color:
+        rgba(211,205,185,.62);
+
+    text-align:
+        center;
+
+    font-style:
+        italic;
+}
+
+
+/* =========================================================
+   ITEMS ÍNDICE
+========================================================= */
+
+.item-indice {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    padding:
+        9px 10px;
+
+    border:
+        0;
+
+    border-bottom:
+        1px dotted rgba(184,164,111,.22);
+
+    background:
+        transparent !important;
+
+    color:
+        #d5d0bf !important;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    text-align:
+        left;
+
+    cursor:
+        pointer;
+
+    transition:
+        background .15s ease,
+        padding-left .15s ease;
+}
+
+
+.item-indice:hover {
+
+    background:
+        rgba(169,149,97,.10) !important;
+
+    padding-left:
+        15px;
+}
+
+
+/* =========================================================
+   CAMPO DE BÚSQUEDA
+========================================================= */
+
+.campo-busqueda {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    width:
+        100%;
+
+    height:
+        44px;
+
+    background:
+        rgba(3,15,21,.62);
+
+    border:
+        1px solid rgba(184,164,111,.34);
+
+    box-shadow:
+        inset 0 0 12px rgba(0,0,0,.28);
+}
+
+
+.icono-campo {
+
+    width:
+        42px;
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+}
+
+
+.icono-campo svg {
+
+    width:
+        19px;
+
+    height:
+        19px;
+
+    fill:
+        none;
+
+    stroke:
+        #b4a46f;
+
+    stroke-width:
+        1.5;
+}
+
+
+#buscador {
+
+    flex:
+        1;
+
+    min-width:
+        0;
+
+    height:
+        100%;
+
+    padding:
+        0 5px;
+
+    border:
+        0;
+
+    outline:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        #e0dac8;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        13px;
+}
+
+
+#buscador::placeholder {
+
+    color:
+        rgba(201,193,169,.50);
+}
+
+
+/* =========================================================
+   LIMPIAR
+========================================================= */
+
+.limpiar-busqueda {
+
+    width:
+        42px;
+
+    height:
+        100%;
+
+    border:
+        0;
+
+    background:
+        transparent;
+
+    color:
+        #b8ad91;
+
+    font-size:
+        20px;
+
+    cursor:
+        pointer;
+}
+
+
+/* =========================================================
+   TECLADO
+========================================================= */
+
+.teclado-virtual {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        4px;
+
+    margin-top:
+        12px;
+}
+
+
+.fila-teclas {
+
+    display:
+        flex;
+
+    gap:
+        4px;
+}
+
+
+.fila-teclas button {
+
+    flex:
+        1;
+
+    min-width:
+        0;
+
+    height:
+        36px;
+
+    border:
+        1px solid rgba(184,164,111,.26);
+
+    background:
+        rgba(4,17,23,.62);
+
+    color:
+        #d5cfbd;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        10px;
+
+    cursor:
+        pointer;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease;
+}
+
+
+.fila-teclas button:hover {
+
+    background:
+        rgba(169,149,97,.15);
+
+    border-color:
+        rgba(184,164,111,.48);
+}
+
+
+.fila-teclas button:active {
+
+    transform:
+        translateY(1px);
+}
+
+
+.tecla-especial {
+
+    flex:
+        1.5 !important;
+}
+
+
+.tecla-espacio {
+
+    flex:
+        0 1 55% !important;
+}
+
+
+/* =========================================================
+   SCROLL PANELES
+========================================================= */
+
+.panel-inferior::-webkit-scrollbar {
+
+    width:
+        5px;
+}
+
+
+.panel-inferior::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(169,149,97,.40);
+}
+
+
+.panel-inferior::-webkit-scrollbar-track {
+
+    background:
+        rgba(0,0,0,.20);
+}
+
+
+/* =========================================================
+   SCROLL PRINCIPAL
+========================================================= */
+
+.pantalla-veteranos::-webkit-scrollbar {
+
+    width:
+        8px;
+}
+
+
+.pantalla-veteranos::-webkit-scrollbar-track {
+
+    background:
+        rgba(0,0,0,.20);
+}
+
+
+.pantalla-veteranos::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(169,149,97,.45);
+
+    border:
+        1px solid rgba(0,0,0,.25);
+}
+
+
+.pantalla-veteranos::-webkit-scrollbar-thumb:hover {
+
+    background:
+        rgba(169,149,97,.65);
+}
+
+
+/* =========================================================
+   HORIZONTAL
+========================================================= */
+
+@media (orientation: landscape) {
+
+    .encabezado-veteranos {
+
+        width:
+            min(1180px, 94vw);
     }
 
-    .cabecera h1{
-        font-size:28px;
+
+    .contenido-central {
+
+        padding-top:
+            180px;
     }
 
-    .tarjetaFicha{
-        max-width:none;
+
+    .mensaje-central {
+
+        min-height:
+            1120px;
     }
+
+
+    #contenedorFichas,
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(
+                auto-fill,
+                minmax(220px, 1fr)
+            );
+    }
+
+
+    .panel-indice {
+
+        left:
+            7%;
+    }
+
+
+    .panel-busqueda {
+
+        right:
+            7%;
+    }
+
 }
+
+
+/* =========================================================
+   VERTICAL
+========================================================= */
+
+@media (orientation: portrait) {
+
+    .encabezado-veteranos {
+
+        width:
+            94vw;
+
+        padding:
+            12px 18px;
+    }
+
+
+    .encabezado-veteranos h1 {
+
+        font-size:
+            clamp(22px, 6vw, 34px);
+
+        letter-spacing:
+            .10em;
+    }
+
+
+    .frase-homenaje {
+
+        top:
+            10px;
+
+        left:
+            10px;
+
+        width:
+            115px;
+
+        padding:
+            8px;
+
+        transform:
+            rotate(-1deg);
+    }
+
+
+    .logo-homenaje {
+
+        width:
+            30px;
+
+        height:
+            30px;
+    }
+
+
+    .frase-homenaje p {
+
+        font-size:
+            8px;
+    }
+
+
+    .frase-homenaje small {
+
+        font-size:
+            5px;
+    }
+
+
+    .contenido-central {
+
+        min-height:
+            1600px;
+
+        padding:
+            145px
+            12px
+            130px;
+    }
+
+
+    .mensaje-central {
+
+        min-height:
+            1450px;
+
+        padding:
+            28px 18px 60px;
+    }
+
+
+    #contenedorFichas,
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap:
+            18px;
+
+        padding:
+            5px 2px 25px;
+    }
+
+
+    .tarjeta-ficha {
+
+        height:
+            270px;
+    }
+
+
+    .imagen-ficha {
+
+        height:
+            125px;
+    }
+
+
+    .nombre-ficha {
+
+        font-size:
+            15px;
+    }
+
+
+    .barra-navegacion {
+
+        width:
+            92vw;
+
+        bottom:
+            9px;
+
+        min-height:
+            62px;
+    }
+
+
+    .panel-inferior {
+
+        left:
+            50%;
+
+        right:
+            auto;
+
+        bottom:
+            82px;
+
+        width:
+            90vw;
+
+        max-height:
+            68vh;
+
+        transform:
+            translate(-50%, 20px);
+    }
+
+
+    .panel-indice,
+    .panel-busqueda {
+
+        transform:
+            translate(-50%, 20px);
+    }
+
+
+    .panel-indice.activo,
+    .panel-busqueda.activo {
+
+        transform:
+            translate(-50%, 0);
+    }
+
+}
+
+
+/* =========================================================
+   PANTALLAS BAJAS
+========================================================= */
+
+@media (max-height: 650px) {
+
+    .encabezado-veteranos {
+
+        padding:
+            8px 20px;
+    }
+
+
+    .encabezado-veteranos h1 {
+
+        font-size:
+            clamp(22px, 3vw, 35px);
+    }
+
+
+    .subtitulo {
+
+        display:
+            none;
+    }
+
+
+    .contenido-central {
+
+        padding-top:
+            125px;
+
+        padding-bottom:
+            120px;
+
+        min-height:
+            1450px;
+    }
+
+
+    .mensaje-central {
+
+        min-height:
+            1300px;
+    }
+
+
+    .barra-navegacion {
+
+        min-height:
+            56px;
+
+        bottom:
+            8px;
+    }
+
+
+    .panel-inferior {
+
+        bottom:
+            72px;
+
+        max-height:
+            72vh;
+    }
+
+
+    .frase-homenaje {
+
+        transform:
+            rotate(-1deg)
+            scale(.82);
+
+        transform-origin:
+            top left;
+    }
+
+
+    .tarjeta-ficha {
+
+        height:
+            260px;
+    }
+
+
+    .imagen-ficha {
+
+        height:
+            115px;
+    }
+
+}
+
+
+/* =========================================================
+   PANTALLAS PEQUEÑAS
+========================================================= */
+
+@media (max-width: 550px) {
+
+    .marca-archivo {
+
+        font-size:
+            7px;
+
+        letter-spacing:
+            .15em;
+    }
+
+
+    .marca-linea {
+
+        width:
+            18px;
+    }
+
+
+    .encabezado-veteranos h1 {
+
+        font-size:
+            clamp(20px, 6vw, 29px);
+    }
+
+
+    .separador-titulo {
+
+        width:
+            150px;
+    }
+
+
+    .frase-homenaje {
+
+        width:
+            100px;
+
+        padding:
+            7px;
+
+        top:
+            8px;
+
+        left:
+            7px;
+    }
+
+
+    .logo-homenaje {
+
+        width:
+            25px;
+
+        height:
+            25px;
+    }
+
+
+    .frase-homenaje p {
+
+        font-size:
+            7px;
+    }
+
+
+    .frase-homenaje small {
+
+        display:
+            none;
+    }
+
+
+    .contenido-central {
+
+        padding:
+            115px
+            8px
+            110px;
+    }
+
+
+    .mensaje-central {
+
+        min-height:
+            1350px;
+
+        padding:
+            24px 12px 50px;
+    }
+
+
+    #contenedorFichas,
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap:
+            12px;
+    }
+
+
+    .tarjeta-ficha {
+
+        height:
+            245px;
+    }
+
+
+    .hoja-ficha {
+
+        padding:
+            9px;
+    }
+
+
+    .imagen-ficha {
+
+        height:
+            105px;
+
+        border-width:
+            4px;
+    }
+
+
+    .nombre-ficha {
+
+        font-size:
+            13px;
+    }
+
+
+    .datos-ficha {
+
+        gap:
+            3px 6px;
+    }
+
+
+    .valor-dato {
+
+        font-size:
+            7px;
+    }
+
+
+    .pie-ficha {
+
+        font-size:
+            5px;
+    }
+
+
+    .barra-navegacion {
+
+        width:
+            94vw;
+
+        min-height:
+            58px;
+    }
+
+
+    .texto-boton {
+
+        font-size:
+            8px;
+    }
+
+
+    .panel-inferior {
+
+        padding:
+            20px 18px;
+    }
+
+
+    .cabecera-panel h2 {
+
+        font-size:
+            18px;
+    }
+
+}
+
+
+/* =========================================================
+   TELÉFONO MUY ESTRECHO
+========================================================= */
+
+@media (max-width: 400px) and (orientation: portrait) {
+
+    .frase-homenaje {
+
+        width:
+            82px;
+
+        padding:
+            6px;
+    }
+
+
+    .logo-homenaje {
+
+        width:
+            22px;
+
+        height:
+            22px;
+    }
+
+
+    .frase-homenaje p {
+
+        font-size:
+            6.5px;
+    }
+
+
+    .encabezado-veteranos {
+
+        width:
+            96vw;
+    }
+
+
+    .contenido-central {
+
+        min-height:
+            1450px;
+
+        padding:
+            105px
+            6px
+            105px;
+    }
+
+
+    .mensaje-central {
+
+        min-height:
+            1350px;
+
+        padding:
+            20px 10px 45px;
+    }
+
+
+    #contenedorFichas,
+    .contenedorFichas {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap:
+            9px;
+    }
+
+
+    .tarjeta-ficha {
+
+        height:
+            225px;
+    }
+
+
+    .imagen-ficha {
+
+        height:
+            92px;
+    }
+
+
+    .nombre-ficha {
+
+        font-size:
+            11px;
+    }
+
+
+    .categoria-ficha {
+
+        font-size:
+            6px;
+    }
+
+
+    .estado-ficha {
+
+        font-size:
+            5px;
+    }
+
+}
+

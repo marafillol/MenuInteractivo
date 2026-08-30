@@ -1,680 +1,1677 @@
-async function abrirHistoriaCompleta(idFicha){
-        console.log(
-            "Historia completa clickeada:",
-            idFicha
+
+// =======================================================
+// HISTORIA COMPLETA
+// Museo Malvinas · Archivo Histórico
+//
+// RESPONSABILIDADES:
+//
+// • Obtener una ficha individual desde la API
+// • Mostrar el expediente completo
+// • Mostrar fotografía
+// • Mostrar campos dinámicos de la plantilla
+// • Mostrar etiquetas
+// • Mostrar multimedia
+// • Mostrar fichas relacionadas
+// • Abrir y cerrar el expediente
+//
+// IMPORTANTE:
+//
+// Este archivo NO depende todavía del Explorador.
+// El Explorador se conectará más adelante.
+//
+// Endpoint utilizado:
+//
+// GET /api/public/fichas/:id_ficha
+// =======================================================
+
+
+// =======================================================
+// CONFIGURACIÓN
+// =======================================================
+
+const CONFIG_HISTORIA = {
+
+    api: "/api/public/fichas",
+
+    contenedor: "historiaCompleta",
+
+    titulo: "tituloHistoria",
+
+    imagen: "imagenHistoria",
+
+    resumen: "resumenHistoria",
+
+    texto: "textoHistoria",
+
+    campos: "camposHistoria",
+
+    etiquetas: "etiquetasHistoria",
+
+    multimedia: "multimediaHistoria",
+
+    relacionadas: "relacionadasHistoria"
+
+};
+
+
+// =======================================================
+// ESTADO
+// =======================================================
+
+let historiaFichaActual = null;
+
+let historiaIdActual = null;
+
+
+// =======================================================
+// INICIALIZACIÓN
+// =======================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    iniciarHistoriaCompleta
+);
+
+
+function iniciarHistoriaCompleta() {
+
+    console.log(
+        "[HISTORIA] Inicializando..."
+    );
+
+
+    prepararEventosHistoria();
+
+
+    console.log(
+        "[HISTORIA] Inicialización completa."
+    );
+
+}
+
+
+// =======================================================
+// PREPARAR EVENTOS
+// =======================================================
+
+function prepararEventosHistoria() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
         );
 
 
-    try{
+    if (!contenedor) {
 
-        const respuesta =
-        await fetch(`/api/public/fichas/${idFicha}`);
+        return;
 
+    }
+
+
+    /*
+       Cerrar haciendo clic
+       fuera del expediente.
+    */
+
+    contenedor.addEventListener(
+        "click",
+        evento => {
+
+            if (
+                evento.target === contenedor
+            ) {
+
+                cerrarHistoriaCompleta();
+
+            }
+
+        }
+    );
+
+
+    /*
+       Cerrar con ESC.
+    */
+
+    document.addEventListener(
+        "keydown",
+        evento => {
+
+            if (
+                evento.key === "Escape"
+            ) {
+
+                cerrarHistoriaCompleta();
+
+            }
+
+        }
+    );
+
+}
+
+
+// =======================================================
+// ABRIR HISTORIA COMPLETA
+// =======================================================
+//
+// Esta es la función que utiliza fichas.js:
+//
+// abrirHistoriaCompleta(idFicha)
+//
+// =======================================================
+
+async function abrirHistoriaCompleta(
+    idFicha
+) {
+
+    if (
+        idFicha === undefined ||
+        idFicha === null ||
+        idFicha === ""
+    ) {
+
+        console.warn(
+            "[HISTORIA] ID de ficha inválido."
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        "[HISTORIA] Abriendo ficha:",
+        idFicha
+    );
+
+
+    historiaIdActual =
+        idFicha;
+
+
+    mostrarHistoriaCarga();
+
+
+    mostrarHistoriaCompleta();
+
+
+    try {
 
         const ficha =
-        await respuesta.json();
-
-        console.log("Ficha recibida:", ficha);
-
-        console.log("MULTIMEDIA:", ficha.multimedia);
+            await obtenerFicha(
+                idFicha
+            );
 
 
+        if (!ficha) {
 
-        const visor =
-        document.getElementById("visorFicha");
+            throw new Error(
+                "La API no devolvió la ficha."
+            );
 
-        visor.classList.remove("oculto");
+        }
 
-        document.body.classList.add("vistaAbierta");
 
-        console.log("visor:", visor);
+        historiaFichaActual =
+            ficha;
 
-        console.log(
-            "modal:",
-            document.getElementById("modalHistoriaCompleta")
+
+        pintarHistoria(
+            ficha
         );
-
-
-        let contenido = `
-
-
-        <div class="historiaCompleta">
-
-
-            <button
-            class="btnVolverVista"
-            type="button"
-            aria-label="Cerrar detalle de ficha"
-            onclick="cerrarVistaCompleta()">
-
-                ← Volver
-
-            </button>
-
-
-            <img
-            class="imagenHistoria"
-            src="${
-                ficha.imagen
-                ? "/" + ficha.imagen
-                : "/imagenes/default.png"
-            }">
-
-
-            <h1>
-                ${ficha.titulo}
-            </h1>
-
-
-            <span>
-                ${ficha.menu}
-            </span>
-
-
-            ${ficha.resumen ? `
-
-            <section class="seccionHistoria">
-
-                <h2>Resumen</h2>
-
-                <p>${ficha.resumen}</p>
-
-            </section>
-
-            ` : ""}
-
-
-        `;
-
-
-
-        // =========================
-        // DATOS DINÁMICOS
-        // =========================
-
-
-        const campos =
-        ficha.plantilla?.estructura?.campos || [];
-
-
-        const camposConValor =
-        campos.filter(campo=>{
-
-            const valor =
-            ficha.datos_json?.[campo.nombre];
-
-
-            return valor !== undefined &&
-                valor !== null &&
-                valor !== "";
-
-        });
-
-
-        if(camposConValor.length){
-
-            contenido += `
-
-            <section class="seccionHistoria">
-
-                <h2>Datos especificos de ${ficha.menu}</h2>
-
-            `;
-
-
-            camposConValor.forEach(campo=>{
-
-                const valor =
-                ficha.datos_json[campo.nombre];
-
-
-                contenido += `
-
-                <div class="datoHistoria">
-
-                    <label>
-
-                    ${campo.etiqueta}
-
-                    </label>
-
-
-                    <p>
-
-                    ${valor}
-
-                    </p>
-
-
-                </div>
-
-
-                `;
-
-            });
-
-
-            contenido += `
-
-            </section>
-
-            `;
-
-        }
-
-
-        // ======================================
-        // ETIQUETAS
-        // ======================================
-
-        if(ficha.etiquetas && ficha.etiquetas.length){
-
-            contenido += `
-
-                <section class="seccionHistoria">
-
-                    <h2>Etiquetas</h2>
-
-                    <div class="listaEtiquetas">
-
-            `;
-
-            ficha.etiquetas.forEach(etiqueta=>{
-
-                contenido += `
-
-                    <span class="etiquetaFicha">
-
-                        ${etiqueta.nombre}
-
-                    </span>
-
-                `;
-
-            });
-
-            contenido += `
-
-                    </div>
-
-                </section>
-
-            `;
-
-        }
-
-
-        // =========================
-        // TEXTO COMPLETO
-        // =========================
-
-
-        if(ficha.texto){
-
-
-            contenido += `
-
-
-            <section class="textoHistoria">
-
-
-                <h2>
-
-                    Historia
-
-                </h2>
-
-
-                <p>
-
-                    ${ficha.texto}
-
-                </p>
-
-
-            </section>
-
-
-            `;
-
-
-        }
-
-
-
-        if(ficha.multimedia && ficha.multimedia.length){
-
-            contenido += `
-
-                <section class="seccionMultimedia">
-
-                    <h2>Galería multimedia</h2>
-
-                    <div class="galeriaMultimedia">
-
-            `;
-
-            ficha.multimedia.forEach(item=>{
-
-                if(item.tipo_multi === "imagen"){
-
-                    contenido += `
-
-                        <article class="itemMultimedia">
-
-                            <img
-                                class="miniaturaMultimedia"
-                                src="/${item.ruta_archivo}"
-                                onclick="abrirImagenMultimedia(this.src)"
-                                alt="${item.descripcion || ""}">
-
-
-                            <p>
-                                ${item.descripcion || ""}
-                            </p>
-
-                        </article>
-
-                    `;
-
-                }
-
-                else if(item.tipo_multi === "video"){
-
-                    contenido += `
-
-                        <article class="itemMultimedia">
-
-                            <video
-                                class="miniaturaMultimedia"
-                                onclick="abrirVideoMultimedia('/${item.ruta_archivo}')">
-
-                                <source
-                                    src="/${item.ruta_archivo}"
-                                    type="video/mp4">
-
-                            </video>
-
-
-                            <p>
-                                ${item.descripcion || ""}
-                            </p>
-
-                        </article>
-
-                    `;
-
-                }
-
-                else if(item.tipo_multi === "audio"){
-
-                    contenido += `
-
-                        <article class="itemMultimedia">
-
-
-                            <div
-                            class="miniaturaAudio"
-                            onclick="abrirAudioMultimedia('/${item.ruta_archivo}')">
-
-
-                                🎧
-
-
-                            </div>
-
-
-                            <p>
-                                ${item.descripcion || "Audio"}
-                            </p>
-
-
-                        </article>
-
-                    `;
-
-                }
-                else if(item.tipo_multi === "pdf"){
-
-                    contenido += `
-
-                        <article class="itemMultimedia">
-
-                            <div
-                            class="miniaturaDocumento"
-                            onclick="abrirDocumentoMultimedia('/${item.ruta_archivo}')">
-
-                                📄
-
-                            </div>
-
-
-                            <p>
-                                ${item.descripcion || "Documento"}
-                            </p>
-
-                        </article>
-
-                    `;
-
-                }
-
-            });
-
-            contenido += `
-
-                    </div>
-
-                </section>
-
-            `;
-
-        }else{
-
-             contenido += `
-
-                 <section class="seccionMultimedia">
-
-                     <h2>
-                         Galería multimedia
-                     </h2>
-
-                     <p>
-                         No hay contenido multimedia disponible.
-                     </p>
-
-                 </section>
-
-             `;
-
-        }
-
-
-        // ======================================
-        // FICHAS RELACIONADAS
-        // ======================================
-
-        if(ficha.relacionadas && ficha.relacionadas.length){
-
-            contenido += `
-
-                <section class="seccionRelacionadas">
-
-                    <h2>
-
-                        Fichas relacionadas
-
-                    </h2>
-
-                    <div class="gridRelacionadas">
-
-            `;
-
-            ficha.relacionadas.forEach(relacionada=>{
-
-                contenido += `
-
-                    <article
-                        class="tarjetaRelacionada"
-                        onclick="abrirHistoriaCompleta(${relacionada.id_ficha})">
-
-                        <div class="encabezadoRelacion">
-
-                            <small>
-
-                                RELACIÓN
-
-                            </small>
-
-                            <strong>
-
-                                ${relacionada.tipo_relacion}
-
-                            </strong>
-
-                        </div>
-
-                        <img
-                            src="${
-                                relacionada.imagen
-                                ? "/" + relacionada.imagen
-                                : "/imagenes/default.png"
-                            }">
-
-                        <div class="infoRelacion">
-
-                            <h3>
-
-                                ${relacionada.titulo}
-
-                            </h3>
-
-                            <p>
-
-                                ${relacionada.menu}
-
-                            </p>
-
-                        </div>
-
-                    </article>
-
-                `;
-
-            });
-
-            contenido += `
-
-                    </div>
-
-                </section>
-
-            `;
-
-        }
-
-
-
-        contenido += `
-
-        </div>
-
-        `;
-
-
-        visor.innerHTML = contenido;
-
-        visor
-        .querySelector(".btnVolverVista")
-        .textContent = "Cerrar";
-
-        visor.focus();
 
 
     }
-    catch(error){
+    catch (error) {
 
         console.error(
-            "Error historia completa:",
+            "[HISTORIA] Error:",
             error
         );
 
+
+        mostrarHistoriaError();
+
     }
 
 }
 
-function abrirImagenMultimedia(src){
+
+// =======================================================
+// OBTENER FICHA
+// =======================================================
+
+async function obtenerFicha(
+    idFicha
+) {
+
+    const url =
+        `${CONFIG_HISTORIA.api}/${idFicha}`;
 
 
-    const visor =
-    document.getElementById("visorImagen");
+    console.log(
+        "[HISTORIA] Consultando:",
+        url
+    );
 
+
+    const respuesta =
+        await fetch(url);
+
+
+    if (!respuesta.ok) {
+
+        throw new Error(
+            `HTTP ${respuesta.status}`
+        );
+
+    }
+
+
+    const ficha =
+        await respuesta.json();
+
+
+    return ficha;
+
+}
+
+
+// =======================================================
+// MOSTRAR VENTANA
+// =======================================================
+
+function mostrarHistoriaCompleta() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        console.warn(
+            "[HISTORIA] No existe #historiaCompleta."
+        );
+
+        return;
+
+    }
+
+
+    contenedor.classList.add(
+        "historia-abierta"
+    );
+
+
+    contenedor.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    /*
+       Evitamos que el fondo
+       pueda desplazarse mientras
+       el expediente está abierto.
+    */
+
+    document.body.classList.add(
+        "historia-modal-abierta"
+    );
+
+}
+
+
+// =======================================================
+// CERRAR VENTANA
+// =======================================================
+
+function cerrarHistoriaCompleta() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    contenedor.classList.remove(
+        "historia-abierta"
+    );
+
+
+    contenedor.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.classList.remove(
+        "historia-modal-abierta"
+    );
+
+
+    historiaFichaActual =
+        null;
+
+
+    historiaIdActual =
+        null;
+
+
+    console.log(
+        "[HISTORIA] Expediente cerrado."
+    );
+
+}
+
+
+// =======================================================
+// PINTAR HISTORIA
+// =======================================================
+
+function pintarHistoria(
+    ficha
+) {
+
+    if (!ficha) {
+
+        return;
+
+    }
+
+
+    limpiarHistoria();
+
+
+    pintarTitulo(
+        ficha
+    );
+
+
+    pintarImagen(
+        ficha
+    );
+
+
+    pintarResumen(
+        ficha
+    );
+
+
+    pintarTexto(
+        ficha
+    );
+
+
+    pintarCampos(
+        ficha
+    );
+
+
+    pintarEtiquetas(
+        ficha
+    );
+
+
+    pintarMultimedia(
+        ficha
+    );
+
+
+    pintarRelacionadas(
+        ficha
+    );
+
+
+    console.log(
+        "[HISTORIA] Expediente pintado:",
+        ficha.id_ficha
+    );
+
+}
+
+
+// =======================================================
+// LIMPIAR HISTORIA
+// =======================================================
+
+function limpiarHistoria() {
+
+    limpiarElemento(
+        CONFIG_HISTORIA.titulo
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.resumen
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.texto
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.campos
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.etiquetas
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.multimedia
+    );
+
+
+    limpiarElemento(
+        CONFIG_HISTORIA.relacionadas
+    );
+
+}
+
+
+// =======================================================
+// LIMPIAR ELEMENTO
+// =======================================================
+
+function limpiarElemento(
+    id
+) {
+
+    const elemento =
+        document.getElementById(id);
+
+
+    if (elemento) {
+
+        elemento.innerHTML = "";
+
+    }
+
+}
+
+
+// =======================================================
+// TÍTULO
+// =======================================================
+
+function pintarTitulo(
+    ficha
+) {
+
+    const elemento =
+        document.getElementById(
+            CONFIG_HISTORIA.titulo
+        );
+
+
+    if (!elemento) {
+
+        return;
+
+    }
+
+
+    elemento.textContent =
+        ficha.titulo ||
+        "EXPEDIENTE SIN TÍTULO";
+
+
+    /*
+       También colocamos el número
+       de expediente si existe.
+    */
+
+    const numero =
+        document.getElementById(
+            "numeroHistoria"
+        );
+
+
+    if (numero) {
+
+        numero.textContent =
+            obtenerNumeroExpediente(
+                ficha
+            );
+
+    }
+
+}
+
+
+// =======================================================
+// NÚMERO DE EXPEDIENTE
+// =======================================================
+
+function obtenerNumeroExpediente(
+    ficha
+) {
+
+    if (
+        ficha.id_ficha !== undefined &&
+        ficha.id_ficha !== null
+    ) {
+
+        return `EXP. Nº ${ficha.id_ficha}`;
+
+    }
+
+
+    return "EXP. Nº ----";
+
+}
+
+
+// =======================================================
+// IMAGEN
+// =======================================================
+
+function pintarImagen(
+    ficha
+) {
 
     const imagen =
-    document.getElementById("imagenAmpliada");
+        document.getElementById(
+            CONFIG_HISTORIA.imagen
+        );
 
 
-    imagen.src = src;
+    if (!imagen) {
+
+        return;
+
+    }
 
 
-    visor.style.display="flex";
+    imagen.src =
+        obtenerImagen(
+            ficha
+        );
 
 
-}
+    imagen.alt =
+        ficha.titulo ||
+        "Fotografía de la ficha";
 
 
-function cerrarImagenMultimedia(){
+    /*
+       Si no existe fotografía,
+       agregamos una clase para
+       que el CSS pueda tratarla
+       de manera diferente.
+    */
+
+    const contenedor =
+        imagen.closest(
+            ".imagenHistoria"
+        );
 
 
-    document
-    .getElementById("visorImagen")
-    .style.display="none";
+    if (contenedor) {
 
+        contenedor.classList.toggle(
+            "sin-imagen",
+            !ficha.imagen
+        );
 
-}
-
-
-
-
-function abrirVideoMultimedia(src){
-
-
-    const visor =
-    document.getElementById("visorVideo");
-
-
-    const video =
-    document.getElementById("videoAmpliado");
-
-
-    video.src = src;
-
-
-    visor.style.display="flex";
-
-
-}
-
-
-function cerrarVideoMultimedia(){
-
-
-    const visor =
-    document.getElementById("visorVideo");
-
-
-    const video =
-    document.getElementById("videoAmpliado");
-
-
-    video.pause();
-
-    video.src="";
-
-
-    visor.style.display="none";
-
+    }
 
 }
 
 
+// =======================================================
+// OBTENER RUTA DE IMAGEN
+// =======================================================
 
-function abrirDocumentoMultimedia(src){
+function obtenerImagen(
+    ficha
+) {
 
+    if (
+        !ficha ||
+        !ficha.imagen
+    ) {
 
-    const visor =
-    document.getElementById("visorDocumento");
+        return "/imagenes/default.png";
 
-
-    const documento =
-    document.getElementById("documentoAmpliado");
-
-
-    documento.src = src;
-
-
-    visor.style.display="flex";
-
-
-}
+    }
 
 
+    if (
+        ficha.imagen.startsWith("/")
+    ) {
 
-function cerrarDocumentoMultimedia(){
+        return ficha.imagen;
+
+    }
 
 
-    document
-    .getElementById("visorDocumento")
-    .style.display="none";
-
-
-    document
-    .getElementById("documentoAmpliado")
-    .src="";
-
+    return "/" + ficha.imagen;
 
 }
 
 
+// =======================================================
+// RESUMEN
+// =======================================================
 
-function abrirAudioMultimedia(src){
+function pintarResumen(
+    ficha
+) {
+
+    const elemento =
+        document.getElementById(
+            CONFIG_HISTORIA.resumen
+        );
 
 
-    const visor =
-    document.getElementById("visorAudio");
+    if (!elemento) {
+
+        return;
+
+    }
 
 
-    const audio =
-    document.getElementById("audioAmpliado");
+    if (
+        !ficha.resumen
+    ) {
+
+        elemento.classList.add(
+            "oculto"
+        );
+
+        return;
+
+    }
 
 
-    audio.src = src;
+    elemento.classList.remove(
+        "oculto"
+    );
 
 
-    visor.style.display="flex";
+    elemento.textContent =
+        ficha.resumen;
 
+}
+
+
+// =======================================================
+// TEXTO / HISTORIA
+// =======================================================
+
+function pintarTexto(
+    ficha
+) {
+
+    const elemento =
+        document.getElementById(
+            CONFIG_HISTORIA.texto
+        );
+
+
+    if (!elemento) {
+
+        return;
+
+    }
+
+
+    if (
+        !ficha.texto
+    ) {
+
+        elemento.classList.add(
+            "oculto"
+        );
+
+        return;
+
+    }
+
+
+    elemento.classList.remove(
+        "oculto"
+    );
+
+
+    /*
+       textContent en lugar de innerHTML
+       para evitar insertar HTML
+       proveniente de la base de datos.
+    */
+
+    elemento.textContent =
+        ficha.texto;
 
 }
 
 
+// =======================================================
+// CAMPOS DINÁMICOS
+// =======================================================
 
-function cerrarAudioMultimedia(){
+function pintarCampos(
+    ficha
+) {
 
-
-    const visor =
-    document.getElementById("visorAudio");
-
-
-    const audio =
-    document.getElementById("audioAmpliado");
-
-
-    audio.pause();
-
-    audio.src="";
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.campos
+        );
 
 
-    visor.style.display="none";
+    if (!contenedor) {
 
+        return;
+
+    }
+
+
+    const campos =
+        ficha
+            ?.plantilla
+            ?.estructura
+            ?.campos;
+
+
+    if (
+        !Array.isArray(campos)
+    ) {
+
+        return;
+
+    }
+
+
+    campos.forEach(
+        campo => {
+
+            if (!campo) {
+
+                return;
+
+            }
+
+
+            /*
+               En la historia mostramos
+               los campos marcados como:
+
+               mostrarHistoria: true
+            */
+
+            if (
+                campo.mostrarHistoria !== true
+            ) {
+
+                return;
+
+            }
+
+
+            const valor =
+                ficha
+                    ?.datos_json
+                    ?.[campo.nombre];
+
+
+            if (
+                valor === undefined ||
+                valor === null ||
+                valor === ""
+            ) {
+
+                return;
+
+            }
+
+
+            const fila =
+                document.createElement(
+                    "div"
+                );
+
+
+            fila.className =
+                "campoHistoria";
+
+
+            const etiqueta =
+                document.createElement(
+                    "span"
+                );
+
+
+            etiqueta.className =
+                "etiquetaHistoria";
+
+
+            etiqueta.textContent =
+                campo.etiqueta ||
+                campo.nombre ||
+                "";
+
+
+            const valorElemento =
+                document.createElement(
+                    "span"
+                );
+
+
+            valorElemento.className =
+                "valorHistoria";
+
+
+            valorElemento.textContent =
+                convertirValorTexto(
+                    valor
+                );
+
+
+            fila.appendChild(
+                etiqueta
+            );
+
+
+            fila.appendChild(
+                valorElemento
+            );
+
+
+            contenedor.appendChild(
+                fila
+            );
+
+        }
+    );
 
 }
 
-function cerrarVistaCompleta(){
 
-    const visor =
-    document.getElementById("visorFicha");
+// =======================================================
+// CONVERTIR VALORES
+// =======================================================
+
+function convertirValorTexto(
+    valor
+) {
+
+    if (
+        Array.isArray(valor)
+    ) {
+
+        return valor.join(
+            ", "
+        );
+
+    }
 
 
-    visor.innerHTML = "";
-    visor.classList.add("oculto");
+    if (
+        typeof valor === "object" &&
+        valor !== null
+    ) {
+
+        return JSON.stringify(
+            valor
+        );
+
+    }
 
 
-    document.body.classList.remove("vistaAbierta");
+    return String(
+        valor
+    );
 
 }
 
-function volverVistaPrevia(){
 
-    cerrarVistaCompleta();
+// =======================================================
+// ETIQUETAS
+// =======================================================
+
+function pintarEtiquetas(
+    ficha
+) {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.etiquetas
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    if (
+        !Array.isArray(
+            ficha.etiquetas
+        ) ||
+        ficha.etiquetas.length === 0
+    ) {
+
+        contenedor.classList.add(
+            "oculto"
+        );
+
+        return;
+
+    }
+
+
+    contenedor.classList.remove(
+        "oculto"
+    );
+
+
+    ficha.etiquetas.forEach(
+        etiqueta => {
+
+            if (!etiqueta) {
+
+                return;
+
+            }
+
+
+            const elemento =
+                document.createElement(
+                    "span"
+                );
+
+
+            elemento.className =
+                "etiquetaHistoria-item";
+
+
+            elemento.textContent =
+                etiqueta.nombre ||
+                "";
+
+
+            contenedor.appendChild(
+                elemento
+            );
+
+        }
+    );
 
 }
+
+
+// =======================================================
+// MULTIMEDIA
+// =======================================================
+
+function pintarMultimedia(
+    ficha
+) {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.multimedia
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    if (
+        !Array.isArray(
+            ficha.multimedia
+        ) ||
+        ficha.multimedia.length === 0
+    ) {
+
+        contenedor.classList.add(
+            "oculto"
+        );
+
+        return;
+
+    }
+
+
+    contenedor.classList.remove(
+        "oculto"
+    );
+
+
+    ficha.multimedia.forEach(
+        archivo => {
+
+            if (!archivo) {
+
+                return;
+
+            }
+
+
+            const elemento =
+                crearElementoMultimedia(
+                    archivo
+                );
+
+
+            if (elemento) {
+
+                contenedor.appendChild(
+                    elemento
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+// =======================================================
+// CREAR MULTIMEDIA
+// =======================================================
+
+function crearElementoMultimedia(
+    archivo
+) {
+
+    const tarjeta =
+        document.createElement(
+            "div"
+        );
+
+
+    tarjeta.className =
+        "multimediaHistoria-item";
+
+
+    const ruta =
+        obtenerRutaArchivo(
+            archivo.ruta_archivo
+        );
+
+
+    if (!ruta) {
+
+        return null;
+
+    }
+
+
+    const tipo =
+        String(
+            archivo.tipo_multi || ""
+        ).toLowerCase();
+
+
+    /*
+       IMAGEN
+    */
+
+    if (
+        tipo.includes("image") ||
+        tipo.includes("imagen") ||
+        esImagen(ruta)
+    ) {
+
+        const imagen =
+            document.createElement(
+                "img"
+            );
+
+
+        imagen.src =
+            ruta;
+
+
+        imagen.alt =
+            archivo.descripcion ||
+            "Material histórico";
+
+
+        imagen.loading =
+            "lazy";
+
+
+        tarjeta.appendChild(
+            imagen
+        );
+
+    }
+
+
+    /*
+       VIDEO
+    */
+
+    else if (
+        tipo.includes("video") ||
+        esVideo(ruta)
+    ) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+
+        video.controls =
+            true;
+
+
+        video.preload =
+            "metadata";
+
+
+        video.src =
+            ruta;
+
+
+        tarjeta.appendChild(
+            video
+        );
+
+    }
+
+
+    /*
+       AUDIO
+    */
+
+    else if (
+        tipo.includes("audio") ||
+        esAudio(ruta)
+    ) {
+
+        const audio =
+            document.createElement(
+                "audio"
+            );
+
+
+        audio.controls =
+            true;
+
+
+        audio.src =
+            ruta;
+
+
+        tarjeta.appendChild(
+            audio
+        );
+
+    }
+
+
+    /*
+       OTRO ARCHIVO
+    */
+
+    else {
+
+        const enlace =
+            document.createElement(
+                "a"
+            );
+
+
+        enlace.href =
+            ruta;
+
+
+        enlace.target =
+            "_blank";
+
+
+        enlace.rel =
+            "noopener";
+
+
+        enlace.textContent =
+            archivo.descripcion ||
+            "Abrir documento";
+
+
+        tarjeta.appendChild(
+            enlace
+        );
+
+    }
+
+
+    /*
+       Descripción
+    */
+
+    if (
+        archivo.descripcion
+    ) {
+
+        const descripcion =
+            document.createElement(
+                "p"
+            );
+
+
+        descripcion.textContent =
+            archivo.descripcion;
+
+
+        tarjeta.appendChild(
+            descripcion
+        );
+
+    }
+
+
+    return tarjeta;
+
+}
+
+
+// =======================================================
+// RUTA DE ARCHIVO
+// =======================================================
+
+function obtenerRutaArchivo(
+    ruta
+) {
+
+    if (!ruta) {
+
+        return "";
+
+    }
+
+
+    if (
+        ruta.startsWith("/")
+    ) {
+
+        return ruta;
+
+    }
+
+
+    return "/" + ruta;
+
+}
+
+
+// =======================================================
+// DETECTAR IMAGEN
+// =======================================================
+
+function esImagen(
+    ruta
+) {
+
+    return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(
+        ruta
+    );
+
+}
+
+
+// =======================================================
+// DETECTAR VIDEO
+// =======================================================
+
+function esVideo(
+    ruta
+) {
+
+    return /\.(mp4|webm|ogg|mov)$/i.test(
+        ruta
+    );
+
+}
+
+
+// =======================================================
+// DETECTAR AUDIO
+// =======================================================
+
+function esAudio(
+    ruta
+) {
+
+    return /\.(mp3|wav|ogg|m4a|aac)$/i.test(
+        ruta
+    );
+
+}
+
+
+// =======================================================
+// FICHAS RELACIONADAS
+// =======================================================
+
+function pintarRelacionadas(
+    ficha
+) {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.relacionadas
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    if (
+        !Array.isArray(
+            ficha.relacionadas
+        ) ||
+        ficha.relacionadas.length === 0
+    ) {
+
+        contenedor.classList.add(
+            "oculto"
+        );
+
+        return;
+
+    }
+
+
+    contenedor.classList.remove(
+        "oculto"
+    );
+
+
+    ficha.relacionadas.forEach(
+        relacionada => {
+
+            if (!relacionada) {
+
+                return;
+
+            }
+
+
+            const elemento =
+                document.createElement(
+                    "button"
+                );
+
+
+            elemento.type =
+                "button";
+
+
+            elemento.className =
+                "relacionadaHistoria-item";
+
+
+            elemento.dataset.id =
+                relacionada.id_ficha ??
+                "";
+
+
+            const titulo =
+                document.createElement(
+                    "span"
+                );
+
+
+            titulo.className =
+                "relacionadaHistoria-titulo";
+
+
+            titulo.textContent =
+                relacionada.titulo ||
+                "Ficha sin título";
+
+
+            elemento.appendChild(
+                titulo
+            );
+
+
+            if (
+                relacionada.menu
+            ) {
+
+                const menu =
+                    document.createElement(
+                        "small"
+                    );
+
+
+                menu.className =
+                    "relacionadaHistoria-menu";
+
+
+                menu.textContent =
+                    relacionada.menu;
+
+
+                elemento.appendChild(
+                    menu
+                );
+
+            }
+
+
+            elemento.addEventListener(
+                "click",
+                () => {
+
+                    abrirHistoriaCompleta(
+                        relacionada.id_ficha
+                    );
+
+                }
+            );
+
+
+            contenedor.appendChild(
+                elemento
+            );
+
+        }
+    );
+
+}
+
+
+// =======================================================
+// ESTADO DE CARGA
+// =======================================================
+
+function mostrarHistoriaCarga() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    const estado =
+        document.getElementById(
+            "estadoHistoria"
+        );
+
+
+    if (!estado) {
+
+        return;
+
+    }
+
+
+    estado.className =
+        "estadoHistoria estado-cargando";
+
+
+    estado.textContent =
+        "CONSULTANDO EXPEDIENTE...";
+
+
+    estado.hidden =
+        false;
+
+}
+
+
+// =======================================================
+// ESTADO DE ERROR
+// =======================================================
+
+function mostrarHistoriaError() {
+
+    const estado =
+        document.getElementById(
+            "estadoHistoria"
+        );
+
+
+    if (!estado) {
+
+        return;
+
+    }
+
+
+    estado.className =
+        "estadoHistoria estado-error";
+
+
+    estado.textContent =
+        "NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.";
+
+
+    estado.hidden =
+        false;
+
+}
+
+
+// =======================================================
+// OCULTAR ESTADO
+// =======================================================
+
+function ocultarEstadoHistoria() {
+
+    const estado =
+        document.getElementById(
+            "estadoHistoria"
+        );
+
+
+    if (!estado) {
+
+        return;
+
+    }
+
+
+    estado.hidden =
+        true;
+
+}
+
+
+// =======================================================
+// VOLVER A PINTAR DESPUÉS DE CARGAR
+// =======================================================
+//
+// Si el HTML utiliza #estadoHistoria,
+// ocultamos el mensaje cuando
+// la ficha fue cargada correctamente.
+//
+
+function finalizarCargaHistoria() {
+
+    ocultarEstadoHistoria();
+
+}
+
+
+// =======================================================
+// FUNCIÓN PÚBLICA
+// =======================================================
+
+window.historiaCompleta = {
+
+    abrir: abrirHistoriaCompleta,
+
+    cerrar: cerrarHistoriaCompleta,
+
+    obtenerActual: () => {
+
+        return historiaFichaActual;
+
+    }
+
+};
+
+
+// =======================================================
+// COMPATIBILIDAD CON fichas.js
+// =======================================================
+//
+// fichas.js busca específicamente:
+//
+// typeof abrirHistoriaCompleta === "function"
+//
+// Por eso exponemos también la función
+// directamente en window.
+//
+
+window.abrirHistoriaCompleta =
+    abrirHistoriaCompleta;
+
+
+window.cerrarHistoriaCompleta =
+    cerrarHistoriaCompleta;
+
+
+// =======================================================
+// LOG
+// =======================================================
+
+console.log(
+    "[HISTORIA] historiaCompleta.js cargado correctamente."
+);
+
+

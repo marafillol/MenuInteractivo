@@ -1,9 +1,9 @@
 
 <section id="moduloPlantillas" class="ventana ventana-plantillas">
 
-    <!-- =====================================================
+    <!-- =========================================================
          ENCABEZADO
-    ====================================================== -->
+    ========================================================== -->
 
     <div class="cabecera-plantillas">
 
@@ -15,17 +15,15 @@
                 type="button"
                 id="nuevaPlantilla"
                 class="btn-nueva-plantilla">
-
             + Nueva plantilla
-
         </button>
 
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          LISTADO DE PLANTILLAS
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="gridPlantillas"
@@ -33,9 +31,9 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL NUEVA / EDITAR PLANTILLA
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalPlantilla"
@@ -48,9 +46,7 @@
                     class="cerrar-modal-plantilla"
                     onclick="cerrarModalPlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -59,7 +55,9 @@
             </h2>
 
 
-            <!-- DATOS GENERALES -->
+            <!-- =================================================
+                 DATOS GENERALES
+            ================================================== -->
 
             <fieldset class="grupo-plantilla">
 
@@ -73,7 +71,8 @@
 
                 <input
                         type="text"
-                        id="nombrePlantilla">
+                        id="nombrePlantilla"
+                        autocomplete="off">
 
 
                 <label for="descripcionPlantilla">
@@ -81,7 +80,8 @@
                 </label>
 
                 <textarea
-                        id="descripcionPlantilla"></textarea>
+                        id="descripcionPlantilla"
+                        rows="3"></textarea>
 
 
                 <label class="checkbox-plantilla">
@@ -91,19 +91,23 @@
                             id="activoPlantilla"
                             checked>
 
-                    Activa
+                    <span>
+                        Activa
+                    </span>
 
                 </label>
 
             </fieldset>
 
 
-            <!-- CONFIGURACIÓN DE INTERFAZ -->
+            <!-- =================================================
+                 DISTRIBUCIÓN
+            ================================================== -->
 
             <fieldset class="grupo-plantilla">
 
                 <legend>
-                    Configuración de la interfaz
+                    Distribución
                 </legend>
 
 
@@ -114,7 +118,7 @@
                 <select id="vistaPlantilla">
 
                     <option value="grid">
-                        Grid
+                        Grilla
                     </option>
 
                     <option value="lista">
@@ -133,7 +137,90 @@
                         id="columnasPlantilla"
                         min="1"
                         max="6"
+                        step="1"
                         value="4">
+
+
+                <label for="formaFichaPlantilla">
+                    Forma de la ficha
+                </label>
+
+                <select id="formaFichaPlantilla">
+
+                    <option value="rectangular">
+                        Rectangular
+                    </option>
+
+                    <option value="cuadrada">
+                        Cuadrada
+                    </option>
+
+                    <option value="redondeada">
+                        Redondeada
+                    </option>
+
+                    <option value="circular">
+                        Circular
+                    </option>
+
+                </select>
+
+
+                <label for="tamanoFichaPlantilla">
+                    Tamaño de la ficha
+                </label>
+
+                <select id="tamanoFichaPlantilla">
+
+                    <option value="pequeno">
+                        Pequeño
+                    </option>
+
+                    <option
+                            value="mediano"
+                            selected>
+                        Mediano
+                    </option>
+
+                    <option value="grande">
+                        Grande
+                    </option>
+
+                </select>
+
+
+                <label for="separacionPlantilla">
+                    Separación entre fichas
+                </label>
+
+                <div class="campo-numero-plantilla">
+
+                    <input
+                            type="number"
+                            id="separacionPlantilla"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value="20">
+
+                    <span>
+                        px
+                    </span>
+
+                </div>
+
+            </fieldset>
+
+
+            <!-- =================================================
+                 ELEMENTOS VISIBLES
+            ================================================== -->
+
+            <fieldset class="grupo-plantilla">
+
+                <legend>
+                    Elementos visibles
+                </legend>
 
 
                 <label class="checkbox-plantilla">
@@ -143,7 +230,9 @@
                             id="mostrarImagenPlantilla"
                             checked>
 
-                    Mostrar imagen
+                    <span>
+                        Mostrar imagen
+                    </span>
 
                 </label>
 
@@ -155,14 +244,184 @@
                             id="mostrarResumenPlantilla"
                             checked>
 
-                    Mostrar resumen
+                    <span>
+                        Mostrar resumen
+                    </span>
+
+                </label>
+
+
+                <label class="checkbox-plantilla">
+
+                    <input
+                            type="checkbox"
+                            id="mostrarEtiquetasPlantilla"
+                            checked>
+
+                    <span>
+                        Mostrar etiquetas
+                    </span>
+
+                </label>
+
+
+                <label class="checkbox-plantilla">
+
+                    <input
+                            type="checkbox"
+                            id="mostrarBuscadorPlantilla"
+                            checked>
+
+                    <span>
+                        Mostrar buscador
+                    </span>
+
+                </label>
+
+
+                <label class="checkbox-plantilla">
+
+                    <input
+                            type="checkbox"
+                            id="mostrarIndicePlantilla"
+                            checked>
+
+                    <span>
+                        Mostrar índice
+                    </span>
 
                 </label>
 
             </fieldset>
 
 
-            <!-- CAMPOS DE LA FICHA -->
+            <!-- =================================================
+                 APARIENCIA
+            ================================================== -->
+
+            <fieldset class="grupo-plantilla">
+
+                <legend>
+                    Apariencia
+                </legend>
+
+
+                <label for="colorPrincipalPlantilla">
+                    Color principal
+                </label>
+
+                <input
+                        type="color"
+                        id="colorPrincipalPlantilla"
+                        value="#163A61">
+
+
+                <label for="colorSecundarioPlantilla">
+                    Color secundario
+                </label>
+
+                <input
+                        type="color"
+                        id="colorSecundarioPlantilla"
+                        value="#C7A85B">
+
+
+                <label for="colorFondoPlantilla">
+                    Color de fondo
+                </label>
+
+                <input
+                        type="color"
+                        id="colorFondoPlantilla"
+                        value="#E8E0CF">
+
+
+                <label for="colorTextoPlantilla">
+                    Color del texto
+                </label>
+
+                <input
+                        type="color"
+                        id="colorTextoPlantilla"
+                        value="#222222">
+
+
+                <label for="fuenteTituloPlantilla">
+                    Fuente de títulos
+                </label>
+
+                <select id="fuenteTituloPlantilla">
+
+                    <option value="Courier New">
+                        Courier New
+                    </option>
+
+                    <option value="Arial">
+                        Arial
+                    </option>
+
+                    <option value="Georgia">
+                        Georgia
+                    </option>
+
+                    <option value="Times New Roman">
+                        Times New Roman
+                    </option>
+
+                </select>
+
+
+                <label for="fuenteTextoPlantilla">
+                    Fuente del texto
+                </label>
+
+                <select id="fuenteTextoPlantilla">
+
+                    <option value="Arial">
+                        Arial
+                    </option>
+
+                    <option value="Courier New">
+                        Courier New
+                    </option>
+
+                    <option value="Georgia">
+                        Georgia
+                    </option>
+
+                    <option value="Times New Roman">
+                        Times New Roman
+                    </option>
+
+                </select>
+
+
+                <label for="radioBordePlantilla">
+                    Redondeado de las fichas
+                </label>
+
+                <div class="campo-numero-plantilla">
+
+                    <input
+                            type="number"
+                            id="radioBordePlantilla"
+                            min="0"
+                            max="50"
+                            step="1"
+                            value="8">
+
+                    <span>
+                        px
+                    </span>
+
+                </div>
+
+            </fieldset>
+
+
+            <!-- =================================================
+                 CAMPOS DE LA FICHA
+            ================================================== -->
 
             <fieldset class="grupo-plantilla">
 
@@ -175,9 +434,7 @@
                         type="button"
                         id="btnNuevoCampo"
                         class="btn-nueva-plantilla">
-
                     + Agregar campo
-
                 </button>
 
 
@@ -189,7 +446,9 @@
             </fieldset>
 
 
-            <!-- VISTA PREVIA -->
+            <!-- =================================================
+                 VISTA PREVIA EN TIEMPO REAL
+            ================================================== -->
 
             <fieldset class="grupo-plantilla">
 
@@ -206,15 +465,15 @@
             </fieldset>
 
 
-            <!-- GUARDAR -->
+            <!-- =================================================
+                 GUARDAR PLANTILLA
+            ================================================== -->
 
             <button
                     type="button"
                     id="btnGuardarPlantilla"
                     class="btn-guardar-plantilla">
-
                 Guardar plantilla
-
             </button>
 
         </div>
@@ -222,9 +481,9 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL NUEVO / EDITAR CAMPO
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalCampoPlantilla"
@@ -237,9 +496,7 @@
                     class="cerrar-modal-plantilla"
                     onclick="cerrarCampoPlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -254,7 +511,8 @@
 
             <input
                     id="etiquetaCampo"
-                    type="text">
+                    type="text"
+                    autocomplete="off">
 
 
             <label for="nombreCampo">
@@ -263,7 +521,8 @@
 
             <input
                     id="nombreCampo"
-                    type="text">
+                    type="text"
+                    autocomplete="off">
 
 
             <label for="tipoCampo">
@@ -302,7 +561,9 @@
                         id="mostrarTarjetaCampo"
                         checked>
 
-                Mostrar en tarjeta
+                <span>
+                    Mostrar en tarjeta
+                </span>
 
             </label>
 
@@ -314,7 +575,9 @@
                         id="mostrarVistaPreviaCampo"
                         checked>
 
-                Mostrar en vista previa
+                <span>
+                    Mostrar en vista previa
+                </span>
 
             </label>
 
@@ -326,7 +589,9 @@
                         id="mostrarHistoriaCampo"
                         checked>
 
-                Mostrar en historia completa
+                <span>
+                    Mostrar en historia completa
+                </span>
 
             </label>
 
@@ -337,9 +602,7 @@
                         type="button"
                         id="btnGuardarCampo"
                         class="btn-guardar-plantilla">
-
                     Guardar
-
                 </button>
 
 
@@ -347,9 +610,7 @@
                         type="button"
                         class="btn-cancelar-plantilla"
                         onclick="cerrarCampoPlantilla()">
-
                     Cancelar
-
                 </button>
 
             </div>
@@ -359,9 +620,9 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL CONFIRMAR ELIMINACIÓN DE CAMPO
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalEliminarCampo"
@@ -374,9 +635,7 @@
                     class="cerrar-modal-plantilla"
                     onclick="cerrarEliminarCampoPlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -396,9 +655,7 @@
                         type="button"
                         class="btn-cancelar-plantilla"
                         onclick="cerrarEliminarCampoPlantilla()">
-
                     Cancelar
-
                 </button>
 
 
@@ -406,9 +663,7 @@
                         type="button"
                         class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarCampo()">
-
                     Eliminar
-
                 </button>
 
             </div>
@@ -418,9 +673,9 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL VISTA PREVIA
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalVistaPlantilla"
@@ -433,9 +688,7 @@
                     class="cerrar-preview-plantilla"
                     onclick="cerrarPreviewPlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -444,17 +697,16 @@
             </h2>
 
 
-            <div id="contenidoVistaPlantilla">
-            </div>
+            <div id="contenidoVistaPlantilla"></div>
 
         </div>
 
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL ELIMINAR PLANTILLA
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalEliminarPlantilla"
@@ -467,9 +719,7 @@
                     class="cerrar-modal-plantilla"
                     onclick="cerrarEliminarPlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -489,9 +739,7 @@
                         type="button"
                         class="btn-cancelar-plantilla"
                         onclick="cerrarEliminarPlantilla()">
-
                     Cancelar
-
                 </button>
 
 
@@ -499,9 +747,7 @@
                         type="button"
                         class="btn-eliminar-plantilla"
                         onclick="confirmarEliminarPlantilla()">
-
                     Eliminar
-
                 </button>
 
             </div>
@@ -511,9 +757,9 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =========================================================
          MODAL MENSAJE
-    ====================================================== -->
+    ========================================================== -->
 
     <div
             id="modalMensajePlantilla"
@@ -526,9 +772,7 @@
                     class="cerrar-modal-plantilla"
                     onclick="cerrarMensajePlantilla()"
                     aria-label="Cerrar">
-
                 ✖
-
             </button>
 
 
@@ -546,9 +790,7 @@
                         type="button"
                         class="btn-aceptar-plantilla"
                         onclick="cerrarMensajePlantilla()">
-
                     Aceptar
-
                 </button>
 
             </div>
@@ -558,4 +800,3 @@
     </div>
 
 </section>
-

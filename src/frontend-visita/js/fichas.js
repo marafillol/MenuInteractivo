@@ -1,58 +1,326 @@
+// =======================================================
+// FICHAS
+// Museo Malvinas · Archivo Histórico
+//
+// RESPONSABILIDADES:
+// • Cargar fichas
+// • Filtrar fichas
+// • Construir tarjetas
+// • Mostrar fotografías
+// • Mostrar campos de la plantilla
+// • Activar interacción
+//
+// IMPORTANTE:
+// Todavía NO se conecta directamente con el Explorador.
+// Tampoco se modifica la lógica de la base de datos.
+// =======================================================
+
+
+// =======================================================
+// ESTADO
+// =======================================================
+
 let fichasCargadas = [];
+
+let fichasVisibles = [];
+
+
 // =======================================================
-// CARGAR FICHAS
+// CONFIGURACIÓN
 // =======================================================
 
-async function cargarFichas(idMenu = null){
+const CONFIG_FICHAS = {
 
-    try{
+    api: "/api/public/fichas",
 
-        let url = "/api/public/fichas";
+    plantilla: "html/ficha.html",
 
+    imagenDefecto: "/imagenes/default.png",
 
-        if(idMenu && idMenu != 0){
+    contenedor: "contenedorFichas",
 
-            url = `/api/public/fichas/menu/${idMenu}`;
+    buscador: "buscador"
 
-        }
-
-
-        const respuesta = await fetch(url);
+};
 
 
-        fichasCargadas = await respuesta.json();
+// =======================================================
+// INICIALIZACIÓN
+// =======================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    iniciarFichas
+);
 
 
-        pintarFichas(fichasCargadas);
+async function iniciarFichas() {
 
+    console.log(
+        "[FICHAS] Inicializando..."
+    );
+
+
+    prepararBuscador();
+
+    prepararContenedor();
+
+
+    /*
+       Por ahora cargamos todas las fichas.
+
+       Más adelante el Explorador podrá
+       llamar directamente a:
+
+       cargarFichas(idMenu)
+    */
+
+    await cargarFichas();
+
+
+    console.log(
+        "[FICHAS] Inicialización completa."
+    );
+
+}
+
+
+// =======================================================
+// PREPARAR CONTENEDOR
+// =======================================================
+
+function prepararContenedor() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_FICHAS.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        console.warn(
+            "[FICHAS] No existe #contenedorFichas."
+        );
+
+        return;
 
     }
 
-    catch(error){
 
-        console.error(error);
+    contenedor.setAttribute(
+        "aria-live",
+        "polite"
+    );
+
+}
+
+
+// =======================================================
+// PREPARAR BUSCADOR
+// =======================================================
+
+function prepararBuscador() {
+
+    const buscador =
+        document.getElementById(
+            CONFIG_FICHAS.buscador
+        );
+
+
+    if (!buscador) {
+
+        return;
+
+    }
+
+
+    buscador.addEventListener(
+        "input",
+        buscarFichas
+    );
+
+
+    const limpiar =
+        document.getElementById(
+            "limpiarBusqueda"
+        );
+
+
+    if (limpiar) {
+
+        limpiar.addEventListener(
+            "click",
+            limpiarBusqueda
+        );
 
     }
 
 }
 
 
-function buscarFichas(){
+// =======================================================
+// CARGAR FICHAS
+// =======================================================
+
+async function cargarFichas(
+    idMenu = null
+) {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_FICHAS.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        console.warn(
+            "[FICHAS] No existe el contenedor."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        mostrarEstadoCarga();
+
+
+        let url =
+            CONFIG_FICHAS.api;
+
+
+        /*
+           Si posteriormente el Explorador
+           selecciona un menú, se utilizará:
+
+           /api/public/fichas/menu/ID
+        */
+
+        if (
+            idMenu !== null &&
+            idMenu !== undefined &&
+            idMenu !== 0 &&
+            idMenu !== ""
+        ) {
+
+            url =
+                `${CONFIG_FICHAS.api}/menu/${idMenu}`;
+
+        }
+
+
+        console.log(
+            "[FICHAS] Cargando:",
+            url
+        );
+
+
+        const respuesta =
+            await fetch(url);
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `HTTP ${respuesta.status}`
+            );
+
+        }
+
+
+        const datos =
+            await respuesta.json();
+
+
+        if (!Array.isArray(datos)) {
+
+            throw new Error(
+                "La API no devolvió un array de fichas."
+            );
+
+        }
+
+
+        fichasCargadas =
+            datos;
+
+
+        fichasVisibles =
+            [...fichasCargadas];
+
+
+        console.log(
+            `[FICHAS] ${fichasCargadas.length} fichas cargadas.`
+        );
+
+
+        await pintarFichas(
+            fichasVisibles
+        );
+
+
+    }
+    catch (error) {
+
+        console.error(
+            "[FICHAS] Error cargando fichas:",
+            error
+        );
+
+
+        mostrarEstadoVacio(
+            "No se pudieron cargar las fichas."
+        );
+
+    }
+
+}
+
+
+// =======================================================
+// BUSCAR FICHAS
+// =======================================================
+
+function buscarFichas() {
+
+    const buscador =
+        document.getElementById(
+            CONFIG_FICHAS.buscador
+        );
+
+
+    if (!buscador) {
+
+        return;
+
+    }
 
 
     const texto =
-    document
-    .getElementById("buscador")
-    .value
-    .toLowerCase()
-    .trim();
+        normalizarTexto(
+            buscador.value
+        );
 
 
+    /*
+       Sin texto:
 
-    if(texto === ""){
+       mostramos nuevamente todas.
+    */
+
+    if (!texto) {
+
+        fichasVisibles =
+            [...fichasCargadas];
 
 
-        pintarFichas(fichasCargadas);
+        pintarFichas(
+            fichasVisibles
+        );
 
 
         return;
@@ -60,175 +328,986 @@ function buscarFichas(){
     }
 
 
-
-    const resultado =
-    fichasCargadas.filter(ficha=>{
-
-
-        const nombre =
-        ficha.titulo
-        ?.toLowerCase() || "";
-
+    fichasVisibles =
+        fichasCargadas.filter(
+            ficha => fichaCoincide(
+                ficha,
+                texto
+            )
+        );
 
 
-        return nombre.includes(texto);
-
-
-    });
-
-
-
-    pintarFichas(resultado);
-
+    pintarFichas(
+        fichasVisibles
+    );
 
 }
 
-function pintarFichas(fichas){
 
+// =======================================================
+// COMPROBAR COINCIDENCIA
+// =======================================================
+
+function fichaCoincide(
+    ficha,
+    texto
+) {
+
+    if (!ficha) {
+
+        return false;
+
+    }
+
+
+    /*
+       Buscamos principalmente por título.
+    */
+
+    const titulo =
+        normalizarTexto(
+            ficha.titulo
+        );
+
+
+    if (
+        titulo.includes(texto)
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+       También buscamos dentro
+       de los datos de la ficha.
+    */
+
+    if (
+        ficha.datos_json &&
+        typeof ficha.datos_json === "object"
+    ) {
+
+        const datos =
+            Object.values(
+                ficha.datos_json
+            )
+            .join(" ");
+
+
+        if (
+            normalizarTexto(
+                datos
+            ).includes(texto)
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+// =======================================================
+// NORMALIZAR TEXTO
+// =======================================================
+
+function normalizarTexto(
+    texto
+) {
+
+    return String(
+        texto ?? ""
+    )
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    )
+    .trim();
+
+}
+
+
+// =======================================================
+// LIMPIAR BÚSQUEDA
+// =======================================================
+
+function limpiarBusqueda() {
+
+    const buscador =
+        document.getElementById(
+            CONFIG_FICHAS.buscador
+        );
+
+
+    if (!buscador) {
+
+        return;
+
+    }
+
+
+    buscador.value = "";
+
+
+    fichasVisibles =
+        [...fichasCargadas];
+
+
+    pintarFichas(
+        fichasVisibles
+    );
+
+
+    buscador.focus();
+
+}
+
+
+// =======================================================
+// PINTAR FICHAS
+// =======================================================
+
+async function pintarFichas(
+    fichas
+) {
 
     const contenedor =
-    document.getElementById("contenedorFichas");
+        document.getElementById(
+            CONFIG_FICHAS.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        console.warn(
+            "[FICHAS] No existe #contenedorFichas."
+        );
+
+        return;
+
+    }
 
 
     contenedor.innerHTML = "";
 
 
-    fichas.forEach(ficha=>{
+    /*
+       Sin resultados.
+    */
+
+    if (
+        !Array.isArray(fichas) ||
+        fichas.length === 0
+    ) {
+
+        mostrarEstadoVacio(
+            "No se encontraron fichas."
+        );
+
+        return;
+
+    }
 
 
-        let camposTarjeta="";
+    /*
+       Construimos cada ficha.
+    */
+
+    fichas.forEach(
+        ficha => {
+
+            const tarjeta =
+                crearTarjetaFicha(
+                    ficha
+                );
 
 
-        if(ficha.plantilla){
+            if (tarjeta) {
 
-            const campos =
-            ficha.plantilla.estructura.campos || [];
+                contenedor.appendChild(
+                    tarjeta
+                );
 
-
-            campos.forEach(campo=>{
-
-
-                if(!campo.mostrarTarjeta)
-                    return;
-
-
-                const valor =
-                ficha.datos_json[campo.nombre];
-
-
-                if(!valor)
-                    return;
-
-
-                camposTarjeta += `
-
-                    <small>
-
-                        <b>${campo.etiqueta}:</b>
-                        ${valor}
-
-                    </small>
-
-                `;
-
-
-            });
+            }
 
         }
-
-
-
-        contenedor.innerHTML += `
-
-        <article class="tarjetaFicha"
-            data-id="${ficha.id_ficha}"
-            role="button"
-            tabindex="0"
-            aria-label="Abrir ficha: ${ficha.titulo}">
-
-
-            <img class="baseFicha" src="img/fondo.png" alt="">
-
-
-            <div class="clip">
-                <img src="img/clip.png" alt="">
-            </div>
-
-
-            <div class="imagenFicha">
-
-                <img
-                src="${
-                    ficha.imagen
-                    ? "/" + ficha.imagen
-                    : "/imagenes/default.png"
-                }"
-                alt="${ficha.titulo}">
-
-            </div>
-
-
-            <div class="infoFicha">
-
-                <h3>${ficha.titulo}</h3>
-
-
-                <div class="camposTarjeta">
-
-                    ${camposTarjeta}
-
-                </div>
-
-
-            </div>
-
-
-        </article>
-
-        `;
-
-
-    });
-
+    );
 
 
     activarTarjetas();
 
+}
+
+
+// =======================================================
+// CREAR TARJETA
+// =======================================================
+
+function crearTarjetaFicha(
+    ficha
+) {
+
+    /*
+       La ficha se crea completamente
+       desde JavaScript.
+
+       Esto nos permite controlar
+       la estructura visual desde cero.
+    */
+
+    const tarjeta =
+        document.createElement(
+            "article"
+        );
+
+
+    tarjeta.className =
+        "tarjetaFicha";
+
+
+    tarjeta.dataset.id =
+        ficha.id_ficha ?? "";
+
+
+    tarjeta.setAttribute(
+        "role",
+        "button"
+    );
+
+
+    tarjeta.setAttribute(
+        "tabindex",
+        "0"
+    );
+
+
+    tarjeta.setAttribute(
+        "aria-label",
+        `Abrir ficha: ${ficha.titulo || "Veterano"}`
+    );
+
+
+    // ===================================================
+    // FONDO DE FICHA
+    // ===================================================
+
+    const fondo =
+        document.createElement(
+            "div"
+        );
+
+
+    fondo.className =
+        "fondoFicha";
+
+
+    tarjeta.appendChild(
+        fondo
+    );
+
+
+    // ===================================================
+    // CLIP
+    // ===================================================
+
+    const clip =
+        document.createElement(
+            "div"
+        );
+
+
+    clip.className =
+        "clipFicha";
+
+
+    const imagenClip =
+        document.createElement(
+            "img"
+        );
+
+
+    imagenClip.src =
+        "img/clip.png";
+
+
+    imagenClip.alt =
+        "";
+
+
+    imagenClip.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    clip.appendChild(
+        imagenClip
+    );
+
+
+    tarjeta.appendChild(
+        clip
+    );
+
+
+    // ===================================================
+    // CABECERA DE EXPEDIENTE
+    // ===================================================
+
+    const cabecera =
+        document.createElement(
+            "div"
+        );
+
+
+    cabecera.className =
+        "cabeceraFicha";
+
+
+    const numero =
+        document.createElement(
+            "span"
+        );
+
+
+    numero.className =
+        "numeroFicha";
+
+
+    numero.textContent =
+        obtenerNumeroExpediente(
+            ficha
+        );
+
+
+    cabecera.appendChild(
+        numero
+    );
+
+
+    tarjeta.appendChild(
+        cabecera
+    );
+
+
+    // ===================================================
+    // FOTOGRAFÍA
+    // ===================================================
+
+    const contenedorImagen =
+        document.createElement(
+            "div"
+        );
+
+
+    contenedorImagen.className =
+        "imagenFicha";
+
+
+    const imagen =
+        document.createElement(
+            "img"
+        );
+
+
+    imagen.src =
+        obtenerImagenFicha(
+            ficha
+        );
+
+
+    imagen.alt =
+        ficha.titulo ||
+        "Fotografía del veterano";
+
+
+    imagen.loading =
+        "lazy";
+
+
+    contenedorImagen.appendChild(
+        imagen
+    );
+
+
+    tarjeta.appendChild(
+        contenedorImagen
+    );
+
+
+    // ===================================================
+    // INFORMACIÓN
+    // ===================================================
+
+    const informacion =
+        document.createElement(
+            "div"
+        );
+
+
+    informacion.className =
+        "infoFicha";
+
+
+    const titulo =
+        document.createElement(
+            "h3"
+        );
+
+
+    titulo.textContent =
+        ficha.titulo ||
+        "Sin nombre";
+
+
+    informacion.appendChild(
+        titulo
+    );
+
+
+    // ===================================================
+    // CAMPOS
+    // ===================================================
+
+    const campos =
+        document.createElement(
+            "div"
+        );
+
+
+    campos.className =
+        "camposTarjeta";
+
+
+    construirCampos(
+        ficha,
+        campos
+    );
+
+
+    informacion.appendChild(
+        campos
+    );
+
+
+    tarjeta.appendChild(
+        informacion
+    );
+
+
+    // ===================================================
+    // PIE
+    // ===================================================
+
+    const pie =
+        document.createElement(
+            "div"
+        );
+
+
+    pie.className =
+        "pieFicha";
+
+
+    pie.textContent =
+        "CONSULTAR EXPEDIENTE";
+
+
+    tarjeta.appendChild(
+        pie
+    );
+
+
+    return tarjeta;
 
 }
 
 
-function activarTarjetas(){
+// =======================================================
+// OBTENER NÚMERO DE EXPEDIENTE
+// =======================================================
 
-    const tarjetas =
-    document.querySelectorAll(".tarjetaFicha");
+function obtenerNumeroExpediente(
+    ficha
+) {
+
+    if (
+        ficha.id_ficha !== undefined &&
+        ficha.id_ficha !== null
+    ) {
+
+        return `EXP. Nº ${ficha.id_ficha}`;
+
+    }
 
 
-    tarjetas.forEach(tarjeta=>{
+    return "EXP. Nº ----";
 
-        const abrirFicha = ()=>{
+}
 
-            const idFicha =
-            tarjeta.dataset.id;
 
-            abrirHistoriaCompleta(idFicha);
+// =======================================================
+// OBTENER IMAGEN
+// =======================================================
 
-        };
+function obtenerImagenFicha(
+    ficha
+) {
 
-        tarjeta.addEventListener("click", abrirFicha);
+    if (
+        !ficha.imagen
+    ) {
 
-        tarjeta.addEventListener("keydown", (evento)=>{
+        return CONFIG_FICHAS.imagenDefecto;
 
-            if(evento.key === "Enter" || evento.key === " "){
+    }
 
-                evento.preventDefault();
 
-                abrirFicha();
+    /*
+       Si la API devuelve:
+
+       uploads/foto.jpg
+
+       convertimos a:
+
+       /uploads/foto.jpg
+    */
+
+    if (
+        ficha.imagen.startsWith("/")
+    ) {
+
+        return ficha.imagen;
+
+    }
+
+
+    return "/" + ficha.imagen;
+
+}
+
+
+// =======================================================
+// CONSTRUIR CAMPOS
+// =======================================================
+
+function construirCampos(
+    ficha,
+    contenedor
+) {
+
+    /*
+       La información de los campos
+       viene de la plantilla asociada
+       a la ficha.
+
+       Si todavía no existe plantilla,
+       simplemente dejamos la zona vacía.
+    */
+
+    const camposPlantilla =
+        ficha
+            ?.plantilla
+            ?.estructura
+            ?.campos;
+
+
+    if (
+        !Array.isArray(
+            camposPlantilla
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    camposPlantilla.forEach(
+        campo => {
+
+            /*
+               Solo mostramos los campos
+               marcados para aparecer
+               en la tarjeta.
+            */
+
+            if (
+                !campo ||
+                !campo.mostrarTarjeta
+            ) {
+
+                return;
 
             }
 
-        });
 
-    });
+            const valor =
+                ficha
+                    ?.datos_json
+                    ?.[campo.nombre];
+
+
+            if (
+                valor === undefined ||
+                valor === null ||
+                valor === ""
+            ) {
+
+                return;
+
+            }
+
+
+            const elemento =
+                document.createElement(
+                    "div"
+                );
+
+
+            elemento.className =
+                "campoFicha";
+
+
+            const etiqueta =
+                document.createElement(
+                    "span"
+                );
+
+
+            etiqueta.className =
+                "etiquetaCampo";
+
+
+            etiqueta.textContent =
+                campo.etiqueta ||
+                campo.nombre ||
+                "";
+
+
+            const contenido =
+                document.createElement(
+                    "span"
+                );
+
+
+            contenido.className =
+                "valorCampo";
+
+
+            contenido.textContent =
+                valor;
+
+
+            elemento.appendChild(
+                etiqueta
+            );
+
+
+            elemento.appendChild(
+                contenido
+            );
+
+
+            contenedor.appendChild(
+                elemento
+            );
+
+        }
+    );
 
 }
+
+
+// =======================================================
+// ACTIVAR TARJETAS
+// =======================================================
+
+function activarTarjetas() {
+
+    const tarjetas =
+        document.querySelectorAll(
+            ".tarjetaFicha"
+        );
+
+
+    tarjetas.forEach(
+        tarjeta => {
+
+            tarjeta.addEventListener(
+                "click",
+                () => abrirFicha(
+                    tarjeta
+                )
+            );
+
+
+            tarjeta.addEventListener(
+                "keydown",
+                evento => {
+
+                    if (
+                        evento.key === "Enter" ||
+                        evento.key === " "
+                    ) {
+
+                        evento.preventDefault();
+
+
+                        abrirFicha(
+                            tarjeta
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /*
+               Efecto visual para teclado.
+            */
+
+            tarjeta.addEventListener(
+                "focus",
+                () => {
+
+                    tarjeta.classList.add(
+                        "ficha-enfocada"
+                    );
+
+                }
+            );
+
+
+            tarjeta.addEventListener(
+                "blur",
+                () => {
+
+                    tarjeta.classList.remove(
+                        "ficha-enfocada"
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+// =======================================================
+// ABRIR FICHA
+// =======================================================
+
+function abrirFicha(
+    tarjeta
+) {
+
+    if (!tarjeta) {
+
+        return;
+
+    }
+
+
+    const idFicha =
+        tarjeta.dataset.id;
+
+
+    if (!idFicha) {
+
+        console.warn(
+            "[FICHAS] La ficha no tiene ID."
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        "[FICHAS] Abrir ficha:",
+        idFicha
+    );
+
+
+    /*
+       Esta función todavía puede ser
+       implementada por el visor de ficha.
+
+       NO rompemos nada si todavía
+       no existe.
+    */
+
+    if (
+        typeof abrirHistoriaCompleta ===
+        "function"
+    ) {
+
+        abrirHistoriaCompleta(
+            idFicha
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Por ahora, si el visor todavía
+       no existe, simplemente dejamos
+       registrado el ID.
+    */
+
+    console.log(
+        "[FICHAS] Visor todavía no conectado."
+    );
+
+}
+
+
+// =======================================================
+// ESTADO DE CARGA
+// =======================================================
+
+function mostrarEstadoCarga() {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_FICHAS.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    contenedor.innerHTML = `
+
+        <div class="estadoFichas estado-cargando">
+
+            <span class="estado-icono">◌</span>
+
+            <span>
+                CONSULTANDO ARCHIVO...
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+// =======================================================
+// ESTADO VACÍO
+// =======================================================
+
+function mostrarEstadoVacio(
+    mensaje
+) {
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_FICHAS.contenedor
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    contenedor.innerHTML = `
+
+        <div class="estadoFichas estado-vacio">
+
+            <span class="estado-icono">—</span>
+
+            <span>
+                ${mensaje}
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+// =======================================================
+// RECARGAR FICHAS
+// =======================================================
+
+async function recargarFichas() {
+
+    await cargarFichas();
+
+}
+
+
+// =======================================================
+// OBTENER FICHAS ACTUALES
+// =======================================================
+
+function obtenerFichas() {
+
+    return [
+        ...fichasVisibles
+    ];
+
+}
+
+
+// =======================================================
+// EXPORTAR FUNCIONES PARA OTROS SCRIPTS
+// =======================================================
+//
+// Esto nos va a servir cuando conectemos:
+//
+// Explorador → Índice → Fichas
+//
+// Por ahora no hace falta utilizarlo.
+// =======================================================
+
+window.fichasPublicas = {
+
+    cargar: cargarFichas,
+
+    buscar: buscarFichas,
+
+    limpiarBusqueda,
+
+    recargar: recargarFichas,
+
+    obtener: obtenerFichas,
+
+    pintar: pintarFichas
+
+};
+
+window.pintarFichasPublicas =
+    pintarFichas;
+
+
+console.log(
+    "[FICHAS] fichas.js cargado correctamente."
+);
+
+
