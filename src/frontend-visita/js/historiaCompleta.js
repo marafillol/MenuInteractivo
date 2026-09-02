@@ -73,26 +73,18 @@ document.addEventListener(
 
 
 function iniciarHistoriaCompleta() {
-
-    console.log(
-        "[HISTORIA] Inicializando..."
-    );
-
+    console.log("[HISTORIA] Inicializando...");
 
     prepararEventosHistoria();
+    hacerHistoriaMovible();
 
-
-    console.log(
-        "[HISTORIA] Inicialización completa."
-    );
-
+    console.log("[HISTORIA] Inicialización completa.");
 }
 
 
 // =======================================================
 // PREPARAR EVENTOS
 // =======================================================
-
 function prepararEventosHistoria() {
 
     const contenedor =
@@ -100,29 +92,45 @@ function prepararEventosHistoria() {
             CONFIG_HISTORIA.contenedor
         );
 
-
     if (!contenedor) {
 
-        return;
+        console.warn(
+            "[HISTORIA] No existe #historiaCompleta."
+        );
 
+        return;
     }
 
 
     /*
-       Cerrar haciendo clic
-       fuera del expediente.
+       CLICK DENTRO DEL MODAL
     */
 
     contenedor.addEventListener(
         "click",
         evento => {
 
+            console.log(
+                "[HISTORIA] CLICK DENTRO DEL MODAL:",
+                evento.target
+            );
+
+
+            /*
+               Solo cerrar si realmente
+               se hizo click sobre el fondo.
+            */
+
             if (
                 evento.target === contenedor ||
                 evento.target.classList.contains(
-                    "historia-overlay"
+                    "historiaFondo"
                 )
             ) {
+
+                console.warn(
+                    "[HISTORIA] CLICK EN FONDO → CERRANDO"
+                );
 
                 cerrarHistoriaCompleta();
 
@@ -133,7 +141,7 @@ function prepararEventosHistoria() {
 
 
     /*
-       Cerrar con ESC.
+       ESC
     */
 
     document.addEventListener(
@@ -143,6 +151,10 @@ function prepararEventosHistoria() {
             if (
                 evento.key === "Escape"
             ) {
+
+                console.warn(
+                    "[HISTORIA] ESC → CERRANDO"
+                );
 
                 cerrarHistoriaCompleta();
 
@@ -163,84 +175,107 @@ function prepararEventosHistoria() {
 // abrirHistoriaCompleta(idFicha)
 //
 // =======================================================
-
-async function abrirHistoriaCompleta(
-    idFicha
-) {
-
-    if (
-        idFicha === undefined ||
-        idFicha === null ||
-        idFicha === ""
-    ) {
-
-        console.warn(
-            "[HISTORIA] ID de ficha inválido."
-        );
-
+async function abrirHistoriaCompleta(idFicha) {
+    if (idFicha === undefined || idFicha === null || idFicha === "") {
+        console.warn("[HISTORIA] ID de ficha inválido.");
         return;
-
     }
 
+    console.log("[HISTORIA] Abriendo ficha:", idFicha);
 
-    console.log(
-        "[HISTORIA] Abriendo ficha:",
-        idFicha
-    );
+    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
+    const cuerpo = document.querySelector(".historia-cuerpo");
 
+    if (!contenedor) return;
 
-    historiaIdActual =
-        idFicha;
+    const expedienteYaAbierto = contenedor.classList.contains("activo");
 
+    historiaIdActual = idFicha;
 
-    mostrarHistoriaCarga();
+    /*
+     * Si el expediente ya está abierto:
+     * solamente hacemos transición del contenido.
+     */
+    if (expedienteYaAbierto) {
 
-
-    mostrarHistoriaCompleta();
-
-
-    try {
-
-        const ficha =
-            await obtenerFicha(
-                idFicha
-            );
-
-
-        if (!ficha) {
-
-            throw new Error(
-                "La API no devolvió la ficha."
-            );
-
+        if (cuerpo) {
+            cuerpo.classList.remove("ficha-cargada");
+            cuerpo.classList.add("cambiando-ficha");
         }
 
+        try {
+            const ficha = await obtenerFicha(idFicha);
 
-        historiaFichaActual =
-            ficha;
+            if (!ficha) {
+                throw new Error("La API no devolvió la ficha.");
+            }
 
+            historiaFichaActual = ficha;
 
-        pintarHistoria(
-            ficha
-        );
+            /*
+             * Esperamos un poquito para que
+             * termine de desaparecer la ficha anterior.
+             */
+            await new Promise(resolve => setTimeout(resolve, 180));
 
+            pintarHistoria(ficha);
+            ocultarEstadoHistoria();
 
+            if (cuerpo) {
+                cuerpo.classList.remove("cambiando-ficha");
+
+                /*
+                 * Forzamos una nueva animación.
+                 */
+                void cuerpo.offsetWidth;
+
+                cuerpo.classList.add("ficha-cargada");
+            }
+
+        } catch (error) {
+            console.error("[HISTORIA] Error:", error);
+            mostrarHistoriaError();
+
+            if (cuerpo) {
+                cuerpo.classList.remove("cambiando-ficha");
+            }
+        }
+
+        return;
+    }
+
+    /*
+     * =====================================================
+     * PRIMERA APERTURA
+     * =====================================================
+     */
+
+    mostrarHistoriaCarga();
+    mostrarHistoriaCompleta();
+
+    try {
+        const ficha = await obtenerFicha(idFicha);
+
+        if (!ficha) {
+            throw new Error("La API no devolvió la ficha.");
+        }
+
+        historiaFichaActual = ficha;
+
+        pintarHistoria(ficha);
         ocultarEstadoHistoria();
 
+        if (cuerpo) {
+            cuerpo.classList.remove("cambiando-ficha");
+            cuerpo.classList.add("ficha-cargada");
 
-    }
-    catch (error) {
+            void cuerpo.offsetWidth;
+        }
 
-        console.error(
-            "[HISTORIA] Error:",
-            error
-        );
-
-
+    } catch (error) {
+        console.error("[HISTORIA] Error:", error);
         mostrarHistoriaError();
-
     }
-
 }
 
 
@@ -287,99 +322,79 @@ async function obtenerFicha(
 // =======================================================
 // MOSTRAR VENTANA
 // =======================================================
-
 function mostrarHistoriaCompleta() {
-
-    const contenedor =
-        document.getElementById(
-            CONFIG_HISTORIA.contenedor
-        );
-
+    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
 
     if (!contenedor) {
-
-        console.warn(
-            "[HISTORIA] No existe #historiaCompleta."
-        );
-
+        console.warn("[HISTORIA] No existe #historiaCompleta.");
         return;
-
     }
 
+    contenedor.classList.add("activo");
+    contenedor.setAttribute("aria-hidden", "false");
 
-    contenedor.classList.add(
-        "activo"
-    );
+    document.body.classList.add("historia-modal-abierta");
 
-
-    contenedor.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-
-    /*
-       Evitamos que el fondo
-       pueda desplazarse mientras
-       el expediente está abierto.
-    */
-
-    document.body.classList.add(
-        "historia-modal-abierta"
-    );
-
+    console.log("[HISTORIA] Expediente abierto.");
 }
 
+
+
+function resetearPosicionHistoria() {
+    const ventana = document.querySelector(".historia-ventana");
+
+    if (!ventana) return;
+
+    ventana.style.left = "50%";
+    ventana.style.top = "14vh";
+    ventana.style.transform = "translateX(-50%)";
+
+    console.log("[HISTORIA] Posición reiniciada.");
+}
 
 // =======================================================
 // CERRAR VENTANA
 // =======================================================
-
 function cerrarHistoriaCompleta() {
+    console.trace("[HISTORIA] ¿QUIÉN ESTÁ CERRANDO?");
 
-    const contenedor =
-        document.getElementById(
-            CONFIG_HISTORIA.contenedor
-        );
+    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
+    const ventana = document.querySelector(".historia-ventana");
 
+    if (!contenedor || !ventana) return;
 
-    if (!contenedor) {
+    /*
+     * 1. Cerramos inmediatamente el expediente.
+     *    El usuario ya no verá el movimiento.
+     */
+    contenedor.classList.remove("activo");
+    contenedor.setAttribute("aria-hidden", "true");
 
-        return;
+    document.body.classList.remove("historia-modal-abierta");
 
-    }
+    /*
+     * 2. Esperamos a que termine la transición
+     *    de desaparición.
+     */
+    setTimeout(() => {
 
+        /*
+         * 3. Ahora que ya está oculto,
+         *    volvemos a centrarlo.
+         */
+        ventana.style.left = "50%";
+        ventana.style.top = "14vh";
+        ventana.style.transform = "translateX(-50%)";
 
-    contenedor.classList.remove(
-        "activo"
-    );
+        console.log("[HISTORIA] Posición reiniciada.");
 
+    }, 230);
 
-    contenedor.setAttribute(
-        "aria-hidden",
-        "true"
-    );
+    historiaFichaActual = null;
+    historiaIdActual = null;
 
-
-    document.body.classList.remove(
-        "historia-modal-abierta"
-    );
-
-
-    historiaFichaActual =
-        null;
-
-
-    historiaIdActual =
-        null;
-
-
-    console.log(
-        "[HISTORIA] Expediente cerrado."
-    );
-
+    console.log("[HISTORIA] Expediente cerrado.");
 }
-
 
 // =======================================================
 // PINTAR HISTORIA
@@ -1700,6 +1715,253 @@ window.abrirHistoriaCompleta =
 
 window.cerrarHistoriaCompleta =
     cerrarHistoriaCompleta;
+
+/* =========================================================
+   VENTANA ARRASTRABLE
+========================================================= */
+function hacerHistoriaMovible() {
+
+    const ventana =
+        document.querySelector(".historia-ventana");
+
+    if (!ventana) {
+
+        console.warn(
+            "[HISTORIA] No se encontró .historia-ventana"
+        );
+
+        return;
+    }
+
+
+    let moviendo = false;
+
+    let offsetX = 0;
+    let offsetY = 0;
+
+
+    /* =====================================================
+       INICIAR ARRASTRE
+       Se puede hacer desde CUALQUIER PARTE de la ventana
+    ===================================================== */
+
+    ventana.addEventListener(
+        "mousedown",
+        iniciarMovimiento
+    );
+
+
+    function iniciarMovimiento(evento) {
+
+        /*
+         * Si se hizo click en botones o elementos
+         * interactivos NO empezamos a mover.
+         */
+
+        if (
+            evento.target.closest(
+                ".historia-cerrar"
+            )
+        ) {
+            return;
+        }
+
+
+        if (
+            evento.target.closest(
+                ".historia-btn-cerrar"
+            )
+        ) {
+            return;
+        }
+
+
+        if (
+            evento.target.closest(
+                ".historia-relacionada"
+            )
+        ) {
+            return;
+        }
+
+
+        /*
+         * Si el usuario está seleccionando texto,
+         * tampoco movemos.
+         */
+
+        if (
+            window.getSelection &&
+            window.getSelection().toString().length > 0
+        ) {
+            return;
+        }
+
+
+        const rect =
+            ventana.getBoundingClientRect();
+
+
+        /*
+         * Guardamos exactamente dónde
+         * agarró la ventana.
+         */
+
+        offsetX =
+            evento.clientX - rect.left;
+
+        offsetY =
+            evento.clientY - rect.top;
+
+
+        /*
+         * Quitamos el transform original.
+         * Esto es MUY IMPORTANTE.
+         */
+
+        ventana.style.transform =
+            "none";
+
+
+        /*
+         * Convertimos la posición actual
+         * a coordenadas reales.
+         */
+
+        ventana.style.left =
+            rect.left + "px";
+
+        ventana.style.top =
+            rect.top + "px";
+
+
+        moviendo = true;
+
+
+        ventana.classList.add(
+            "arrastrando"
+        );
+
+
+        document.body.style.userSelect =
+            "none";
+
+
+        evento.preventDefault();
+    }
+
+
+    /* =====================================================
+       MOVER
+    ===================================================== */
+
+    document.addEventListener(
+        "mousemove",
+        moverVentana
+    );
+
+
+    function moverVentana(evento) {
+
+        if (!moviendo) {
+            return;
+        }
+
+
+        let x =
+            evento.clientX - offsetX;
+
+        let y =
+            evento.clientY - offsetY;
+
+
+        const ancho =
+            ventana.offsetWidth;
+
+        const alto =
+            ventana.offsetHeight;
+
+
+        /*
+         * Dejamos una pequeña parte visible
+         * para que nunca desaparezca completamente.
+         */
+
+        const margen =
+            25;
+
+
+        const minimoX =
+            margen - ancho + 120;
+
+        const maximoX =
+            window.innerWidth - 120;
+
+
+        const minimoY =
+            0;
+
+        const maximoY =
+            window.innerHeight - 70;
+
+
+        x =
+            Math.max(
+                minimoX,
+                Math.min(
+                    x,
+                    maximoX
+                )
+            );
+
+
+        y =
+            Math.max(
+                minimoY,
+                Math.min(
+                    y,
+                    maximoY
+                )
+            );
+
+
+        ventana.style.left =
+            x + "px";
+
+        ventana.style.top =
+            y + "px";
+    }
+
+
+    /* =====================================================
+       TERMINAR ARRASTRE
+    ===================================================== */
+
+    document.addEventListener(
+        "mouseup",
+        terminarMovimiento
+    );
+
+
+    function terminarMovimiento() {
+
+        if (!moviendo) {
+            return;
+        }
+
+
+        moviendo = false;
+
+
+        ventana.classList.remove(
+            "arrastrando"
+        );
+
+
+        document.body.style.userSelect =
+            "";
+    }
+}
 
 
 // =======================================================
