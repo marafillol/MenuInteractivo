@@ -187,6 +187,11 @@ async function inicializarExplorador() {
             "buscador"
         );
 
+    const ejecutarBusqueda =
+        document.getElementById(
+            "ejecutarBusqueda"
+        );
+
 
     const limpiarBusqueda =
         document.getElementById(
@@ -316,16 +321,13 @@ async function inicializarExplorador() {
 
                 evento.stopPropagation();
 
+                if (buscador) {
+                    buscador.value = "";
+                }
 
-                panelBusqueda?.classList.remove(
-                    "activo"
-                );
+                mostrarTodasLasFichas();
 
-
-                panelBusqueda?.setAttribute(
-                    "aria-hidden",
-                    "true"
-                );
+                cerrarPaneles();
 
             }
         );
@@ -380,6 +382,42 @@ async function inicializarExplorador() {
                 filtrarFichasExplorador(
                     buscador.value
                 );
+
+            }
+        );
+
+    }
+
+    if (ejecutarBusqueda) {
+
+        ejecutarBusqueda.addEventListener(
+            "click",
+            evento => {
+
+                evento.stopPropagation();
+
+                if (!buscador) {
+                    return;
+                }
+
+                // Ejecutar búsqueda
+                filtrarFichasExplorador(
+                    buscador.value
+                );
+
+                // Cerrar la ventana de búsqueda
+                const panelBusqueda =
+                    document.getElementById(
+                        "panelBusqueda"
+                    );
+
+                if (panelBusqueda) {
+
+                    panelBusqueda.classList.remove(
+                        "activo"
+                    );
+
+                }
 
             }
         );

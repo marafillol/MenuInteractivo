@@ -3288,6 +3288,400 @@ body {
 
 }
 
+/* =========================================================
+   BOTÓN EJECUTAR BÚSQUEDA
+========================================================= */
 
+.boton-ejecutar-busqueda {
+
+    position:
+        relative;
+
+    z-index:
+        3;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        9px;
+
+    width:
+        100%;
+
+    height:
+        44px;
+
+    margin-top:
+        10px;
+
+    padding:
+        0 18px;
+
+    border:
+        1px solid rgba(184,164,111,.48);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(169,149,97,.16),
+            rgba(3,15,21,.48)
+        );
+
+    color:
+        #d8cdaF;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        11px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .18em;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+        0 3px 8px rgba(0,0,0,.30),
+        inset 0 0 10px rgba(0,0,0,.20);
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .12s ease,
+        box-shadow .18s ease;
+}
+
+
+/* =========================================================
+   ICONO
+========================================================= */
+
+.icono-buscar {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    width:
+        18px;
+
+    height:
+        18px;
+
+    color:
+        var(--dorado);
+
+    font-size:
+        19px;
+
+    line-height:
+        1;
+}
+
+
+/* =========================================================
+   HOVER / FOCO
+========================================================= */
+
+.boton-ejecutar-busqueda:hover,
+.boton-ejecutar-busqueda:focus-visible {
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(169,149,97,.28),
+            rgba(3,15,21,.58)
+        );
+
+    border-color:
+        rgba(210,190,132,.72);
+
+    color:
+        #eee5c9;
+
+    box-shadow:
+        0 5px 12px rgba(0,0,0,.38),
+        inset 0 0 12px rgba(169,149,97,.08);
+
+    outline:
+        none;
+}
+
+
+/* =========================================================
+   PRESIÓN
+========================================================= */
+
+.boton-ejecutar-busqueda:active {
+
+    transform:
+        translateY(1px);
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.30);
+
+}
+
+
+/* =========================================================
+   ACCIÓN DE BÚSQUEDA
+   Estética de consulta documental
+========================================================= */
+
+.accion-busqueda {
+
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    margin:
+        13px 0 16px;
+
+    gap: 10px;
+}
+
+
+/* ---------------------------------------------------------
+   Líneas decorativas
+--------------------------------------------------------- */
+
+.marca-consulta {
+
+    display: block;
+
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(184,164,111,.38)
+        );
+}
+
+.marca-consulta:last-child {
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(184,164,111,.38),
+            transparent
+        );
+}
+
+
+/* ---------------------------------------------------------
+   BOTÓN
+--------------------------------------------------------- */
+
+.boton-ejecutar-busqueda {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    min-width: 190px;
+    height: 38px;
+
+    padding:
+        0 18px;
+
+    border:
+        1px solid rgba(184,164,111,.52);
+
+    background:
+
+        linear-gradient(
+            180deg,
+            rgba(121,98,71,.30),
+            rgba(48,40,32,.72)
+        );
+
+    color:
+        #d8ccb0;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size:
+        10px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .16em;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+
+        0 3px 8px rgba(0,0,0,.35),
+
+        inset 0 1px 0
+        rgba(255,255,255,.05),
+
+        inset 0 0 12px
+        rgba(0,0,0,.25);
+
+    transition:
+
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        box-shadow .18s ease,
+        transform .12s ease;
+}
+
+
+/* ---------------------------------------------------------
+   PEQUEÑO DETALLE INTERIOR
+--------------------------------------------------------- */
+
+.boton-ejecutar-busqueda::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 4px;
+
+    border:
+        1px dashed rgba(210,190,132,.13);
+
+    pointer-events:
+        none;
+}
+
+
+/* ---------------------------------------------------------
+   ÍCONO
+--------------------------------------------------------- */
+
+.icono-buscar {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 17px;
+    height: 17px;
+
+    flex-shrink: 0;
+
+    color:
+        var(--dorado);
+}
+
+.icono-buscar svg {
+
+    width: 16px;
+    height: 16px;
+
+    fill: none;
+
+    stroke:
+        currentColor;
+
+    stroke-width:
+        1.5;
+}
+
+
+/* ---------------------------------------------------------
+   TEXTO
+--------------------------------------------------------- */
+
+.texto-buscar {
+
+    position: relative;
+
+    z-index: 1;
+
+    white-space:
+        nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   HOVER / FOCUS
+--------------------------------------------------------- */
+
+.boton-ejecutar-busqueda:hover,
+.boton-ejecutar-busqueda:focus-visible {
+
+    background:
+
+        linear-gradient(
+            180deg,
+            rgba(169,149,97,.25),
+            rgba(48,40,32,.78)
+        );
+
+    border-color:
+        rgba(210,190,132,.75);
+
+    color:
+        #eee5c9;
+
+    box-shadow:
+
+        0 5px 12px rgba(0,0,0,.42),
+
+        inset 0 0 12px
+        rgba(169,149,97,.08);
+
+    outline:
+        none;
+}
+
+
+/* ---------------------------------------------------------
+   CLICK
+--------------------------------------------------------- */
+
+.boton-ejecutar-busqueda:active {
+
+    transform:
+        translateY(1px);
+
+    box-shadow:
+
+        0 2px 5px rgba(0,0,0,.35);
+}
 
 
