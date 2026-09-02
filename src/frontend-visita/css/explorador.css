@@ -2096,30 +2096,204 @@ body {
 /* =========================================================
    CONTENIDO ÍNDICE
 ========================================================= */
+/* =========================================================
+   ÍNDICE — DOS COLUMNAS
+========================================================= */
 
 .contenido-indice {
+    position: relative;
+    z-index: 3;
 
-    position:
-        relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
 
-    z-index:
-        3;
+    align-items: start;
 }
 
 
-.indice-vacio {
+/* =========================================================
+   COLUMNAS
+========================================================= */
+
+.columna-indice {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   TÍTULOS DE SECCIÓN
+========================================================= */
+
+.columna-indice .titulo-indice-seccion {
+    margin: 0 0 10px 0;
+
+    padding: 8px 12px;
+
+    border-left: 3px solid var(--dorado);
+    border-bottom: 1px solid var(--azul-borde);
+
+    background:
+        rgba(0, 0, 0, .18);
+
+    color: var(--dorado);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 14px;
+
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   ELEMENTOS DEL ÍNDICE
+========================================================= */
+
+.columna-indice .item-indice {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+    min-height: 42px;
+
+    padding: 9px 12px 9px 24px;
+
+    border: 0;
+    border-bottom:
+        1px dotted
+        rgba(184, 164, 111, .22);
+
+    background:
+        transparent !important;
 
     color:
-        rgba(211,205,185,.62);
+        var(--tinta-clara) !important;
 
-    text-align:
-        center;
+    font-family:
+        "Courier New",
+        monospace;
 
-    font-style:
-        italic;
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        padding-left .15s ease;
 }
 
 
+/* =========================================================
+   FLECHA DOCUMENTAL
+========================================================= */
+
+.columna-indice .item-indice::before {
+    content: "›";
+
+    margin-right: 10px;
+
+    color: var(--dorado);
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.columna-indice .item-indice:hover {
+    background:
+        rgba(169, 149, 97, .10) !important;
+
+    padding-left: 29px;
+}
+
+
+/* =========================================================
+   BOTÓN TODOS
+========================================================= */
+
+.columna-menus .boton-todos {
+    margin-bottom: 6px;
+
+    border-bottom:
+        1px solid
+        rgba(169, 149, 97, .35);
+
+    color:
+        var(--dorado) !important;
+
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   SEPARADOR ANTIGUO
+========================================================= */
+
+.separador-indice {
+    display: none;
+}
+
+
+/* =========================================================
+   ÍNDICE VACÍO
+========================================================= */
+
+.columna-indice .indice-vacio {
+    margin: 12px 0;
+
+    color:
+        rgba(216, 209, 188, .55);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 13px;
+
+    font-style: italic;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .contenido-indice {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .columna-indice .titulo-indice-seccion {
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+
+    .columna-indice .item-indice {
+        min-height: 38px;
+
+        padding: 8px 6px 8px 10px;
+
+        font-size: 11px;
+    }
+
+    .columna-indice .item-indice::before {
+        margin-right: 5px;
+        font-size: 15px;
+    }
+
+}
 /* =========================================================
    ITEMS ÍNDICE
 ========================================================= */
@@ -3113,4 +3287,7 @@ body {
     }
 
 }
+
+
+
 

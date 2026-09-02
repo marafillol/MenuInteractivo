@@ -16,7 +16,10 @@ router.get(
     "/menu/:id_menu",
     fichasController.obtenerFichasPorMenu
 );
-
+router.get(
+    "/etiqueta/:id_etiqueta",
+    fichasController.obtenerFichasPorEtiqueta
+);
 
 router.get(
     "/:id_ficha",

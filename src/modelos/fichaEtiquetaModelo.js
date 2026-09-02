@@ -282,6 +282,53 @@ class FichaEtiqueta {
 
     }
 
+    // =======================================================
+    // OBTENER FICHAS DE UNA ETIQUETA
+    // =======================================================
+    //
+    // Obtiene todas las fichas asociadas a una etiqueta.
+    //
+    // Recibe:
+    // - idEtiqueta: identificador de la etiqueta.
+    //
+    // Retorna:
+    // - Lista de fichas relacionadas con esa etiqueta.
+    //
+
+    static obtenerPorEtiqueta(idEtiqueta){
+
+        return new Promise((resolve,reject)=>{
+
+            db.all(
+                `
+                SELECT
+                    f.*
+                FROM ficha_etiqueta fe
+
+                INNER JOIN ficha f
+                    ON fe.id_ficha = f.id_ficha
+
+                WHERE fe.id_etiqueta = ?
+
+                ORDER BY f.id_ficha
+                `,
+                [idEtiqueta],
+                (error, filas)=>{
+
+                    if(error)
+
+                        reject(error);
+
+                    else
+
+                        resolve(filas);
+
+                }
+            );
+
+        });
+
+    }
 
     // ===================================================
     // ELIMINAR TODAS LAS ETIQUETAS DE UNA FICHA

@@ -112,6 +112,42 @@ async function obtenerFichasPorMenu(req,res){
 
 }
 
+async function obtenerFichasPorEtiqueta(req,res){
+    try{
+        let fichas =
+        await Ficha.obtenerPorEtiqueta(
+            req.params.id_etiqueta
+        );
+
+        fichas = fichas.map(ficha=>{
+            ficha.datos_json =
+            ficha.datos_json
+            ?
+            JSON.parse(ficha.datos_json)
+            :
+            {};
+
+            ficha.plantilla =
+            ficha.plantilla_json
+            ?
+            JSON.parse(ficha.plantilla_json)
+            :
+            null;
+
+            delete ficha.plantilla_json;
+
+            return ficha;
+        });
+
+        res.json(fichas);
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({
+            error:"Error al obtener las fichas por etiqueta."
+        });
+    }
+}
 
 async function obtenerFichaPorId(req,res){
 
@@ -196,11 +232,8 @@ async function obtenerFichaPorId(req,res){
 
 
 module.exports={
-
     obtenerFichas,
-
     obtenerFichasPorMenu,
-
+    obtenerFichasPorEtiqueta,
     obtenerFichaPorId
-
 };

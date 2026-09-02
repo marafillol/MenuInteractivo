@@ -377,6 +377,41 @@ const obtenerMultimedia = (id_ficha)=>{
 
 };
 
+const obtenerPorEtiqueta = (id_etiqueta)=>{
+    return new Promise((resolve,reject)=>{
+        db.all(
+            `
+            SELECT
+                ficha.id_ficha,
+                ficha.id_menu,
+                ficha.titulo,
+                ficha.resumen,
+                ficha.imagen,
+                ficha.datos_json,
+                menu.nombre AS menu,
+                plantilla.plantilla_json
+            FROM ficha
+            INNER JOIN ficha_etiqueta
+                ON ficha.id_ficha = ficha_etiqueta.id_ficha
+            INNER JOIN menu
+                ON ficha.id_menu = menu.id_menu
+            INNER JOIN plantilla
+                ON menu.id_plantilla = plantilla.id_plantilla
+            WHERE
+                ficha_etiqueta.id_etiqueta = ?
+                AND ficha.visible = 1
+                AND menu.visible = 1
+            ORDER BY ficha.titulo
+            `,
+            [id_etiqueta],
+            (error,filas)=>{
+                if(error) reject(error);
+                else resolve(filas);
+            }
+        );
+    });
+};
+
 module.exports={
 
     obtenerTodas,
@@ -384,6 +419,7 @@ module.exports={
     obtenerPorId,
     obtenerEtiquetas,
     obtenerRelacionadas,
-    obtenerMultimedia
+    obtenerMultimedia,
+    obtenerPorEtiqueta
 
 };

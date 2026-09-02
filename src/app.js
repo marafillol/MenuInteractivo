@@ -154,6 +154,11 @@ require("./rutas/public/fichas");
 const configuracionPublicaRoutes =
 require("./rutas/public/configuracion");
 
+const etiquetasPublicasRoutes =
+require("./rutas/public/etiquetas");
+
+
+
 // Cuando las creemos:
 /// const fichaPublicaRoutes = require("./rutas/public/fichas");
 
@@ -237,6 +242,11 @@ app.use(
 app.use(
     "/api/public/configuracion",
     configuracionPublicaRoutes
+);
+
+app.use(
+    "/api/public/etiquetas",
+    etiquetasPublicasRoutes
 );
 
 // =======================================================

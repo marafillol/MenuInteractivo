@@ -29,6 +29,8 @@
 // =======================================================
 
 let fichasExplorador = [];
+let menusExplorador = [];
+let etiquetasExplorador = [];
 
 
 // =======================================================
@@ -540,11 +542,10 @@ async function inicializarExplorador() {
 //
 // ÚNICA FUNCIÓN DE CARGA
 // =======================================================
-
 async function cargarFichasExplorador() {
 
     console.log(
-        "[explorador] Consultando /api/public/fichas..."
+        "[explorador] Consultando APIs públicas..."
     );
 
 
@@ -556,26 +557,30 @@ async function cargarFichasExplorador() {
 
     try {
 
-        const respuesta =
+        // =================================================
+        // CARGAR FICHAS
+        // =================================================
+
+        const respuestaFichas =
             await fetch(
                 "/api/public/fichas"
             );
 
 
-        if (!respuesta.ok) {
+        if (!respuestaFichas.ok) {
 
             throw new Error(
-                `HTTP ${respuesta.status}`
+                `Error fichas HTTP ${respuestaFichas.status}`
             );
 
         }
 
 
-        const datos =
-            await respuesta.json();
+        const datosFichas =
+            await respuestaFichas.json();
 
 
-        if (!Array.isArray(datos)) {
+        if (!Array.isArray(datosFichas)) {
 
             throw new Error(
                 "La API no devolvió un array de fichas."
@@ -584,12 +589,8 @@ async function cargarFichasExplorador() {
         }
 
 
-        // =================================================
-        // GUARDAR FICHAS
-        // =================================================
-
         fichasExplorador =
-            datos.map(
+            datosFichas.map(
                 ficha => {
 
                     return normalizarFicha(
@@ -600,9 +601,97 @@ async function cargarFichasExplorador() {
             );
 
 
+        // =================================================
+        // CARGAR MENÚS
+        // =================================================
+
+        const respuestaMenus =
+            await fetch(
+                "/api/public/menus"
+            );
+
+
+        if (!respuestaMenus.ok) {
+
+            throw new Error(
+                `Error menús HTTP ${respuestaMenus.status}`
+            );
+
+        }
+
+
+        const datosMenus =
+            await respuestaMenus.json();
+
+
+        if (!Array.isArray(datosMenus)) {
+
+            throw new Error(
+                "La API no devolvió un array de menús."
+            );
+
+        }
+
+
+        menusExplorador =
+            datosMenus;
+
+
+        // =================================================
+        // CARGAR ETIQUETAS
+        // =================================================
+
+        const respuestaEtiquetas =
+            await fetch(
+                "/api/public/etiquetas"
+            );
+
+
+        if (!respuestaEtiquetas.ok) {
+
+            throw new Error(
+                `Error etiquetas HTTP ${respuestaEtiquetas.status}`
+            );
+
+        }
+
+
+        const datosEtiquetas =
+            await respuestaEtiquetas.json();
+
+
+        if (!Array.isArray(datosEtiquetas)) {
+
+            throw new Error(
+                "La API no devolvió un array de etiquetas."
+            );
+
+        }
+
+
+        etiquetasExplorador =
+            datosEtiquetas;
+
+
+        // =================================================
+        // DEBUG
+        // =================================================
+
         console.log(
             "[explorador] Fichas recibidas:",
             fichasExplorador
+        );
+
+
+        console.log(
+            "[explorador] Menús recibidos:",
+            menusExplorador
+        );
+
+
+        console.log(
+            "[explorador] Etiquetas recibidas:",
+            etiquetasExplorador
         );
 
 
@@ -631,7 +720,7 @@ async function cargarFichasExplorador() {
     catch(error) {
 
         console.error(
-            "[explorador] Error cargando fichas:",
+            "[explorador] Error cargando datos:",
             error
         );
 
@@ -1591,11 +1680,9 @@ function obtenerNombreFicha(
 
 }
 
-
 // =======================================================
 // ÍNDICE
 // =======================================================
-
 function renderizarIndice() {
 
     const contenedor =
@@ -1611,98 +1698,363 @@ function renderizarIndice() {
     }
 
 
+    contenedor.innerHTML = "";
+
+
+    // ===================================================
+    // COLUMNAS
+    // ===================================================
+
+    const columnaMenus =
+        document.createElement(
+            "div"
+        );
+
+    columnaMenus.className =
+        "columna-indice columna-menus";
+
+
+    const columnaEtiquetas =
+        document.createElement(
+            "div"
+        );
+
+    columnaEtiquetas.className =
+        "columna-indice columna-etiquetas";
+
+
+    // ===================================================
+    // TÍTULO — MENÚS
+    // ===================================================
+
+    const tituloMenus =
+        document.createElement(
+            "h3"
+        );
+
+    tituloMenus.className =
+        "titulo-indice-seccion";
+
+    tituloMenus.textContent =
+        "MENÚS";
+
+    columnaMenus.appendChild(
+        tituloMenus
+    );
+
+
+    // ===================================================
+    // BOTÓN TODOS
+    // ===================================================
+
+    const botonTodos =
+        document.createElement(
+            "button"
+        );
+
+    botonTodos.type =
+        "button";
+
+    botonTodos.className =
+        "item-indice boton-todos";
+
+    botonTodos.textContent =
+        "TODOS";
+
+
+    botonTodos.addEventListener(
+        "click",
+        evento => {
+
+            evento.stopPropagation();
+
+            mostrarTodasLasFichas();
+
+            cerrarPaneles();
+
+            actualizarMensajeCentral();
+
+        }
+    );
+
+
+    columnaMenus.appendChild(
+        botonTodos
+    );
+
+
+    // ===================================================
+    // MENÚS
+    // ===================================================
+
     if (
-        !fichasExplorador.length
+        menusExplorador.length
     ) {
 
-        contenedor.innerHTML = `
+        menusExplorador.forEach(
+            menu => {
 
-            <p class="indice-vacio">
+                const boton =
+                    document.createElement(
+                        "button"
+                    );
 
-                No hay fichas disponibles.
 
-            </p>
+                boton.type =
+                    "button";
 
-        `;
 
-        return;
+                boton.className =
+                    "item-indice";
+
+
+                boton.textContent =
+                    menu.nombre;
+
+
+                boton.addEventListener(
+                    "click",
+                    evento => {
+
+                        evento.stopPropagation();
+
+                        mostrarFichasPorMenu(
+                            menu.id_menu
+                        );
+
+                    }
+                );
+
+
+                columnaMenus.appendChild(
+                    boton
+                );
+
+            }
+        );
+
+    }
+    else {
+
+        const vacio =
+            document.createElement(
+                "p"
+            );
+
+        vacio.className =
+            "indice-vacio";
+
+        vacio.textContent =
+            "No hay menús disponibles.";
+
+        columnaMenus.appendChild(
+            vacio
+        );
 
     }
 
 
     // ===================================================
-    // ORDENAR
+    // TÍTULO — ETIQUETAS
     // ===================================================
 
-    const ordenados =
-        [...fichasExplorador].sort(
-            (a,b) => {
+    const tituloEtiquetas =
+        document.createElement(
+            "h3"
+        );
 
-                return obtenerNombreFicha(a)
-                    .localeCompare(
-                        obtenerNombreFicha(b),
-                        "es"
+    tituloEtiquetas.className =
+        "titulo-indice-seccion";
+
+    tituloEtiquetas.textContent =
+        "ETIQUETAS";
+
+    columnaEtiquetas.appendChild(
+        tituloEtiquetas
+    );
+
+
+    // ===================================================
+    // ETIQUETAS
+    // ===================================================
+
+    if (
+        etiquetasExplorador.length
+    ) {
+
+        etiquetasExplorador.forEach(
+            etiqueta => {
+
+                const boton =
+                    document.createElement(
+                        "button"
                     );
+
+
+                boton.type =
+                    "button";
+
+
+                boton.className =
+                    "item-indice";
+
+
+                boton.textContent =
+                    etiqueta.nombre;
+
+
+                boton.addEventListener(
+                    "click",
+                    evento => {
+
+                        evento.stopPropagation();
+
+                        mostrarFichasPorEtiqueta(
+                            etiqueta.id_etiqueta
+                        );
+
+                    }
+                );
+
+
+                columnaEtiquetas.appendChild(
+                    boton
+                );
 
             }
         );
 
+    }
+    else {
 
-    contenedor.innerHTML =
-        "";
+        const vacio =
+            document.createElement(
+                "p"
+            );
+
+        vacio.className =
+            "indice-vacio";
+
+        vacio.textContent =
+            "No hay etiquetas disponibles.";
+
+        columnaEtiquetas.appendChild(
+            vacio
+        );
+
+    }
 
 
     // ===================================================
-    // CREAR ÍNDICE
+    // AGREGAR LAS DOS COLUMNAS
     // ===================================================
 
-    ordenados.forEach(
-        ficha => {
+    contenedor.appendChild(
+        columnaMenus
+    );
 
-            const boton =
-                document.createElement(
-                    "button"
-                );
-
-
-            boton.type =
-                "button";
-
-
-            boton.className =
-                "item-indice";
-
-
-            boton.textContent =
-                obtenerNombreFicha(
-                    ficha
-                );
-
-
-            boton.addEventListener(
-                "click",
-                evento => {
-
-                    evento.stopPropagation();
-
-
-                    abrirFichaDesdeIndice(
-                        ficha
-                    );
-
-                }
-            );
-
-
-            contenedor.appendChild(
-                boton
-            );
-
-        }
+    contenedor.appendChild(
+        columnaEtiquetas
     );
 
 }
 
+function mostrarFichasPorMenu(idMenu) {
+
+    console.log(
+        "[explorador] Filtrando por menú:",
+        idMenu
+    );
+
+
+    const fichasFiltradas =
+        fichasExplorador.filter(
+            ficha =>
+                Number(ficha.id_menu) ===
+                Number(idMenu)
+        );
+
+
+    renderizarResultados(
+        fichasFiltradas
+    );
+
+
+    cerrarPaneles();
+
+
+    actualizarMensajeCentral();
+}
+
+async function mostrarFichasPorEtiqueta(idEtiqueta) {
+
+    console.log(
+        "[explorador] Filtrando por etiqueta:",
+        idEtiqueta
+    );
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                `/api/public/fichas/etiqueta/${idEtiqueta}`
+            );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `HTTP ${respuesta.status}`
+            );
+
+        }
+
+
+        const fichas =
+            await respuesta.json();
+
+
+        if (!Array.isArray(fichas)) {
+
+            throw new Error(
+                "La API no devolvió un array de fichas."
+            );
+
+        }
+
+
+        const fichasFiltradas =
+            fichas.map(
+                ficha =>
+                    normalizarFicha(
+                        ficha
+                    )
+            );
+
+
+        renderizarResultados(
+            fichasFiltradas
+        );
+
+
+        cerrarPaneles();
+
+
+        actualizarMensajeCentral();
+
+
+    }
+    catch(error) {
+
+        console.error(
+            "[explorador] Error filtrando por etiqueta:",
+            error
+        );
+
+    }
+
+}
 
 // =======================================================
 // ABRIR FICHA DESDE ÍNDICE
