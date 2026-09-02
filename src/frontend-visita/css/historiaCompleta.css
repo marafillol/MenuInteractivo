@@ -635,6 +635,33 @@
 
 
 /* =========================================================
+   UTILIDAD: OCULTAR SECCIÓN SIN DATOS
+   (usada por historiaCompleta.js)
+========================================================= */
+
+.oculto {
+
+    display: none !important;
+
+}
+
+
+/* =========================================================
+   FOTOGRAFÍA · ESTADO SIN IMAGEN
+   (historiaCompleta.js marca el wrapper .imagenHistoria
+   con la clase .sin-imagen cuando la ficha no tiene foto)
+========================================================= */
+
+.imagenHistoria.sin-imagen img {
+
+    opacity: .35;
+
+    filter: grayscale(1);
+
+}
+
+
+/* =========================================================
    SIN FOTOGRAFÍA
 ========================================================= */
 
@@ -1055,15 +1082,42 @@
 
 .historia-galeria {
 
-    display: grid;
+    display: flex;
 
-    grid-template-columns:
-        repeat(
-            auto-fill,
-            minmax(150px,1fr)
-        );
+    flex-direction: row;
 
     gap: 14px;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    padding-bottom: 10px;
+
+    scroll-snap-type: x mandatory;
+
+}
+
+
+.historia-galeria::-webkit-scrollbar {
+
+    height: 8px;
+
+}
+
+
+.historia-galeria::-webkit-scrollbar-track {
+
+    background:
+        rgba(66,49,29,.10);
+
+}
+
+
+.historia-galeria::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(67,82,94,.48);
 
 }
 
@@ -1073,6 +1127,12 @@
     position: relative;
 
     overflow: hidden;
+
+    flex: 0 0 auto;
+
+    width: 190px;
+
+    scroll-snap-align: start;
 
     background:
         var(--hist-carton);

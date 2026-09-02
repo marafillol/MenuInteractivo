@@ -1,4 +1,3 @@
-
 // =======================================================
 // HISTORIA COMPLETA
 // Museo Malvinas · Archivo Histórico
@@ -119,7 +118,10 @@ function prepararEventosHistoria() {
         evento => {
 
             if (
-                evento.target === contenedor
+                evento.target === contenedor ||
+                evento.target.classList.contains(
+                    "historia-overlay"
+                )
             ) {
 
                 cerrarHistoriaCompleta();
@@ -223,6 +225,9 @@ async function abrirHistoriaCompleta(
         );
 
 
+        ocultarEstadoHistoria();
+
+
     }
     catch (error) {
 
@@ -303,7 +308,7 @@ function mostrarHistoriaCompleta() {
 
 
     contenedor.classList.add(
-        "historia-abierta"
+        "activo"
     );
 
 
@@ -346,7 +351,7 @@ function cerrarHistoriaCompleta() {
 
 
     contenedor.classList.remove(
-        "historia-abierta"
+        "activo"
     );
 
 
@@ -850,7 +855,7 @@ function pintarCampos(
 
 
             fila.className =
-                "campoHistoria";
+                "historia-campo";
 
 
             const etiqueta =
@@ -860,7 +865,7 @@ function pintarCampos(
 
 
             etiqueta.className =
-                "etiquetaHistoria";
+                "historia-campo-etiqueta";
 
 
             etiqueta.textContent =
@@ -876,7 +881,7 @@ function pintarCampos(
 
 
             valorElemento.className =
-                "valorHistoria";
+                "historia-campo-valor";
 
 
             valorElemento.textContent =
@@ -1002,7 +1007,7 @@ function pintarEtiquetas(
 
 
             elemento.className =
-                "etiquetaHistoria-item";
+                "historia-etiqueta";
 
 
             elemento.textContent =
@@ -1107,7 +1112,7 @@ function crearElementoMultimedia(
 
 
     tarjeta.className =
-        "multimediaHistoria-item";
+        "historia-media";
 
 
     const ruta =
@@ -1432,12 +1437,22 @@ function pintarRelacionadas(
 
 
             elemento.className =
-                "relacionadaHistoria-item";
+                "historia-relacionada";
 
 
             elemento.dataset.id =
                 relacionada.id_ficha ??
                 "";
+
+
+            const info =
+                document.createElement(
+                    "span"
+                );
+
+
+            info.className =
+                "historia-relacionada-info";
 
 
             const titulo =
@@ -1447,7 +1462,7 @@ function pintarRelacionadas(
 
 
             titulo.className =
-                "relacionadaHistoria-titulo";
+                "historia-relacionada-titulo";
 
 
             titulo.textContent =
@@ -1455,7 +1470,7 @@ function pintarRelacionadas(
                 "Ficha sin título";
 
 
-            elemento.appendChild(
+            info.appendChild(
                 titulo
             );
 
@@ -1471,18 +1486,23 @@ function pintarRelacionadas(
 
 
                 menu.className =
-                    "relacionadaHistoria-menu";
+                    "historia-relacionada-menu";
 
 
                 menu.textContent =
                     relacionada.menu;
 
 
-                elemento.appendChild(
+                info.appendChild(
                     menu
                 );
 
             }
+
+
+            elemento.appendChild(
+                info
+            );
 
 
             elemento.addEventListener(
@@ -1540,15 +1560,21 @@ function mostrarHistoriaCarga() {
 
 
     estado.className =
-        "estadoHistoria estado-cargando";
+        "historia-estado estado-cargando";
 
 
-    estado.textContent =
-        "CONSULTANDO EXPEDIENTE...";
+    estado.innerHTML = `
+        <span class="historia-estado-icono">◌</span>
+        <span class="historia-estado-texto">CONSULTANDO EXPEDIENTE...</span>
+    `;
 
 
     estado.hidden =
         false;
+
+    estado.classList.remove(
+        "oculto"
+    );
 
 }
 
@@ -1573,15 +1599,21 @@ function mostrarHistoriaError() {
 
 
     estado.className =
-        "estadoHistoria estado-error";
+        "historia-estado estado-error";
 
 
-    estado.textContent =
-        "NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.";
+    estado.innerHTML = `
+        <span class="historia-estado-icono">✕</span>
+        <span class="historia-estado-texto">NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.</span>
+    `;
 
 
     estado.hidden =
         false;
+
+    estado.classList.remove(
+        "oculto"
+    );
 
 }
 
@@ -1607,6 +1639,10 @@ function ocultarEstadoHistoria() {
 
     estado.hidden =
         true;
+
+    estado.classList.add(
+        "oculto"
+    );
 
 }
 
@@ -1673,5 +1709,3 @@ window.cerrarHistoriaCompleta =
 console.log(
     "[HISTORIA] historiaCompleta.js cargado correctamente."
 );
-
-

@@ -111,6 +111,82 @@
 
 
 <!-- =====================================================
+     HISTORIA COMPLETA (modal)
+
+     Vive fuera de #app a propósito: #app se vacía y se
+     reemplaza en cada transición de vista, y este modal
+     necesita persistir en el DOM durante toda la visita.
+====================================================== -->
+
+<div id="historiaCompleta" aria-hidden="true">
+
+    <div class="historia-overlay"></div>
+
+    <div class="historia-ventana" role="dialog" aria-modal="true" aria-labelledby="tituloHistoria">
+
+        <div class="historia-cabecera">
+
+            <div class="historia-identificacion">
+                <span class="historia-organismo">Museo Malvinas · Archivo Histórico</span>
+                <h2 class="historia-titulo" id="tituloHistoria"></h2>
+            </div>
+
+            <span class="historia-expediente" id="numeroHistoria"></span>
+
+            <button type="button" class="historia-cerrar" aria-label="Cerrar" onclick="cerrarHistoriaCompleta()">×</button>
+
+        </div>
+
+        <div class="historia-contenido">
+
+            <div id="estadoHistoria" class="historia-estado" hidden></div>
+
+            <div class="historia-cuerpo">
+
+                <div class="imagenHistoria historia-fotografia">
+                    <img id="imagenHistoria" src="" alt="">
+                </div>
+
+                <div class="historia-informacion">
+
+                    <p class="historia-resumen" id="resumenHistoria"></p>
+
+                    <div class="historia-datos" id="camposHistoria"></div>
+
+                    <div class="historia-etiquetas" id="etiquetasHistoria"></div>
+
+                    <div class="historia-texto">
+                        <h3 class="historia-seccion-titulo">Historia completa</h3>
+                        <p class="historia-texto-contenido" id="textoHistoria"></p>
+                    </div>
+
+                    <div class="historia-multimedia">
+                        <h3 class="historia-seccion-titulo">Material fotográfico</h3>
+                        <div class="historia-galeria" id="multimediaHistoria"></div>
+                    </div>
+
+                    <div class="historia-relacionadas">
+                        <h3 class="historia-seccion-titulo">Fichas relacionadas</h3>
+                        <div class="historia-lista-relacionadas" id="relacionadasHistoria"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="historia-pie">
+            <span class="historia-pie-texto">Archivo Histórico Digital</span>
+            <button type="button" class="historia-btn-cerrar" onclick="cerrarHistoriaCompleta()">Cerrar expediente</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
      JAVASCRIPT PÚBLICO
 ====================================================== -->
 
