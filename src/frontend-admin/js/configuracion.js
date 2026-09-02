@@ -31,6 +31,12 @@ async function cargarConfiguracionEstilo(){
     document.getElementById("colorFondoConfiguracion").value = estilo.colorFondo;
     document.getElementById("mostrarBuscadorConfiguracion").checked = estilo.mostrarBuscador !== false;
     document.getElementById("densidadTarjetasConfiguracion").value = estilo.densidadTarjetas || "normal";
+    
+    // NUEVO: Cargar la orientación del tótem (prioriza la API, respaldado por localStorage)
+    const selectTotem = document.getElementById("orientacionTotemConfiguracion");
+    if(selectTotem){
+        selectTotem.value = estilo.orientacionTotem || localStorage.getItem("totemMode") || "horizontal";
+    }
 
 }
 
@@ -47,14 +53,21 @@ async function guardarConfiguracionEstilo(evento){
 
     evento.preventDefault();
 
+    const selectTotem = document.getElementById("orientacionTotemConfiguracion");
+    const orientacionTotem = selectTotem ? selectTotem.value : "horizontal";
+
+    // NUEVO: Guardar en localStorage para que el tótem local reaccione al instante
+    localStorage.setItem("totemMode", orientacionTotem);
+
     const estilo = {
-        fondo:document.getElementById("fondoConfiguracionVisitante").value,
-        imagenFondo:document.getElementById("imagenFondoConfiguracion").value,
-        colorPrimario:document.getElementById("colorPrimarioConfiguracion").value,
-        colorAcento:document.getElementById("colorAcentoConfiguracion").value,
-        colorFondo:document.getElementById("colorFondoConfiguracion").value,
-        mostrarBuscador:document.getElementById("mostrarBuscadorConfiguracion").checked,
-        densidadTarjetas:document.getElementById("densidadTarjetasConfiguracion").value
+        fondo: document.getElementById("fondoConfiguracionVisitante").value,
+        imagenFondo: document.getElementById("imagenFondoConfiguracion").value,
+        colorPrimario: document.getElementById("colorPrimarioConfiguracion").value,
+        colorAcento: document.getElementById("colorAcentoConfiguracion").value,
+        colorFondo: document.getElementById("colorFondoConfiguracion").value,
+        mostrarBuscador: document.getElementById("mostrarBuscadorConfiguracion").checked,
+        densidadTarjetas: document.getElementById("densidadTarjetasConfiguracion").value,
+        orientacionTotem: orientacionTotem // NUEVO: Enviado al backend
     };
 
     try{
@@ -74,7 +87,7 @@ async function guardarConfiguracionEstilo(evento){
             throw new Error(resultado.error || "No se pudo guardar el estilo.");
         }
 
-        mostrarMensajeConfiguracion("Estilo guardado correctamente.");
+        mostrarMensajeConfiguracion("Estilo y orientación del tótem guardados correctamente.");
 
     }catch(error){
         mostrarMensajeConfiguracion(error.message, true);

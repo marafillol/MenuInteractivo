@@ -23,16 +23,14 @@ const guardar = (clave, valor)=>new Promise((resolve,reject)=>{
 
     db.run(
         `
-        INSERT INTO configuracion(clave, valor, actualizado)
+        INSERT OR REPLACE INTO configuracion(clave, valor, actualizado)
         VALUES (?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(clave) DO UPDATE SET
-            valor = excluded.valor,
-            actualizado = CURRENT_TIMESTAMP
         `,
         [clave, valor],
         (error)=>{
 
             if(error){
+                console.error("Error al guardar configuración en base de datos:", error);
                 reject(error);
                 return;
             }

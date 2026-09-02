@@ -1,0 +1,107 @@
+/* =====================================================
+   MÓDULO DE TÓTEM - EXPANSIÓN TOTAL VERTICAL
+   ===================================================== */
+
+/* Estado normal (horizontal) */
+.totem-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0c1017;
+    box-sizing: border-box;
+}
+
+/* =====================================================
+   ESTADOS VERTICALES (Derecha e Izquierda)
+   ===================================================== */
+body.totem-right,
+body.totem-left {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background-color: #0c1017 !important;
+}
+
+/* Giro a la Derecha (90°) */
+body.totem-right .totem-wrapper {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 10 !important;
+    background-color: #0c1017 !important;
+    box-sizing: border-box !important;
+}
+
+/* Giro a la Izquierda (-90°) */
+body.totem-left .totem-wrapper {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(-90deg) !important;
+    transform-origin: center center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 10 !important;
+    background-color: #0c1017 !important;
+    box-sizing: border-box !important;
+}
+
+/* =====================================================
+   FORZAR EXPANSIÓN AL 100% DE PUNTA A PUNTA
+   ===================================================== */
+
+body.totem-right #app, body.totem-left #app,
+body.totem-right main, body.totem-left main,
+body.totem-right section, body.totem-left section,
+body.totem-right .explorador, body.totem-left .explorador {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 15px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Grillas: Forzar 2 columnas compactas y estiradas */
+body.totem-right .grilla-fichas, body.totem-left .grilla-fichas,
+body.totem-right .grid-fichas, body.totem-left .grid-fichas,
+body.totem-right [class*="grid"], body.totem-left [class*="grid"],
+body.totem-right [class*="grilla"], body.totem-left [class*="grilla"],
+body.totem-right [class*="galeria"], body.totem-left [class*="galeria"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 !important;
+    margin: 0 auto !important;
+    padding: 10px 0 !important;
+    box-sizing: border-box !important;
+    align-content: start !important;
+}
+
+/* Tarjetas y fichas adaptadas */
+body.totem-right .tarjeta-ficha, body.totem-left .tarjeta-ficha,
+body.totem-right [class*="ficha"], body.totem-left [class*="ficha"],
+body.totem-right [class*="card"], body.totem-left [class*="card"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Imágenes optimizadas */
+body.totem-right .tarjeta-ficha img, body.totem-left .tarjeta-ficha img,
+body.totem-right [class*="ficha"] img, body.totem-left [class*="ficha"] img,
+body.totem-right [class*="card"] img, body.totem-left [class*="card"] img {
+    max-height: 130px !important;
+    object-fit: cover !important;
+}
