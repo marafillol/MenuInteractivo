@@ -1,3 +1,4 @@
+
 /* =========================================================
    FICHAS · MUSEO MALVINAS
    =========================================================
@@ -88,7 +89,6 @@
         "Times New Roman",
         serif;
 
-    /* SIN FONDO AZUL */
     background:
         #11110f;
 }
@@ -951,7 +951,10 @@
 
 
 /* =========================================================
-   FOTOGRAFÍA
+   FOTOGRAFÍA · TARJETAS DINÁMICAS
+   ---------------------------------------------------------
+   CAMBIO:
+   La fotografía ahora ocupa más espacio vertical.
 ========================================================= */
 
 .imagen-ficha {
@@ -962,14 +965,15 @@
 
     width: 100%;
 
-    height: 155px;
+    /* ANTES: 155px */
+    height: 180px;
 
-    margin-bottom: 15px;
+    margin-bottom: 0;
 
     padding: 7px;
 
     background:
-        #3e403b;
+        rgba(45,47,43,.88);
 
     border:
         1px solid rgba(41,39,32,.70);
@@ -979,17 +983,58 @@
         inset 0 0 0 1px rgba(255,255,255,.08);
 
     overflow: hidden;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 }
 
+
+/* =========================================================
+   LÍNEA DIVISORIA FOTO / TÍTULO
+========================================================= */
+
+.imagen-ficha::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: -1px;
+
+    height: 2px;
+
+    background:
+        rgba(68,54,34,.58);
+
+    box-shadow:
+        0 1px 0 rgba(230,219,187,.25);
+
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+
+/* =========================================================
+   IMAGEN COMPLETA
+========================================================= */
 
 .imagen-ficha img {
 
     display: block;
 
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
 
-    object-fit: cover;
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
 
     filter:
         sepia(.22)
@@ -1002,6 +1047,10 @@
         transform .25s ease;
 }
 
+
+/* =========================================================
+   HOVER FOTO
+========================================================= */
 
 .tarjeta-ficha:hover
 .imagen-ficha img {
@@ -1937,7 +1986,7 @@
 
     .imagen-ficha {
 
-        height: 130px;
+        height: 150px;
     }
 
 
@@ -2060,7 +2109,7 @@
 
     .imagen-ficha {
 
-        height: 165px;
+        height: 175px;
     }
 
 
@@ -2103,7 +2152,7 @@
 
     .imagen-ficha {
 
-        height: 150px;
+        height: 160px;
     }
 
 
@@ -2161,12 +2210,9 @@
 
     .imagen-ficha {
 
-        height: 125px;
+        height: 140px;
     }
 }
-
-
-
 
 
 /* =========================================================
@@ -2199,14 +2245,14 @@
 
     overflow-y: auto;
 
-    /* NEGRO TRANSPARENTE */
-    background: rgba(0, 0, 0, 0.48);
+    background:
+        rgba(0, 0, 0, 0.48);
 
-    border: 1px solid rgba(255,255,255,0.08);
+    border:
+        1px solid rgba(255,255,255,0.08);
 
     box-shadow:
         inset 0 0 45px rgba(0,0,0,0.65);
-
 }
 
 
@@ -2215,24 +2261,32 @@
 ========================================================= */
 
 .contenedorFichas::-webkit-scrollbar {
+
     width: 8px;
 }
 
+
 .contenedorFichas::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.35);
+
+    background:
+        rgba(0,0,0,0.35);
 }
+
 
 .contenedorFichas::-webkit-scrollbar-thumb {
 
-    background: rgba(180,160,110,0.55);
+    background:
+        rgba(180,160,110,0.55);
 
-    border-radius: 3px;
+    border-radius:
+        3px;
 }
+
 
 .contenedorFichas::-webkit-scrollbar-thumb:hover {
 
-    background: rgba(205,185,130,0.75);
-
+    background:
+        rgba(205,185,130,0.75);
 }
 
 
@@ -2245,9 +2299,11 @@
     position: relative;
 
     width: 100%;
+
     min-width: 0;
 
-    aspect-ratio: 0.78;
+    /* TARJETA LIGERAMENTE MÁS ALTA */
+    aspect-ratio: 0.76;
 
     cursor: pointer;
 
@@ -2256,7 +2312,6 @@
     transition:
         transform .25s ease,
         filter .25s ease;
-
 }
 
 
@@ -2296,7 +2351,9 @@
 }
 
 
-/* textura muy sutil */
+/* =========================================================
+   TEXTURA
+========================================================= */
 
 .fondoFicha::after {
 
@@ -2318,7 +2375,6 @@
             transparent 3px,
             rgba(255,255,255,.025) 4px
         );
-
 }
 
 
@@ -2335,14 +2391,12 @@
     inset: 7px;
 
     border:
-
         1px solid
         rgba(180,165,125,.22);
 
     pointer-events: none;
 
     z-index: 2;
-
 }
 
 
@@ -2357,7 +2411,6 @@
 
     filter:
         brightness(1.08);
-
 }
 
 
@@ -2375,7 +2428,6 @@
 
         inset 0 0 35px
         rgba(0,0,0,.4);
-
 }
 
 
@@ -2401,7 +2453,6 @@
     z-index: 8;
 
     pointer-events: none;
-
 }
 
 
@@ -2413,11 +2464,9 @@
     object-fit: contain;
 
     filter:
-
         grayscale(1)
         contrast(1.15)
         brightness(.72);
-
 }
 
 
@@ -2440,7 +2489,6 @@
     display: flex;
 
     justify-content: space-between;
-
 }
 
 
@@ -2457,13 +2505,19 @@
     color:
         rgba(214,201,161,.75);
 
-    text-transform: uppercase;
-
+    text-transform:
+        uppercase;
 }
 
 
 /* =========================================================
    FOTOGRAFÍA
+   ---------------------------------------------------------
+   CAMBIO:
+   • Antes: 47%
+   • Ahora: 51%
+   • La fotografía ocupa más área.
+   • Se conserva la proporción original.
 ========================================================= */
 
 .imagenFicha {
@@ -2473,64 +2527,78 @@
     top: 45px;
 
     left: 17px;
-
     right: 17px;
 
-    height: 47%;
+    height: 51%;
 
     overflow: hidden;
 
     background:
-        #080d12;
+        transparent;
 
     border:
+        none;
 
-        1px solid
-        rgba(205,190,150,.4);
+    box-shadow:
+        none;
 
     z-index: 3;
 
-    box-shadow:
+    display: flex;
 
-        inset 0 0 20px
-        rgba(0,0,0,.6);
-
+    align-items: center;
+    justify-content: center;
 }
 
 
 .imagenFicha img {
 
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-
     display: block;
 
-    filter:
+    max-width: 100%;
+    max-height: 100%;
 
-        grayscale(.18)
-        contrast(1.05)
-        saturate(.8);
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border:
+        1px solid rgba(190,160,85,0.85);
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,0.20);
+
+    filter:
+        sepia(.18)
+        contrast(.96)
+        saturate(.78)
+        brightness(.90);
 
     transition:
-        transform .35s ease,
-        filter .35s ease;
-
+        filter .25s ease,
+        transform .25s ease;
 }
 
+
+/* =========================================================
+   LÍNEA DIVISORIA ENTRE FOTO Y TÍTULO
+========================================================= */
+
+/* =========================================================
+   HOVER FOTO
+========================================================= */
 
 .tarjetaFicha:hover
 .imagenFicha img {
 
     transform:
-        scale(1.04);
+        scale(1.025);
 
     filter:
         grayscale(0)
         contrast(1.08)
         saturate(.9);
-
 }
 
 
@@ -2546,10 +2614,40 @@
 
     right: 18px;
 
-    top: calc(45px + 47% + 13px);
+    /* AJUSTADO AL NUEVO TAMAÑO DE LA FOTO */
+    top:
+        calc(45px + 51% + 13px);
 
     z-index: 4;
 
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   LÍNEA DIVISORIA ADICIONAL
+   ---------------------------------------------------------
+   Esta es la línea que queda inmediatamente antes
+   del título para darle aspecto de ficha documental.
+========================================================= */
+
+.infoFicha::before {
+
+    content: "";
+
+    display: block;
+
+    width: 100%;
+
+    height: 1px;
+
+    margin-bottom: 10px;
+
+    background:
+        rgba(190,160,85,.55);
+
+    box-shadow:
+        0 1px 0 rgba(255,255,255,.06);
 }
 
 
@@ -2585,7 +2683,6 @@
     -webkit-box-orient: vertical;
 
     overflow: hidden;
-
 }
 
 
@@ -2602,7 +2699,6 @@
     flex-direction: column;
 
     gap: 4px;
-
 }
 
 
@@ -2617,10 +2713,8 @@
     padding-bottom: 3px;
 
     border-bottom:
-
         1px solid
         rgba(255,255,255,.07);
-
 }
 
 
@@ -2637,8 +2731,8 @@
     color:
         rgba(193,183,151,.65);
 
-    text-transform: uppercase;
-
+    text-transform:
+        uppercase;
 }
 
 
@@ -2656,7 +2750,43 @@
 
     color:
         rgba(238,235,225,.8);
+}
 
+
+/* =========================================================
+   RESUMEN
+========================================================= */
+
+.resumenFicha {
+
+    margin:
+        9px 0 0;
+
+    color:
+        rgba(225,220,205,.70);
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:
+        10px;
+
+    line-height:
+        1.35;
+
+    display:
+        -webkit-box;
+
+    -webkit-box-orient:
+        vertical;
+
+    -webkit-line-clamp:
+        3;
+
+    overflow:
+        hidden;
 }
 
 
@@ -2679,7 +2809,6 @@
     padding-top: 7px;
 
     border-top:
-
         1px solid
         rgba(180,165,125,.25);
 
@@ -2695,7 +2824,6 @@
         rgba(205,190,145,.65);
 
     text-align: center;
-
 }
 
 
@@ -2705,9 +2833,11 @@
 
 .estadoFichas {
 
-    grid-column: 1 / -1;
+    grid-column:
+        1 / -1;
 
-    min-height: 180px;
+    min-height:
+        180px;
 
     display: flex;
 
@@ -2729,7 +2859,6 @@
     letter-spacing: 2px;
 
     font-size: 11px;
-
 }
 
 
@@ -2739,7 +2868,6 @@
 
     color:
         rgba(190,175,130,.7);
-
 }
 
 
@@ -2751,7 +2879,6 @@
 
     transform:
         translateY(-5px);
-
 }
 
 
@@ -2767,7 +2894,6 @@
 
         0 12px 25px
         rgba(0,0,0,.65);
-
 }
 
 
@@ -2780,14 +2906,15 @@
     .contenedorFichas {
 
         grid-template-columns:
-            repeat(auto-fill, minmax(225px, 1fr));
+            repeat(
+                auto-fill,
+                minmax(225px, 1fr)
+            );
 
         gap: 24px;
 
         padding: 30px;
-
     }
-
 }
 
 
@@ -2800,14 +2927,15 @@
     .contenedorFichas {
 
         grid-template-columns:
-            repeat(3, minmax(180px, 1fr));
+            repeat(
+                3,
+                minmax(180px, 1fr)
+            );
 
         gap: 18px;
 
         padding: 22px;
-
     }
-
 }
 
 
@@ -2820,21 +2948,34 @@
     .contenedorFichas {
 
         grid-template-columns:
-            repeat(2, minmax(170px, 1fr));
+            repeat(
+                2,
+                minmax(170px, 1fr)
+            );
 
         gap: 18px;
 
         padding: 18px;
-
     }
 
 
     .infoFicha h3 {
 
         font-size: 13px;
-
     }
 
+
+    .imagenFicha {
+
+        height: 49%;
+    }
+
+
+    .infoFicha {
+
+        top:
+            calc(45px + 49% + 11px);
+    }
 }
 
 
@@ -2847,12 +2988,21 @@
     .contenedorFichas {
 
         grid-template-columns:
-            repeat(2, minmax(140px, 1fr));
+            repeat(
+                2,
+                minmax(140px, 1fr)
+            );
 
         gap: 12px;
 
         padding: 12px;
+    }
 
+
+    .tarjetaFicha {
+
+        aspect-ratio:
+            0.76;
     }
 
 
@@ -2863,25 +3013,31 @@
         left: 13px;
         right: 13px;
 
-        height: 45%;
-
+        height: 47%;
     }
 
 
     .infoFicha {
 
         left: 14px;
+
         right: 14px;
 
+        top:
+            calc(40px + 47% + 9px);
+    }
+
+
+    .infoFicha::before {
+
+        margin-bottom: 7px;
     }
 
 
     .infoFicha h3 {
 
         font-size: 11px;
-
     }
-
 }
 
 
@@ -2894,7 +3050,6 @@
     filter:
         grayscale(1)
         opacity(.65);
-
 }
 
 
@@ -2903,6 +3058,4 @@
     filter:
         grayscale(1)
         opacity(.8);
-
 }
-
