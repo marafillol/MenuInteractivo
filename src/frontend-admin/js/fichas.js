@@ -1034,10 +1034,6 @@ async function editarFicha(id_ficha) {
             "";
 
 
-        if (window.limpiarImagenFichaRecortada) {
-            window.limpiarImagenFichaRecortada();
-        }
-
 
         /*
          * TÍTULO MODAL
@@ -1551,11 +1547,6 @@ async function abrirNuevaFicha() {
                 "";
 
 
-            if (window.limpiarImagenFichaRecortada) {
-                window.limpiarImagenFichaRecortada();
-            }
-
-
             document.getElementById(
                 "labelImagenFicha"
             ).textContent =
@@ -1987,45 +1978,25 @@ async function guardarFicha() {
 
 
     /*
+     * =====================================================
      * IMAGEN
+     * =====================================================
      *
-     * Si el admin recortó la portada (recorteImagen.js),
-     * se usa esa versión ya recortada en cuadrado.
-     * Si no, se usa el archivo original tal cual.
+     * Se utiliza directamente la imagen seleccionada.
+     * No se realiza ningún recorte ni ajuste.
      */
 
-    console.log(
-        "[GUARDAR FICHA] window.imagenFichaRecortada en este momento:",
-        window.imagenFichaRecortada
-    );
+    const imagen =
+        document.getElementById(
+            "imagenFicha"
+        ).files[0];
 
-    if (window.imagenFichaRecortada) {
-
-        console.log("[GUARDAR FICHA] Usando imagen RECORTADA.");
+    if (imagen) {
 
         formulario.append(
             "imagen",
-            window.imagenFichaRecortada,
-            "portada.jpg"
+            imagen
         );
-
-    } else {
-
-        console.log("[GUARDAR FICHA] Usando imagen ORIGINAL (sin recorte).");
-
-        const imagen =
-            document.getElementById(
-                "imagenFicha"
-            ).files[0];
-
-
-        if (imagen) {
-
-            formulario.append(
-                "imagen",
-                imagen
-            );
-        }
     }
 
 
@@ -2559,11 +2530,6 @@ async function cambioTipoFicha(
             "imagenFicha"
         ).value =
             "";
-
-
-        if (window.limpiarImagenFichaRecortada) {
-            window.limpiarImagenFichaRecortada();
-        }
 
 
         document.getElementById(

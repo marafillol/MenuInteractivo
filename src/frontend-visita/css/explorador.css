@@ -78,15 +78,20 @@ body {
 
 
 body {
-    overflow: hidden;
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    min-height: 100%;
 
     font-family:
         Georgia,
         "Times New Roman",
         serif;
 
-    background:
-        #000;
+    background: #000;
+
+    overflow: hidden;
 }
 
 
@@ -3678,3 +3683,54 @@ body {
 }
 
 
+/* =========================================================
+   TRANSICIÓN ENTRE VISTAS
+   Bienvenida → Explorador
+   ========================================================= */
+
+#app {
+    position: relative;
+    width: 100%;
+    min-height: 100dvh;
+}
+
+
+/* ---------------------------------------------------------
+   SALIDA
+--------------------------------------------------------- */
+
+#app.vista-saliendo {
+    opacity: 0;
+    transition:
+        opacity 180ms ease;
+}
+
+
+/* ---------------------------------------------------------
+   ENTRADA
+--------------------------------------------------------- */
+
+#app.vista-entrando {
+    opacity: 0;
+}
+
+
+#app.vista-entrando.vista-entrada-activa {
+    opacity: 1;
+    transition:
+        opacity 320ms ease;
+}
+
+
+/* ---------------------------------------------------------
+   RESPETAR REDUCCIÓN DE MOVIMIENTO
+--------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    #app.vista-saliendo,
+    #app.vista-entrando.vista-entrada-activa {
+
+        transition: none;
+    }
+}

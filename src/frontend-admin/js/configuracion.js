@@ -1,16 +1,35 @@
+// =========================================================
+// CONFIGURACIÓN GENERAL
+// Museo Malvinas
+//
+// Esta configuración maneja solamente:
+// • Orientación del tótem
+// • Presentación del contenido
+// =========================================================
+
+
 async function leerRespuestaConfiguracion(respuesta){
 
     const contenido = await respuesta.text();
 
     try{
+
         return JSON.parse(contenido);
+
     }catch(error){
+
         throw new Error(
             "La configuración no recibió una respuesta válida del servidor. Recargá la página e iniciá nuevamente la aplicación."
         );
+
     }
 
 }
+
+
+// =========================================================
+// CONFIGURACIÓN DEL VISITANTE
+// =========================================================
 
 async function cargarConfiguracionEstilo(){
 
@@ -18,188 +37,484 @@ async function cargarConfiguracionEstilo(){
         "/api/configuracion/estilo-visitante"
     );
 
-    const estilo = await leerRespuestaConfiguracion(respuesta);
+    const configuracion =
+        await leerRespuestaConfiguracion(respuesta);
 
     if(!respuesta.ok){
-        throw new Error(estilo.error || "No se pudo cargar la configuracion.");
+
+        throw new Error(
+            configuracion.error ||
+            "No se pudo cargar la configuración."
+        );
+
     }
 
-    document.getElementById("fondoConfiguracionVisitante").value = estilo.fondo;
-    document.getElementById("imagenFondoConfiguracion").value = estilo.imagenFondo || "";
-    document.getElementById("colorPrimarioConfiguracion").value = estilo.colorPrimario;
-    document.getElementById("colorAcentoConfiguracion").value = estilo.colorAcento;
-    document.getElementById("colorFondoConfiguracion").value = estilo.colorFondo;
-    document.getElementById("mostrarBuscadorConfiguracion").checked = estilo.mostrarBuscador !== false;
-    document.getElementById("densidadTarjetasConfiguracion").value = estilo.densidadTarjetas || "normal";
-    
-    // NUEVO: Cargar la orientación del tótem (prioriza la API, respaldado por localStorage)
-    const selectTotem = document.getElementById("orientacionTotemConfiguracion");
+
+    // -----------------------------------------------------
+    // PRESENTACIÓN DEL CONTENIDO
+    // -----------------------------------------------------
+
+    const densidad =
+        document.getElementById(
+            "densidadTarjetasConfiguracion"
+        );
+
+    if(densidad){
+
+        densidad.value =
+            configuracion.densidadTarjetas ||
+            "normal";
+
+    }
+
+
+    // -----------------------------------------------------
+    // ORIENTACIÓN DEL TÓTEM
+    // -----------------------------------------------------
+
+    const selectTotem =
+        document.getElementById(
+            "orientacionTotemConfiguracion"
+        );
+
     if(selectTotem){
-        selectTotem.value = estilo.orientacionTotem || localStorage.getItem("totemMode") || "horizontal";
+
+        selectTotem.value =
+            configuracion.orientacionTotem ||
+            localStorage.getItem("totemMode") ||
+            "horizontal";
+
     }
 
 }
 
-function mostrarMensajeConfiguracion(mensaje, esError = false){
 
-    const elemento = document.getElementById("mensajeConfiguracion");
+// =========================================================
+// MENSAJE DE CONFIGURACIÓN
+// =========================================================
+
+function mostrarMensajeConfiguracion(
+    mensaje,
+    esError = false
+){
+
+    const elemento =
+        document.getElementById(
+            "mensajeConfiguracion"
+        );
+
+    if(!elemento){
+
+        return;
+
+    }
 
     elemento.textContent = mensaje;
-    elemento.style.color = esError ? "#8b3a3a" : "#163A61";
+
+    elemento.style.color =
+        esError
+            ? "#8b3a3a"
+            : "#163A61";
 
 }
+
+
+// =========================================================
+// GUARDAR CONFIGURACIÓN DEL VISITANTE
+// =========================================================
 
 async function guardarConfiguracionEstilo(evento){
 
     evento.preventDefault();
 
-    const selectTotem = document.getElementById("orientacionTotemConfiguracion");
-    const orientacionTotem = selectTotem ? selectTotem.value : "horizontal";
 
-    // NUEVO: Guardar en localStorage para que el tótem local reaccione al instante
-    localStorage.setItem("totemMode", orientacionTotem);
+    // -----------------------------------------------------
+    // ORIENTACIÓN DEL TÓTEM
+    // -----------------------------------------------------
 
-    const estilo = {
-        fondo: document.getElementById("fondoConfiguracionVisitante").value,
-        imagenFondo: document.getElementById("imagenFondoConfiguracion").value,
-        colorPrimario: document.getElementById("colorPrimarioConfiguracion").value,
-        colorAcento: document.getElementById("colorAcentoConfiguracion").value,
-        colorFondo: document.getElementById("colorFondoConfiguracion").value,
-        mostrarBuscador: document.getElementById("mostrarBuscadorConfiguracion").checked,
-        densidadTarjetas: document.getElementById("densidadTarjetasConfiguracion").value,
-        orientacionTotem: orientacionTotem // NUEVO: Enviado al backend
+    const selectTotem =
+        document.getElementById(
+            "orientacionTotemConfiguracion"
+        );
+
+    const orientacionTotem =
+        selectTotem
+            ? selectTotem.value
+            : "horizontal";
+
+
+    // Guardamos también localmente para que
+    // el tótem pueda reaccionar inmediatamente.
+
+    localStorage.setItem(
+        "totemMode",
+        orientacionTotem
+    );
+
+
+    // -----------------------------------------------------
+    // PRESENTACIÓN DEL CONTENIDO
+    // -----------------------------------------------------
+
+    const densidad =
+        document.getElementById(
+            "densidadTarjetasConfiguracion"
+        );
+
+
+    const configuracion = {
+
+        orientacionTotem:
+
+            orientacionTotem,
+
+        densidadTarjetas:
+
+            densidad
+                ? densidad.value
+                : "normal"
+
     };
+
 
     try{
 
-        const respuesta = await window.fetchProtegido(
-            "/api/configuracion/estilo-visitante",
-            {
-                method:"PUT",
-                headers:{ "Content-Type":"application/json" },
-                body:JSON.stringify(estilo)
-            }
-        );
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/configuracion/estilo-visitante",
+                {
+                    method:"PUT",
 
-        const resultado = await leerRespuestaConfiguracion(respuesta);
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            configuracion
+                        )
+                }
+            );
+
+
+        const resultado =
+            await leerRespuestaConfiguracion(
+                respuesta
+            );
+
 
         if(!respuesta.ok){
-            throw new Error(resultado.error || "No se pudo guardar el estilo.");
+
+            throw new Error(
+                resultado.error ||
+                "No se pudo guardar la configuración."
+            );
+
         }
 
-        mostrarMensajeConfiguracion("Estilo y orientación del tótem guardados correctamente.");
+
+        mostrarMensajeConfiguracion(
+            "Configuración guardada correctamente."
+        );
+
 
     }catch(error){
-        mostrarMensajeConfiguracion(error.message, true);
+
+        mostrarMensajeConfiguracion(
+            error.message,
+            true
+        );
+
     }
 
 }
 
-function aplicarEstiloAdmin(estilo){
 
-    const panel = document.querySelector(".panel-admin");
-
-    if(!panel){
-        return;
-    }
-
-    panel.classList.add("tema-admin-personalizado");
-    panel.classList.toggle("admin-compacto", estilo.densidad === "compacta");
-    panel.style.setProperty("--admin-primario", estilo.colorPrincipal || "#163A61");
-    panel.style.setProperty("--admin-acento", estilo.colorAcento || "#DBB060");
-    panel.style.setProperty("--admin-fondo", estilo.colorFondo || "#F4EDDB");
-
-}
+// =========================================================
+// CONFIGURACIÓN DEL ADMIN
+// =========================================================
+//
+// Se mantiene solamente la configuración necesaria para
+// la presentación del contenido.
+//
+// Ya NO se manejan:
+// • colores
+// • fondos
+// • fuentes
+// • apariencia visual
+// =========================================================
 
 async function cargarConfiguracionAdmin(){
 
-    const respuesta = await window.fetchProtegido("/api/configuracion/estilo-admin");
-    const estilo = await leerRespuestaConfiguracion(respuesta);
+    const respuesta =
+        await window.fetchProtegido(
+            "/api/configuracion/estilo-admin"
+        );
+
+
+    const configuracion =
+        await leerRespuestaConfiguracion(
+            respuesta
+        );
+
 
     if(!respuesta.ok){
-        throw new Error(estilo.error || "No se pudo cargar la configuracion del panel.");
+
+        throw new Error(
+            configuracion.error ||
+            "No se pudo cargar la configuración del panel."
+        );
+
     }
 
-    document.getElementById("colorPrincipalAdmin").value = estilo.colorPrincipal;
-    document.getElementById("colorAcentoAdmin").value = estilo.colorAcento;
-    document.getElementById("colorFondoAdmin").value = estilo.colorFondo;
-    document.getElementById("densidadAdminConfiguracion").value = estilo.densidad || "normal";
+
+    const densidad =
+        document.getElementById(
+            "densidadAdminConfiguracion"
+        );
+
+
+    if(densidad){
+
+        densidad.value =
+            configuracion.densidad ||
+            "normal";
+
+    }
 
 }
 
-function mostrarMensajeConfiguracionAdmin(mensaje, esError = false){
 
-    const elemento = document.getElementById("mensajeConfiguracionAdmin");
-    elemento.textContent = mensaje;
-    elemento.style.color = esError ? "#8b3a3a" : "#163A61";
+// =========================================================
+// MENSAJE CONFIGURACIÓN ADMIN
+// =========================================================
+
+function mostrarMensajeConfiguracionAdmin(
+    mensaje,
+    esError = false
+){
+
+    const elemento =
+        document.getElementById(
+            "mensajeConfiguracionAdmin"
+        );
+
+
+    if(!elemento){
+
+        return;
+
+    }
+
+
+    elemento.textContent =
+        mensaje;
+
+
+    elemento.style.color =
+        esError
+            ? "#8b3a3a"
+            : "#163A61";
 
 }
+
+
+// =========================================================
+// GUARDAR CONFIGURACIÓN ADMIN
+// =========================================================
 
 async function guardarConfiguracionAdmin(evento){
 
     evento.preventDefault();
 
-    const estilo = {
-        colorPrincipal:document.getElementById("colorPrincipalAdmin").value,
-        colorAcento:document.getElementById("colorAcentoAdmin").value,
-        colorFondo:document.getElementById("colorFondoAdmin").value,
-        densidad:document.getElementById("densidadAdminConfiguracion").value
+
+    const densidad =
+        document.getElementById(
+            "densidadAdminConfiguracion"
+        );
+
+
+    const configuracion = {
+
+        densidad:
+            densidad
+                ? densidad.value
+                : "normal"
+
     };
 
-    try{
-        const respuesta = await window.fetchProtegido("/api/configuracion/estilo-admin", {
-            method:"PUT",
-            headers:{ "Content-Type":"application/json" },
-            body:JSON.stringify(estilo)
-        });
 
-        const resultado = await leerRespuestaConfiguracion(respuesta);
+    try{
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/configuracion/estilo-admin",
+                {
+                    method:"PUT",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            configuracion
+                        )
+                }
+            );
+
+
+        const resultado =
+            await leerRespuestaConfiguracion(
+                respuesta
+            );
+
 
         if(!respuesta.ok){
-            throw new Error(resultado.error || "No se pudo guardar el estilo del panel.");
+
+            throw new Error(
+                resultado.error ||
+                "No se pudo guardar la configuración."
+            );
+
         }
 
-        aplicarEstiloAdmin(resultado);
-        mostrarMensajeConfiguracionAdmin("Estilo del panel guardado correctamente.");
+
+        mostrarMensajeConfiguracionAdmin(
+            "Configuración guardada correctamente."
+        );
+
+
     }catch(error){
-        mostrarMensajeConfiguracionAdmin(error.message, true);
+
+        mostrarMensajeConfiguracionAdmin(
+            error.message,
+            true
+        );
+
     }
 
 }
+
+
+// =========================================================
+// APLICAR CONFIGURACIÓN ADMIN GUARDADA
+// =========================================================
+//
+// Ya no aplica colores ni estilos visuales.
+// Solamente queda disponible para cargar la
+// configuración guardada si otro archivo la necesita.
+// =========================================================
 
 async function aplicarConfiguracionAdminGuardada(){
 
     try{
-        const respuesta = await window.fetchProtegido("/api/configuracion/estilo-admin");
-        const estilo = await leerRespuestaConfiguracion(respuesta);
 
-        if(respuesta.ok){
-            aplicarEstiloAdmin(estilo);
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/configuracion/estilo-admin"
+            );
+
+
+        const configuracion =
+            await leerRespuestaConfiguracion(
+                respuesta
+            );
+
+
+        if(!respuesta.ok){
+
+            return;
+
         }
+
+
+        // La configuración queda disponible
+        // sin modificar visualmente el panel.
+
+        return configuracion;
+
+
     }catch(error){
-        console.warn("No se pudo aplicar la configuracion visual del panel.");
+
+        console.warn(
+            "No se pudo cargar la configuración del panel."
+        );
+
     }
 
 }
 
-window.aplicarConfiguracionAdminGuardada = aplicarConfiguracionAdminGuardada;
+
+window.aplicarConfiguracionAdminGuardada =
+    aplicarConfiguracionAdminGuardada;
+
+
+// =========================================================
+// INICIAR CONFIGURACIÓN
+// =========================================================
 
 function iniciarConfiguracion(){
 
-    const formulario = document.getElementById("formularioEstiloVisitante");
-    const formularioAdmin = document.getElementById("formularioEstiloAdmin");
+    const formulario =
+        document.getElementById(
+            "formularioEstiloVisitante"
+        );
 
-    if(!formulario || !formularioAdmin){
-        return;
+
+    const formularioAdmin =
+        document.getElementById(
+            "formularioEstiloAdmin"
+        );
+
+
+    // -----------------------------------------------------
+    // VISITANTE
+    // -----------------------------------------------------
+
+    if(formulario){
+
+        formulario.addEventListener(
+            "submit",
+            guardarConfiguracionEstilo
+        );
+
+
+        cargarConfiguracionEstilo()
+            .catch(
+                error =>
+                    mostrarMensajeConfiguracion(
+                        error.message,
+                        true
+                    )
+            );
+
     }
 
-    formulario.addEventListener("submit", guardarConfiguracionEstilo);
-    formularioAdmin.addEventListener("submit", guardarConfiguracionAdmin);
 
-    cargarConfiguracionEstilo()
-        .catch(error=>mostrarMensajeConfiguracion(error.message, true));
+    // -----------------------------------------------------
+    // ADMIN
+    // -----------------------------------------------------
 
-    cargarConfiguracionAdmin()
-        .catch(error=>mostrarMensajeConfiguracionAdmin(error.message, true));
+    if(formularioAdmin){
+
+        formularioAdmin.addEventListener(
+            "submit",
+            guardarConfiguracionAdmin
+        );
+
+
+        cargarConfiguracionAdmin()
+            .catch(
+                error =>
+                    mostrarMensajeConfiguracionAdmin(
+                        error.message,
+                        true
+                    )
+            );
+
+    }
 
 }

@@ -560,8 +560,6 @@ function abrirNuevoCampo() {
     const mostrarTarjeta =
         document.getElementById("mostrarTarjetaCampo");
 
-    const mostrarVista =
-        document.getElementById("mostrarVistaPreviaCampo");
 
     const mostrarHistoria =
         document.getElementById("mostrarHistoriaCampo");
@@ -583,9 +581,7 @@ function abrirNuevoCampo() {
         mostrarTarjeta.checked = true;
     }
 
-    if (mostrarVista) {
-        mostrarVista.checked = true;
-    }
+
 
     if (mostrarHistoria) {
         mostrarHistoria.checked = true;
@@ -711,10 +707,7 @@ function guardarCampo() {
                 "mostrarTarjetaCampo"
             )?.checked ?? true,
 
-        mostrarVistaPrevia:
-            document.getElementById(
-                "mostrarVistaPreviaCampo"
-            )?.checked ?? true,
+
 
         mostrarHistoria:
             document.getElementById(
@@ -820,10 +813,6 @@ function mostrarCamposPlantilla() {
 
                         |
 
-                        Vista:
-                        ${campo.mostrarVistaPrevia ? "✔" : "✖"}
-
-                        |
 
                         Historia:
                         ${campo.mostrarHistoria ? "✔" : "✖"}
@@ -1163,10 +1152,7 @@ function editarCampo(indice) {
             "mostrarTarjetaCampo"
         );
 
-    const mostrarVista =
-        document.getElementById(
-            "mostrarVistaPreviaCampo"
-        );
+
 
     const mostrarHistoria =
         document.getElementById(
@@ -1192,11 +1178,6 @@ function editarCampo(indice) {
     if (mostrarTarjeta) {
         mostrarTarjeta.checked =
             campo.mostrarTarjeta ?? true;
-    }
-
-    if (mostrarVista) {
-        mostrarVista.checked =
-            campo.mostrarVistaPrevia ?? true;
     }
 
     if (mostrarHistoria) {

@@ -1,19 +1,8 @@
-import transitions from './transitions/engine.js';
+// =======================================================
+// UI · NAVEGACIÓN
+// Museo Malvinas
+// =======================================================
 
-const pages = {
-  home: document.querySelector('#home'),
-  menu: document.querySelector('#menu')
-};
-
-let current = pages.home;
-
-export async function goToMenu() {
-  const next = pages.menu;
-
-  await transitions.run('book', {
-    fromEl: current,
-    toEl: next
-  });
-
-  current = next;
-}
+console.log(
+    "[ui] Sistema de navegación cargado."
+);

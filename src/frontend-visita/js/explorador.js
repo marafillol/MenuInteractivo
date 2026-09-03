@@ -36,55 +36,107 @@ let etiquetasExplorador = [];
 // =======================================================
 // MOSTRAR EXPLORADOR
 // =======================================================
+// =======================================================
+// MOSTRAR EXPLORADOR
+// Museo Malvinas
+// =======================================================
+// =======================================================
+// MOSTRAR EXPLORADOR
+// Museo Malvinas
+// =======================================================
+// =======================================================
+// MOSTRAR EXPLORADOR
+// =======================================================
 
 async function mostrarExplorador() {
 
     const app =
         document.getElementById("app");
 
-
     if (!app) {
-
-        console.error(
-            "[explorador] No existe #app"
-        );
-
+        console.error("[explorador] No existe #app");
         return;
-
     }
-
 
     try {
 
         const respuesta =
-            await fetch(
-                "html/explorador.html"
-            );
-
+            await fetch("html/explorador.html");
 
         if (!respuesta.ok) {
-
             throw new Error(
                 `No se pudo cargar explorador.html (${respuesta.status})`
             );
-
         }
-
 
         const html =
             await respuesta.text();
 
 
+        // =================================================
+        // SALIDA SUAVE DE LA VISTA ACTUAL
+        // =================================================
+
+        app.classList.add("vista-saliendo");
+
+        await new Promise(resolve =>
+            setTimeout(resolve, 180)
+        );
+
+
+        // =================================================
+        // CAMBIAR CONTENIDO
+        // =================================================
+
         app.innerHTML =
             html;
 
 
-        console.log(
-            "[explorador] Explorador cargado"
-        );
+        // =================================================
+        // PREPARAR ENTRADA DEL EXPLORADOR
+        // =================================================
 
+        app.classList.remove("vista-saliendo");
+        app.classList.add("vista-entrando");
+
+
+        // =================================================
+        // INICIALIZAR
+        // =================================================
 
         await inicializarExplorador();
+
+
+        // =================================================
+        // ACTIVAR ENTRADA
+        // =================================================
+
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(() => {
+
+                app.classList.add(
+                    "vista-entrada-activa"
+                );
+
+            });
+
+        });
+
+
+        // =================================================
+        // LIMPIAR CLASE
+        // =================================================
+
+        setTimeout(() => {
+
+            app.classList.remove(
+                "vista-entrando",
+                "vista-entrada-activa"
+            );
+
+        }, 500);
+
 
     }
     catch (error) {
@@ -94,35 +146,24 @@ async function mostrarExplorador() {
             error
         );
 
+        app.classList.remove(
+            "vista-saliendo",
+            "vista-entrando",
+            "vista-entrada-activa"
+        );
 
         app.innerHTML = `
-
             <section class="error-vista">
-
-                <h2>
-                    No se pudo cargar el explorador
-                </h2>
-
-                <p>
-                    Intente nuevamente.
-                </p>
-
+                <h2>No se pudo cargar el explorador</h2>
+                <p>Intente nuevamente.</p>
             </section>
-
         `;
-
     }
-
 }
 
 
-// =======================================================
-// FUNCIÓN GLOBAL
-// =======================================================
-
 window.mostrarExplorador =
     mostrarExplorador;
-
 
 // =======================================================
 // INICIALIZAR EXPLORADOR

@@ -3,132 +3,172 @@
     <div class="cabecera-configuracion">
         <div>
             <h2>Configuración</h2>
-            <p>Definí la identidad visual y presentación de las dos experiencias del museo.</p>
+            <p>Definí cómo se presenta el contenido y la orientación del tótem del museo.</p>
         </div>
     </div>
+
+
+    <!-- =====================================================
+         PRESENTACIÓN DEL CONTENIDO
+         ===================================================== -->
 
     <form id="formularioEstiloVisitante" class="formulario-estilo-visitante">
 
         <section class="bloque-configuracion">
-            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
-            <h3>Identidad visual</h3>
 
-            <label for="fondoConfiguracionVisitante">Fondo predefinido</label>
+            <span class="referencia-configuracion">
+                MENÚ PÚBLICO
+            </span>
 
-            <select id="fondoConfiguracionVisitante">
-                <option value="pergamino">Pergamino</option>
-                <option value="mapa">Mapa de Malvinas</option>
-                <option value="papel">Papel histórico</option>
-            </select>
-
-            <label for="imagenFondoConfiguracion">Imagen de fondo personalizada</label>
-
-            <input
-                    id="imagenFondoConfiguracion"
-                    type="text"
-                    placeholder="Ej.: /imagenes/menus/fondo.jpg">
-
-            <p class="ayuda-configuracion">
-                Usá una imagen ya cargada, por ejemplo: /imagenes/menus/fondo.jpg.
-            </p>
-        </section>
-
-        <section class="bloque-configuracion">
-            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
-            <h3>Paleta de colores</h3>
-
-            <div class="paleta-configuracion">
-                <label for="colorPrimarioConfiguracion">Color principal</label>
-                <input id="colorPrimarioConfiguracion" type="color" value="#163A61">
-
-                <label for="colorAcentoConfiguracion">Color de acento</label>
-                <input id="colorAcentoConfiguracion" type="color" value="#DBB060">
-
-                <label for="colorFondoConfiguracion">Color de fondo</label>
-                <input id="colorFondoConfiguracion" type="color" value="#F4EDDB">
-            </div>
-        </section>
-
-        <section class="bloque-configuracion">
-            <span class="referencia-configuracion">MENÚ PÚBLICO</span>
             <h3>Presentación del contenido</h3>
 
-            <label class="control-interruptor" for="mostrarBuscadorConfiguracion">
-                <input id="mostrarBuscadorConfiguracion" type="checkbox" checked>
-                <span>Mostrar buscador de fichas</span>
+
+            <label for="densidadTarjetasConfiguracion">
+                Tamaño de tarjetas
             </label>
 
-            <label for="densidadTarjetasConfiguracion">Tamaño de tarjetas</label>
             <select id="densidadTarjetasConfiguracion">
-                <option value="normal">Normal</option>
-                <option value="compacta">Compacta</option>
+
+                <option value="normal">
+                    Normal
+                </option>
+
+                <option value="compacta">
+                    Compacta
+                </option>
+
             </select>
+
         </section>
+
+
+        <!-- =================================================
+             ORIENTACIÓN DEL TÓTEM
+             ================================================= -->
 
         <section class="bloque-configuracion">
-            <span class="referencia-configuracion">TÓTEM</span>
-            <h3>Orientación de Pantalla</h3>
-            
-            <label for="orientacionTotemConfiguracion">Modo de Giro</label>
+
+            <span class="referencia-configuracion">
+                TÓTEM
+            </span>
+
+            <h3>Orientación de pantalla</h3>
+
+
+            <label for="orientacionTotemConfiguracion">
+                Modo de giro
+            </label>
+
             <select id="orientacionTotemConfiguracion">
-                <option value="horizontal">Horizontal (Normal)</option>
-                <option value="right">Vertical (Giro a la Derecha 90°)</option>
-                <option value="left">Vertical (Giro a la Izquierda -90°)</option>
+
+                <option value="horizontal">
+                    Horizontal (Normal)
+                </option>
+
+                <option value="right">
+                    Vertical (Giro a la derecha 90°)
+                </option>
+
+                <option value="left">
+                    Vertical (Giro a la izquierda -90°)
+                </option>
+
             </select>
-            
-            <p class="ayuda-configuracion">Define si la interfaz del tótem público debe rotarse según la posición física del monitor.</p>
+
+
+            <p class="ayuda-configuracion">
+                Define la orientación de la interfaz del tótem
+                según la posición física del monitor.
+            </p>
+
         </section>
 
+
+        <!-- =================================================
+             GUARDAR
+             ================================================= -->
+
         <div class="acciones-configuracion">
-            <button type="submit" class="btn-guardar-configuracion">
-                Guardar estilo del menú
+
+            <button
+                    type="submit"
+                    class="btn-guardar-configuracion"
+            >
+                Guardar configuración
             </button>
+
         </div>
 
-        <p id="mensajeConfiguracion" class="mensaje-configuracion" aria-live="polite"></p>
+
+        <p
+                id="mensajeConfiguracion"
+                class="mensaje-configuracion"
+                aria-live="polite"
+        ></p>
 
     </form>
 
-    <form id="formularioEstiloAdmin" class="formulario-estilo-admin">
+
+    <!-- =====================================================
+         CONFIGURACIÓN ADMIN
+         ===================================================== -->
+
+    <form
+            id="formularioEstiloAdmin"
+            class="formulario-estilo-admin"
+    >
 
         <section class="bloque-configuracion">
-            <span class="referencia-configuracion">PANEL ADMINISTRADOR</span>
-            <h3>Apariencia del panel</h3>
 
-            <div class="paleta-configuracion">
-                <label for="colorPrincipalAdmin">Color principal</label>
-                <input id="colorPrincipalAdmin" type="color" value="#163A61">
+            <span class="referencia-configuracion">
+                PANEL ADMINISTRADOR
+            </span>
 
-                <label for="colorAcentoAdmin">Color de acento</label>
-                <input id="colorAcentoAdmin" type="color" value="#DBB060">
+            <h3>Presentación del contenido</h3>
 
-                <label for="colorFondoAdmin">Color de fondo</label>
-                <input id="colorFondoAdmin" type="color" value="#F4EDDB">
-            </div>
-        </section>
 
-        <section class="bloque-configuracion">
-            <span class="referencia-configuracion">PANEL ADMINISTRADOR</span>
-            <h3>Distribución</h3>
+            <label for="densidadAdminConfiguracion">
+                Densidad de la interfaz
+            </label>
 
-            <label for="densidadAdminConfiguracion">Densidad de la interfaz</label>
             <select id="densidadAdminConfiguracion">
-                <option value="normal">Normal</option>
-                <option value="compacta">Compacta</option>
+
+                <option value="normal">
+                    Normal
+                </option>
+
+                <option value="compacta">
+                    Compacta
+                </option>
+
             </select>
 
+
             <p class="ayuda-configuracion">
-                La vista compacta reduce espacios para mostrar más información en pantalla.
+                La vista compacta reduce los espacios para
+                mostrar más información en pantalla.
             </p>
+
         </section>
 
+
         <div class="acciones-configuracion">
-            <button type="submit" class="btn-guardar-configuracion">
-                Guardar estilo del panel
+
+            <button
+                    type="submit"
+                    class="btn-guardar-configuracion"
+            >
+                Guardar configuración
             </button>
+
         </div>
 
-        <p id="mensajeConfiguracionAdmin" class="mensaje-configuracion" aria-live="polite"></p>
+
+        <p
+                id="mensajeConfiguracionAdmin"
+                class="mensaje-configuracion"
+                aria-live="polite"
+        ></p>
 
     </form>
 

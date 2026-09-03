@@ -1,31 +1,6 @@
 // =======================================================
 // HISTORIA COMPLETA
 // Museo Malvinas · Archivo Histórico
-//
-// RESPONSABILIDADES:
-//
-// • Obtener una ficha individual desde la API
-// • Mostrar el expediente completo
-// • Mostrar fotografía
-// • Mostrar campos dinámicos de la plantilla
-// • Mostrar etiquetas
-// • Mostrar multimedia
-// • Mostrar fichas relacionadas
-// • Abrir y cerrar el expediente
-//
-// IMPORTANTE:
-//
-// Este archivo NO depende todavía del Explorador.
-// El Explorador se conectará más adelante.
-//
-// Endpoint utilizado:
-//
-// GET /api/public/fichas/:id_ficha
-// =======================================================
-
-
-// =======================================================
-// CONFIGURACIÓN
 // =======================================================
 
 const CONFIG_HISTORIA = {
@@ -33,21 +8,13 @@ const CONFIG_HISTORIA = {
     api: "/api/public/fichas",
 
     contenedor: "historiaCompleta",
-
     titulo: "tituloHistoria",
-
     imagen: "imagenHistoria",
-
     resumen: "resumenHistoria",
-
     texto: "textoHistoria",
-
     campos: "camposHistoria",
-
     etiquetas: "etiquetasHistoria",
-
     multimedia: "multimediaHistoria",
-
     relacionadas: "relacionadasHistoria"
 
 };
@@ -58,8 +25,10 @@ const CONFIG_HISTORIA = {
 // =======================================================
 
 let historiaFichaActual = null;
-
 let historiaIdActual = null;
+
+let multimediaActual = [];
+let multimediaIndiceActual = 0;
 
 
 // =======================================================
@@ -73,24 +42,29 @@ document.addEventListener(
 
 
 function iniciarHistoriaCompleta() {
+
     console.log("[HISTORIA] Inicializando...");
 
     prepararEventosHistoria();
+    prepararCarruselMultimedia();
     hacerHistoriaMovible();
 
     console.log("[HISTORIA] Inicialización completa.");
+
 }
 
 
 // =======================================================
-// PREPARAR EVENTOS
+// EVENTOS HISTORIA
 // =======================================================
+
 function prepararEventosHistoria() {
 
     const contenedor =
         document.getElementById(
             CONFIG_HISTORIA.contenedor
         );
+
 
     if (!contenedor) {
 
@@ -99,27 +73,13 @@ function prepararEventosHistoria() {
         );
 
         return;
+
     }
 
-
-    /*
-       CLICK DENTRO DEL MODAL
-    */
 
     contenedor.addEventListener(
         "click",
         evento => {
-
-            console.log(
-                "[HISTORIA] CLICK DENTRO DEL MODAL:",
-                evento.target
-            );
-
-
-            /*
-               Solo cerrar si realmente
-               se hizo click sobre el fondo.
-            */
 
             if (
                 evento.target === contenedor ||
@@ -128,10 +88,6 @@ function prepararEventosHistoria() {
                 )
             ) {
 
-                console.warn(
-                    "[HISTORIA] CLICK EN FONDO → CERRANDO"
-                );
-
                 cerrarHistoriaCompleta();
 
             }
@@ -139,22 +95,54 @@ function prepararEventosHistoria() {
         }
     );
 
-
-    /*
-       ESC
-    */
 
     document.addEventListener(
         "keydown",
         evento => {
 
+            /*
+             * Si el carrusel está abierto,
+             * las flechas controlan el multimedia.
+             */
+
+            const carrusel =
+                document.getElementById(
+                    "carruselMultimedia"
+                );
+
+
+            if (
+                carrusel &&
+                carrusel.classList.contains("activo")
+            ) {
+
+                if (evento.key === "Escape") {
+
+                    cerrarCarruselMultimedia();
+                    return;
+
+                }
+
+                if (evento.key === "ArrowLeft") {
+
+                    multimediaAnterior();
+                    return;
+
+                }
+
+                if (evento.key === "ArrowRight") {
+
+                    multimediaSiguiente();
+                    return;
+
+                }
+
+            }
+
+
             if (
                 evento.key === "Escape"
             ) {
-
-                console.warn(
-                    "[HISTORIA] ESC → CERRANDO"
-                );
 
                 cerrarHistoriaCompleta();
 
@@ -167,125 +155,213 @@ function prepararEventosHistoria() {
 
 
 // =======================================================
-// ABRIR HISTORIA COMPLETA
+// ABRIR HISTORIA
 // =======================================================
-//
-// Esta es la función que utiliza fichas.js:
-//
-// abrirHistoriaCompleta(idFicha)
-//
-// =======================================================
+
 async function abrirHistoriaCompleta(idFicha) {
-    if (idFicha === undefined || idFicha === null || idFicha === "") {
-        console.warn("[HISTORIA] ID de ficha inválido.");
+
+    if (
+        idFicha === undefined ||
+        idFicha === null ||
+        idFicha === ""
+    ) {
+
+        console.warn(
+            "[HISTORIA] ID de ficha inválido."
+        );
+
         return;
+
     }
 
-    console.log("[HISTORIA] Abriendo ficha:", idFicha);
 
-    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
-    const cuerpo = document.querySelector(".historia-cuerpo");
+    console.log(
+        "[HISTORIA] Abriendo ficha:",
+        idFicha
+    );
+
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
+
+
+    const cuerpo =
+        document.querySelector(
+            ".cuerpoHistoria"
+        );
+
 
     if (!contenedor) return;
 
-    const expedienteYaAbierto = contenedor.classList.contains("activo");
+
+    const expedienteYaAbierto =
+        contenedor.classList.contains(
+            "activo"
+        );
+
 
     historiaIdActual = idFicha;
 
-    /*
-     * Si el expediente ya está abierto:
-     * solamente hacemos transición del contenido.
-     */
+
     if (expedienteYaAbierto) {
 
         if (cuerpo) {
-            cuerpo.classList.remove("ficha-cargada");
-            cuerpo.classList.add("cambiando-ficha");
+
+            cuerpo.classList.remove(
+                "ficha-cargada"
+            );
+
+            cuerpo.classList.add(
+                "cambiando-ficha"
+            );
+
         }
 
+
         try {
-            const ficha = await obtenerFicha(idFicha);
+
+            const ficha =
+                await obtenerFicha(
+                    idFicha
+                );
+
 
             if (!ficha) {
-                throw new Error("La API no devolvió la ficha.");
+
+                throw new Error(
+                    "La API no devolvió la ficha."
+                );
+
             }
 
-            historiaFichaActual = ficha;
 
-            /*
-             * Esperamos un poquito para que
-             * termine de desaparecer la ficha anterior.
-             */
-            await new Promise(resolve => setTimeout(resolve, 180));
+            historiaFichaActual =
+                ficha;
 
-            pintarHistoria(ficha);
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        180
+                    )
+            );
+
+
+            pintarHistoria(
+                ficha
+            );
+
+
             ocultarEstadoHistoria();
 
-            if (cuerpo) {
-                cuerpo.classList.remove("cambiando-ficha");
 
-                /*
-                 * Forzamos una nueva animación.
-                 */
+            if (cuerpo) {
+
+                cuerpo.classList.remove(
+                    "cambiando-ficha"
+                );
+
                 void cuerpo.offsetWidth;
 
-                cuerpo.classList.add("ficha-cargada");
+                cuerpo.classList.add(
+                    "ficha-cargada"
+                );
+
             }
 
         } catch (error) {
-            console.error("[HISTORIA] Error:", error);
+
+            console.error(
+                "[HISTORIA] Error:",
+                error
+            );
+
             mostrarHistoriaError();
 
             if (cuerpo) {
-                cuerpo.classList.remove("cambiando-ficha");
+
+                cuerpo.classList.remove(
+                    "cambiando-ficha"
+                );
+
             }
+
         }
 
         return;
+
     }
 
-    /*
-     * =====================================================
-     * PRIMERA APERTURA
-     * =====================================================
-     */
 
     mostrarHistoriaCarga();
     mostrarHistoriaCompleta();
 
+
     try {
-        const ficha = await obtenerFicha(idFicha);
+
+        const ficha =
+            await obtenerFicha(
+                idFicha
+            );
+
 
         if (!ficha) {
-            throw new Error("La API no devolvió la ficha.");
+
+            throw new Error(
+                "La API no devolvió la ficha."
+            );
+
         }
 
-        historiaFichaActual = ficha;
 
-        pintarHistoria(ficha);
+        historiaFichaActual =
+            ficha;
+
+
+        pintarHistoria(
+            ficha
+        );
+
+
         ocultarEstadoHistoria();
 
+
         if (cuerpo) {
-            cuerpo.classList.remove("cambiando-ficha");
-            cuerpo.classList.add("ficha-cargada");
+
+            cuerpo.classList.remove(
+                "cambiando-ficha"
+            );
+
+            cuerpo.classList.add(
+                "ficha-cargada"
+            );
 
             void cuerpo.offsetWidth;
+
         }
 
     } catch (error) {
-        console.error("[HISTORIA] Error:", error);
+
+        console.error(
+            "[HISTORIA] Error:",
+            error
+        );
+
         mostrarHistoriaError();
+
     }
+
 }
 
 
 // =======================================================
-// OBTENER FICHA
+// API
 // =======================================================
 
-async function obtenerFicha(
-    idFicha
-) {
+async function obtenerFicha(idFicha) {
 
     const url =
         `${CONFIG_HISTORIA.api}/${idFicha}`;
@@ -310,148 +386,104 @@ async function obtenerFicha(
     }
 
 
-    const ficha =
-        await respuesta.json();
-
-
-    return ficha;
+    return await respuesta.json();
 
 }
 
 
 // =======================================================
-// MOSTRAR VENTANA
+// MOSTRAR / CERRAR HISTORIA
 // =======================================================
+
 function mostrarHistoriaCompleta() {
-    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
 
-    if (!contenedor) {
-        console.warn("[HISTORIA] No existe #historiaCompleta.");
-        return;
-    }
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
 
-    contenedor.classList.add("activo");
-    contenedor.setAttribute("aria-hidden", "false");
 
-    document.body.classList.add("historia-modal-abierta");
+    if (!contenedor) return;
 
-    console.log("[HISTORIA] Expediente abierto.");
+
+    contenedor.classList.add(
+        "activo"
+    );
+
+
+    contenedor.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.classList.add(
+        "historia-modal-abierta"
+    );
+
 }
 
 
-
-function resetearPosicionHistoria() {
-    const ventana = document.querySelector(".historia-ventana");
-
-    if (!ventana) return;
-
-    ventana.style.left = "50%";
-    ventana.style.top = "14vh";
-    ventana.style.transform = "translateX(-50%)";
-
-    console.log("[HISTORIA] Posición reiniciada.");
-}
-
-// =======================================================
-// CERRAR VENTANA
-// =======================================================
 function cerrarHistoriaCompleta() {
-    console.trace("[HISTORIA] ¿QUIÉN ESTÁ CERRANDO?");
 
-    const contenedor = document.getElementById(CONFIG_HISTORIA.contenedor);
-    const ventana = document.querySelector(".historia-ventana");
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
 
-    if (!contenedor || !ventana) return;
 
-    /*
-     * 1. Cerramos inmediatamente el expediente.
-     *    El usuario ya no verá el movimiento.
-     */
-    contenedor.classList.remove("activo");
-    contenedor.setAttribute("aria-hidden", "true");
+    if (!contenedor) return;
 
-    document.body.classList.remove("historia-modal-abierta");
 
     /*
-     * 2. Esperamos a que termine la transición
-     *    de desaparición.
+     * Si el carrusel está abierto,
+     * primero lo cerramos.
      */
-    setTimeout(() => {
 
-        /*
-         * 3. Ahora que ya está oculto,
-         *    volvemos a centrarlo.
-         */
-        ventana.style.left = "50%";
-        ventana.style.top = "14vh";
-        ventana.style.transform = "translateX(-50%)";
+    cerrarCarruselMultimedia();
 
-        console.log("[HISTORIA] Posición reiniciada.");
 
-    }, 230);
+    contenedor.classList.remove(
+        "activo"
+    );
+
+
+    contenedor.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.classList.remove(
+        "historia-modal-abierta"
+    );
+
 
     historiaFichaActual = null;
     historiaIdActual = null;
 
-    console.log("[HISTORIA] Expediente cerrado.");
 }
+
 
 // =======================================================
 // PINTAR HISTORIA
 // =======================================================
 
-function pintarHistoria(
-    ficha
-) {
+function pintarHistoria(ficha) {
 
-    if (!ficha) {
-
-        return;
-
-    }
+    if (!ficha) return;
 
 
     limpiarHistoria();
 
-
-    pintarTitulo(
-        ficha
-    );
-
-
-    pintarImagen(
-        ficha
-    );
-
-
-    pintarResumen(
-        ficha
-    );
-
-
-    pintarTexto(
-        ficha
-    );
-
-
-    pintarCampos(
-        ficha
-    );
-
-
-    pintarEtiquetas(
-        ficha
-    );
-
-
-    pintarMultimedia(
-        ficha
-    );
-
-
-    pintarRelacionadas(
-        ficha
-    );
+    pintarTitulo(ficha);
+    pintarImagen(ficha);
+    pintarResumen(ficha);
+    pintarTexto(ficha);
+    pintarCampos(ficha);
+    pintarEtiquetas(ficha);
+    pintarMultimedia(ficha);
+    pintarRelacionadas(ficha);
 
 
     console.log(
@@ -463,7 +495,7 @@ function pintarHistoria(
 
 
 // =======================================================
-// LIMPIAR HISTORIA
+// LIMPIAR
 // =======================================================
 
 function limpiarHistoria() {
@@ -472,31 +504,25 @@ function limpiarHistoria() {
         CONFIG_HISTORIA.titulo
     );
 
-
     limpiarElemento(
         CONFIG_HISTORIA.resumen
     );
-
 
     limpiarElemento(
         CONFIG_HISTORIA.texto
     );
 
-
     limpiarElemento(
         CONFIG_HISTORIA.campos
     );
-
 
     limpiarElemento(
         CONFIG_HISTORIA.etiquetas
     );
 
-
     limpiarElemento(
         CONFIG_HISTORIA.multimedia
     );
-
 
     limpiarElemento(
         CONFIG_HISTORIA.relacionadas
@@ -505,13 +531,7 @@ function limpiarHistoria() {
 }
 
 
-// =======================================================
-// LIMPIAR ELEMENTO
-// =======================================================
-
-function limpiarElemento(
-    id
-) {
+function limpiarElemento(id) {
 
     const elemento =
         document.getElementById(id);
@@ -530,9 +550,7 @@ function limpiarElemento(
 // TÍTULO
 // =======================================================
 
-function pintarTitulo(
-    ficha
-) {
+function pintarTitulo(ficha) {
 
     const elemento =
         document.getElementById(
@@ -540,22 +558,13 @@ function pintarTitulo(
         );
 
 
-    if (!elemento) {
-
-        return;
-
-    }
+    if (!elemento) return;
 
 
     elemento.textContent =
         ficha.titulo ||
         "EXPEDIENTE SIN TÍTULO";
 
-
-    /*
-       También colocamos el número
-       de expediente si existe.
-    */
 
     const numero =
         document.getElementById(
@@ -575,13 +584,7 @@ function pintarTitulo(
 }
 
 
-// =======================================================
-// NÚMERO DE EXPEDIENTE
-// =======================================================
-
-function obtenerNumeroExpediente(
-    ficha
-) {
+function obtenerNumeroExpediente(ficha) {
 
     if (
         ficha.id_ficha !== undefined &&
@@ -599,12 +602,10 @@ function obtenerNumeroExpediente(
 
 
 // =======================================================
-// IMAGEN
+// IMAGEN PRINCIPAL
 // =======================================================
 
-function pintarImagen(
-    ficha
-) {
+function pintarImagen(ficha) {
 
     const imagen =
         document.getElementById(
@@ -612,30 +613,17 @@ function pintarImagen(
         );
 
 
-    if (!imagen) {
-
-        return;
-
-    }
+    if (!imagen) return;
 
 
     imagen.src =
-        obtenerImagen(
-            ficha
-        );
+        obtenerImagen(ficha);
 
 
     imagen.alt =
         ficha.titulo ||
         "Fotografía de la ficha";
 
-
-    /*
-       Si no existe fotografía,
-       agregamos una clase para
-       que el CSS pueda tratarla
-       de manera diferente.
-    */
 
     const contenedor =
         imagen.closest(
@@ -655,13 +643,7 @@ function pintarImagen(
 }
 
 
-// =======================================================
-// OBTENER RUTA DE IMAGEN
-// =======================================================
-
-function obtenerImagen(
-    ficha
-) {
+function obtenerImagen(ficha) {
 
     if (
         !ficha ||
@@ -691,9 +673,7 @@ function obtenerImagen(
 // RESUMEN
 // =======================================================
 
-function pintarResumen(
-    ficha
-) {
+function pintarResumen(ficha) {
 
     const elemento =
         document.getElementById(
@@ -701,16 +681,10 @@ function pintarResumen(
         );
 
 
-    if (!elemento) {
-
-        return;
-
-    }
+    if (!elemento) return;
 
 
-    if (
-        !ficha.resumen
-    ) {
+    if (!ficha.resumen) {
 
         elemento.classList.add(
             "oculto"
@@ -733,12 +707,10 @@ function pintarResumen(
 
 
 // =======================================================
-// TEXTO / HISTORIA
+// HISTORIA / TEXTO
 // =======================================================
 
-function pintarTexto(
-    ficha
-) {
+function pintarTexto(ficha) {
 
     const elemento =
         document.getElementById(
@@ -746,16 +718,10 @@ function pintarTexto(
         );
 
 
-    if (!elemento) {
-
-        return;
-
-    }
+    if (!elemento) return;
 
 
-    if (
-        !ficha.texto
-    ) {
+    if (!ficha.texto) {
 
         elemento.classList.add(
             "oculto"
@@ -771,12 +737,6 @@ function pintarTexto(
     );
 
 
-    /*
-       textContent en lugar de innerHTML
-       para evitar insertar HTML
-       proveniente de la base de datos.
-    */
-
     elemento.textContent =
         ficha.texto;
 
@@ -784,12 +744,10 @@ function pintarTexto(
 
 
 // =======================================================
-// CAMPOS DINÁMICOS
+// CAMPOS
 // =======================================================
 
-function pintarCampos(
-    ficha
-) {
+function pintarCampos(ficha) {
 
     const contenedor =
         document.getElementById(
@@ -797,11 +755,7 @@ function pintarCampos(
         );
 
 
-    if (!contenedor) {
-
-        return;
-
-    }
+    if (!contenedor) return;
 
 
     const campos =
@@ -811,31 +765,14 @@ function pintarCampos(
             ?.campos;
 
 
-    if (
-        !Array.isArray(campos)
-    ) {
-
-        return;
-
-    }
+    if (!Array.isArray(campos)) return;
 
 
     campos.forEach(
         campo => {
 
-            if (!campo) {
+            if (!campo) return;
 
-                return;
-
-            }
-
-
-            /*
-               En la historia mostramos
-               los campos marcados como:
-
-               mostrarHistoria: true
-            */
 
             if (
                 campo.mostrarHistoria !== true
@@ -925,21 +862,11 @@ function pintarCampos(
 }
 
 
-// =======================================================
-// CONVERTIR VALORES
-// =======================================================
+function convertirValorTexto(valor) {
 
-function convertirValorTexto(
-    valor
-) {
+    if (Array.isArray(valor)) {
 
-    if (
-        Array.isArray(valor)
-    ) {
-
-        return valor.join(
-            ", "
-        );
+        return valor.join(", ");
 
     }
 
@@ -949,16 +876,12 @@ function convertirValorTexto(
         valor !== null
     ) {
 
-        return JSON.stringify(
-            valor
-        );
+        return JSON.stringify(valor);
 
     }
 
 
-    return String(
-        valor
-    );
+    return String(valor);
 
 }
 
@@ -967,9 +890,7 @@ function convertirValorTexto(
 // ETIQUETAS
 // =======================================================
 
-function pintarEtiquetas(
-    ficha
-) {
+function pintarEtiquetas(ficha) {
 
     const contenedor =
         document.getElementById(
@@ -977,17 +898,11 @@ function pintarEtiquetas(
         );
 
 
-    if (!contenedor) {
-
-        return;
-
-    }
+    if (!contenedor) return;
 
 
     if (
-        !Array.isArray(
-            ficha.etiquetas
-        ) ||
+        !Array.isArray(ficha.etiquetas) ||
         ficha.etiquetas.length === 0
     ) {
 
@@ -1008,11 +923,7 @@ function pintarEtiquetas(
     ficha.etiquetas.forEach(
         etiqueta => {
 
-            if (!etiqueta) {
-
-                return;
-
-            }
+            if (!etiqueta) return;
 
 
             const elemento =
@@ -1044,9 +955,7 @@ function pintarEtiquetas(
 // MULTIMEDIA
 // =======================================================
 
-function pintarMultimedia(
-    ficha
-) {
+function pintarMultimedia(ficha) {
 
     const contenedor =
         document.getElementById(
@@ -1054,18 +963,27 @@ function pintarMultimedia(
         );
 
 
-    if (!contenedor) {
+    if (!contenedor) return;
 
-        return;
 
-    }
+    multimediaActual =
+        Array.isArray(ficha.multimedia)
+            ? ficha.multimedia
+            : [];
+
+
+    multimediaActual =
+        multimediaActual.filter(
+            archivo =>
+                archivo &&
+                obtenerRutaArchivo(
+                    archivo.ruta_archivo
+                )
+        );
 
 
     if (
-        !Array.isArray(
-            ficha.multimedia
-        ) ||
-        ficha.multimedia.length === 0
+        multimediaActual.length === 0
     ) {
 
         contenedor.classList.add(
@@ -1082,19 +1000,13 @@ function pintarMultimedia(
     );
 
 
-    ficha.multimedia.forEach(
-        archivo => {
-
-            if (!archivo) {
-
-                return;
-
-            }
-
+    multimediaActual.forEach(
+        (archivo, indice) => {
 
             const elemento =
                 crearElementoMultimedia(
-                    archivo
+                    archivo,
+                    indice
                 );
 
 
@@ -1117,17 +1029,28 @@ function pintarMultimedia(
 // =======================================================
 
 function crearElementoMultimedia(
-    archivo
+    archivo,
+    indice
 ) {
 
     const tarjeta =
         document.createElement(
-            "div"
+            "button"
         );
+
+
+    tarjeta.type =
+        "button";
 
 
     tarjeta.className =
         "historia-media";
+
+
+    tarjeta.setAttribute(
+        "aria-label",
+        "Abrir material histórico"
+    );
 
 
     const ruta =
@@ -1136,11 +1059,7 @@ function crearElementoMultimedia(
         );
 
 
-    if (!ruta) {
-
-        return null;
-
-    }
+    if (!ruta) return null;
 
 
     const tipo =
@@ -1150,8 +1069,8 @@ function crearElementoMultimedia(
 
 
     /*
-       IMAGEN
-    */
+     * IMAGEN
+     */
 
     if (
         tipo.includes("image") ||
@@ -1186,8 +1105,8 @@ function crearElementoMultimedia(
 
 
     /*
-       VIDEO
-    */
+     * VIDEO
+     */
 
     else if (
         tipo.includes("video") ||
@@ -1200,7 +1119,527 @@ function crearElementoMultimedia(
             );
 
 
+        video.src =
+            ruta;
+
+
+        video.preload =
+            "metadata";
+
+
+        video.muted =
+            true;
+
+
+        tarjeta.appendChild(
+            video
+        );
+
+    }
+
+
+    /*
+     * AUDIO
+     */
+
+    else if (
+        tipo.includes("audio") ||
+        esAudio(ruta)
+    ) {
+
+        const icono =
+            document.createElement(
+                "div"
+            );
+
+
+        icono.className =
+            "historia-media-audio";
+
+
+        icono.textContent =
+            "♫";
+
+
+        tarjeta.appendChild(
+            icono
+        );
+
+    }
+
+
+    /*
+     * DOCUMENTO
+     */
+
+    else {
+
+        const documento =
+            document.createElement(
+                "div"
+            );
+
+
+        documento.className =
+            "historia-media-documento";
+
+
+        documento.textContent =
+            "DOC";
+
+
+        tarjeta.appendChild(
+            documento
+        );
+
+    }
+
+
+    /*
+     * INFORMACIÓN
+     */
+
+    const info =
+        document.createElement(
+            "div"
+        );
+
+
+    info.className =
+        "historia-media-info";
+
+
+    const tipoTexto =
+        document.createElement(
+            "span"
+        );
+
+
+    tipoTexto.className =
+        "historia-media-tipo";
+
+
+    tipoTexto.textContent =
+        obtenerTipoMultimedia(
+            archivo,
+            ruta
+        );
+
+
+    info.appendChild(
+        tipoTexto
+    );
+
+
+    if (archivo.descripcion) {
+
+        const descripcion =
+            document.createElement(
+                "p"
+            );
+
+
+        descripcion.className =
+            "historia-media-descripcion";
+
+
+        descripcion.textContent =
+            archivo.descripcion;
+
+
+        info.appendChild(
+            descripcion
+        );
+
+    }
+
+
+    tarjeta.appendChild(
+        info
+    );
+
+
+    /*
+     * CLICK
+     */
+
+    tarjeta.addEventListener(
+        "click",
+        () => {
+
+            abrirCarruselMultimedia(
+                indice
+            );
+
+        }
+    );
+
+
+    return tarjeta;
+
+}
+
+
+// =======================================================
+// TIPO MULTIMEDIA
+// =======================================================
+
+function obtenerTipoMultimedia(
+    archivo,
+    ruta
+) {
+
+    const tipo =
+        String(
+            archivo.tipo_multi || ""
+        ).toLowerCase();
+
+
+    if (
+        tipo.includes("image") ||
+        tipo.includes("imagen") ||
+        esImagen(ruta)
+    ) {
+
+        return "FOTOGRAFÍA";
+
+    }
+
+
+    if (
+        tipo.includes("video") ||
+        esVideo(ruta)
+    ) {
+
+        return "VIDEO";
+
+    }
+
+
+    if (
+        tipo.includes("audio") ||
+        esAudio(ruta)
+    ) {
+
+        return "AUDIO";
+
+    }
+
+
+    return "DOCUMENTO";
+
+}
+
+
+// =======================================================
+// CARRUSEL MULTIMEDIA
+// =======================================================
+
+function prepararCarruselMultimedia() {
+
+    if (
+        document.getElementById(
+            "carruselMultimedia"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const carrusel =
+        document.createElement(
+            "div"
+        );
+
+
+    carrusel.id =
+        "carruselMultimedia";
+
+
+    carrusel.className =
+        "carruselMultimedia";
+
+
+    carrusel.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    carrusel.innerHTML = `
+
+        <div class="carrusel-fondo"></div>
+
+        <div
+            class="carrusel-ventana"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Material histórico"
+        >
+
+            <header class="carrusel-cabecera">
+
+                <span class="carrusel-etiqueta">
+                    MATERIAL HISTÓRICO
+                </span>
+
+                <span
+                    class="carrusel-contador"
+                    id="carruselContador"
+                >
+                    1 / 1
+                </span>
+
+                <button
+                    type="button"
+                    class="carrusel-cerrar"
+                    aria-label="Cerrar multimedia"
+                >
+                    ×
+                </button>
+
+            </header>
+
+
+            <div class="carrusel-contenido">
+
+                <button
+                    type="button"
+                    class="carrusel-flecha carrusel-anterior"
+                    aria-label="Multimedia anterior"
+                >
+                    ‹
+                </button>
+
+
+                <div
+                    class="carrusel-media"
+                    id="carruselMedia"
+                ></div>
+
+
+                <button
+                    type="button"
+                    class="carrusel-flecha carrusel-siguiente"
+                    aria-label="Multimedia siguiente"
+                >
+                    ›
+                </button>
+
+            </div>
+
+
+            <div
+                class="carrusel-descripcion"
+                id="carruselDescripcion"
+            ></div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(
+        carrusel
+    );
+
+
+    carrusel
+        .querySelector(".carrusel-fondo")
+        .addEventListener(
+            "click",
+            cerrarCarruselMultimedia
+        );
+
+
+    carrusel
+        .querySelector(".carrusel-cerrar")
+        .addEventListener(
+            "click",
+            cerrarCarruselMultimedia
+        );
+
+
+    carrusel
+        .querySelector(".carrusel-anterior")
+        .addEventListener(
+            "click",
+            multimediaAnterior
+        );
+
+
+    carrusel
+        .querySelector(".carrusel-siguiente")
+        .addEventListener(
+            "click",
+            multimediaSiguiente
+        );
+
+}
+
+
+// =======================================================
+// ABRIR CARRUSEL
+// =======================================================
+
+function abrirCarruselMultimedia(indice) {
+
+    if (
+        !multimediaActual.length
+    ) {
+
+        return;
+
+    }
+
+
+    multimediaIndiceActual =
+        indice;
+
+
+    const carrusel =
+        document.getElementById(
+            "carruselMultimedia"
+        );
+
+
+    if (!carrusel) return;
+
+
+    carrusel.classList.add(
+        "activo"
+    );
+
+
+    carrusel.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.classList.add(
+        "carrusel-abierto"
+    );
+
+
+    pintarCarruselActual();
+
+}
+
+
+// =======================================================
+// PINTAR ELEMENTO DEL CARRUSEL
+// =======================================================
+
+function pintarCarruselActual() {
+
+    const archivo =
+        multimediaActual[
+            multimediaIndiceActual
+        ];
+
+
+    if (!archivo) return;
+
+
+    const contenedor =
+        document.getElementById(
+            "carruselMedia"
+        );
+
+
+    const descripcion =
+        document.getElementById(
+            "carruselDescripcion"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "carruselContador"
+        );
+
+
+    if (!contenedor) return;
+
+
+    contenedor.innerHTML =
+        "";
+
+
+    const ruta =
+        obtenerRutaArchivo(
+            archivo.ruta_archivo
+        );
+
+
+    const tipo =
+        String(
+            archivo.tipo_multi || ""
+        ).toLowerCase();
+
+
+    /*
+     * IMAGEN
+     */
+
+    if (
+        tipo.includes("image") ||
+        tipo.includes("imagen") ||
+        esImagen(ruta)
+    ) {
+
+        const imagen =
+            document.createElement(
+                "img"
+            );
+
+
+        imagen.className =
+            "carrusel-imagen";
+
+
+        imagen.src =
+            ruta;
+
+
+        imagen.alt =
+            archivo.descripcion ||
+            "Material histórico";
+
+
+        contenedor.appendChild(
+            imagen
+        );
+
+    }
+
+
+    /*
+     * VIDEO
+     */
+
+    else if (
+        tipo.includes("video") ||
+        esVideo(ruta)
+    ) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+
+        video.className =
+            "carrusel-video";
+
+
         video.controls =
+            true;
+
+
+        video.autoplay =
             true;
 
 
@@ -1212,7 +1651,7 @@ function crearElementoMultimedia(
             ruta;
 
 
-        tarjeta.appendChild(
+        contenedor.appendChild(
             video
         );
 
@@ -1220,13 +1659,37 @@ function crearElementoMultimedia(
 
 
     /*
-       AUDIO
-    */
+     * AUDIO
+     */
 
     else if (
         tipo.includes("audio") ||
         esAudio(ruta)
     ) {
+
+        const audioContenedor =
+            document.createElement(
+                "div"
+            );
+
+
+        audioContenedor.className =
+            "carrusel-audio";
+
+
+        const icono =
+            document.createElement(
+                "div"
+            );
+
+
+        icono.className =
+            "carrusel-audio-icono";
+
+
+        icono.textContent =
+            "♫";
+
 
         const audio =
             document.createElement(
@@ -1242,92 +1705,250 @@ function crearElementoMultimedia(
             ruta;
 
 
-        tarjeta.appendChild(
+        audioContenedor.appendChild(
+            icono
+        );
+
+
+        audioContenedor.appendChild(
             audio
         );
 
+
+        contenedor.appendChild(
+            audioContenedor
+        );
+
     }
 
 
     /*
-       OTRO ARCHIVO
-    */
+     * DOCUMENTO
+     */
 
     else {
 
-        const enlace =
+        const documento =
             document.createElement(
-                "a"
+                "div"
             );
 
 
-        enlace.href =
-            ruta;
+        documento.className =
+            "carrusel-documento";
 
 
-        enlace.target =
-            "_blank";
+        documento.innerHTML = `
+            <div class="carrusel-documento-icono">
+                DOC
+            </div>
+
+            <a
+                href="${ruta}"
+                target="_blank"
+                rel="noopener"
+            >
+                ABRIR DOCUMENTO
+            </a>
+        `;
 
 
-        enlace.rel =
-            "noopener";
-
-
-        enlace.textContent =
-            archivo.descripcion ||
-            "Abrir documento";
-
-
-        tarjeta.appendChild(
-            enlace
+        contenedor.appendChild(
+            documento
         );
 
     }
 
 
-    /*
-       Descripción
-    */
+    if (contador) {
 
-    if (
-        archivo.descripcion
-    ) {
+        contador.textContent =
+            `${multimediaIndiceActual + 1} / ${multimediaActual.length}`;
 
-        const descripcion =
-            document.createElement(
-                "p"
-            );
+    }
 
+
+    if (descripcion) {
 
         descripcion.textContent =
-            archivo.descripcion;
-
-
-        tarjeta.appendChild(
-            descripcion
-        );
+            archivo.descripcion ||
+            obtenerTipoMultimedia(
+                archivo,
+                ruta
+            );
 
     }
 
 
-    return tarjeta;
+    actualizarFlechasCarrusel();
 
 }
 
 
 // =======================================================
-// RUTA DE ARCHIVO
+// FLECHAS
 // =======================================================
 
-function obtenerRutaArchivo(
-    ruta
-) {
+function actualizarFlechasCarrusel() {
 
-    if (!ruta) {
+    const anterior =
+        document.querySelector(
+            ".carrusel-anterior"
+        );
 
-        return "";
+
+    const siguiente =
+        document.querySelector(
+            ".carrusel-siguiente"
+        );
+
+
+    if (!anterior || !siguiente) return;
+
+
+    const cantidad =
+        multimediaActual.length;
+
+
+    /*
+     * Si hay uno solo,
+     * no necesitamos flechas.
+     */
+
+    anterior.style.visibility =
+        cantidad > 1
+            ? "visible"
+            : "hidden";
+
+
+    siguiente.style.visibility =
+        cantidad > 1
+            ? "visible"
+            : "hidden";
+
+}
+
+
+// =======================================================
+// ANTERIOR
+// =======================================================
+
+function multimediaAnterior() {
+
+    if (
+        multimediaActual.length <= 1
+    ) {
+
+        return;
 
     }
+
+
+    multimediaIndiceActual--;
+
+
+    if (
+        multimediaIndiceActual < 0
+    ) {
+
+        multimediaIndiceActual =
+            multimediaActual.length - 1;
+
+    }
+
+
+    pintarCarruselActual();
+
+}
+
+
+// =======================================================
+// SIGUIENTE
+// =======================================================
+
+function multimediaSiguiente() {
+
+    if (
+        multimediaActual.length <= 1
+    ) {
+
+        return;
+
+    }
+
+
+    multimediaIndiceActual++;
+
+
+    if (
+        multimediaIndiceActual >=
+        multimediaActual.length
+    ) {
+
+        multimediaIndiceActual = 0;
+
+    }
+
+
+    pintarCarruselActual();
+
+}
+
+
+// =======================================================
+// CERRAR CARRUSEL
+// =======================================================
+
+function cerrarCarruselMultimedia() {
+
+    const carrusel =
+        document.getElementById(
+            "carruselMultimedia"
+        );
+
+
+    if (!carrusel) return;
+
+
+    carrusel.classList.remove(
+        "activo"
+    );
+
+
+    carrusel.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.classList.remove(
+        "carrusel-abierto"
+    );
+
+
+    const contenedor =
+        document.getElementById(
+            "carruselMedia"
+        );
+
+
+    if (contenedor) {
+
+        contenedor.innerHTML =
+            "";
+
+    }
+
+}
+
+
+// =======================================================
+// RUTAS
+// =======================================================
+
+function obtenerRutaArchivo(ruta) {
+
+    if (!ruta) return "";
 
 
     if (
@@ -1344,13 +1965,7 @@ function obtenerRutaArchivo(
 }
 
 
-// =======================================================
-// DETECTAR IMAGEN
-// =======================================================
-
-function esImagen(
-    ruta
-) {
+function esImagen(ruta) {
 
     return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(
         ruta
@@ -1359,13 +1974,7 @@ function esImagen(
 }
 
 
-// =======================================================
-// DETECTAR VIDEO
-// =======================================================
-
-function esVideo(
-    ruta
-) {
+function esVideo(ruta) {
 
     return /\.(mp4|webm|ogg|mov)$/i.test(
         ruta
@@ -1374,13 +1983,7 @@ function esVideo(
 }
 
 
-// =======================================================
-// DETECTAR AUDIO
-// =======================================================
-
-function esAudio(
-    ruta
-) {
+function esAudio(ruta) {
 
     return /\.(mp3|wav|ogg|m4a|aac)$/i.test(
         ruta
@@ -1390,105 +1993,206 @@ function esAudio(
 
 
 // =======================================================
+// RELACIONADAS
+// =======================================================
+// =======================================================
+// RELACIONADAS
+// =======================================================
+// =======================================================
 // FICHAS RELACIONADAS
 // =======================================================
 
-function pintarRelacionadas(
-    ficha
-) {
+function pintarRelacionadas(ficha) {
 
     const contenedor =
         document.getElementById(
             CONFIG_HISTORIA.relacionadas
         );
 
+    if (!contenedor) return;
 
-    if (!contenedor) {
-
-        return;
-
-    }
-
+    // Limpiar contenido anterior
+    contenedor.innerHTML = "";
 
     if (
-        !Array.isArray(
-            ficha.relacionadas
-        ) ||
+        !Array.isArray(ficha.relacionadas) ||
         ficha.relacionadas.length === 0
     ) {
 
-        contenedor.classList.add(
-            "oculto"
-        );
+        contenedor.classList.add("oculto");
 
         return;
-
     }
 
-
-    contenedor.classList.remove(
-        "oculto"
-    );
+    contenedor.classList.remove("oculto");
 
 
     ficha.relacionadas.forEach(
         relacionada => {
 
-            if (!relacionada) {
+            if (!relacionada) return;
 
-                return;
+
+            // =========================================
+            // TARJETA
+            // =========================================
+
+            const tarjeta =
+                document.createElement(
+                    "article"
+                );
+
+            tarjeta.className =
+                "historia-relacionada";
+
+
+            const idFicha =
+                relacionada.id_ficha;
+
+
+            if (
+                idFicha !== undefined &&
+                idFicha !== null
+            ) {
+
+                tarjeta.dataset.idFicha =
+                    idFicha;
 
             }
 
 
-            const elemento =
+            // =========================================
+            // IMAGEN
+            // =========================================
+
+            const imagen =
                 document.createElement(
-                    "button"
+                    "img"
                 );
 
+            imagen.className =
+                "historia-relacionada-imagen";
 
-            elemento.type =
-                "button";
-
-
-            elemento.className =
-                "historia-relacionada";
-
-
-            elemento.dataset.id =
-                relacionada.id_ficha ??
-                "";
-
-
-            const info =
-                document.createElement(
-                    "span"
+            imagen.src =
+                obtenerImagen(
+                    relacionada
                 );
 
+            imagen.alt =
+                relacionada.titulo ||
+                "Ficha relacionada";
 
-            info.className =
-                "historia-relacionada-info";
+            imagen.loading =
+                "lazy";
 
+
+            imagen.addEventListener(
+                "error",
+                () => {
+
+                    if (
+                        imagen.src.endsWith(
+                            "/imagenes/default.png"
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+                    imagen.src =
+                        "/imagenes/default.png";
+
+                }
+            );
+
+
+            tarjeta.appendChild(
+                imagen
+            );
+
+
+            // =========================================
+            // ÚNICA LÍNEA DIVISORIA
+            // =========================================
+
+            const divisor =
+                document.createElement(
+                    "div"
+                );
+
+            divisor.className =
+                "historia-relacionada-divisor";
+
+            tarjeta.appendChild(
+                divisor
+            );
+
+
+            // =========================================
+            // CONTENIDO
+            // =========================================
+
+            const contenido =
+                document.createElement(
+                    "div"
+                );
+
+            contenido.className =
+                "historia-relacionada-contenido";
+
+
+            // =========================================
+            // RELACIÓN
+            // =========================================
+
+            if (
+                relacionada.tipo_relacion
+            ) {
+
+                const relacion =
+                    document.createElement(
+                        "span"
+                    );
+
+                relacion.className =
+                    "historia-relacionada-relacion";
+
+                relacion.textContent =
+                    "RELACIÓN · " +
+                    relacionada.tipo_relacion;
+
+                contenido.appendChild(
+                    relacion
+                );
+
+            }
+
+
+            // =========================================
+            // TÍTULO
+            // =========================================
 
             const titulo =
                 document.createElement(
-                    "span"
+                    "h3"
                 );
-
 
             titulo.className =
                 "historia-relacionada-titulo";
-
 
             titulo.textContent =
                 relacionada.titulo ||
                 "Ficha sin título";
 
-
-            info.appendChild(
+            contenido.appendChild(
                 titulo
             );
 
+
+            // =========================================
+            // MENÚ
+            // =========================================
 
             if (
                 relacionada.menu
@@ -1496,44 +2200,98 @@ function pintarRelacionadas(
 
                 const menu =
                     document.createElement(
-                        "small"
+                        "span"
                     );
-
 
                 menu.className =
                     "historia-relacionada-menu";
 
-
                 menu.textContent =
                     relacionada.menu;
 
-
-                info.appendChild(
+                contenido.appendChild(
                     menu
                 );
 
             }
 
 
-            elemento.appendChild(
-                info
+            // =========================================
+            // BOTÓN
+            // =========================================
+
+            const boton =
+                document.createElement(
+                    "button"
+                );
+
+            boton.type =
+                "button";
+
+            boton.className =
+                "historia-relacionada-ver";
+
+            boton.textContent =
+                "VER FICHA →";
+
+
+            boton.addEventListener(
+                "click",
+                evento => {
+
+                    evento.stopPropagation();
+
+
+                    if (
+                        idFicha !== undefined &&
+                        idFicha !== null
+                    ) {
+
+                        abrirHistoriaCompleta(
+                            idFicha
+                        );
+
+                    }
+
+                }
             );
 
 
-            elemento.addEventListener(
+            contenido.appendChild(
+                boton
+            );
+
+
+            tarjeta.appendChild(
+                contenido
+            );
+
+
+            // =========================================
+            // CLICK EN TODA LA TARJETA
+            // =========================================
+
+            tarjeta.addEventListener(
                 "click",
                 () => {
 
-                    abrirHistoriaCompleta(
-                        relacionada.id_ficha
-                    );
+                    if (
+                        idFicha !== undefined &&
+                        idFicha !== null
+                    ) {
+
+                        abrirHistoriaCompleta(
+                            idFicha
+                        );
+
+                    }
 
                 }
             );
 
 
             contenedor.appendChild(
-                elemento
+                tarjeta
             );
 
         }
@@ -1541,25 +2299,11 @@ function pintarRelacionadas(
 
 }
 
-
 // =======================================================
-// ESTADO DE CARGA
+// ESTADOS
 // =======================================================
 
 function mostrarHistoriaCarga() {
-
-    const contenedor =
-        document.getElementById(
-            CONFIG_HISTORIA.contenedor
-        );
-
-
-    if (!contenedor) {
-
-        return;
-
-    }
-
 
     const estado =
         document.getElementById(
@@ -1567,11 +2311,7 @@ function mostrarHistoriaCarga() {
         );
 
 
-    if (!estado) {
-
-        return;
-
-    }
+    if (!estado) return;
 
 
     estado.className =
@@ -1580,12 +2320,15 @@ function mostrarHistoriaCarga() {
 
     estado.innerHTML = `
         <span class="historia-estado-icono">◌</span>
-        <span class="historia-estado-texto">CONSULTANDO EXPEDIENTE...</span>
+        <span class="historia-estado-texto">
+            CONSULTANDO EXPEDIENTE...
+        </span>
     `;
 
 
     estado.hidden =
         false;
+
 
     estado.classList.remove(
         "oculto"
@@ -1593,10 +2336,6 @@ function mostrarHistoriaCarga() {
 
 }
 
-
-// =======================================================
-// ESTADO DE ERROR
-// =======================================================
 
 function mostrarHistoriaError() {
 
@@ -1606,11 +2345,7 @@ function mostrarHistoriaError() {
         );
 
 
-    if (!estado) {
-
-        return;
-
-    }
+    if (!estado) return;
 
 
     estado.className =
@@ -1619,12 +2354,15 @@ function mostrarHistoriaError() {
 
     estado.innerHTML = `
         <span class="historia-estado-icono">✕</span>
-        <span class="historia-estado-texto">NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.</span>
+        <span class="historia-estado-texto">
+            NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.
+        </span>
     `;
 
 
     estado.hidden =
         false;
+
 
     estado.classList.remove(
         "oculto"
@@ -1632,10 +2370,6 @@ function mostrarHistoriaError() {
 
 }
 
-
-// =======================================================
-// OCULTAR ESTADO
-// =======================================================
 
 function ocultarEstadoHistoria() {
 
@@ -1645,15 +2379,12 @@ function ocultarEstadoHistoria() {
         );
 
 
-    if (!estado) {
-
-        return;
-
-    }
+    if (!estado) return;
 
 
     estado.hidden =
         true;
+
 
     estado.classList.add(
         "oculto"
@@ -1663,74 +2394,25 @@ function ocultarEstadoHistoria() {
 
 
 // =======================================================
-// VOLVER A PINTAR DESPUÉS DE CARGAR
-// =======================================================
-//
-// Si el HTML utiliza #estadoHistoria,
-// ocultamos el mensaje cuando
-// la ficha fue cargada correctamente.
-//
-
-function finalizarCargaHistoria() {
-
-    ocultarEstadoHistoria();
-
-}
-
-
-// =======================================================
-// FUNCIÓN PÚBLICA
+// ARRASTRAR EXPEDIENTE
 // =======================================================
 
-window.historiaCompleta = {
-
-    abrir: abrirHistoriaCompleta,
-
-    cerrar: cerrarHistoriaCompleta,
-
-    obtenerActual: () => {
-
-        return historiaFichaActual;
-
-    }
-
-};
-
-
-// =======================================================
-// COMPATIBILIDAD CON fichas.js
-// =======================================================
-//
-// fichas.js busca específicamente:
-//
-// typeof abrirHistoriaCompleta === "function"
-//
-// Por eso exponemos también la función
-// directamente en window.
-//
-
-window.abrirHistoriaCompleta =
-    abrirHistoriaCompleta;
-
-
-window.cerrarHistoriaCompleta =
-    cerrarHistoriaCompleta;
-
-/* =========================================================
-   VENTANA ARRASTRABLE
-========================================================= */
 function hacerHistoriaMovible() {
 
     const ventana =
-        document.querySelector(".historia-ventana");
+        document.querySelector(
+            ".expedienteHistoria"
+        );
+
 
     if (!ventana) {
 
         console.warn(
-            "[HISTORIA] No se encontró .historia-ventana"
+            "[HISTORIA] No se encontró .expedienteHistoria"
         );
 
         return;
+
     }
 
 
@@ -1740,11 +2422,6 @@ function hacerHistoriaMovible() {
     let offsetY = 0;
 
 
-    /* =====================================================
-       INICIAR ARRASTRE
-       Se puede hacer desde CUALQUIER PARTE de la ventana
-    ===================================================== */
-
     ventana.addEventListener(
         "mousedown",
         iniciarMovimiento
@@ -1753,26 +2430,14 @@ function hacerHistoriaMovible() {
 
     function iniciarMovimiento(evento) {
 
-        /*
-         * Si se hizo click en botones o elementos
-         * interactivos NO empezamos a mover.
-         */
-
         if (
             evento.target.closest(
-                ".historia-cerrar"
+                ".cerrarHistoria"
             )
         ) {
-            return;
-        }
 
-
-        if (
-            evento.target.closest(
-                ".historia-btn-cerrar"
-            )
-        ) {
             return;
+
         }
 
 
@@ -1781,20 +2446,31 @@ function hacerHistoriaMovible() {
                 ".historia-relacionada"
             )
         ) {
+
             return;
+
         }
 
 
-        /*
-         * Si el usuario está seleccionando texto,
-         * tampoco movemos.
-         */
+        if (
+            evento.target.closest(
+                ".historia-media"
+            )
+        ) {
+
+            return;
+
+        }
+
 
         if (
-            window.getSelection &&
-            window.getSelection().toString().length > 0
+            evento.target.closest(
+                "button, a, input, video, audio"
+            )
         ) {
+
             return;
+
         }
 
 
@@ -1802,34 +2478,23 @@ function hacerHistoriaMovible() {
             ventana.getBoundingClientRect();
 
 
-        /*
-         * Guardamos exactamente dónde
-         * agarró la ventana.
-         */
-
         offsetX =
-            evento.clientX - rect.left;
+            evento.clientX -
+            rect.left;
+
 
         offsetY =
-            evento.clientY - rect.top;
+            evento.clientY -
+            rect.top;
 
-
-        /*
-         * Quitamos el transform original.
-         * Esto es MUY IMPORTANTE.
-         */
 
         ventana.style.transform =
             "none";
 
 
-        /*
-         * Convertimos la posición actual
-         * a coordenadas reales.
-         */
-
         ventana.style.left =
             rect.left + "px";
+
 
         ventana.style.top =
             rect.top + "px";
@@ -1848,12 +2513,9 @@ function hacerHistoriaMovible() {
 
 
         evento.preventDefault();
+
     }
 
-
-    /* =====================================================
-       MOVER
-    ===================================================== */
 
     document.addEventListener(
         "mousemove",
@@ -1863,46 +2525,49 @@ function hacerHistoriaMovible() {
 
     function moverVentana(evento) {
 
-        if (!moviendo) {
-            return;
-        }
+        if (!moviendo) return;
 
 
         let x =
-            evento.clientX - offsetX;
+            evento.clientX -
+            offsetX;
+
 
         let y =
-            evento.clientY - offsetY;
+            evento.clientY -
+            offsetY;
 
 
         const ancho =
             ventana.offsetWidth;
 
+
         const alto =
             ventana.offsetHeight;
 
-
-        /*
-         * Dejamos una pequeña parte visible
-         * para que nunca desaparezca completamente.
-         */
 
         const margen =
             25;
 
 
         const minimoX =
-            margen - ancho + 120;
+            margen -
+            ancho +
+            120;
+
 
         const maximoX =
-            window.innerWidth - 120;
+            window.innerWidth -
+            120;
 
 
         const minimoY =
             0;
 
+
         const maximoY =
-            window.innerHeight - 70;
+            window.innerHeight -
+            70;
 
 
         x =
@@ -1928,14 +2593,12 @@ function hacerHistoriaMovible() {
         ventana.style.left =
             x + "px";
 
+
         ventana.style.top =
             y + "px";
+
     }
 
-
-    /* =====================================================
-       TERMINAR ARRASTRE
-    ===================================================== */
 
     document.addEventListener(
         "mouseup",
@@ -1945,9 +2608,7 @@ function hacerHistoriaMovible() {
 
     function terminarMovimiento() {
 
-        if (!moviendo) {
-            return;
-        }
+        if (!moviendo) return;
 
 
         moviendo = false;
@@ -1960,13 +2621,37 @@ function hacerHistoriaMovible() {
 
         document.body.style.userSelect =
             "";
+
     }
+
 }
 
 
 // =======================================================
-// LOG
+// FUNCIONES PÚBLICAS
 // =======================================================
+
+window.historiaCompleta = {
+
+    abrir:
+        abrirHistoriaCompleta,
+
+    cerrar:
+        cerrarHistoriaCompleta,
+
+    obtenerActual:
+        () => historiaFichaActual
+
+};
+
+
+window.abrirHistoriaCompleta =
+    abrirHistoriaCompleta;
+
+
+window.cerrarHistoriaCompleta =
+    cerrarHistoriaCompleta;
+
 
 console.log(
     "[HISTORIA] historiaCompleta.js cargado correctamente."
