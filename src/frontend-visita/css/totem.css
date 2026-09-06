@@ -105,3 +105,23 @@ body.totem-right [class*="card"] img, body.totem-left [class*="card"] img {
     max-height: 130px !important;
     object-fit: cover !important;
 }
+
+/* Neutralizar cualquier estilo en línea (height/width dinámicos) que la app intente aplicar después */
+body.totem-right .totem-wrapper *, 
+body.totem-left .totem-wrapper * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Forzar que el contenedor raíz de la app no se achique nunca */
+body.totem-right #app, 
+body.totem-left #app {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+

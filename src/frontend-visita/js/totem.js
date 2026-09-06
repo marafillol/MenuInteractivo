@@ -26,6 +26,9 @@
         } else {
             document.body.classList.add("totem-horizontal");
         }
+
+        // Forzar un evento de redimensionamiento para que los scripts internos recalculen las dimensiones
+        window.dispatchEvent(new Event('resize'));
     };
 
     // 3. Consultar la API pública del servidor para obtener la configuración guardada
@@ -42,7 +45,7 @@
         aplicarOrientacion("horizontal");
     }
 
-    // 4. Chequeo periódico opcional por si el tótem queda abierto y cambian la config en el panel
+    // 4. Chequeo periódico por si cambian la config en el panel con el tótem abierto
     setInterval(async () => {
         try {
             const respuesta = await fetch("/api/public/configuracion/estilo-visitante");
