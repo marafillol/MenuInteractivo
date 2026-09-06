@@ -5395,3 +5395,17 @@ body.carrusel-abierto {
     color: #e4d8bc;
 
 }
+
+/* =====================================================
+   CONFIGURACIÓN EXCLUSIVA PARA MODO VERTICAL (TÓTEM)
+   (Deja el modo horizontal completamente intacto)
+   ===================================================== */
+body.totem-right .historia-ventana, 
+body.totem-left .historia-ventana,
+body.totem-right .expedienteHistoria, 
+body.totem-left .expedienteHistoria {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}

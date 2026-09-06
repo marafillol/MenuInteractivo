@@ -124,4 +124,20 @@ body.totem-left #app {
     flex: 1 !important;
 }
 
+/* =====================================================
+   ESPACIO EXTRA (AIRE) TANTOS ARRIBA COMO ABAJO EN VERTICAL
+   ===================================================== */
+body.totem-right .explorador, body.totem-left .explorador,
+body.totem-right main, body.totem-left main {
+    padding-top: 100px !important;    /* Espacio de aire al inicio (arriba) */
+    padding-bottom: 100px !important; /* Espacio de aire al final (abajo) */
+    box-sizing: border-box !important;
+}
+
+body.totem-right .grilla-fichas, body.totem-left .grilla-fichas,
+body.totem-right [class*="grilla"], body.totem-left [class*="grilla"],
+body.totem-right [class*="grid"], body.totem-left [class*="grid"] {
+    margin-top: 50px !important;
+    margin-bottom: 50px !important;
+}
 
