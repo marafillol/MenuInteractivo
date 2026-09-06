@@ -29,30 +29,30 @@
 ========================================================= */
 
 :root {
-
     --azul-archivo: #071923;
-    --azul-profundo: #091b24;
-    --azul-panel: rgba(8, 27, 35, .94);
+    --azul-profundo: #041018;
+    --azul-panel: rgba(7, 25, 35, 0.94);
 
-    --azul-borde: rgba(181, 160, 104, .35);
-    --azul-linea: rgba(195, 174, 119, .25);
+    --azul-borde: rgba(129, 210, 247, 0.25);
+    --azul-linea: rgba(129, 210, 247, 0.15);
 
-    --papel: #c8b996;
-    --papel-claro: #d8ccb0;
-    --papel-oscuro: #8d7b59;
+    /* Reemplazamos los tonos papel/sepia por los tonos fríos y limpios */
+    --papel: #edf5f7;
+    --papel-claro: #ffffff;
+    --papel-oscuro: #81D2F7; /* Celeste institucional */
 
-    --carton: #796247;
-    --carton-oscuro: #514331;
+    --carton: #0f2c4c;
+    --carton-oscuro: #071923;
 
-    --tinta: #292a25;
-    --tinta-clara: #d8d1bc;
+    --tinta: #ffffff;
+    --tinta-clara: #edf5f7;
 
-    --metal: #78817d;
-    --metal-oscuro: #394542;
+    --metal: #81D2F7;
+    --metal-oscuro: #0b2233;
 
-    --dorado: #a99561;
+    --dorado: #DBB060;       /* El dorado exacto del botón de inicio */
 
-    --rojo-sello: #783f38;
+    --rojo-sello: #a84841;   /* Rojo ajustado a la nueva gama */
 }
 
 
@@ -113,7 +113,7 @@ body {
         #000;
 
     background-image:
-        url("/imagenes/img4.png");
+        url("/imagenes/malvinasmapa.png");
 
     background-repeat:
         no-repeat;
@@ -148,8 +148,9 @@ body {
 
     pointer-events: none;
 
+    /* Bajamos la opacidad a .35 para que la imagen se vea clarita y hermosa */
     background:
-        rgba(0, 0, 0, .72);
+        rgba(0, 0, 0, 0.35);
 }
 
 
@@ -217,443 +218,130 @@ body {
         );
 }
 
-
 /* =========================================================
-   ENCABEZADO
+   ENCABEZADO (Azul Profundo con Detalles Dorados)
 ========================================================= */
 
 .encabezado-veteranos {
-
     position: fixed;
-
     z-index: 300;
-
     top: 0;
     left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    width:
-        min(1180px, 92vw);
-
-    padding:
-        16px 34px 13px;
-
-    background:
-        rgba(5, 20, 27, .32);
-
-    border-bottom:
-        1px solid rgba(184, 164, 111, .30);
-
-    box-shadow:
-        0 8px 25px rgba(0,0,0,.28);
-
-    backdrop-filter:
-        blur(2px);
+    transform: translateX(-50%);
+    width: min(1180px, 92vw);
+    padding: 16px 34px 13px;
+    
+    /* Fondo azul oceánico profundo sólido */
+    background: rgba(4, 16, 24, 0.90);
+    
+    /* Borde inferior con un toque dorado elegante */
+    border-bottom: 1px solid rgba(219, 176, 96, 0.40);
+    box-shadow: 0 8px 25px rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
 }
-
-
-/* =========================================================
-   LÍNEAS ENCABEZADO
-========================================================= */
 
 .encabezado-linea {
-
     height: 1px;
-
-    background:
-        rgba(199,181,132,.28);
+    background: rgba(219, 176, 96, 0.25); /* Líneas finas doradas */
 }
-
 
 .encabezado-linea.superior {
-
-    margin-bottom:
-        10px;
+    margin-bottom: 10px;
 }
-
 
 .encabezado-linea.inferior {
-
-    margin-top:
-        10px;
+    margin-top: 10px;
 }
-
-
-/* =========================================================
-   CONTENIDO ENCABEZADO
-========================================================= */
 
 .encabezado-contenido {
-
-    position:
-        relative;
-
-    text-align:
-        center;
+    position: relative;
+    text-align: center;
 }
-
 
 /* =========================================================
    MARCA
 ========================================================= */
 
 .marca-archivo {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        12px;
-
-    color:
-        rgba(202,192,160,.72);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        9px;
-
-    letter-spacing:
-        .28em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #DBB060; /* Dorado institucional */
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    letter-spacing: .28em;
 }
-
 
 .marca-linea {
-
-    width:
-        35px;
-
-    height:
-        1px;
-
-    background:
-        rgba(189,168,113,.42);
+    width: 35px;
+    height: 1px;
+    background: rgba(219, 176, 96, 0.4);
 }
-
 
 /* =========================================================
    TÍTULO
 ========================================================= */
 
 .encabezado-veteranos h1 {
-
-    margin:
-        5px 0 2px;
-
-    color:
-        #ddd5bd;
-
-    font-family:
-        "Courier New",
-        Courier,
-        monospace;
-
-    font-size:
-        clamp(27px, 3.4vw, 46px);
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        .16em;
-
-    line-height:
-        1;
-
-    white-space:
-        nowrap;
-
-    text-shadow:
-        0 2px 3px rgba(0,0,0,.95),
-        0 0 14px rgba(0,0,0,.5);
+    margin: 5px 0 2px;
+    color: #edf5f7;
+    font-family: "Courier New", Courier, monospace;
+    font-size: clamp(27px, 3.4vw, 46px);
+    font-weight: 700;
+    letter-spacing: .16em;
+    line-height: 1;
+    white-space: nowrap;
+    text-shadow: 0 2px 3px rgba(0,0,0,.95), 0 0 14px rgba(219, 176, 96, 0.15);
 }
-
 
 /* =========================================================
    SUBTÍTULO
 ========================================================= */
 
 .subtitulo {
-
-    color:
-        rgba(207,199,173,.68);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        9px;
-
-    letter-spacing:
-        .22em;
+    color: rgba(219, 176, 96, 0.75); /* Subtítulo con tono dorado suave */
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
 }
 
-
 /* =========================================================
-   SEPARADOR
+   SEPARADOR CON ROMBO DORADO
 ========================================================= */
 
 .separador-titulo {
-
-    width:
-        230px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    margin:
-        8px auto 0;
+    width: 230px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px auto 0;
 }
-
 
 .separador-titulo span {
-
-    flex:
-        1;
-
-    height:
-        1px;
-
-    background:
-        rgba(183,163,111,.35);
+    flex: 1;
+    height: 1px;
+    background: rgba(219, 176, 96, 0.35);
 }
 
-
 .rombo {
-
-    width:
-        7px;
-
-    height:
-        7px;
-
-    border:
-        1px solid rgba(177,153,96,.7);
-
-    transform:
-        rotate(45deg);
+    width: 7px;
+    height: 7px;
+    /* Rombo completamente dorado para destacar al centro */
+    background: #DBB060;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: rotate(45deg);
+    box-shadow: 0 0 8px rgba(219, 176, 96, 0.5);
 }
 
 
 /* =========================================================
-   CARTEL HOMENAJE
+   CARTEL HOMENAJE (Oculto por completo)
 ========================================================= */
 
 .frase-homenaje {
-
-    position:
-        absolute;
-
-    left:
-        clamp(18px, 3vw, 55px);
-
-    top:
-        14px;
-
-    z-index:
-        320;
-
-    width:
-        180px;
-
-    padding:
-        13px 15px 14px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(105,82,57,.76),
-            rgba(57,49,39,.68)
-        );
-
-    color:
-        #ddd2b5;
-
-    border:
-        1px solid rgba(193,166,111,.34);
-
-    box-shadow:
-        4px 8px 22px rgba(0,0,0,.50);
-
-    backdrop-filter:
-        blur(2px);
-
-    transform:
-        rotate(-1.2deg);
+    display: none !important;
 }
-
-
-.frase-homenaje::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    inset:
-        5px;
-
-    border:
-        1px dashed rgba(210,192,151,.22);
-
-    pointer-events:
-        none;
-}
-
-
-.frase-homenaje::after {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    top:
-        -5px;
-
-    right:
-        11px;
-
-    width:
-        10px;
-
-    height:
-        10px;
-
-    border-radius:
-        50%;
-
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            #c5c9c5,
-            #707774 45%,
-            #303735
-        );
-
-    box-shadow:
-        1px 2px 3px rgba(0,0,0,.55);
-}
-
-
-.logo-homenaje {
-
-    position:
-        relative;
-
-    z-index:
-        2;
-
-    display:
-        block;
-
-    width:
-        43px;
-
-    height:
-        43px;
-
-    margin:
-        0 auto 5px;
-
-    object-fit:
-        contain;
-
-    filter:
-        grayscale(.25)
-        sepia(.18)
-        contrast(.95)
-        drop-shadow(
-            1px 2px 2px rgba(0,0,0,.5)
-        );
-}
-
-
-.frase-homenaje p {
-
-    position:
-        relative;
-
-    z-index:
-        2;
-
-    margin:
-        0;
-
-    color:
-        #e0d5bb;
-
-    font-family:
-        Georgia,
-        serif;
-
-    font-size:
-        11px;
-
-    font-style:
-        italic;
-
-    line-height:
-        1.25;
-
-    text-align:
-        center;
-
-    text-shadow:
-        0 1px 2px rgba(0,0,0,.7);
-}
-
-
-.frase-homenaje small {
-
-    position:
-        relative;
-
-    z-index:
-        2;
-
-    display:
-        block;
-
-    margin-top:
-        6px;
-
-    color:
-        rgba(213,201,171,.65);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        6px;
-
-    letter-spacing:
-        .10em;
-
-    text-align:
-        center;
-}
-
 
 /* =========================================================
    CONTENIDO CENTRAL
@@ -1870,411 +1558,311 @@ body {
         );
 }
 
-
 /* =========================================================
-   ÍNDICE
+   ÍNDICE Y BÚSQUEDA (Paneles)
 ========================================================= */
 
 .panel-indice {
-
-    left:
-        9%;
-
-    width:
-        min(500px, 42vw);
+    left: 9%;
+    width: min(500px, 42vw);
 }
 
-
-.panel-indice.activo {
-
-    opacity:
-        1;
-
-    visibility:
-        visible;
-
-    pointer-events:
-        auto;
-
-    transform:
-        translateY(0);
+.panel-indice.activo,
+.panel-busqueda.activo {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
 }
-
-
-/* =========================================================
-   BÚSQUEDA
-========================================================= */
 
 .panel-busqueda {
-
-    right:
-        9%;
-
-    width:
-        min(500px, 42vw);
+    right: 9%;
+    width: min(500px, 42vw);
 }
-
-
-.panel-busqueda.activo {
-
-    opacity:
-        1;
-
-    visibility:
-        visible;
-
-    pointer-events:
-        auto;
-
-    transform:
-        translateY(0);
-}
-
 
 /* =========================================================
    CABECERA PANELES
 ========================================================= */
 
 .cabecera-panel {
-
-    position:
-        relative;
-
-    z-index:
-        3;
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
-
-    gap:
-        15px;
-
-    background:
-        transparent;
-
-    margin:
-        0;
-
-    padding:
-        0;
+    position: relative;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    background: transparent;
+    margin: 0;
+    padding: 0;
 }
-
-
-/* =========================================================
-   ETIQUETA PANEL
-========================================================= */
 
 .etiqueta-panel {
-
-    display:
-        block;
-
-    margin-bottom:
-        5px;
-
-    color:
-        #a99561;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        8px;
-
-    letter-spacing:
-        .20em;
+    display: block;
+    margin-bottom: 5px;
+    color: #DBB060; /* Dorado institucional */
+    font-family: "Courier New", monospace;
+    font-size: 8px;
+    letter-spacing: .20em;
 }
-
-
-/* =========================================================
-   TÍTULO PANEL
-========================================================= */
 
 .cabecera-panel h2 {
-
-    margin:
-        0;
-
-    color:
-        #ddd7c5;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        22px;
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        .03em;
+    margin: 0;
+    color: #edf5f7;
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-shadow: 0 2px 3px rgba(0,0,0,.8);
 }
-
-
-/* =========================================================
-   LÍNEA PANEL
-========================================================= */
 
 .linea-archivo {
-
-    position:
-        relative;
-
-    z-index:
-        3;
-
-    height:
-        1px;
-
-    margin:
-        13px 0;
-
-    background:
-        rgba(184,164,111,.28);
+    position: relative;
+    z-index: 3;
+    height: 1px;
+    margin: 13px 0;
+    background: rgba(219, 176, 96, 0.35); /* Línea dorada */
 }
-
 
 /* =========================================================
    CERRAR PANEL
 ========================================================= */
 
 .cerrar-panel {
-
-    position:
-        relative;
-
-    z-index:
-        5;
-
-    width:
-        30px;
-
-    height:
-        30px;
-
-    flex-shrink:
-        0;
-
-    border:
-        1px solid rgba(184,164,111,.32);
-
-    background:
-        rgba(4,17,23,.55);
-
-    color:
-        #d7ceb6;
-
-    font-size:
-        20px;
-
-    line-height:
-        1;
-
-    cursor:
-        pointer;
-
-    transition:
-        background .2s ease,
-        border-color .2s ease;
+    position: relative;
+    z-index: 5;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: 1px solid rgba(219, 176, 96, 0.4);
+    background: rgba(4, 16, 24, 0.95); /* Fondo sólido y opaco */
+    color: #DBB060;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
 }
-
 
 .cerrar-panel:hover {
-
-    background:
-        rgba(169,149,97,.16);
-
-    border-color:
-        rgba(200,181,128,.55);
+    background: rgba(219, 176, 96, 0.2);
+    border-color: rgba(219, 176, 96, 0.7);
 }
 
-
 /* =========================================================
-   CONTENIDO ÍNDICE
-========================================================= */
-/* =========================================================
-   ÍNDICE — DOS COLUMNAS
+   CONTENIDO ÍNDICE (DOS COLUMNAS)
 ========================================================= */
 
 .contenido-indice {
     position: relative;
     z-index: 3;
-
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
-
     align-items: start;
 }
-
-
-/* =========================================================
-   COLUMNAS
-========================================================= */
 
 .columna-indice {
     min-width: 0;
 }
 
-
-/* =========================================================
-   TÍTULOS DE SECCIÓN
-========================================================= */
-
 .columna-indice .titulo-indice-seccion {
     margin: 0 0 10px 0;
-
     padding: 8px 12px;
-
-    border-left: 3px solid var(--dorado);
-    border-bottom: 1px solid var(--azul-borde);
-
-    background:
-        rgba(0, 0, 0, .18);
-
-    color: var(--dorado);
-
-    font-family:
-        "Courier New",
-        monospace;
-
+    border-left: 3px solid #DBB060;
+    border-bottom: 1px solid rgba(129, 210, 247, 0.25);
+    background: rgba(4, 16, 24, 0.85); /* Fondo sólido para la sección */
+    color: #DBB060;
+    font-family: "Courier New", monospace;
     font-size: 14px;
-
     letter-spacing: 2px;
     text-transform: uppercase;
 }
-
 
 /* =========================================================
    ELEMENTOS DEL ÍNDICE
 ========================================================= */
 
-.columna-indice .item-indice {
+.columna-indice .item-indice,
+.item-indice {
     display: flex;
-
     align-items: center;
-
     width: 100%;
     min-height: 42px;
-
     padding: 9px 12px 9px 24px;
-
     border: 0;
-    border-bottom:
-        1px dotted
-        rgba(184, 164, 111, .22);
-
-    background:
-        transparent !important;
-
-    color:
-        var(--tinta-clara) !important;
-
-    font-family:
-        "Courier New",
-        monospace;
-
+    border-bottom: 1px dotted rgba(219, 176, 96, 0.25);
+    background: rgba(4, 16, 24, 0.75) !important; /* Fondo opaco y sólido */
+    color: #edf5f7 !important;
+    font-family: "Courier New", monospace;
     font-size: 14px;
-
     text-align: left;
-
     cursor: pointer;
-
-    transition:
-        background .15s ease,
-        padding-left .15s ease;
+    transition: background .15s ease, padding-left .15s ease;
 }
-
-
-/* =========================================================
-   FLECHA DOCUMENTAL
-========================================================= */
 
 .columna-indice .item-indice::before {
     content: "›";
-
     margin-right: 10px;
-
-    color: var(--dorado);
-
+    color: #DBB060;
     font-size: 18px;
 }
 
-
-/* =========================================================
-   HOVER
-========================================================= */
-
-.columna-indice .item-indice:hover {
-    background:
-        rgba(169, 149, 97, .10) !important;
-
+.columna-indice .item-indice:hover,
+.item-indice:hover {
+    background: rgba(219, 176, 96, 0.15) !important;
     padding-left: 29px;
+    color: #ffffff !important;
 }
-
-
-/* =========================================================
-   BOTÓN TODOS
-========================================================= */
 
 .columna-menus .boton-todos {
     margin-bottom: 6px;
-
-    border-bottom:
-        1px solid
-        rgba(169, 149, 97, .35);
-
-    color:
-        var(--dorado) !important;
-
+    border-bottom: 1px solid rgba(219, 176, 96, 0.4);
+    color: #DBB060 !important;
     font-weight: bold;
 }
-
-
-/* =========================================================
-   SEPARADOR ANTIGUO
-========================================================= */
 
 .separador-indice {
     display: none;
 }
 
-
-/* =========================================================
-   ÍNDICE VACÍO
-========================================================= */
-
 .columna-indice .indice-vacio {
     margin: 12px 0;
-
-    color:
-        rgba(216, 209, 188, .55);
-
-    font-family:
-        "Courier New",
-        monospace;
-
+    color: rgba(237, 245, 247, 0.55);
+    font-family: "Courier New", monospace;
     font-size: 13px;
-
     font-style: italic;
 }
 
+/* =========================================================
+   CAMPO DE BÚSQUEDA Y TECLADO
+========================================================= */
+
+.campo-busqueda {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 44px;
+    background: rgba(4, 16, 24, 0.95); /* Sólido y opaco */
+    border: 1px solid rgba(219, 176, 96, 0.4);
+    box-shadow: inset 0 0 12px rgba(0,0,0,.4);
+}
+
+.icono-campo {
+    width: 42px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icono-campo svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #DBB060;
+    stroke-width: 1.5;
+}
+
+#buscador {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 5px;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #edf5f7;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+}
+
+#buscador::placeholder {
+    color: rgba(237, 245, 247, 0.45);
+}
+
+.limpiar-busqueda {
+    width: 42px;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: #DBB060;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.teclado-virtual {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.fila-teclas {
+    display: flex;
+    gap: 4px;
+}
+
+.fila-teclas button {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    border: 1px solid rgba(219, 176, 96, 0.3);
+    background: rgba(4, 16, 24, 0.90); /* Teclas con fondo sólido */
+    color: #edf5f7;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.fila-teclas button:hover {
+    background: rgba(219, 176, 96, 0.2);
+    border-color: rgba(219, 176, 96, 0.6);
+}
+
+.fila-teclas button:active {
+    transform: translateY(1px);
+}
+
+.tecla-especial {
+    flex: 1.5 !important;
+}
+
+.tecla-espacio {
+    flex: 0 1 55% !important;
+}
 
 /* =========================================================
-   RESPONSIVE
+   SCROLLBARS DE PANELES Y PANTALLA
+========================================================= */
+
+.panel-inferior::-webkit-scrollbar,
+.pantalla-veteranos::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-inferior::-webkit-scrollbar-thumb,
+.pantalla-veteranos::-webkit-scrollbar-thumb {
+    background: rgba(219, 176, 96, 0.5);
+    border: 1px solid rgba(0,0,0,.4);
+}
+
+.panel-inferior::-webkit-scrollbar-track,
+.pantalla-veteranos::-webkit-scrollbar-track {
+    background: rgba(0,0,0,.4);
+}
+
+.pantalla-veteranos::-webkit-scrollbar-thumb:hover {
+    background: rgba(219, 176, 96, 0.75);
+}
+
+/* =========================================================
+   RESPONSIVE ÍNDICE
 ========================================================= */
 
 @media (max-width: 600px) {
-
     .contenido-indice {
         grid-template-columns: 1fr 1fr;
         gap: 12px;
@@ -2287,9 +1875,7 @@ body {
 
     .columna-indice .item-indice {
         min-height: 38px;
-
         padding: 8px 6px 8px 10px;
-
         font-size: 11px;
     }
 
@@ -2297,364 +1883,7 @@ body {
         margin-right: 5px;
         font-size: 15px;
     }
-
 }
-/* =========================================================
-   ITEMS ÍNDICE
-========================================================= */
-
-.item-indice {
-
-    display:
-        block;
-
-    width:
-        100%;
-
-    padding:
-        9px 10px;
-
-    border:
-        0;
-
-    border-bottom:
-        1px dotted rgba(184,164,111,.22);
-
-    background:
-        transparent !important;
-
-    color:
-        #d5d0bf !important;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    text-align:
-        left;
-
-    cursor:
-        pointer;
-
-    transition:
-        background .15s ease,
-        padding-left .15s ease;
-}
-
-
-.item-indice:hover {
-
-    background:
-        rgba(169,149,97,.10) !important;
-
-    padding-left:
-        15px;
-}
-
-
-/* =========================================================
-   CAMPO DE BÚSQUEDA
-========================================================= */
-
-.campo-busqueda {
-
-    position:
-        relative;
-
-    z-index:
-        3;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    width:
-        100%;
-
-    height:
-        44px;
-
-    background:
-        rgba(3,15,21,.62);
-
-    border:
-        1px solid rgba(184,164,111,.34);
-
-    box-shadow:
-        inset 0 0 12px rgba(0,0,0,.28);
-}
-
-
-.icono-campo {
-
-    width:
-        42px;
-
-    display:
-        flex;
-
-    justify-content:
-        center;
-
-    align-items:
-        center;
-}
-
-
-.icono-campo svg {
-
-    width:
-        19px;
-
-    height:
-        19px;
-
-    fill:
-        none;
-
-    stroke:
-        #b4a46f;
-
-    stroke-width:
-        1.5;
-}
-
-
-#buscador {
-
-    flex:
-        1;
-
-    min-width:
-        0;
-
-    height:
-        100%;
-
-    padding:
-        0 5px;
-
-    border:
-        0;
-
-    outline:
-        none;
-
-    background:
-        transparent;
-
-    color:
-        #e0dac8;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        13px;
-}
-
-
-#buscador::placeholder {
-
-    color:
-        rgba(201,193,169,.50);
-}
-
-
-/* =========================================================
-   LIMPIAR
-========================================================= */
-
-.limpiar-busqueda {
-
-    width:
-        42px;
-
-    height:
-        100%;
-
-    border:
-        0;
-
-    background:
-        transparent;
-
-    color:
-        #b8ad91;
-
-    font-size:
-        20px;
-
-    cursor:
-        pointer;
-}
-
-
-/* =========================================================
-   TECLADO
-========================================================= */
-
-.teclado-virtual {
-
-    position:
-        relative;
-
-    z-index:
-        3;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        4px;
-
-    margin-top:
-        12px;
-}
-
-
-.fila-teclas {
-
-    display:
-        flex;
-
-    gap:
-        4px;
-}
-
-
-.fila-teclas button {
-
-    flex:
-        1;
-
-    min-width:
-        0;
-
-    height:
-        36px;
-
-    border:
-        1px solid rgba(184,164,111,.26);
-
-    background:
-        rgba(4,17,23,.62);
-
-    color:
-        #d5cfbd;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size:
-        10px;
-
-    cursor:
-        pointer;
-
-    transition:
-        background .15s ease,
-        border-color .15s ease;
-}
-
-
-.fila-teclas button:hover {
-
-    background:
-        rgba(169,149,97,.15);
-
-    border-color:
-        rgba(184,164,111,.48);
-}
-
-
-.fila-teclas button:active {
-
-    transform:
-        translateY(1px);
-}
-
-
-.tecla-especial {
-
-    flex:
-        1.5 !important;
-}
-
-
-.tecla-espacio {
-
-    flex:
-        0 1 55% !important;
-}
-
-
-/* =========================================================
-   SCROLL PANELES
-========================================================= */
-
-.panel-inferior::-webkit-scrollbar {
-
-    width:
-        5px;
-}
-
-
-.panel-inferior::-webkit-scrollbar-thumb {
-
-    background:
-        rgba(169,149,97,.40);
-}
-
-
-.panel-inferior::-webkit-scrollbar-track {
-
-    background:
-        rgba(0,0,0,.20);
-}
-
-
-/* =========================================================
-   SCROLL PRINCIPAL
-========================================================= */
-
-.pantalla-veteranos::-webkit-scrollbar {
-
-    width:
-        8px;
-}
-
-
-.pantalla-veteranos::-webkit-scrollbar-track {
-
-    background:
-        rgba(0,0,0,.20);
-}
-
-
-.pantalla-veteranos::-webkit-scrollbar-thumb {
-
-    background:
-        rgba(169,149,97,.45);
-
-    border:
-        1px solid rgba(0,0,0,.25);
-}
-
-
-.pantalla-veteranos::-webkit-scrollbar-thumb:hover {
-
-    background:
-        rgba(169,149,97,.65);
-}
-
 
 /* =========================================================
    HORIZONTAL
@@ -3733,4 +2962,37 @@ body {
 
         transition: none;
     }
+}
+
+/* =========================================================
+   CONTENEDORES DE PANELES Y BARRA INFERIOR (Fondo y Bordes)
+========================================================= */
+
+.panel-busqueda,
+.panel-indice,
+.panel-inferior {
+    background: rgba(4, 16, 24, 0.96) !important;
+    border: 1px solid rgba(219, 176, 96, 0.45) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(0, 0, 0, 0.6) !important;
+}
+
+.barra-navegacion {
+    background: rgba(4, 16, 24, 0.92) !important;
+    border: 1px solid rgba(219, 176, 96, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7) !important;
+}
+
+.barra-navegacion button,
+.barra-navegacion .boton-navegacion,
+.barra-navegacion a {
+    background: transparent !important;
+    color: #DBB060 !important;
+    border-color: rgba(219, 176, 96, 0.3) !important;
+}
+
+.barra-navegacion button:hover,
+.barra-navegacion .boton-navegacion:hover,
+.barra-navegacion a:hover {
+    background: rgba(219, 176, 96, 0.15) !important;
+    color: #ffffff !important;
 }

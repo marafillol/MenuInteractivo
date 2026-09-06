@@ -2314,9 +2314,8 @@
         filter .25s ease;
 }
 
-
 /* =========================================================
-   HOJA / FONDO DE LA FICHA
+   HOJA / FONDO DE LA FICHA (Azul Profundo y Oscuro)
 ========================================================= */
 
 .fondoFicha {
@@ -2325,27 +2324,29 @@
 
     inset: 0;
 
+    /* Tonos de azul mucho más oscuros y sobrios */
     background:
         linear-gradient(
             145deg,
-            #35342f 0%,
-            #292925 48%,
-            #1d1d1a 100%
+            #071923 0%,
+            #041018 48%,
+            #02080c 100%
         );
 
+    /* Borde celeste más sutil y elegante */
     border:
         1px solid
-        rgba(185,171,132,0.45);
+        rgba(129, 210, 247, 0.25);
 
     box-shadow:
 
-        0 8px 18px rgba(0,0,0,0.55),
+        0 8px 18px rgba(0,0,0,0.65),
 
         inset 0 0 0 1px
-        rgba(255,255,255,0.035),
+        rgba(255,255,255,0.04),
 
-        inset 0 0 30px
-        rgba(0,0,0,0.4);
+        inset 0 0 35px
+        rgba(0,0,0,0.7);
 
     z-index: 0;
 }
