@@ -120,11 +120,11 @@
 
 /* Logo del museo, centrado arriba del texto. */
 .logo-museo{
-    width: min(220px, 60vw);
-    height: clamp(80px, 12vw, 130px);
+    width: min(400px, 70vw);
+    height: clamp(120px, 16vw, 170px);
     margin: 0 auto clamp(20px, 4vw, 32px);
 
-    background-image: url("../img/logo-sol.png");
+    background-image: url("../img/logo-museo-islas.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -158,6 +158,8 @@
     font-size: clamp(16px, 2.2vw, 19px);
     line-height: 1.45;
     text-align: center;
+
+    font-style: italic;
 }
 
 #btnComenzar{
