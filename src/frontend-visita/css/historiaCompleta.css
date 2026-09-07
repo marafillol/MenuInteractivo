@@ -108,67 +108,25 @@
 /* =========================================================
    VENTANA DEL EXPEDIENTE
 ========================================================= */
-
 .historia-ventana,
 .expedienteHistoria {
 
     position: absolute;
 
-    width: min(760px, 50vw);
-    height: min(600px, 70vh);
+    width: min(1000px, 75vw);
+    height: min(750px, 82vh);
 
-    min-width: 560px;
-    min-height: 450px;
+    min-width: 700px;
+    min-height: 550px;
 
-    top: 14vh;
+    top: 9vh;
     left: 50%;
-
     transform: translateX(-50%);
 
     overflow: hidden;
-
     pointer-events: auto;
 
     cursor: grab;
-
-    color: var(--hist-tinta);
-
-    background:
-
-        radial-gradient(
-            ellipse at 15% 20%,
-            rgba(255,255,255,.22),
-            transparent 40%
-        ),
-
-        radial-gradient(
-            ellipse at 80% 80%,
-            rgba(74,54,35,.15),
-            transparent 45%
-        ),
-
-        linear-gradient(
-            135deg,
-            #d4c3a0,
-            #c3af88 45%,
-            #b39b73
-        );
-
-    border:
-        1px solid rgba(72,53,35,.65);
-
-    box-shadow:
-
-        0 25px 60px rgba(0,0,0,.45),
-
-        0 8px 20px rgba(57,42,28,.35),
-
-        inset 0 0 35px rgba(76,55,34,.16),
-
-        inset 0 1px rgba(255,255,255,.25);
-
-    animation:
-        aparecerHistoria .25s ease-out;
 }
 
 
@@ -1169,36 +1127,55 @@
 /* =========================================================
    CONTENEDOR GENERAL
 ========================================================= */
-
 #historiaCompleta {
     position: fixed;
     inset: 0;
     z-index: 5000;
+
     opacity: 0;
     visibility: hidden;
+
+    /* IMPORTANTE */
     pointer-events: none;
-    transition: opacity .22s ease, visibility .22s ease;
+
+    transition:
+        opacity .22s ease,
+        visibility .22s ease;
 }
 
 #historiaCompleta.activo {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
+
+    /* Solo la ventana captura clics */
+    pointer-events: none;
 }
-
-
-/* =========================================================
-   FONDO
-========================================================= */
 
 .historia-overlay,
 .historiaFondo {
     position: absolute;
     inset: 0;
-    background: rgba(4, 9, 14, 0.78);
+    background: rgba(4, 9, 14, 0.20);
+    pointer-events: none;
 }
 
+.historia-ventana,
+.expedienteHistoria {
+    position: absolute;
 
+    width: min(1000px, 75vw);
+    height: min(750px, 82vh);
+
+    min-width: 700px;
+    min-height: 550px;
+
+    top: 9vh;
+    left: 50%;
+    transform: translateX(-50%);
+
+    overflow: hidden;
+    pointer-events: auto;
+}
 /* =========================================================
    VENTANA DEL EXPEDIENTE
 ========================================================= */
@@ -1206,13 +1183,17 @@
 .historia-ventana,
 .expedienteHistoria {
     position: absolute;
-    width: min(760px, 50vw);
-    height: min(600px, 70vh);
-    min-width: 560px;
-    min-height: 450px;
-    top: 14vh;
+
+    width: min(1000px, 75vw);
+    height: min(750px, 82vh);
+
+    min-width: 700px;
+    min-height: 550px;
+
+    top: 9vh;
     left: 50%;
     transform: translateX(-50%);
+
     overflow: hidden;
     pointer-events: auto;
     cursor: grab;
@@ -2920,3 +2901,42 @@ body.carrusel-abierto {
     background: #26332d;
     color: #e4d8bc;
 }
+
+.historia-ventana,
+.expedienteHistoria {
+        position: absolute;
+
+        width: min(800px, 75vw);
+        height: min(800px, 82vh);
+
+        min-width: 700px;
+        min-height: 550px;
+
+        top: 9vh;
+        left: 50%;
+        transform: translateX(-50%);
+
+        overflow: hidden;
+        pointer-events: auto;
+
+    .historia-ventana.arrastrando,
+    .expedienteHistoria.arrastrando {
+        cursor: grabbing;
+    }
+
+
+
+    .historia-ventana,
+    .expedienteHistoria {
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+    }
+
+    #historiaCompleta.cerrando .historia-ventana,
+    #historiaCompleta.cerrando .expedienteHistoria {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+
+

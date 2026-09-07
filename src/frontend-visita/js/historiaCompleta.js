@@ -426,42 +426,36 @@ function mostrarHistoriaCompleta() {
 
 function cerrarHistoriaCompleta() {
 
-    const contenedor =
-        document.getElementById(
-            CONFIG_HISTORIA.contenedor
-        );
+    cerrarCarruselMultimedia();
 
+    const contenedor = document.getElementById("historiaCompleta");
+    const ventana = document.querySelector(
+        ".historia-ventana, .expedienteHistoria"
+    );
 
     if (!contenedor) return;
 
+    // Desaparece desde donde está, SIN volver al centro
+    contenedor.classList.remove("activo");
 
-    /*
-     * Si el carrusel está abierto,
-     * primero lo cerramos.
-     */
+    document.body.classList.remove("historia-modal-abierta");
 
-    cerrarCarruselMultimedia();
+    // Esperamos a que termine la transición de cierre
+    setTimeout(() => {
 
+        contenedor.setAttribute("aria-hidden", "true");
 
-    contenedor.classList.remove(
-        "activo"
-    );
+        // AHORA que ya no se ve, la volvemos al centro
+        if (ventana) {
+            ventana.style.left = "50%";
+            ventana.style.top = "14vh";
+            ventana.style.transform = "translateX(-50%)";
+        }
 
+        historiaFichaActual = null;
+        historiaIdActual = null;
 
-    contenedor.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-
-    document.body.classList.remove(
-        "historia-modal-abierta"
-    );
-
-
-    historiaFichaActual = null;
-    historiaIdActual = null;
-
+    }, 250);
 }
 
 
@@ -2396,19 +2390,22 @@ function ocultarEstadoHistoria() {
 // =======================================================
 // ARRASTRAR EXPEDIENTE
 // =======================================================
+// =======================================================
+// ARRASTRAR EXPEDIENTE
+// =======================================================
 
 function hacerHistoriaMovible() {
 
     const ventana =
         document.querySelector(
-            ".expedienteHistoria"
+            ".historia-ventana, .expedienteHistoria"
         );
 
 
     if (!ventana) {
 
         console.warn(
-            "[HISTORIA] No se encontró .expedienteHistoria"
+            "[HISTORIA] No se encontró la ventana de historia."
         );
 
         return;
@@ -2422,6 +2419,10 @@ function hacerHistoriaMovible() {
     let offsetY = 0;
 
 
+    // =========================================
+    // INICIAR MOVIMIENTO
+    // =========================================
+
     ventana.addEventListener(
         "mousedown",
         iniciarMovimiento
@@ -2430,9 +2431,10 @@ function hacerHistoriaMovible() {
 
     function iniciarMovimiento(evento) {
 
+        // No arrastrar al interactuar con controles
         if (
             evento.target.closest(
-                ".cerrarHistoria"
+                "button, a, input, textarea, select, video, audio"
             )
         ) {
 
@@ -2441,6 +2443,7 @@ function hacerHistoriaMovible() {
         }
 
 
+        // No arrastrar desde las fichas relacionadas
         if (
             evento.target.closest(
                 ".historia-relacionada"
@@ -2452,20 +2455,10 @@ function hacerHistoriaMovible() {
         }
 
 
+        // No arrastrar desde multimedia
         if (
             evento.target.closest(
                 ".historia-media"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        if (
-            evento.target.closest(
-                "button, a, input, video, audio"
             )
         ) {
 
@@ -2478,16 +2471,8 @@ function hacerHistoriaMovible() {
             ventana.getBoundingClientRect();
 
 
-        offsetX =
-            evento.clientX -
-            rect.left;
-
-
-        offsetY =
-            evento.clientY -
-            rect.top;
-
-
+        // Convertimos la posición actual
+        // en coordenadas absolutas reales
         ventana.style.transform =
             "none";
 
@@ -2498,6 +2483,16 @@ function hacerHistoriaMovible() {
 
         ventana.style.top =
             rect.top + "px";
+
+
+        offsetX =
+            evento.clientX -
+            rect.left;
+
+
+        offsetY =
+            evento.clientY -
+            rect.top;
 
 
         moviendo = true;
@@ -2516,6 +2511,10 @@ function hacerHistoriaMovible() {
 
     }
 
+
+    // =========================================
+    // MOVER
+    // =========================================
 
     document.addEventListener(
         "mousemove",
@@ -2546,46 +2545,42 @@ function hacerHistoriaMovible() {
             ventana.offsetHeight;
 
 
+        // =====================================
+        // LÍMITES
+        // =====================================
+
         const margen =
-            25;
+            20;
 
 
-        const minimoX =
-            margen -
-            ancho +
-            120;
-
-
-        const maximoX =
+        const maxX =
             window.innerWidth -
-            120;
+            ancho -
+            margen;
 
 
-        const minimoY =
-            0;
-
-
-        const maximoY =
+        const maxY =
             window.innerHeight -
-            70;
+            alto -
+            margen;
 
 
         x =
             Math.max(
-                minimoX,
+                margen,
                 Math.min(
                     x,
-                    maximoX
+                    maxX
                 )
             );
 
 
         y =
             Math.max(
-                minimoY,
+                margen,
                 Math.min(
                     y,
-                    maximoY
+                    maxY
                 )
             );
 
@@ -2599,6 +2594,10 @@ function hacerHistoriaMovible() {
 
     }
 
+
+    // =========================================
+    // TERMINAR MOVIMIENTO
+    // =========================================
 
     document.addEventListener(
         "mouseup",
