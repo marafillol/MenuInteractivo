@@ -1094,13 +1094,14 @@ body {
    ÍNDICE Y BÚSQUEDA
    ========================================================= */
 
-.panel-indice {
-    left: 9%;
-    width: min(500px, 42vw);
-}
 
 .panel-busqueda {
-    right: 9%;
+    right: 5%;
+    width: min(500px, 42vw);
+    max-width: 90vw;
+}
+.panel-indice {
+    left: 5%;
     width: min(500px, 42vw);
 }
 
@@ -1503,6 +1504,37 @@ body {
 
 @media (min-width: 601px) and (orientation: landscape) {
 
+    .panel-indice {
+        left: 6%;
+        width: min(560px, 80vw);
+    }
+
+    .panel-busqueda {
+        right: 6%;
+    }
+
+    /* Si el panel ya no tiene espacio suficiente,
+       el índice pasa a una sola columna */
+    .contenido-indice {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 28px;
+    }
+}
+
+
+/* Ventana angosta: una sola columna */
+@media (min-width: 601px) and (max-width: 1000px) and (orientation: landscape) {
+
+    .panel-indice {
+        width: 70vw;
+    }
+
+    .contenido-indice {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+
     .encabezado-veteranos {
         width: min(1180px, 94vw);
     }
@@ -1524,13 +1556,6 @@ body {
             );
     }
 
-    .panel-indice {
-        left: 7%;
-    }
-
-    .panel-busqueda {
-        right: 7%;
-    }
 }
 
 
@@ -1597,7 +1622,7 @@ body {
                 minmax(0, 1fr)
             );
 
-        gap: 18px;
+        gap: 8px;
 
         padding:
             5px 2px 25px;
@@ -2272,7 +2297,7 @@ body {
     .contenido-indice {
         grid-template-columns: 1fr;
 
-        gap: 18px;
+        gap: 8px;
     }
 
     .columna-indice .titulo-indice-seccion {
@@ -2399,4 +2424,31 @@ body {
 
         font-size: 12px;
     }
+}
+
+
+/* Ocultar barra de desplazamiento pero mantener el scroll */
+.panel-indice,
+.panel-busqueda {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* Internet Explorer / Edge antiguo */
+}
+
+.panel-indice::-webkit-scrollbar,
+.panel-busqueda::-webkit-scrollbar {
+    display: none;                /* Chrome / Edge / Safari */
+}
+
+
+.panel-busqueda {
+    box-sizing: border-box;
+    width: 500px;
+    max-width: 90vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.panel-busqueda *,
+.panel-indice * {
+    box-sizing: border-box;
 }
