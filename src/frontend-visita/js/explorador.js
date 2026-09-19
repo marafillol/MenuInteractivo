@@ -291,8 +291,6 @@ async function inicializarExplorador() {
                     })
                 );
 
-                buscador.focus();
-
             });
 
         });
