@@ -2218,3 +2218,185 @@ body {
     transition: none !important;
     animation: none !important;
 }
+
+
+/* =========================================================
+   ÍNDICE Y BÚSQUEDA · TELÉFONO
+   ========================================================= */
+
+@media (max-width: 550px) {
+
+    /* -------------------------
+       PANEL GENERAL
+       ------------------------- */
+
+    .panel-inferior {
+        width: 94vw;
+
+        bottom: 78px;
+
+        max-height: 72vh;
+
+        padding: 22px 16px;
+    }
+
+
+    /* -------------------------
+       CABECERA
+       ------------------------- */
+
+    .etiqueta-panel {
+        font-size: 10px;
+        letter-spacing: .16em;
+
+        margin-bottom: 7px;
+    }
+
+    .cabecera-panel h2 {
+        font-size: 22px;
+        line-height: 1.15;
+    }
+
+    .cerrar-panel {
+        width: 38px;
+        height: 38px;
+
+        font-size: 24px;
+    }
+
+
+    /* -------------------------
+       ÍNDICE
+       ------------------------- */
+
+    .contenido-indice {
+        grid-template-columns: 1fr;
+
+        gap: 18px;
+    }
+
+    .columna-indice .titulo-indice-seccion {
+        margin-bottom: 9px;
+
+        padding: 11px 13px;
+
+        font-size: 15px;
+
+        letter-spacing: 1.5px;
+    }
+
+    .columna-indice .item-indice,
+    .item-indice {
+        min-height: 50px;
+
+        padding: 12px 13px 12px 18px;
+
+        font-size: 15px;
+
+        line-height: 1.25;
+    }
+
+    .columna-indice .item-indice::before {
+        margin-right: 11px;
+
+        font-size: 21px;
+    }
+
+    .columna-indice .item-indice:hover,
+    .item-indice:hover {
+        padding-left: 22px;
+    }
+
+    .columna-indice .indice-vacio {
+        font-size: 14px;
+    }
+
+
+    /* -------------------------
+       BUSCADOR
+       ------------------------- */
+
+    .campo-busqueda {
+        height: 52px;
+    }
+
+    .icono-campo {
+        width: 48px;
+    }
+
+    .icono-campo svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    #buscador {
+        padding: 0 8px;
+
+        font-size: 16px;
+    }
+
+    #buscador::placeholder {
+        font-size: 14px;
+    }
+
+    .limpiar-busqueda {
+        width: 48px;
+
+        font-size: 23px;
+    }
+
+
+    /* -------------------------
+       BOTÓN BUSCAR
+       ------------------------- */
+
+    .accion-busqueda {
+        margin: 16px 0 18px;
+
+        gap: 8px;
+    }
+
+    .boton-ejecutar-busqueda {
+        min-width: 210px;
+        height: 46px;
+
+        padding: 0 16px;
+
+        font-size: 11px;
+
+        letter-spacing: .12em;
+    }
+
+    .icono-buscar {
+        width: 20px;
+        height: 20px;
+
+        font-size: 20px;
+    }
+
+    .icono-buscar svg {
+        width: 18px;
+        height: 18px;
+    }
+
+
+    /* -------------------------
+       TECLADO VIRTUAL
+       ------------------------- */
+
+    .teclado-virtual {
+        gap: 5px;
+
+        margin-top: 14px;
+    }
+
+    .fila-teclas {
+        gap: 5px;
+    }
+
+    .fila-teclas button {
+        height: 42px;
+
+        font-size: 12px;
+    }
+}
