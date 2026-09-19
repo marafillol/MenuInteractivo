@@ -4,7 +4,6 @@
 // =======================================================
 
 const CONFIG_HISTORIA = {
-
     api: "/api/public/fichas",
 
     contenedor: "historiaCompleta",
@@ -16,7 +15,6 @@ const CONFIG_HISTORIA = {
     etiquetas: "etiquetasHistoria",
     multimedia: "multimediaHistoria",
     relacionadas: "relacionadasHistoria"
-
 };
 
 
@@ -47,7 +45,6 @@ function iniciarHistoriaCompleta() {
 
     prepararEventosHistoria();
     prepararCarruselMultimedia();
-    hacerHistoriaMovible();
 
     console.log("[HISTORIA] Inicialización completa.");
 
@@ -77,16 +74,18 @@ function prepararEventosHistoria() {
     }
 
 
+    // Cerrar al hacer click fuera de la ventana
+
     contenedor.addEventListener(
         "click",
         evento => {
 
-            if (
-                evento.target === contenedor ||
-                evento.target.classList.contains(
-                    "historiaFondo"
-                )
-            ) {
+            const ventana =
+                evento.target.closest(
+                    ".historia-ventana, .expedienteHistoria"
+                );
+
+            if (!ventana) {
 
                 cerrarHistoriaCompleta();
 
@@ -96,20 +95,19 @@ function prepararEventosHistoria() {
     );
 
 
+    // Teclado
+
     document.addEventListener(
         "keydown",
         evento => {
-
-            /*
-             * Si el carrusel está abierto,
-             * las flechas controlan el multimedia.
-             */
 
             const carrusel =
                 document.getElementById(
                     "carruselMultimedia"
                 );
 
+
+            // Controles del carrusel
 
             if (
                 carrusel &&
@@ -123,12 +121,14 @@ function prepararEventosHistoria() {
 
                 }
 
+
                 if (evento.key === "ArrowLeft") {
 
                     multimediaAnterior();
                     return;
 
                 }
+
 
                 if (evento.key === "ArrowRight") {
 
@@ -139,6 +139,8 @@ function prepararEventosHistoria() {
 
             }
 
+
+            // Cerrar historia
 
             if (
                 evento.key === "Escape"
@@ -204,6 +206,10 @@ async function abrirHistoriaCompleta(idFicha) {
 
     historiaIdActual = idFicha;
 
+
+    // ---------------------------------------------------
+    // CAMBIAR DE FICHA CON EL EXPEDIENTE YA ABIERTO
+    // ---------------------------------------------------
 
     if (expedienteYaAbierto) {
 
@@ -281,6 +287,7 @@ async function abrirHistoriaCompleta(idFicha) {
 
             mostrarHistoriaError();
 
+
             if (cuerpo) {
 
                 cuerpo.classList.remove(
@@ -291,10 +298,15 @@ async function abrirHistoriaCompleta(idFicha) {
 
         }
 
+
         return;
 
     }
 
+
+    // ---------------------------------------------------
+    // ABRIR NUEVO EXPEDIENTE
+    // ---------------------------------------------------
 
     mostrarHistoriaCarga();
     mostrarHistoriaCompleta();
@@ -428,34 +440,35 @@ function cerrarHistoriaCompleta() {
 
     cerrarCarruselMultimedia();
 
-    const contenedor = document.getElementById("historiaCompleta");
-    const ventana = document.querySelector(
-        ".historia-ventana, .expedienteHistoria"
-    );
+
+    const contenedor =
+        document.getElementById(
+            CONFIG_HISTORIA.contenedor
+        );
+
 
     if (!contenedor) return;
 
-    // Desaparece desde donde está, SIN volver al centro
-    contenedor.classList.remove("activo");
 
-    document.body.classList.remove("historia-modal-abierta");
+    contenedor.classList.remove(
+        "activo"
+    );
 
-    // Esperamos a que termine la transición de cierre
-    setTimeout(() => {
 
-        contenedor.setAttribute("aria-hidden", "true");
+    contenedor.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 
-        // AHORA que ya no se ve, la volvemos al centro
-        if (ventana) {
-            ventana.style.left = "50%";
-            ventana.style.top = "14vh";
-            ventana.style.transform = "translateX(-50%)";
-        }
 
-        historiaFichaActual = null;
-        historiaIdActual = null;
+    document.body.classList.remove(
+        "historia-modal-abierta"
+    );
 
-    }, 250);
+
+    historiaFichaActual = null;
+    historiaIdActual = null;
+
 }
 
 
@@ -1062,9 +1075,9 @@ function crearElementoMultimedia(
         ).toLowerCase();
 
 
-    /*
-     * IMAGEN
-     */
+    // ---------------------------------------------------
+    // IMAGEN
+    // ---------------------------------------------------
 
     if (
         tipo.includes("image") ||
@@ -1098,9 +1111,9 @@ function crearElementoMultimedia(
     }
 
 
-    /*
-     * VIDEO
-     */
+    // ---------------------------------------------------
+    // VIDEO
+    // ---------------------------------------------------
 
     else if (
         tipo.includes("video") ||
@@ -1132,9 +1145,9 @@ function crearElementoMultimedia(
     }
 
 
-    /*
-     * AUDIO
-     */
+    // ---------------------------------------------------
+    // AUDIO
+    // ---------------------------------------------------
 
     else if (
         tipo.includes("audio") ||
@@ -1162,9 +1175,9 @@ function crearElementoMultimedia(
     }
 
 
-    /*
-     * DOCUMENTO
-     */
+    // ---------------------------------------------------
+    // DOCUMENTO
+    // ---------------------------------------------------
 
     else {
 
@@ -1189,9 +1202,9 @@ function crearElementoMultimedia(
     }
 
 
-    /*
-     * INFORMACIÓN
-     */
+    // ---------------------------------------------------
+    // INFORMACIÓN
+    // ---------------------------------------------------
 
     const info =
         document.createElement(
@@ -1253,9 +1266,9 @@ function crearElementoMultimedia(
     );
 
 
-    /*
-     * CLICK
-     */
+    // ---------------------------------------------------
+    // CLICK
+    // ---------------------------------------------------
 
     tarjeta.addEventListener(
         "click",
@@ -1574,9 +1587,9 @@ function pintarCarruselActual() {
         ).toLowerCase();
 
 
-    /*
-     * IMAGEN
-     */
+    // ---------------------------------------------------
+    // IMAGEN
+    // ---------------------------------------------------
 
     if (
         tipo.includes("image") ||
@@ -1610,9 +1623,9 @@ function pintarCarruselActual() {
     }
 
 
-    /*
-     * VIDEO
-     */
+    // ---------------------------------------------------
+    // VIDEO
+    // ---------------------------------------------------
 
     else if (
         tipo.includes("video") ||
@@ -1652,9 +1665,9 @@ function pintarCarruselActual() {
     }
 
 
-    /*
-     * AUDIO
-     */
+    // ---------------------------------------------------
+    // AUDIO
+    // ---------------------------------------------------
 
     else if (
         tipo.includes("audio") ||
@@ -1716,9 +1729,9 @@ function pintarCarruselActual() {
     }
 
 
-    /*
-     * DOCUMENTO
-     */
+    // ---------------------------------------------------
+    // DOCUMENTO
+    // ---------------------------------------------------
 
     else {
 
@@ -1754,6 +1767,10 @@ function pintarCarruselActual() {
     }
 
 
+    // ---------------------------------------------------
+    // CONTADOR
+    // ---------------------------------------------------
+
     if (contador) {
 
         contador.textContent =
@@ -1761,6 +1778,10 @@ function pintarCarruselActual() {
 
     }
 
+
+    // ---------------------------------------------------
+    // DESCRIPCIÓN
+    // ---------------------------------------------------
 
     if (descripcion) {
 
@@ -1803,11 +1824,6 @@ function actualizarFlechasCarrusel() {
     const cantidad =
         multimediaActual.length;
 
-
-    /*
-     * Si hay uno solo,
-     * no necesitamos flechas.
-     */
 
     anterior.style.visibility =
         cantidad > 1
@@ -1987,12 +2003,6 @@ function esAudio(ruta) {
 
 
 // =======================================================
-// RELACIONADAS
-// =======================================================
-// =======================================================
-// RELACIONADAS
-// =======================================================
-// =======================================================
 // FICHAS RELACIONADAS
 // =======================================================
 
@@ -2003,22 +2013,30 @@ function pintarRelacionadas(ficha) {
             CONFIG_HISTORIA.relacionadas
         );
 
+
     if (!contenedor) return;
 
-    // Limpiar contenido anterior
+
     contenedor.innerHTML = "";
+
 
     if (
         !Array.isArray(ficha.relacionadas) ||
         ficha.relacionadas.length === 0
     ) {
 
-        contenedor.classList.add("oculto");
+        contenedor.classList.add(
+            "oculto"
+        );
 
         return;
+
     }
 
-    contenedor.classList.remove("oculto");
+
+    contenedor.classList.remove(
+        "oculto"
+    );
 
 
     ficha.relacionadas.forEach(
@@ -2027,14 +2045,13 @@ function pintarRelacionadas(ficha) {
             if (!relacionada) return;
 
 
-            // =========================================
             // TARJETA
-            // =========================================
 
             const tarjeta =
                 document.createElement(
                     "article"
                 );
+
 
             tarjeta.className =
                 "historia-relacionada";
@@ -2055,26 +2072,28 @@ function pintarRelacionadas(ficha) {
             }
 
 
-            // =========================================
             // IMAGEN
-            // =========================================
 
             const imagen =
                 document.createElement(
                     "img"
                 );
 
+
             imagen.className =
                 "historia-relacionada-imagen";
+
 
             imagen.src =
                 obtenerImagen(
                     relacionada
                 );
 
+
             imagen.alt =
                 relacionada.titulo ||
                 "Ficha relacionada";
+
 
             imagen.loading =
                 "lazy";
@@ -2094,6 +2113,7 @@ function pintarRelacionadas(ficha) {
 
                     }
 
+
                     imagen.src =
                         "/imagenes/default.png";
 
@@ -2106,39 +2126,36 @@ function pintarRelacionadas(ficha) {
             );
 
 
-            // =========================================
-            // ÚNICA LÍNEA DIVISORIA
-            // =========================================
+            // LÍNEA DIVISORIA
 
             const divisor =
                 document.createElement(
                     "div"
                 );
 
+
             divisor.className =
                 "historia-relacionada-divisor";
+
 
             tarjeta.appendChild(
                 divisor
             );
 
 
-            // =========================================
             // CONTENIDO
-            // =========================================
 
             const contenido =
                 document.createElement(
                     "div"
                 );
 
+
             contenido.className =
                 "historia-relacionada-contenido";
 
 
-            // =========================================
             // RELACIÓN
-            // =========================================
 
             if (
                 relacionada.tipo_relacion
@@ -2149,12 +2166,15 @@ function pintarRelacionadas(ficha) {
                         "span"
                     );
 
+
                 relacion.className =
                     "historia-relacionada-relacion";
+
 
                 relacion.textContent =
                     "RELACIÓN · " +
                     relacionada.tipo_relacion;
+
 
                 contenido.appendChild(
                     relacion
@@ -2163,30 +2183,29 @@ function pintarRelacionadas(ficha) {
             }
 
 
-            // =========================================
             // TÍTULO
-            // =========================================
 
             const titulo =
                 document.createElement(
                     "h3"
                 );
 
+
             titulo.className =
                 "historia-relacionada-titulo";
+
 
             titulo.textContent =
                 relacionada.titulo ||
                 "Ficha sin título";
+
 
             contenido.appendChild(
                 titulo
             );
 
 
-            // =========================================
             // MENÚ
-            // =========================================
 
             if (
                 relacionada.menu
@@ -2197,11 +2216,14 @@ function pintarRelacionadas(ficha) {
                         "span"
                     );
 
+
                 menu.className =
                     "historia-relacionada-menu";
 
+
                 menu.textContent =
                     relacionada.menu;
+
 
                 contenido.appendChild(
                     menu
@@ -2210,20 +2232,21 @@ function pintarRelacionadas(ficha) {
             }
 
 
-            // =========================================
             // BOTÓN
-            // =========================================
 
             const boton =
                 document.createElement(
                     "button"
                 );
 
+
             boton.type =
                 "button";
 
+
             boton.className =
                 "historia-relacionada-ver";
+
 
             boton.textContent =
                 "VER FICHA →";
@@ -2261,9 +2284,7 @@ function pintarRelacionadas(ficha) {
             );
 
 
-            // =========================================
             // CLICK EN TODA LA TARJETA
-            // =========================================
 
             tarjeta.addEventListener(
                 "click",
@@ -2292,6 +2313,7 @@ function pintarRelacionadas(ficha) {
     );
 
 }
+
 
 // =======================================================
 // ESTADOS
@@ -2383,245 +2405,6 @@ function ocultarEstadoHistoria() {
     estado.classList.add(
         "oculto"
     );
-
-}
-
-
-// =======================================================
-// ARRASTRAR EXPEDIENTE
-// =======================================================
-// =======================================================
-// ARRASTRAR EXPEDIENTE
-// =======================================================
-
-function hacerHistoriaMovible() {
-
-    const ventana =
-        document.querySelector(
-            ".historia-ventana, .expedienteHistoria"
-        );
-
-
-    if (!ventana) {
-
-        console.warn(
-            "[HISTORIA] No se encontró la ventana de historia."
-        );
-
-        return;
-
-    }
-
-
-    let moviendo = false;
-
-    let offsetX = 0;
-    let offsetY = 0;
-
-
-    // =========================================
-    // INICIAR MOVIMIENTO
-    // =========================================
-
-    ventana.addEventListener(
-        "mousedown",
-        iniciarMovimiento
-    );
-
-
-    function iniciarMovimiento(evento) {
-
-        // No arrastrar al interactuar con controles
-        if (
-            evento.target.closest(
-                "button, a, input, textarea, select, video, audio"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        // No arrastrar desde las fichas relacionadas
-        if (
-            evento.target.closest(
-                ".historia-relacionada"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        // No arrastrar desde multimedia
-        if (
-            evento.target.closest(
-                ".historia-media"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        const rect =
-            ventana.getBoundingClientRect();
-
-
-        // Convertimos la posición actual
-        // en coordenadas absolutas reales
-        ventana.style.transform =
-            "none";
-
-
-        ventana.style.left =
-            rect.left + "px";
-
-
-        ventana.style.top =
-            rect.top + "px";
-
-
-        offsetX =
-            evento.clientX -
-            rect.left;
-
-
-        offsetY =
-            evento.clientY -
-            rect.top;
-
-
-        moviendo = true;
-
-
-        ventana.classList.add(
-            "arrastrando"
-        );
-
-
-        document.body.style.userSelect =
-            "none";
-
-
-        evento.preventDefault();
-
-    }
-
-
-    // =========================================
-    // MOVER
-    // =========================================
-
-    document.addEventListener(
-        "mousemove",
-        moverVentana
-    );
-
-
-    function moverVentana(evento) {
-
-        if (!moviendo) return;
-
-
-        let x =
-            evento.clientX -
-            offsetX;
-
-
-        let y =
-            evento.clientY -
-            offsetY;
-
-
-        const ancho =
-            ventana.offsetWidth;
-
-
-        const alto =
-            ventana.offsetHeight;
-
-
-        // =====================================
-        // LÍMITES
-        // =====================================
-
-        const margen =
-            20;
-
-
-        const maxX =
-            window.innerWidth -
-            ancho -
-            margen;
-
-
-        const maxY =
-            window.innerHeight -
-            alto -
-            margen;
-
-
-        x =
-            Math.max(
-                margen,
-                Math.min(
-                    x,
-                    maxX
-                )
-            );
-
-
-        y =
-            Math.max(
-                margen,
-                Math.min(
-                    y,
-                    maxY
-                )
-            );
-
-
-        ventana.style.left =
-            x + "px";
-
-
-        ventana.style.top =
-            y + "px";
-
-    }
-
-
-    // =========================================
-    // TERMINAR MOVIMIENTO
-    // =========================================
-
-    document.addEventListener(
-        "mouseup",
-        terminarMovimiento
-    );
-
-
-    function terminarMovimiento() {
-
-        if (!moviendo) return;
-
-
-        moviendo = false;
-
-
-        ventana.classList.remove(
-            "arrastrando"
-        );
-
-
-        document.body.style.userSelect =
-            "";
-
-    }
 
 }
 

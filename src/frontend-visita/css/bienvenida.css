@@ -177,7 +177,6 @@
     text-shadow: none;
 
     cursor: pointer;
-    transition: color .2s ease, background .2s ease, outline-offset .2s ease;
 }
 
 #btnComenzar:hover,

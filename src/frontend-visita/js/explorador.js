@@ -4,25 +4,9 @@
 // Museo Malvinas
 // Veteranos de Malvinas
 //
-// FLUJO:
-//
-// BASE DE DATOS
-//      ↓
-// /api/public/fichas
-//      ↓
-// explorador.js
-//      ↓
-// #contenedorFichas
-//      ↓
-// tarjetaFicha
-//      ↓
-// historiaCompleta.js
-//
-// IMPORTANTE:
-// Este archivo NO depende de fichas.js para dibujar
-// las tarjetas del explorador.
+// Carga las fichas desde la API pública, las muestra,
+// permite buscar/filtrar y abre historiaCompleta.js.
 // =======================================================
-
 
 // =======================================================
 // ESTADO
@@ -32,26 +16,13 @@ let fichasExplorador = [];
 let menusExplorador = [];
 let etiquetasExplorador = [];
 
-
-// =======================================================
-// MOSTRAR EXPLORADOR
-// =======================================================
-// =======================================================
-// MOSTRAR EXPLORADOR
-// Museo Malvinas
-// =======================================================
-// =======================================================
-// MOSTRAR EXPLORADOR
-// Museo Malvinas
-// =======================================================
 // =======================================================
 // MOSTRAR EXPLORADOR
 // =======================================================
 
 async function mostrarExplorador() {
 
-    const app =
-        document.getElementById("app");
+    const app = document.getElementById("app");
 
     if (!app) {
         console.error("[explorador] No existe #app");
@@ -72,71 +43,11 @@ async function mostrarExplorador() {
         const html =
             await respuesta.text();
 
+        // Cargar directamente la vista
+        app.innerHTML = html;
 
-        // =================================================
-        // SALIDA SUAVE DE LA VISTA ACTUAL
-        // =================================================
-
-        app.classList.add("vista-saliendo");
-
-        await new Promise(resolve =>
-            setTimeout(resolve, 180)
-        );
-
-
-        // =================================================
-        // CAMBIAR CONTENIDO
-        // =================================================
-
-        app.innerHTML =
-            html;
-
-
-        // =================================================
-        // PREPARAR ENTRADA DEL EXPLORADOR
-        // =================================================
-
-        app.classList.remove("vista-saliendo");
-        app.classList.add("vista-entrando");
-
-
-        // =================================================
-        // INICIALIZAR
-        // =================================================
-
+        // Inicializar
         await inicializarExplorador();
-
-
-        // =================================================
-        // ACTIVAR ENTRADA
-        // =================================================
-
-        requestAnimationFrame(() => {
-
-            requestAnimationFrame(() => {
-
-                app.classList.add(
-                    "vista-entrada-activa"
-                );
-
-            });
-
-        });
-
-
-        // =================================================
-        // LIMPIAR CLASE
-        // =================================================
-
-        setTimeout(() => {
-
-            app.classList.remove(
-                "vista-entrando",
-                "vista-entrada-activa"
-            );
-
-        }, 500);
-
 
     }
     catch (error) {
@@ -144,12 +55,6 @@ async function mostrarExplorador() {
         console.error(
             "[explorador] Error cargando la vista:",
             error
-        );
-
-        app.classList.remove(
-            "vista-saliendo",
-            "vista-entrando",
-            "vista-entrada-activa"
         );
 
         app.innerHTML = `
@@ -161,9 +66,7 @@ async function mostrarExplorador() {
     }
 }
 
-
-window.mostrarExplorador =
-    mostrarExplorador;
+window.mostrarExplorador = mostrarExplorador;
 
 // =======================================================
 // INICIALIZAR EXPLORADOR
@@ -171,300 +74,168 @@ window.mostrarExplorador =
 
 async function inicializarExplorador() {
 
-    console.log(
-        "[explorador] Inicializando..."
-    );
-
-
-    // ===================================================
-    // CARGAR FICHAS DESDE LA BASE
-    // ===================================================
+    console.log("[explorador] Inicializando...");
 
     await cargarFichasExplorador();
 
-
-    // ===================================================
-    // ELEMENTOS
-    // ===================================================
-
     const btnIndice =
-        document.getElementById(
-            "btnIndice"
-        );
-
+        document.getElementById("btnIndice");
 
     const btnBuscar =
-        document.getElementById(
-            "btnBuscar"
-        );
-
+        document.getElementById("btnBuscar");
 
     const panelIndice =
-        document.getElementById(
-            "panelIndice"
-        );
-
+        document.getElementById("panelIndice");
 
     const panelBusqueda =
-        document.getElementById(
-            "panelBusqueda"
-        );
-
+        document.getElementById("panelBusqueda");
 
     const cerrarIndice =
-        document.getElementById(
-            "cerrarIndice"
-        );
-
+        document.getElementById("cerrarIndice");
 
     const cerrarBusqueda =
-        document.getElementById(
-            "cerrarBusqueda"
-        );
-
+        document.getElementById("cerrarBusqueda");
 
     const buscador =
-        document.getElementById(
-            "buscador"
-        );
+        document.getElementById("buscador");
 
     const ejecutarBusqueda =
-        document.getElementById(
-            "ejecutarBusqueda"
-        );
-
+        document.getElementById("ejecutarBusqueda");
 
     const limpiarBusqueda =
-        document.getElementById(
-            "limpiarBusqueda"
-        );
-
+        document.getElementById("limpiarBusqueda");
 
     const teclado =
-        document.getElementById(
-            "tecladoVirtual"
-        );
-
+        document.getElementById("tecladoVirtual");
 
     // ===================================================
     // ÍNDICE
     // ===================================================
 
-    if (btnIndice) {
+    btnIndice?.addEventListener("click", evento => {
 
-        btnIndice.addEventListener(
-            "click",
-            evento => {
+        evento.stopPropagation();
 
-                evento.stopPropagation();
+        cerrarPaneles();
 
-                cerrarPaneles();
-
-
-                panelIndice?.classList.add(
-                    "activo"
-                );
-
-
-                panelIndice?.setAttribute(
-                    "aria-hidden",
-                    "false"
-                );
-
-
-                renderizarIndice();
-
-            }
+        panelIndice?.classList.add("activo");
+        panelIndice?.setAttribute(
+            "aria-hidden",
+            "false"
         );
 
-    }
+        renderizarIndice();
 
+    });
 
     // ===================================================
     // BUSCAR
     // ===================================================
 
-    if (btnBuscar) {
+    btnBuscar?.addEventListener("click", evento => {
 
-        btnBuscar.addEventListener(
-            "click",
-            evento => {
+        evento.stopPropagation();
 
-                evento.stopPropagation();
+        cerrarPaneles();
 
-                cerrarPaneles();
-
-
-                panelBusqueda?.classList.add(
-                    "activo"
-                );
-
-
-                panelBusqueda?.setAttribute(
-                    "aria-hidden",
-                    "false"
-                );
-
-
-                setTimeout(
-                    () => {
-
-                        buscador?.focus();
-
-                    },
-                    100
-                );
-
-            }
+        panelBusqueda?.classList.add("activo");
+        panelBusqueda?.setAttribute(
+            "aria-hidden",
+            "false"
         );
 
-    }
+        buscador?.focus();
 
+    });
 
     // ===================================================
     // CERRAR ÍNDICE
     // ===================================================
 
-    if (cerrarIndice) {
+    cerrarIndice?.addEventListener("click", evento => {
 
-        cerrarIndice.addEventListener(
-            "click",
-            evento => {
+        evento.stopPropagation();
 
-                evento.stopPropagation();
-
-
-                panelIndice?.classList.remove(
-                    "activo"
-                );
-
-
-                panelIndice?.setAttribute(
-                    "aria-hidden",
-                    "true"
-                );
-
-            }
+        panelIndice?.classList.remove("activo");
+        panelIndice?.setAttribute(
+            "aria-hidden",
+            "true"
         );
 
-    }
-
+    });
 
     // ===================================================
-    // CERRAR BUSCADOR
+    // CERRAR BÚSQUEDA
     // ===================================================
 
-    if (cerrarBusqueda) {
+    cerrarBusqueda?.addEventListener("click", evento => {
 
-        cerrarBusqueda.addEventListener(
-            "click",
-            evento => {
+        evento.stopPropagation();
 
-                evento.stopPropagation();
+        if (buscador) {
+            buscador.value = "";
+        }
 
-                if (buscador) {
-                    buscador.value = "";
-                }
+        mostrarTodasLasFichas();
+        cerrarPaneles();
 
-                mostrarTodasLasFichas();
-
-                cerrarPaneles();
-
-            }
-        );
-
-    }
-
+    });
 
     // ===================================================
     // LIMPIAR BÚSQUEDA
     // ===================================================
 
-    if (limpiarBusqueda) {
+    limpiarBusqueda?.addEventListener("click", evento => {
 
-        limpiarBusqueda.addEventListener(
-            "click",
-            evento => {
+        evento.stopPropagation();
 
-                evento.stopPropagation();
+        if (!buscador) {
+            return;
+        }
 
+        buscador.value = "";
 
-                if (!buscador) {
+        mostrarTodasLasFichas();
 
-                    return;
+        buscador.focus();
 
-                }
-
-
-                buscador.value = "";
-
-
-                mostrarTodasLasFichas();
-
-
-                buscador.focus();
-
-            }
-        );
-
-    }
-
+    });
 
     // ===================================================
     // BUSCADOR
     // ===================================================
 
-    if (buscador) {
+    buscador?.addEventListener("input", () => {
 
-        buscador.addEventListener(
-            "input",
-            () => {
-
-                filtrarFichasExplorador(
-                    buscador.value
-                );
-
-            }
+        filtrarFichasExplorador(
+            buscador.value
         );
 
-    }
+    });
 
-    if (ejecutarBusqueda) {
+    // ===================================================
+    // EJECUTAR BÚSQUEDA
+    // ===================================================
 
-        ejecutarBusqueda.addEventListener(
-            "click",
-            evento => {
+    ejecutarBusqueda?.addEventListener("click", evento => {
 
-                evento.stopPropagation();
+        evento.stopPropagation();
 
-                if (!buscador) {
-                    return;
-                }
+        if (!buscador) {
+            return;
+        }
 
-                // Ejecutar búsqueda
-                filtrarFichasExplorador(
-                    buscador.value
-                );
-
-                // Cerrar la ventana de búsqueda
-                const panelBusqueda =
-                    document.getElementById(
-                        "panelBusqueda"
-                    );
-
-                if (panelBusqueda) {
-
-                    panelBusqueda.classList.remove(
-                        "activo"
-                    );
-
-                }
-
-            }
+        filtrarFichasExplorador(
+            buscador.value
         );
 
-    }
+        panelBusqueda?.classList.remove("activo");
+        panelBusqueda?.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
+    });
 
     // ===================================================
     // TECLADO VIRTUAL
@@ -477,112 +248,61 @@ async function inicializarExplorador() {
                 "button[data-tecla]"
             );
 
+        teclas.forEach(tecla => {
 
-        teclas.forEach(
-            tecla => {
+            tecla.addEventListener("click", evento => {
 
-                tecla.addEventListener(
-                    "click",
-                    evento => {
+                evento.stopPropagation();
 
-                        evento.stopPropagation();
+                if (!buscador) {
+                    return;
+                }
 
+                const valor =
+                    tecla.dataset.tecla;
 
-                        if (!buscador) {
+                if (!valor) {
+                    return;
+                }
 
-                            return;
+                if (valor === "borrar") {
 
-                        }
+                    buscador.value =
+                        buscador.value.slice(0, -1);
 
+                }
+                else if (valor === "espacio") {
 
-                        const valor =
-                            tecla.dataset.tecla;
+                    buscador.value += " ";
 
+                }
+                else if (valor === "limpiar") {
 
-                        if (!valor) {
+                    buscador.value = "";
 
-                            return;
+                }
+                else {
 
-                        }
+                    buscador.value += valor;
 
+                }
 
-                        // =============================
-                        // BORRAR
-                        // =============================
-
-                        if (
-                            valor === "borrar"
-                        ) {
-
-                            buscador.value =
-                                buscador.value.slice(
-                                    0,
-                                    -1
-                                );
-
-                        }
-
-
-                        // =============================
-                        // ESPACIO
-                        // =============================
-
-                        else if (
-                            valor === "espacio"
-                        ) {
-
-                            buscador.value += " ";
-
-                        }
-
-
-                        // =============================
-                        // LIMPIAR
-                        // =============================
-
-                        else if (
-                            valor === "limpiar"
-                        ) {
-
-                            buscador.value = "";
-
-                        }
-
-
-                        // =============================
-                        // CARÁCTER
-                        // =============================
-
-                        else {
-
-                            buscador.value += valor;
-
-                        }
-
-
-                        buscador.dispatchEvent(
-                            new Event(
-                                "input",
-                                {
-                                    bubbles: true
-                                }
-                            )
-                        );
-
-
-                        buscador.focus();
-
-                    }
+                buscador.dispatchEvent(
+                    new Event("input", {
+                        bubbles: true
+                    })
                 );
 
-            }
-        );
+                buscador.focus();
+
+            });
+
+        });
 
     }
 
-
     // ===================================================
-    // ESC
+    // EVENTOS GLOBALES
     // ===================================================
 
     document.addEventListener(
@@ -590,16 +310,10 @@ async function inicializarExplorador() {
         manejarEscape
     );
 
-
-    // ===================================================
-    // CLICK FUERA
-    // ===================================================
-
     document.addEventListener(
         "click",
         manejarClickExterior
     );
-
 
     // ===================================================
     // ESTADO INICIAL
@@ -607,219 +321,116 @@ async function inicializarExplorador() {
 
     renderizarIndice();
 
-
     console.log(
         "[explorador] Inicialización completa."
     );
 
 }
 
-
 // =======================================================
 // CARGAR FICHAS DESDE LA BASE DE DATOS
 // =======================================================
-//
-// ÚNICA FUNCIÓN DE CARGA
-// =======================================================
+
 async function cargarFichasExplorador() {
 
     console.log(
         "[explorador] Consultando APIs públicas..."
     );
 
-
     const contenedor =
         document.getElementById(
             "contenedorFichas"
         );
 
-
     try {
 
-        // =================================================
-        // CARGAR FICHAS
-        // =================================================
-
+        // Fichas
         const respuestaFichas =
-            await fetch(
-                "/api/public/fichas"
-            );
-
+            await fetch("/api/public/fichas");
 
         if (!respuestaFichas.ok) {
-
             throw new Error(
                 `Error fichas HTTP ${respuestaFichas.status}`
             );
-
         }
-
 
         const datosFichas =
             await respuestaFichas.json();
 
-
         if (!Array.isArray(datosFichas)) {
-
             throw new Error(
                 "La API no devolvió un array de fichas."
             );
-
         }
 
-
         fichasExplorador =
-            datosFichas.map(
-                ficha => {
+            datosFichas.map(normalizarFicha);
 
-                    return normalizarFicha(
-                        ficha
-                    );
-
-                }
-            );
-
-
-        // =================================================
-        // CARGAR MENÚS
-        // =================================================
-
+        // Menús
         const respuestaMenus =
-            await fetch(
-                "/api/public/menus"
-            );
-
+            await fetch("/api/public/menus");
 
         if (!respuestaMenus.ok) {
-
             throw new Error(
                 `Error menús HTTP ${respuestaMenus.status}`
             );
-
         }
-
 
         const datosMenus =
             await respuestaMenus.json();
 
-
         if (!Array.isArray(datosMenus)) {
-
             throw new Error(
                 "La API no devolvió un array de menús."
             );
-
         }
 
+        menusExplorador = datosMenus;
 
-        menusExplorador =
-            datosMenus;
-
-
-        // =================================================
-        // CARGAR ETIQUETAS
-        // =================================================
-
+        // Etiquetas
         const respuestaEtiquetas =
-            await fetch(
-                "/api/public/etiquetas"
-            );
-
+            await fetch("/api/public/etiquetas");
 
         if (!respuestaEtiquetas.ok) {
-
             throw new Error(
                 `Error etiquetas HTTP ${respuestaEtiquetas.status}`
             );
-
         }
-
 
         const datosEtiquetas =
             await respuestaEtiquetas.json();
 
-
         if (!Array.isArray(datosEtiquetas)) {
-
             throw new Error(
                 "La API no devolvió un array de etiquetas."
             );
-
         }
 
-
-        etiquetasExplorador =
-            datosEtiquetas;
-
-
-        // =================================================
-        // DEBUG
-        // =================================================
-
-        console.log(
-            "[explorador] Fichas recibidas:",
-            fichasExplorador
-        );
-
-
-        console.log(
-            "[explorador] Menús recibidos:",
-            menusExplorador
-        );
-
-
-        console.log(
-            "[explorador] Etiquetas recibidas:",
-            etiquetasExplorador
-        );
-
-
-        // =================================================
-        // MOSTRAR FICHAS
-        // =================================================
+        etiquetasExplorador = datosEtiquetas;
 
         mostrarTodasLasFichas();
-
-
-        // =================================================
-        // ACTUALIZAR ÍNDICE
-        // =================================================
-
         renderizarIndice();
-
-
-        // =================================================
-        // MENSAJE CENTRAL
-        // =================================================
-
         actualizarMensajeCentral();
 
-
     }
-    catch(error) {
+    catch (error) {
 
         console.error(
             "[explorador] Error cargando datos:",
             error
         );
 
-
         if (contenedor) {
 
             contenedor.innerHTML = `
-
                 <div class="estado-explorador">
-
                     <strong>
                         No se pudo consultar el archivo
                     </strong>
-
                     <span>
                         Verifique la conexión con el servidor.
                     </span>
-
                 </div>
-
             `;
 
         }
@@ -828,29 +439,11 @@ async function cargarFichasExplorador() {
 
 }
 
-
 // =======================================================
 // NORMALIZAR FICHA
 // =======================================================
-//
-// La API devuelve:
-//
-// {
-//     id_ficha,
-//     titulo,
-//     imagen,
-//     datos_json,
-//     plantilla,
-//     ...
-// }
-//
-// Acá dejamos una estructura cómoda para
-// el explorador.
-// =======================================================
 
-function normalizarFicha(
-    ficha
-) {
+function normalizarFicha(ficha) {
 
     const datos =
         ficha?.datos_json &&
@@ -858,13 +451,11 @@ function normalizarFicha(
             ? ficha.datos_json
             : {};
 
-
     return {
 
         ...ficha,
 
-        datos_json:
-            datos,
+        datos_json: datos,
 
         nombre:
             datos.Nombre ||
@@ -883,7 +474,6 @@ function normalizarFicha(
 
 }
 
-
 // =======================================================
 // MOSTRAR TODAS LAS FICHAS
 // =======================================================
@@ -896,55 +486,32 @@ function mostrarTodasLasFichas() {
 
 }
 
-
 // =======================================================
 // FILTRAR FICHAS
 // =======================================================
 
-function filtrarFichasExplorador(
-    texto
-) {
+function filtrarFichasExplorador(texto) {
 
     const termino =
-        normalizarTexto(
-            texto
-        );
-
+        normalizarTexto(texto);
 
     if (!termino) {
-
         mostrarTodasLasFichas();
-
         return;
-
     }
-
 
     const resultados =
         fichasExplorador.filter(
-            ficha => {
-
-                return fichaCoincideBusqueda(
+            ficha =>
+                fichaCoincideBusqueda(
                     ficha,
                     termino
-                );
-
-            }
+                )
         );
 
-
-    console.log(
-        "[explorador] Resultados:",
-        resultados
-    );
-
-
-    renderizarResultados(
-        resultados
-    );
+    renderizarResultados(resultados);
 
 }
-
 
 // =======================================================
 // COMPROBAR COINCIDENCIA
@@ -956,66 +523,29 @@ function fichaCoincideBusqueda(
 ) {
 
     if (!ficha) {
-
         return false;
-
     }
-
-
-    // ===================================================
-    // TÍTULO
-    // ===================================================
 
     if (
-        normalizarTexto(
-            ficha.titulo
-        ).includes(
-            termino
-        )
+        normalizarTexto(ficha.titulo)
+            .includes(termino)
     ) {
-
         return true;
-
     }
-
-
-    // ===================================================
-    // NOMBRE
-    // ===================================================
 
     if (
-        normalizarTexto(
-            ficha.nombre
-        ).includes(
-            termino
-        )
+        normalizarTexto(ficha.nombre)
+            .includes(termino)
     ) {
-
         return true;
-
     }
-
-
-    // ===================================================
-    // APELLIDO
-    // ===================================================
 
     if (
-        normalizarTexto(
-            ficha.apellido
-        ).includes(
-            termino
-        )
+        normalizarTexto(ficha.apellido)
+            .includes(termino)
     ) {
-
         return true;
-
     }
-
-
-    // ===================================================
-    // DATOS DINÁMICOS DE LA FICHA
-    // ===================================================
 
     if (
         ficha.datos_json &&
@@ -1023,75 +553,51 @@ function fichaCoincideBusqueda(
     ) {
 
         const valores =
-            Object.values(
-                ficha.datos_json
-            )
-            .filter(
-                valor =>
-                    valor !== null &&
-                    valor !== undefined
-            )
-            .join(" ");
-
+            Object.values(ficha.datos_json)
+                .filter(
+                    valor =>
+                        valor !== null &&
+                        valor !== undefined
+                )
+                .join(" ");
 
         if (
-            normalizarTexto(
-                valores
-            ).includes(
-                termino
-            )
+            normalizarTexto(valores)
+                .includes(termino)
         ) {
-
             return true;
-
         }
 
     }
-
 
     return false;
 
 }
 
-
 // =======================================================
 // NORMALIZAR TEXTO
 // =======================================================
 
-function normalizarTexto(
-    texto
-) {
+function normalizarTexto(texto) {
 
-    return String(
-        texto ?? ""
-    )
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(
-        /[\u0300-\u036f]/g,
-        ""
-    )
-    .trim();
+    return String(texto ?? "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
 
 }
-
 
 // =======================================================
 // RENDERIZAR RESULTADOS
 // =======================================================
-//
-// ESTA ES LA ÚNICA FUNCIÓN QUE DIBUJA LAS FICHAS.
-// =======================================================
 
-function renderizarResultados(
-    resultados
-) {
+function renderizarResultados(resultados) {
 
     const contenedor =
         document.getElementById(
             "contenedorFichas"
         );
-
 
     if (!contenedor) {
 
@@ -1100,20 +606,9 @@ function renderizarResultados(
         );
 
         return;
-
     }
 
-
-    // ===================================================
-    // LIMPIAR
-    // ===================================================
-
     contenedor.innerHTML = "";
-
-
-    // ===================================================
-    // SIN RESULTADOS
-    // ===================================================
 
     if (
         !Array.isArray(resultados) ||
@@ -1121,41 +616,29 @@ function renderizarResultados(
     ) {
 
         contenedor.innerHTML = `
-
             <div class="estado-explorador">
-
                 <span>
                     No se encontraron expedientes.
                 </span>
-
             </div>
-
         `;
 
         return;
-
     }
-
-
-    // ===================================================
-    // ORDEN ALFABÉTICO
-    // ===================================================
 
     const ordenados =
         [...resultados].sort(
-            (a,b) => {
+            (a, b) => {
 
                 const nombreA =
                     normalizarTexto(
                         obtenerNombreFicha(a)
                     );
 
-
                 const nombreB =
                     normalizarTexto(
                         obtenerNombreFicha(b)
                     );
-
 
                 return nombreA.localeCompare(
                     nombreB,
@@ -1165,442 +648,221 @@ function renderizarResultados(
             }
         );
 
+    ordenados.forEach(ficha => {
 
-    // ===================================================
-    // CREAR TARJETAS
-    // ===================================================
+        const tarjeta =
+            crearTarjetaDesdeFicha(ficha);
 
-    ordenados.forEach(
-        ficha => {
-
-            const tarjeta =
-                crearTarjetaDesdeFicha(
-                    ficha
-                );
-
-
-            if (tarjeta) {
-
-                contenedor.appendChild(
-                    tarjeta
-                );
-
-            }
-
+        if (tarjeta) {
+            contenedor.appendChild(tarjeta);
         }
-    );
 
-
-    console.log(
-        `[explorador] ${ordenados.length} fichas renderizadas.`
-    );
+    });
 
 }
-
 
 // =======================================================
 // CREAR TARJETA
 // =======================================================
 
-function crearTarjetaDesdeFicha(
-    ficha
-) {
+function crearTarjetaDesdeFicha(ficha) {
 
     if (!ficha) {
-
         return null;
-
     }
 
-
     const tarjeta =
-        document.createElement(
-            "article"
-        );
+        document.createElement("article");
 
-
-    tarjeta.className =
-        "tarjetaFicha";
-
-
+    tarjeta.className = "tarjetaFicha";
     tarjeta.dataset.id =
         ficha.id_ficha || "";
-
 
     tarjeta.setAttribute(
         "role",
         "button"
     );
 
-
     tarjeta.setAttribute(
         "tabindex",
         "0"
     );
 
-
-    // ===================================================
-    // FONDO
-    // ===================================================
-
+    // Fondo
     const fondo =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
+    fondo.className = "fondoFicha";
 
-    fondo.className =
-        "fondoFicha";
+    tarjeta.appendChild(fondo);
 
-
-    tarjeta.appendChild(
-        fondo
-    );
-
-
-    // ===================================================
-    // CABECERA
-    // ===================================================
-
+    // Cabecera
     const cabecera =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     cabecera.className =
         "cabeceraFicha";
 
-
     const numero =
-        document.createElement(
-            "span"
-        );
-
+        document.createElement("span");
 
     numero.className =
         "numeroFicha";
 
-
     numero.textContent =
         `EXP. Nº ${ficha.id_ficha}`;
 
+    cabecera.appendChild(numero);
+    tarjeta.appendChild(cabecera);
 
-    cabecera.appendChild(
-        numero
-    );
-
-
-    tarjeta.appendChild(
-        cabecera
-    );
-
-
-    // ===================================================
-    // IMAGEN
-    // ===================================================
-
+    // Imagen
     const imagenContenedor =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     imagenContenedor.className =
         "imagenFicha";
 
-
     const imagen =
-        document.createElement(
-            "img"
-        );
+        document.createElement("img");
 
-
-    const rutaImagen =
-        obtenerImagenExplorador(
-            ficha
-        );
-
-
-    if (rutaImagen) {
-
-        imagen.src =
-            rutaImagen;
-
-    }
-    else {
-
-        imagen.src =
-            "/imagenes/default.png";
-
-    }
-
+    imagen.src =
+        obtenerImagenExplorador(ficha);
 
     imagen.alt =
-        obtenerNombreFicha(
-            ficha
-        );
+        obtenerNombreFicha(ficha);
 
+    imagen.loading = "lazy";
 
-    imagen.loading =
-        "lazy";
+    imagen.onerror = function () {
 
+        if (this.dataset.fallback) {
+            return;
+        }
 
-    imagen.onerror =
-        function() {
+        this.dataset.fallback = "true";
+        this.src = "/imagenes/default.png";
 
-            if (
-                this.dataset.fallback
-            ) {
+    };
 
-                return;
+    imagenContenedor.appendChild(imagen);
+    tarjeta.appendChild(imagenContenedor);
 
-            }
-
-
-            this.dataset.fallback =
-                "true";
-
-
-            this.src =
-                "/imagenes/default.png";
-
-        };
-
-
-    imagenContenedor.appendChild(
-        imagen
-    );
-
-
-    tarjeta.appendChild(
-        imagenContenedor
-    );
-
-
-    // ===================================================
-    // INFORMACIÓN
-    // ===================================================
-
+    // Información
     const informacion =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     informacion.className =
         "infoFicha";
 
-
-    // ===================================================
-    // TÍTULO / NOMBRE
-    // ===================================================
-
+    // Título
     const titulo =
-        document.createElement(
-            "h3"
-        );
-
+        document.createElement("h3");
 
     titulo.textContent =
-        obtenerNombreFicha(
-            ficha
-        );
+        obtenerNombreFicha(ficha);
 
+    informacion.appendChild(titulo);
 
-    informacion.appendChild(
-        titulo
-    );
-
-
-    // ===================================================
-    // CAMPOS SEGÚN PLANTILLA
-    // ===================================================
-
+    // Campos de la plantilla
     const campos =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     campos.className =
         "camposTarjeta";
 
-
     const datos =
-        ficha.datos_json ||
-        {};
-
-
-    const plantilla =
-        ficha.plantilla ||
-        null;
-
+        ficha.datos_json || {};
 
     const camposPlantilla =
-        plantilla
+        ficha.plantilla
             ?.estructura
             ?.campos;
 
+    if (Array.isArray(camposPlantilla)) {
 
-    if (
-        Array.isArray(
-            camposPlantilla
-        )
-    ) {
+        camposPlantilla.forEach(campo => {
 
-        camposPlantilla.forEach(
-            campo => {
-
-                if (!campo) {
-
-                    return;
-
-                }
-
-
-                if (
-                    campo.mostrarTarjeta !== true
-                ) {
-
-                    return;
-
-                }
-
-
-                const valor =
-                    datos[
-                        campo.nombre
-                    ];
-
-
-                if (
-                    valor === undefined ||
-                    valor === null ||
-                    String(valor).trim() === ""
-                ) {
-
-                    return;
-
-                }
-
-
-                const fila =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                fila.className =
-                    "campoFicha";
-
-
-                const etiqueta =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                etiqueta.className =
-                    "etiquetaCampo";
-
-
-                etiqueta.textContent =
-                    campo.etiqueta ||
-                    campo.nombre ||
-                    "";
-
-
-                const valorElemento =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                valorElemento.className =
-                    "valorCampo";
-
-
-                valorElemento.textContent =
-                    valor;
-
-
-                fila.appendChild(
-                    etiqueta
-                );
-
-
-                fila.appendChild(
-                    valorElemento
-                );
-
-
-                campos.appendChild(
-                    fila
-                );
-
+            if (
+                !campo ||
+                campo.mostrarTarjeta !== true
+            ) {
+                return;
             }
-        );
+
+            const valor =
+                datos[campo.nombre];
+
+            if (
+                valor === undefined ||
+                valor === null ||
+                String(valor).trim() === ""
+            ) {
+                return;
+            }
+
+            const fila =
+                document.createElement("div");
+
+            fila.className =
+                "campoFicha";
+
+            const etiqueta =
+                document.createElement("span");
+
+            etiqueta.className =
+                "etiquetaCampo";
+
+            etiqueta.textContent =
+                campo.etiqueta ||
+                campo.nombre ||
+                "";
+
+            const valorElemento =
+                document.createElement("span");
+
+            valorElemento.className =
+                "valorCampo";
+
+            valorElemento.textContent =
+                valor;
+
+            fila.appendChild(etiqueta);
+            fila.appendChild(valorElemento);
+
+            campos.appendChild(fila);
+
+        });
 
     }
 
+    informacion.appendChild(campos);
+    tarjeta.appendChild(informacion);
 
-    informacion.appendChild(
-        campos
-    );
-
-
-    tarjeta.appendChild(
-        informacion
-    );
-
-
-    // ===================================================
-    // PIE
-    // ===================================================
-
+    // Pie
     const pie =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     pie.className =
         "pieFicha";
 
-
     pie.textContent =
         "CONSULTAR EXPEDIENTE";
 
+    tarjeta.appendChild(pie);
 
-    tarjeta.appendChild(
-        pie
-    );
-
-
-    // ===================================================
-    // CLICK
-    // ===================================================
-
+    // Click
     tarjeta.addEventListener(
         "click",
         evento => {
 
             evento.stopPropagation();
 
-
-            abrirVeterano(
-                ficha
-            );
+            abrirVeterano(ficha);
 
         }
     );
 
-
-    // ===================================================
-    // TECLADO
-    // ===================================================
-
+    // Teclado
     tarjeta.addEventListener(
         "keydown",
         evento => {
@@ -1612,148 +874,76 @@ function crearTarjetaDesdeFicha(
 
                 evento.preventDefault();
 
-
-                abrirVeterano(
-                    ficha
-                );
+                abrirVeterano(ficha);
 
             }
 
         }
     );
 
-
     return tarjeta;
 
 }
-
 
 // =======================================================
 // OBTENER IMAGEN
 // =======================================================
 
-function obtenerImagenExplorador(
-    ficha
-) {
-
-    if (!ficha) {
-
-        return "/imagenes/default.png";
-
-    }
-
-
-    const imagen =
-        ficha.imagen;
-
+function obtenerImagenExplorador(ficha) {
 
     if (
-        !imagen ||
-        typeof imagen !== "string"
+        !ficha ||
+        !ficha.imagen ||
+        typeof ficha.imagen !== "string"
     ) {
-
         return "/imagenes/default.png";
-
     }
 
-
-    // ===================================================
-    // SI YA ES UNA URL ABSOLUTA
-    // ===================================================
+    const imagen = ficha.imagen;
 
     if (
         imagen.startsWith("http://") ||
         imagen.startsWith("https://") ||
         imagen.startsWith("data:")
     ) {
-
         return imagen;
-
     }
 
-
-    // ===================================================
-    // RUTA ABSOLUTA DEL SERVIDOR
-    // ===================================================
-
-    if (
-        imagen.startsWith("/")
-    ) {
-
+    if (imagen.startsWith("/")) {
         return imagen;
-
     }
-
-
-    // ===================================================
-    // RUTA RELATIVA
-    // ===================================================
 
     return "/" +
-        imagen.replace(
-            /^\/+/,
-            ""
-        );
+        imagen.replace(/^\/+/, "");
 
 }
-
 
 // =======================================================
 // OBTENER NOMBRE DE FICHA
 // =======================================================
 
-function obtenerNombreFicha(
-    ficha
-) {
+function obtenerNombreFicha(ficha) {
 
     if (!ficha) {
-
         return "Ficha sin nombre";
-
     }
 
-
-    // ===================================================
-    // NOMBRE DESDE datos_json
-    // ===================================================
-
     const nombre =
-        ficha
-            ?.datos_json
-            ?.Nombre;
-
+        ficha.datos_json?.Nombre;
 
     if (
         nombre &&
         String(nombre).trim()
     ) {
-
-        return String(
-            nombre
-        ).trim();
-
+        return String(nombre).trim();
     }
-
-
-    // ===================================================
-    // TÍTULO
-    // ===================================================
 
     if (
         ficha.titulo &&
         String(ficha.titulo).trim()
     ) {
-
-        return String(
-            ficha.titulo
-        ).trim();
-
+        return String(ficha.titulo).trim();
     }
-
-
-    // ===================================================
-    // ID
-    // ===================================================
 
     return `Expediente Nº ${ficha.id_ficha}`;
 
@@ -1762,6 +952,7 @@ function obtenerNombreFicha(
 // =======================================================
 // ÍNDICE
 // =======================================================
+
 function renderizarIndice() {
 
     const contenedor =
@@ -1769,47 +960,28 @@ function renderizarIndice() {
             ".contenido-indice"
         );
 
-
     if (!contenedor) {
-
         return;
-
     }
-
 
     contenedor.innerHTML = "";
 
-
-    // ===================================================
-    // COLUMNAS
-    // ===================================================
-
+    // Columnas
     const columnaMenus =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     columnaMenus.className =
         "columna-indice columna-menus";
 
-
     const columnaEtiquetas =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     columnaEtiquetas.className =
         "columna-indice columna-etiquetas";
 
-
-    // ===================================================
-    // TÍTULO — MENÚS
-    // ===================================================
-
+    // Títulos
     const tituloMenus =
-        document.createElement(
-            "h3"
-        );
+        document.createElement("h3");
 
     tituloMenus.className =
         "titulo-indice-seccion";
@@ -1817,130 +989,10 @@ function renderizarIndice() {
     tituloMenus.textContent =
         "MENÚS";
 
-    columnaMenus.appendChild(
-        tituloMenus
-    );
-
-
-    // ===================================================
-    // BOTÓN TODOS
-    // ===================================================
-
-    const botonTodos =
-        document.createElement(
-            "button"
-        );
-
-    botonTodos.type =
-        "button";
-
-    botonTodos.className =
-        "item-indice boton-todos";
-
-    botonTodos.textContent =
-        "TODOS";
-
-
-    botonTodos.addEventListener(
-        "click",
-        evento => {
-
-            evento.stopPropagation();
-
-            mostrarTodasLasFichas();
-
-            cerrarPaneles();
-
-            actualizarMensajeCentral();
-
-        }
-    );
-
-
-    columnaMenus.appendChild(
-        botonTodos
-    );
-
-
-    // ===================================================
-    // MENÚS
-    // ===================================================
-
-    if (
-        menusExplorador.length
-    ) {
-
-        menusExplorador.forEach(
-            menu => {
-
-                const boton =
-                    document.createElement(
-                        "button"
-                    );
-
-
-                boton.type =
-                    "button";
-
-
-                boton.className =
-                    "item-indice";
-
-
-                boton.textContent =
-                    menu.nombre;
-
-
-                boton.addEventListener(
-                    "click",
-                    evento => {
-
-                        evento.stopPropagation();
-
-                        mostrarFichasPorMenu(
-                            menu.id_menu
-                        );
-
-                    }
-                );
-
-
-                columnaMenus.appendChild(
-                    boton
-                );
-
-            }
-        );
-
-    }
-    else {
-
-        const vacio =
-            document.createElement(
-                "p"
-            );
-
-        vacio.className =
-            "indice-vacio";
-
-        vacio.textContent =
-            "No hay menús disponibles.";
-
-        columnaMenus.appendChild(
-            vacio
-        );
-
-    }
-
-
-    // ===================================================
-    // TÍTULO — ETIQUETAS
-    // ===================================================
+    columnaMenus.appendChild(tituloMenus);
 
     const tituloEtiquetas =
-        document.createElement(
-            "h3"
-        );
+        document.createElement("h3");
 
     tituloEtiquetas.className =
         "titulo-indice-seccion";
@@ -1952,64 +1004,112 @@ function renderizarIndice() {
         tituloEtiquetas
     );
 
+    // Todos
+    const botonTodos =
+        document.createElement("button");
 
-    // ===================================================
-    // ETIQUETAS
-    // ===================================================
+    botonTodos.type = "button";
 
-    if (
-        etiquetasExplorador.length
-    ) {
+    botonTodos.className =
+        "item-indice boton-todos";
 
-        etiquetasExplorador.forEach(
-            etiqueta => {
+    botonTodos.textContent =
+        "TODOS";
 
-                const boton =
-                    document.createElement(
-                        "button"
+    botonTodos.addEventListener(
+        "click",
+        evento => {
+
+            evento.stopPropagation();
+
+            mostrarTodasLasFichas();
+            cerrarPaneles();
+            actualizarMensajeCentral();
+
+        }
+    );
+
+    columnaMenus.appendChild(botonTodos);
+
+    // Menús
+    if (menusExplorador.length) {
+
+        menusExplorador.forEach(menu => {
+
+            const boton =
+                document.createElement("button");
+
+            boton.type = "button";
+            boton.className = "item-indice";
+            boton.textContent = menu.nombre;
+
+            boton.addEventListener(
+                "click",
+                evento => {
+
+                    evento.stopPropagation();
+
+                    mostrarFichasPorMenu(
+                        menu.id_menu
                     );
 
+                }
+            );
 
-                boton.type =
-                    "button";
+            columnaMenus.appendChild(boton);
 
-
-                boton.className =
-                    "item-indice";
-
-
-                boton.textContent =
-                    etiqueta.nombre;
-
-
-                boton.addEventListener(
-                    "click",
-                    evento => {
-
-                        evento.stopPropagation();
-
-                        mostrarFichasPorEtiqueta(
-                            etiqueta.id_etiqueta
-                        );
-
-                    }
-                );
-
-
-                columnaEtiquetas.appendChild(
-                    boton
-                );
-
-            }
-        );
+        });
 
     }
     else {
 
         const vacio =
-            document.createElement(
-                "p"
+            document.createElement("p");
+
+        vacio.className =
+            "indice-vacio";
+
+        vacio.textContent =
+            "No hay menús disponibles.";
+
+        columnaMenus.appendChild(vacio);
+
+    }
+
+    // Etiquetas
+    if (etiquetasExplorador.length) {
+
+        etiquetasExplorador.forEach(etiqueta => {
+
+            const boton =
+                document.createElement("button");
+
+            boton.type = "button";
+            boton.className = "item-indice";
+            boton.textContent = etiqueta.nombre;
+
+            boton.addEventListener(
+                "click",
+                evento => {
+
+                    evento.stopPropagation();
+
+                    mostrarFichasPorEtiqueta(
+                        etiqueta.id_etiqueta
+                    );
+
+                }
             );
+
+            columnaEtiquetas.appendChild(boton);
+
+        });
+
+    }
+    else {
+
+        const vacio =
+            document.createElement("p");
 
         vacio.className =
             "indice-vacio";
@@ -2017,26 +1117,18 @@ function renderizarIndice() {
         vacio.textContent =
             "No hay etiquetas disponibles.";
 
-        columnaEtiquetas.appendChild(
-            vacio
-        );
+        columnaEtiquetas.appendChild(vacio);
 
     }
 
-
-    // ===================================================
-    // AGREGAR LAS DOS COLUMNAS
-    // ===================================================
-
-    contenedor.appendChild(
-        columnaMenus
-    );
-
-    contenedor.appendChild(
-        columnaEtiquetas
-    );
+    contenedor.appendChild(columnaMenus);
+    contenedor.appendChild(columnaEtiquetas);
 
 }
+
+// =======================================================
+// FILTRAR POR MENÚ
+// =======================================================
 
 function mostrarFichasPorMenu(idMenu) {
 
@@ -2045,7 +1137,6 @@ function mostrarFichasPorMenu(idMenu) {
         idMenu
     );
 
-
     const fichasFiltradas =
         fichasExplorador.filter(
             ficha =>
@@ -2053,17 +1144,18 @@ function mostrarFichasPorMenu(idMenu) {
                 Number(idMenu)
         );
 
-
     renderizarResultados(
         fichasFiltradas
     );
 
-
     cerrarPaneles();
-
-
     actualizarMensajeCentral();
+
 }
+
+// =======================================================
+// FILTRAR POR ETIQUETA
+// =======================================================
 
 async function mostrarFichasPorEtiqueta(idEtiqueta) {
 
@@ -2072,7 +1164,6 @@ async function mostrarFichasPorEtiqueta(idEtiqueta) {
         idEtiqueta
     );
 
-
     try {
 
         const respuesta =
@@ -2080,51 +1171,33 @@ async function mostrarFichasPorEtiqueta(idEtiqueta) {
                 `/api/public/fichas/etiqueta/${idEtiqueta}`
             );
 
-
         if (!respuesta.ok) {
-
             throw new Error(
                 `HTTP ${respuesta.status}`
             );
-
         }
-
 
         const fichas =
             await respuesta.json();
 
-
         if (!Array.isArray(fichas)) {
-
             throw new Error(
                 "La API no devolvió un array de fichas."
             );
-
         }
 
-
         const fichasFiltradas =
-            fichas.map(
-                ficha =>
-                    normalizarFicha(
-                        ficha
-                    )
-            );
-
+            fichas.map(normalizarFicha);
 
         renderizarResultados(
             fichasFiltradas
         );
 
-
         cerrarPaneles();
-
-
         actualizarMensajeCentral();
 
-
     }
-    catch(error) {
+    catch (error) {
 
         console.error(
             "[explorador] Error filtrando por etiqueta:",
@@ -2139,80 +1212,47 @@ async function mostrarFichasPorEtiqueta(idEtiqueta) {
 // ABRIR FICHA DESDE ÍNDICE
 // =======================================================
 
-function abrirFichaDesdeIndice(
-    ficha
-) {
+function abrirFichaDesdeIndice(ficha) {
 
     if (!ficha) {
-
         return;
-
     }
 
-
     cerrarPaneles();
-
 
     const tarjeta =
         document.querySelector(
             `.tarjetaFicha[data-id="${ficha.id_ficha}"]`
         );
 
-
     if (tarjeta) {
 
         tarjeta.scrollIntoView({
-            behavior: "smooth",
+            behavior: "auto",
             block: "center"
         });
 
-
-        setTimeout(
-            () => {
-
-                abrirVeterano(
-                    ficha
-                );
-
-            },
-            350
-        );
-
+        abrirVeterano(ficha);
 
         return;
-
     }
 
-
-    // ===================================================
-    // SI NO EXISTE LA TARJETA
-    // ===================================================
-
-    abrirVeterano(
-        ficha
-    );
+    abrirVeterano(ficha);
 
 }
-
 
 // =======================================================
 // ABRIR HISTORIA COMPLETA
 // =======================================================
 
-function abrirVeterano(
-    ficha
-) {
+function abrirVeterano(ficha) {
 
     if (!ficha) {
-
         return;
-
     }
-
 
     const id =
         ficha.id_ficha;
-
 
     if (!id) {
 
@@ -2221,40 +1261,28 @@ function abrirVeterano(
         );
 
         return;
-
     }
-
 
     console.log(
         "[explorador] Abriendo ficha:",
         id
     );
 
-
-    // ===================================================
-    // HISTORIA COMPLETA
-    // ===================================================
-
     if (
         typeof window.abrirHistoriaCompleta ===
         "function"
     ) {
 
-        window.abrirHistoriaCompleta(
-            id
-        );
-
+        window.abrirHistoriaCompleta(id);
         return;
 
     }
-
 
     console.warn(
         "[explorador] historiaCompleta.js todavía no está disponible."
     );
 
 }
-
 
 // =======================================================
 // ACTUALIZAR MENSAJE CENTRAL
@@ -2267,33 +1295,16 @@ function actualizarMensajeCentral() {
             "mensajeExplorador"
         );
 
-
     if (!mensaje) {
-
         return;
-
     }
 
-
-    if (
+    mensaje.classList.toggle(
+        "hay-fichas",
         fichasExplorador.length > 0
-    ) {
-
-        mensaje.classList.add(
-            "hay-fichas"
-        );
-
-    }
-    else {
-
-        mensaje.classList.remove(
-            "hay-fichas"
-        );
-
-    }
+    );
 
 }
-
 
 // =======================================================
 // CERRAR PANELES
@@ -2306,28 +1317,18 @@ function cerrarPaneles() {
             "panelIndice"
         );
 
-
     const busqueda =
         document.getElementById(
             "panelBusqueda"
         );
 
-
-    indice?.classList.remove(
-        "activo"
-    );
-
-
-    busqueda?.classList.remove(
-        "activo"
-    );
-
+    indice?.classList.remove("activo");
+    busqueda?.classList.remove("activo");
 
     indice?.setAttribute(
         "aria-hidden",
         "true"
     );
-
 
     busqueda?.setAttribute(
         "aria-hidden",
@@ -2336,81 +1337,55 @@ function cerrarPaneles() {
 
 }
 
-
 // =======================================================
 // ESC
 // =======================================================
 
-function manejarEscape(
-    evento
-) {
+function manejarEscape(evento) {
 
-    if (
-        evento.key === "Escape"
-    ) {
-
+    if (evento.key === "Escape") {
         cerrarPaneles();
-
     }
 
 }
-
 
 // =======================================================
 // CLICK EXTERIOR
 // =======================================================
 
-function manejarClickExterior(
-    evento
-) {
+function manejarClickExterior(evento) {
 
     const indice =
         document.getElementById(
             "panelIndice"
         );
 
-
     const busqueda =
         document.getElementById(
             "panelBusqueda"
         );
-
 
     const btnIndice =
         document.getElementById(
             "btnIndice"
         );
 
-
     const btnBuscar =
         document.getElementById(
             "btnBuscar"
         );
 
-
     const dentroIndice =
-        indice?.contains(
-            evento.target
-        );
-
+        indice?.contains(evento.target);
 
     const dentroBusqueda =
-        busqueda?.contains(
-            evento.target
-        );
-
+        busqueda?.contains(evento.target);
 
     const botonIndice =
-        btnIndice?.contains(
-            evento.target
-        );
-
+        btnIndice?.contains(evento.target);
 
     const botonBuscar =
-        btnBuscar?.contains(
-            evento.target
-        );
-
+        btnBuscar?.contains(evento.target);
 
     if (
         !dentroIndice &&
@@ -2425,9 +1400,8 @@ function manejarClickExterior(
 
 }
 
-
 // =======================================================
-// API PÚBLICA DEL EXPLORADOR
+// API PÚBLICA
 // =======================================================
 
 window.exploradorPublico = {
@@ -2436,9 +1410,7 @@ window.exploradorPublico = {
         cargarFichasExplorador,
 
     obtener:
-        () => [
-            ...fichasExplorador
-        ],
+        () => [...fichasExplorador],
 
     buscar:
         filtrarFichasExplorador,
@@ -2447,7 +1419,6 @@ window.exploradorPublico = {
         cerrarPaneles
 
 };
-
 
 // =======================================================
 // DEBUG
