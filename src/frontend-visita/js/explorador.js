@@ -144,8 +144,6 @@ async function inicializarExplorador() {
             "false"
         );
 
-        buscador?.focus();
-
     });
 
     // ===================================================
