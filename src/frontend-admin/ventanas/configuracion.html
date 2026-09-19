@@ -85,6 +85,41 @@
 
 
         <!-- =================================================
+             INACTIVIDAD DEL TÓTEM
+             ================================================= -->
+
+        <section class="bloque-configuracion">
+
+            <span class="referencia-configuracion">
+                TÓTEM
+            </span>
+
+            <h3>Inactividad</h3>
+
+
+            <label for="tiempoInactividadConfiguracion">
+                Volver al inicio tras (segundos)
+            </label>
+
+            <input
+                    type="number"
+                    id="tiempoInactividadConfiguracion"
+                    min="0"
+                    step="1"
+                    value="0"
+            >
+
+
+            <p class="ayuda-configuracion">
+                Si nadie toca el tótem durante este tiempo, la pantalla
+                se recarga y vuelve al inicio.
+                0 = desactivado. Mínimo 10 segundos.
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
              GUARDAR
              ================================================= -->
 

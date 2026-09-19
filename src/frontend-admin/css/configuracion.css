@@ -58,6 +58,7 @@
 }
 
 .bloque-configuracion input[type="text"],
+.bloque-configuracion input[type="number"],
 .bloque-configuracion select{
     box-sizing:border-box;
     width:100%;

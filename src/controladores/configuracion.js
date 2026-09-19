@@ -8,7 +8,8 @@ const estiloPredeterminado = {
     colorFondo:"#F4EDDB",
     mostrarBuscador:true,
     densidadTarjetas:"normal",
-    orientacionTotem: "horizontal"
+    orientacionTotem: "horizontal",
+    tiempoInactividad: 0   // segundos sin actividad para volver al inicio (0 = desactivado)
 };
 
 const estiloAdminPredeterminado = {
@@ -58,6 +59,24 @@ const guardarEstiloVisitante = async(req,res)=>{
         orientacionFinal = "horizontal";
     }
 
+    // Tiempo de inactividad del tótem (segundos). Si no se envía, se conserva el actual.
+    // 0 = desactivado; si es mayor que 0 se fuerza entre 10 segundos y 24 horas.
+    let tiempoInactividadFinal =
+        Number.isFinite(Number(actual.tiempoInactividad))
+            ? Number(actual.tiempoInactividad)
+            : 0;
+
+    if (req.body.tiempoInactividad !== undefined) {
+        const recibido = Math.floor(Number(req.body.tiempoInactividad));
+
+        if (Number.isFinite(recibido)) {
+            tiempoInactividadFinal =
+                recibido <= 0
+                    ? 0
+                    : Math.min(Math.max(recibido, 10), 86400);
+        }
+    }
+
     const estilo = {
         fondo: fondosPermitidos.has(req.body.fondo) ? req.body.fondo : actual.fondo,
         imagenFondo: typeof req.body.imagenFondo === "string" ? req.body.imagenFondo.trim() : actual.imagenFondo,
@@ -66,7 +85,8 @@ const guardarEstiloVisitante = async(req,res)=>{
         colorFondo: colorValido(req.body.colorFondo) ? req.body.colorFondo : actual.colorFondo,
         mostrarBuscador: req.body.mostrarBuscador !== undefined ? req.body.mostrarBuscador !== false : actual.mostrarBuscador,
         densidadTarjetas: ["normal", "compacta"].includes(req.body.densidadTarjetas) ? req.body.densidadTarjetas : actual.densidadTarjetas,
-        orientacionTotem: orientacionFinal
+        orientacionTotem: orientacionFinal,
+        tiempoInactividad: tiempoInactividadFinal
     };
 
     try{

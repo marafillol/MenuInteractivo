@@ -86,6 +86,23 @@ async function cargarConfiguracionEstilo(){
 
     }
 
+
+    // -----------------------------------------------------
+    // TIEMPO DE INACTIVIDAD (segundos, 0 = desactivado)
+    // -----------------------------------------------------
+
+    const inputInactividad =
+        document.getElementById(
+            "tiempoInactividadConfiguracion"
+        );
+
+    if(inputInactividad){
+
+        inputInactividad.value =
+            configuracion.tiempoInactividad ?? 0;
+
+    }
+
 }
 
 
@@ -143,6 +160,41 @@ async function guardarConfiguracionEstilo(evento){
             : "horizontal";
 
 
+    // -----------------------------------------------------
+    // TIEMPO DE INACTIVIDAD (segundos, 0 = desactivado)
+    // -----------------------------------------------------
+
+    const inputInactividad =
+        document.getElementById(
+            "tiempoInactividadConfiguracion"
+        );
+
+    let tiempoInactividad = 0;
+
+    if(inputInactividad){
+
+        tiempoInactividad =
+            Math.floor(
+                Number(inputInactividad.value) || 0
+            );
+
+        if(
+            tiempoInactividad < 0 ||
+            (tiempoInactividad > 0 && tiempoInactividad < 10)
+        ){
+
+            mostrarMensajeConfiguracion(
+                "El tiempo de inactividad debe ser 0 (desactivado) o de al menos 10 segundos.",
+                true
+            );
+
+            return;
+
+        }
+
+    }
+
+
     // Guardamos también localmente para que
     // el tótem pueda reaccionar inmediatamente.
 
@@ -172,7 +224,12 @@ async function guardarConfiguracionEstilo(evento){
 
             densidad
                 ? densidad.value
-                : "normal"
+                : "normal",
+
+        // Solo se envía si el campo existe en el formulario
+        ...(inputInactividad
+            ? { tiempoInactividad: tiempoInactividad }
+            : {})
 
     };
 
