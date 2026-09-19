@@ -141,3 +141,97 @@ body.totem-right [class*="grid"], body.totem-left [class*="grid"] {
     margin-bottom: 50px !important;
 }
 
+/* =====================================================
+   OVERLAYS / MULTIMEDIA EN VERTICAL
+   -----------------------------------------------------
+   Deben ir al FINAL del archivo: las reglas [class*="ficha"]
+   de arriba también matchean .visor-ficha y pisarían el tamaño.
+   ===================================================== */
+
+/* 1) Cualquier overlay colgado directamente del <body> (visor de ficha,
+      expediente, lightbox, transiciones...) rota igual que el wrapper.
+      No depende de nombres de clase. */
+body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-right #historiaCompleta,
+body.totem-left #historiaCompleta,
+body.totem-right #visorFicha,
+body.totem-left #visorFicha {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100vh !important;   /* se intercambian: el ancho lógico es el alto real */
+    height: 100vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+    transform-origin: center center !important;
+    box-sizing: border-box !important;
+    z-index: 1000 !important;
+}
+
+body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-right #historiaCompleta,
+body.totem-right #visorFicha {
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+}
+
+body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-left #historiaCompleta,
+body.totem-left #visorFicha {
+    transform: translate(-50%, -50%) rotate(-90deg) !important;
+}
+
+/* 2) Elemento en PANTALLA COMPLETA (requestFullscreen en una imagen/video):
+      va a la "capa superior" del navegador y NO hereda la rotación del wrapper,
+      por eso hay que rotarlo a él directamente. */
+body.totem-right :fullscreen,
+body.totem-right .totem-wrapper :fullscreen {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center center !important;
+    object-fit: contain !important;
+    background: #000 !important;
+}
+
+body.totem-left :fullscreen,
+body.totem-left .totem-wrapper :fullscreen {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    transform: translate(-50%, -50%) rotate(-90deg) !important;
+    transform-origin: center center !important;
+    object-fit: contain !important;
+    background: #000 !important;
+}
+
+/* 3) Imágenes/videos dentro de los visores: la regla [class*="ficha"] img
+      de más arriba las limitaba a 130px con recorte (cover). Acá se anula. */
+body.totem-right #visorFicha img,
+body.totem-left #visorFicha img,
+body.totem-right #historiaCompleta img,
+body.totem-left #historiaCompleta img,
+body.totem-right #multimediaHistoria img,
+body.totem-left #multimediaHistoria img,
+body.totem-right #multimediaHistoria video,
+body.totem-left #multimediaHistoria video,
+body.totem-right #multimediaHistoria iframe,
+body.totem-left #multimediaHistoria iframe {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+}

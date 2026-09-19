@@ -15,6 +15,33 @@
         document.body.appendChild(wrapper);
     }
 
+    // 1.b. Overlays que deben rotar por su cuenta (fuera del wrapper).
+    // El wrapper tiene transform, y eso rompe el position:fixed de sus hijos,
+    // así que se sacan al body para que el CSS los rote de forma independiente.
+    const IDS_OVERLAYS = ['historiaCompleta', 'visorFicha'];
+
+    const sacarOverlaysDelWrapper = () => {
+        IDS_OVERLAYS.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.parentElement !== document.body) {
+                document.body.appendChild(el);
+            }
+        });
+    };
+
+    // Se ejecuta como máximo una vez por frame para no sumar carga
+    let pendiente = false;
+    new MutationObserver(() => {
+        if (pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(() => {
+            pendiente = false;
+            sacarOverlaysDelWrapper();
+        });
+    }).observe(document.body, { childList: true, subtree: true });
+
+    sacarOverlaysDelWrapper();
+
     // 2. Función para aplicar las clases de orientación al body
     const aplicarOrientacion = (modo) => {
         document.body.classList.remove("totem-horizontal", "totem-right", "totem-left");
