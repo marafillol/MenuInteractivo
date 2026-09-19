@@ -195,7 +195,7 @@ async function inicializarExplorador() {
 
         mostrarTodasLasFichas();
 
-        buscador.focus();
+
 
     });
 
