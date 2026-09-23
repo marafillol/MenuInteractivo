@@ -24,6 +24,7 @@ const CONFIG_HISTORIA = {
 
 let historiaFichaActual = null;
 let historiaIdActual = null;
+let solicitudHistoriaActual = 0;
 
 let multimediaActual = [];
 let multimediaIndiceActual = 0;
@@ -182,6 +183,9 @@ async function abrirHistoriaCompleta(idFicha) {
         idFicha
     );
 
+    const solicitud =
+        ++solicitudHistoriaActual;
+
 
     const contenedor =
         document.getElementById(
@@ -191,7 +195,7 @@ async function abrirHistoriaCompleta(idFicha) {
 
     const cuerpo =
         document.querySelector(
-            ".cuerpoHistoria"
+            ".historia-cuerpo, .cuerpoHistoria"
         );
 
 
@@ -205,6 +209,9 @@ async function abrirHistoriaCompleta(idFicha) {
 
 
     historiaIdActual = idFicha;
+
+    limpiarHistoria();
+    mostrarHistoriaCarga();
 
 
     // ---------------------------------------------------
@@ -229,9 +236,11 @@ async function abrirHistoriaCompleta(idFicha) {
         try {
 
             const ficha =
-                await obtenerFicha(
-                    idFicha
-                );
+                await obtenerFicha(idFicha);
+
+            if (solicitud !== solicitudHistoriaActual) {
+                return;
+            }
 
 
             if (!ficha) {
@@ -247,13 +256,11 @@ async function abrirHistoriaCompleta(idFicha) {
                 ficha;
 
 
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        180
-                    )
-            );
+            await new Promise(requestAnimationFrame);
+
+            if (solicitud !== solicitudHistoriaActual) {
+                return;
+            }
 
 
             pintarHistoria(
@@ -279,6 +286,10 @@ async function abrirHistoriaCompleta(idFicha) {
             }
 
         } catch (error) {
+
+            if (solicitud !== solicitudHistoriaActual) {
+                return;
+            }
 
             console.error(
                 "[HISTORIA] Error:",
@@ -308,16 +319,17 @@ async function abrirHistoriaCompleta(idFicha) {
     // ABRIR NUEVO EXPEDIENTE
     // ---------------------------------------------------
 
-    mostrarHistoriaCarga();
     mostrarHistoriaCompleta();
 
 
     try {
 
         const ficha =
-            await obtenerFicha(
-                idFicha
-            );
+            await obtenerFicha(idFicha);
+
+        if (solicitud !== solicitudHistoriaActual) {
+            return;
+        }
 
 
         if (!ficha) {
@@ -356,6 +368,10 @@ async function abrirHistoriaCompleta(idFicha) {
         }
 
     } catch (error) {
+
+        if (solicitud !== solicitudHistoriaActual) {
+            return;
+        }
 
         console.error(
             "[HISTORIA] Error:",
@@ -437,6 +453,8 @@ function mostrarHistoriaCompleta() {
 
 
 function cerrarHistoriaCompleta() {
+
+    solicitudHistoriaActual += 1;
 
     cerrarCarruselMultimedia();
 
@@ -534,6 +552,25 @@ function limpiarHistoria() {
     limpiarElemento(
         CONFIG_HISTORIA.relacionadas
     );
+
+    const numero =
+        document.getElementById(
+            "numeroHistoria"
+        );
+
+    if (numero) {
+        numero.textContent = "";
+    }
+
+    const imagen =
+        document.getElementById(
+            CONFIG_HISTORIA.imagen
+        );
+
+    if (imagen) {
+        imagen.removeAttribute("src");
+        imagen.alt = "";
+    }
 
 }
 

@@ -30,7 +30,10 @@ html,body{
 }
 
 body.cargando-visita{
-    background:#0b1f35;
+    background:
+        #0b1f35
+        url("../img/mar.png")
+        center / cover no-repeat;
 }
 
 

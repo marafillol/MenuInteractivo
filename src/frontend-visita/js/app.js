@@ -198,9 +198,11 @@ document.addEventListener(
 
             fuentes,
 
-            esperarImagen(
-                "img/fondo-malvinass.png"
-            )
+            esperarImagen("img/mar.png"),
+
+            esperarImagen("img/lineas-01.png"),
+
+            esperarImagen("img/logo-museo-islas.png")
 
         ]);
 
