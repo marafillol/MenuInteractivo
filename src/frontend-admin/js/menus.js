@@ -1,5 +1,18 @@
 console.log("Modulo menus cargado");
 
+function obtenerRutaImagenMenu(ruta) {
+
+    if (!ruta) {
+        return "/imagenes/default.png";
+    }
+
+    if (/^(https?:|data:)/i.test(ruta)) {
+        return ruta;
+    }
+
+    return ruta.startsWith("/") ? ruta : `/${ruta}`;
+}
+
 
 
 async function cargarMenus(){
@@ -44,7 +57,7 @@ async function cargarMenus(){
                 <div class="menu-imagen">
 
                     <img
-                    src="/${menu.imagen ? menu.imagen : "imagenes/default.png"}"
+                    src="${obtenerRutaImagenMenu(menu.imagen)}"
                     onerror="this.onerror=null;this.src='/img/no-image.png'"
                     />
 
@@ -495,7 +508,7 @@ async function editarMenu(id_menu){
 
         if(menu.imagen){
 
-            preview.src = "/" + menu.imagen;
+            preview.src = obtenerRutaImagenMenu(menu.imagen);
 
         }else{
 
@@ -619,7 +632,7 @@ async function vistaPreviaMenu(id_menu){
 
         if(menu.imagen){
 
-            imagen.src = "/" + menu.imagen;
+            imagen.src = obtenerRutaImagenMenu(menu.imagen);
 
         }else{
 

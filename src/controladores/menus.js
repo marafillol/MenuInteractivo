@@ -1,4 +1,5 @@
 const Menu = require("../modelos/menu");
+const { subirArchivo } = require("../config/almacenamientoSupabase");
 
 // ==========================
 // LISTAR MENÚS
@@ -56,9 +57,7 @@ const crearMenu = async(req,res)=>{
             id_plantilla,
             visible: req.body.visible,
 
-            imagen: req.file
-                ? req.file.path.replace(/\\/g,"/")
-                : null
+            imagen: await subirArchivo(req.file, "menus")
 
         };
 
@@ -139,7 +138,7 @@ const actualizarMenu = async(req,res)=>{
 
         if(req.file){
 
-            datos.imagen = req.file.path.replace(/\\/g,"/");
+            datos.imagen = await subirArchivo(req.file, "menus");
 
         }
 

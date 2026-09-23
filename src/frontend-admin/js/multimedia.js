@@ -52,6 +52,10 @@ function obtenerRutaMultimedia(ruta) {
         return "";
     }
 
+    if (/^(https?:|data:)/i.test(ruta)) {
+        return ruta;
+    }
+
     return "/" + ruta.replace(/^public\//, "");
 
 }

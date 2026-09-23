@@ -1,3 +1,11 @@
+require("dotenv").config();
+
+if (process.env.DATABASE_URL) {
+
+    module.exports = require("./databasePostgres");
+
+} else {
+
 // Importa la librería sqlite3 para trabajar con la base de datos SQLite
 // y path para manejar rutas de archivos de forma segura.
 const sqlite3 = require("sqlite3").verbose();
@@ -350,3 +358,5 @@ db.serialize(() => {
 // Exporta la conexión para que los modelos puedan utilizarla
 // y ejecutar consultas sobre la base de datos.
 module.exports = db;
+
+}

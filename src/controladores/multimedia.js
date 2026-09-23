@@ -1,4 +1,5 @@
 const Multimedia = require("../modelos/multimedia");
+const { subirArchivo } = require("../config/almacenamientoSupabase");
 
 // ==========================
 // LISTAR MULTIMEDIA POR FICHA
@@ -83,9 +84,10 @@ const crearMultimedia = async(req,res)=>{
 
             descripcion: req.body.descripcion,
 
-            ruta_archivo: req.file
-                ? req.file.path.replace(/\\/g,"/")
-                : null,
+            ruta_archivo: await subirArchivo(
+                req.file,
+                `multimedia/${req.body.tipo_multi || "documentos"}`
+            ),
 
             tipo_multi: req.body.tipo_multi,
 
@@ -154,7 +156,10 @@ const actualizarMultimedia = async(req,res)=>{
             descripcion: req.body.descripcion,
 
             ruta_archivo: req.file
-                ? req.file.path.replace(/\\/g,"/")
+                ? await subirArchivo(
+                    req.file,
+                    `multimedia/${req.body.tipo_multi || "documentos"}`
+                )
                 : multimediaActual.ruta_archivo,
 
             tipo_multi: req.body.tipo_multi,

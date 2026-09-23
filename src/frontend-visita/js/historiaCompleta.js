@@ -670,6 +670,12 @@ function obtenerImagen(ficha) {
 
     }
 
+    if (/^(https?:|data:)/i.test(ficha.imagen)) {
+
+        return ficha.imagen;
+
+    }
+
 
     return "/" + ficha.imagen;
 
@@ -1964,6 +1970,12 @@ function obtenerRutaArchivo(ruta) {
     if (
         ruta.startsWith("/")
     ) {
+
+        return ruta;
+
+    }
+
+    if (/^(https?:|data:)/i.test(ruta)) {
 
         return ruta;
 

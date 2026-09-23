@@ -1,6 +1,11 @@
 node_modules/
 public/uploads/
 
+# Variables privadas de despliegue y Supabase
+.env
+.env.*
+!.env.example
+
 # Claves privadas Firebase
 src/firebase/serviceAccountKey.json
 museo-malvinas-firebase-adminsdk-*.json

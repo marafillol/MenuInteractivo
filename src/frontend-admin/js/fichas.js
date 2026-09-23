@@ -1,5 +1,19 @@
 console.log("Modulo fichas cargado");
 
+function obtenerRutaImagenFicha(ruta) {
+
+    if (!ruta) {
+        return "/imagenes/default.png";
+    }
+
+    if (/^(https?:|data:)/i.test(ruta)) {
+        return ruta;
+    }
+
+    const rutaLimpia = ruta.replace("public/", "");
+    return rutaLimpia.startsWith("/") ? rutaLimpia : `/${rutaLimpia}`;
+}
+
 let fichaEliminar = null;
 let fichaEditando = null;
 
@@ -197,14 +211,7 @@ async function cargarFichas() {
                     <div class="ficha-imagen">
 
                         <img
-                            src="/${
-                                ficha.imagen
-                                    ? ficha.imagen.replace(
-                                        "public/",
-                                        ""
-                                    )
-                                    : "imagenes/default.png"
-                            }"
+                            src="${obtenerRutaImagenFicha(ficha.imagen)}"
 
                             onerror="
                                 this.onerror=null;
@@ -418,12 +425,7 @@ async function vistaPreviaFicha(id_ficha) {
 
         if (ficha.imagen) {
 
-            imagen.src =
-                "/" +
-                ficha.imagen.replace(
-                    "public/",
-                    ""
-                );
+            imagen.src = obtenerRutaImagenFicha(ficha.imagen);
 
         } else {
 
@@ -992,12 +994,7 @@ async function editarFicha(id_ficha) {
 
         if (ficha.imagen) {
 
-            imagenActual.src =
-                "/" +
-                ficha.imagen.replace(
-                    "public/",
-                    ""
-                );
+            imagenActual.src = obtenerRutaImagenFicha(ficha.imagen);
 
 
             imagenActual.style.display =

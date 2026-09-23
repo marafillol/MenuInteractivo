@@ -1,8 +1,11 @@
 const multer = require("multer");
 const path = require("path");
+const { estaConfigurado } = require("./almacenamientoSupabase");
 
 
-const storage = multer.diskStorage({
+const storage = estaConfigurado
+    ? multer.memoryStorage()
+    : multer.diskStorage({
 
     destination:(req,file,cb)=>{
 

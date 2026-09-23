@@ -1,6 +1,7 @@
 const Ficha = require("../modelos/ficha");
 const RelacionFicha = require("../modelos/relacionFichaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
+const { subirArchivo } = require("../config/almacenamientoSupabase");
 
 const listarFichas = async(req,res)=>{
 
@@ -144,9 +145,7 @@ const crearFicha = async(req,res)=>{
 
             texto: req.body.texto,
 
-            imagen: req.file
-                ? req.file.path.replace(/\\/g,"/")
-                : null,
+            imagen: await subirArchivo(req.file, "fichas"),
 
 
             datos_json: req.body.datos_json,
@@ -219,9 +218,7 @@ const actualizarFicha = async(req,res)=>{
             // si llega una imagen nueva la guardamos
             // si no llega queda undefined para conservar la anterior
 
-            imagen: req.file
-                ? req.file.path.replace(/\\/g,"/")
-                : null,
+            imagen: await subirArchivo(req.file, "fichas"),
 
 
             datos_json: req.body.datos_json,

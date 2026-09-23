@@ -890,6 +890,12 @@ function obtenerImagenFicha(
 
     }
 
+    if (/^(https?:|data:)/i.test(ficha.imagen)) {
+
+        return ficha.imagen;
+
+    }
+
 
     return "/" + ficha.imagen;
 
