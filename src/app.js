@@ -141,6 +141,9 @@ require("./rutas/admin/usuarios");
 const configuracionRoutes =
 require("./rutas/admin/configuracion");
 
+const buscarRoutes =
+require("./rutas/admin/buscar");
+
 // =======================================================
 // IMPORTACIÓN DE RUTAS PÚBLICAS
 // =======================================================
@@ -202,6 +205,11 @@ app.use(
 app.use(
     "/api/multimedia",
     rutasMultimedia
+);
+
+app.use(
+    "/api/buscar",
+    buscarRoutes
 );
 
 app.use(

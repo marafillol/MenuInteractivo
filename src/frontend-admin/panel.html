@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/etiquetas.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/configuracion.css">
+    <link rel="stylesheet" href="css/buscador.css">
 
     <link
         rel="stylesheet"
@@ -211,6 +212,27 @@ Centro de Documentación Histórica
 
 
 
+            <div class="buscador-global" id="buscadorGlobal">
+
+                <i data-lucide="search" aria-hidden="true"></i>
+
+                <input
+                        type="search"
+                        id="buscadorGlobalInput"
+                        placeholder="Buscar fichas, etiquetas, menús..."
+                        autocomplete="off"
+                        aria-label="Buscar en el panel"
+                >
+
+                <div
+                        class="buscador-resultados"
+                        id="buscadorGlobalResultados"
+                        hidden
+                ></div>
+
+            </div>
+
+
             <div class="usuario">
 
 
@@ -333,6 +355,8 @@ Centro de Documentación Histórica
 
 
 <script src="js/panel.js"></script>
+
+<script src="js/buscador.js"></script>
 
 
 </body>
