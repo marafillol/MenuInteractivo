@@ -1,6 +1,18 @@
 const Ficha =
 require("../../modelos/public/ficha");
 
+const interpretarJson = (valor, predeterminado) => {
+
+    if (!valor) {
+        return predeterminado;
+    }
+
+    return typeof valor === "string"
+        ? JSON.parse(valor)
+        : valor;
+
+};
+
 async function obtenerFichas(req,res){
 
     try{
@@ -13,19 +25,11 @@ async function obtenerFichas(req,res){
 
 
             ficha.datos_json =
-            ficha.datos_json
-            ?
-            JSON.parse(ficha.datos_json)
-            :
-            {};
+            interpretarJson(ficha.datos_json, {});
 
 
             ficha.plantilla =
-            ficha.plantilla_json
-            ?
-            JSON.parse(ficha.plantilla_json)
-            :
-            null;
+            interpretarJson(ficha.plantilla_json, null);
 
 
             delete ficha.plantilla_json;
@@ -70,19 +74,11 @@ async function obtenerFichasPorMenu(req,res){
 
 
             ficha.datos_json =
-            ficha.datos_json
-            ?
-            JSON.parse(ficha.datos_json)
-            :
-            {};
+            interpretarJson(ficha.datos_json, {});
 
 
             ficha.plantilla =
-            ficha.plantilla_json
-            ?
-            JSON.parse(ficha.plantilla_json)
-            :
-            null;
+            interpretarJson(ficha.plantilla_json, null);
 
 
             delete ficha.plantilla_json;
@@ -121,18 +117,10 @@ async function obtenerFichasPorEtiqueta(req,res){
 
         fichas = fichas.map(ficha=>{
             ficha.datos_json =
-            ficha.datos_json
-            ?
-            JSON.parse(ficha.datos_json)
-            :
-            {};
+            interpretarJson(ficha.datos_json, {});
 
             ficha.plantilla =
-            ficha.plantilla_json
-            ?
-            JSON.parse(ficha.plantilla_json)
-            :
-            null;
+            interpretarJson(ficha.plantilla_json, null);
 
             delete ficha.plantilla_json;
 
@@ -188,26 +176,14 @@ async function obtenerFichaPorId(req,res){
         );
 
 
-        if(ficha.datos_json){
-
-            ficha.datos_json =
-            JSON.parse(ficha.datos_json);
-
-        }else{
-
-            ficha.datos_json = {};
-
-        }
+        ficha.datos_json =
+        interpretarJson(ficha.datos_json, {});
 
 
-        if(ficha.plantilla_json){
+        ficha.plantilla =
+        interpretarJson(ficha.plantilla_json, null);
 
-            ficha.plantilla =
-            JSON.parse(ficha.plantilla_json);
-
-            delete ficha.plantilla_json;
-
-        }
+        delete ficha.plantilla_json;
 
 
         res.json(ficha);
