@@ -184,9 +184,17 @@ async function cargarFichas(
     }
 
 
+    // Solo mostramos "CONSULTANDO ARCHIVO..." si la respuesta tarda
+    // más de 300 ms. Si llega rápido, nunca aparece (evita el destello).
+    let temporizadorCarga = null;
+
     try {
 
-        mostrarEstadoCarga();
+        temporizadorCarga =
+            setTimeout(
+                mostrarEstadoCarga,
+                300
+            );
 
 
         let url =
@@ -236,6 +244,11 @@ async function cargarFichas(
             await respuesta.json();
 
 
+        clearTimeout(
+            temporizadorCarga
+        );
+
+
         if (!Array.isArray(datos)) {
 
             throw new Error(
@@ -265,6 +278,11 @@ async function cargarFichas(
 
     }
     catch (error) {
+
+        clearTimeout(
+            temporizadorCarga
+        );
+
 
         console.error(
             "[FICHAS] Error cargando fichas:",
@@ -497,9 +515,6 @@ async function pintarFichas(
     }
 
 
-    contenedor.innerHTML = "";
-
-
     /*
        Sin resultados.
     */
@@ -522,6 +537,16 @@ async function pintarFichas(
        Construimos cada ficha.
     */
 
+    /*
+       Las tarjetas se arman en un fragmento fuera de pantalla
+       y se reemplazan de una sola vez: así el contenedor
+       nunca queda vacío entre una pintada y otra.
+    */
+
+    const fragmento =
+        document.createDocumentFragment();
+
+
     fichas.forEach(
         ficha => {
 
@@ -533,13 +558,18 @@ async function pintarFichas(
 
             if (tarjeta) {
 
-                contenedor.appendChild(
+                fragmento.appendChild(
                     tarjeta
                 );
 
             }
 
         }
+    );
+
+
+    contenedor.replaceChildren(
+        fragmento
     );
 
 
@@ -732,6 +762,42 @@ function crearTarjetaFicha(
 
     imagen.loading =
         "lazy";
+
+
+    imagen.decoding =
+        "async";
+
+
+    // Fade-in al terminar de cargar: sin "saltos" de imágenes.
+    imagen.style.opacity =
+        "0";
+
+    imagen.style.transition =
+        "opacity .25s ease";
+
+    const mostrarImagen =
+        () => {
+            imagen.style.opacity = "1";
+        };
+
+    imagen.addEventListener(
+        "load",
+        mostrarImagen,
+        { once: true }
+    );
+
+    imagen.addEventListener(
+        "error",
+        mostrarImagen,
+        { once: true }
+    );
+
+    if (
+        imagen.complete &&
+        imagen.naturalWidth > 0
+    ) {
+        mostrarImagen();
+    }
 
 
     contenedorImagen.appendChild(
@@ -1315,5 +1381,3 @@ window.pintarFichasPublicas =
 console.log(
     "[FICHAS] fichas.js cargado correctamente."
 );
-
-

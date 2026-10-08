@@ -1689,7 +1689,26 @@
 ========================================================= */
 
 .carrusel-descripcion {
-    display: none !important;
+    flex: 0 0 auto;
+    padding: 14px 82px 16px;
+    border-top: 1px solid rgba(197, 160, 89, .35);
+    background: #141715;
+    color: var(--hist-papel-claro);
+    font-size: 1.05rem;
+    line-height: 1.45;
+    text-align: center;
+}
+
+/* Sin descripción cargada: no se reserva espacio */
+.carrusel-descripcion:empty {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    .carrusel-descripcion {
+        padding: 12px 20px 14px;
+        font-size: .95rem;
+    }
 }
 
 body.carrusel-abierto {

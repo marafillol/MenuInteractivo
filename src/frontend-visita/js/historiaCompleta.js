@@ -1829,11 +1829,7 @@ function pintarCarruselActual() {
     if (descripcion) {
 
         descripcion.textContent =
-            archivo.descripcion ||
-            obtenerTipoMultimedia(
-                archivo,
-                ruta
-            );
+            String(archivo.descripcion || "").trim();
 
     }
 

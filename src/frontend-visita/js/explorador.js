@@ -1,4 +1,3 @@
-
 // =======================================================
 // EXPLORADOR
 // Museo Malvinas
@@ -15,6 +14,11 @@
 let fichasExplorador = [];
 let menusExplorador = [];
 let etiquetasExplorador = [];
+
+// Cuántas tarjetas entran en la primera pantalla. Sus fotos se cargan
+// al instante (eager) y la vista espera a que estén listas; el resto
+// queda en "lazy" para no bajar cientos de imágenes de golpe.
+const FICHAS_PRIMERA_PANTALLA = 12;
 
 // =======================================================
 // MOSTRAR EXPLORADOR
@@ -340,9 +344,17 @@ async function cargarFichasExplorador() {
 
     try {
 
-        // Fichas
-        const respuestaFichas =
-            await fetch("/api/public/fichas");
+        // Las tres consultas se hacen EN PARALELO. Antes iban una
+        // detrás de otra y los tiempos del servidor se sumaban.
+        const [
+            respuestaFichas,
+            respuestaMenus,
+            respuestaEtiquetas
+        ] = await Promise.all([
+            fetch("/api/public/fichas"),
+            fetch("/api/public/menus"),
+            fetch("/api/public/etiquetas")
+        ]);
 
         if (!respuestaFichas.ok) {
             throw new Error(
@@ -350,42 +362,11 @@ async function cargarFichasExplorador() {
             );
         }
 
-        const datosFichas =
-            await respuestaFichas.json();
-
-        if (!Array.isArray(datosFichas)) {
-            throw new Error(
-                "La API no devolvió un array de fichas."
-            );
-        }
-
-        fichasExplorador =
-            datosFichas.map(normalizarFicha);
-
-        // Menús
-        const respuestaMenus =
-            await fetch("/api/public/menus");
-
         if (!respuestaMenus.ok) {
             throw new Error(
                 `Error menús HTTP ${respuestaMenus.status}`
             );
         }
-
-        const datosMenus =
-            await respuestaMenus.json();
-
-        if (!Array.isArray(datosMenus)) {
-            throw new Error(
-                "La API no devolvió un array de menús."
-            );
-        }
-
-        menusExplorador = datosMenus;
-
-        // Etiquetas
-        const respuestaEtiquetas =
-            await fetch("/api/public/etiquetas");
 
         if (!respuestaEtiquetas.ok) {
             throw new Error(
@@ -393,14 +374,38 @@ async function cargarFichasExplorador() {
             );
         }
 
-        const datosEtiquetas =
-            await respuestaEtiquetas.json();
+        const [
+            datosFichas,
+            datosMenus,
+            datosEtiquetas
+        ] = await Promise.all([
+            respuestaFichas.json(),
+            respuestaMenus.json(),
+            respuestaEtiquetas.json()
+        ]);
+
+        if (!Array.isArray(datosFichas)) {
+            throw new Error(
+                "La API no devolvió un array de fichas."
+            );
+        }
+
+        if (!Array.isArray(datosMenus)) {
+            throw new Error(
+                "La API no devolvió un array de menús."
+            );
+        }
 
         if (!Array.isArray(datosEtiquetas)) {
             throw new Error(
                 "La API no devolvió un array de etiquetas."
             );
         }
+
+        fichasExplorador =
+            datosFichas.map(normalizarFicha);
+
+        menusExplorador = datosMenus;
 
         etiquetasExplorador = datosEtiquetas;
 
@@ -604,8 +609,6 @@ function renderizarResultados(resultados) {
         return;
     }
 
-    contenedor.innerHTML = "";
-
     if (
         !Array.isArray(resultados) ||
         resultados.length === 0
@@ -644,16 +647,23 @@ function renderizarResultados(resultados) {
             }
         );
 
-    ordenados.forEach(ficha => {
+    // Se arma todo fuera de pantalla y se reemplaza de una vez:
+    // el contenedor nunca queda vacío entre repintadas.
+    const fragmento =
+        document.createDocumentFragment();
+
+    ordenados.forEach((ficha, indice) => {
 
         const tarjeta =
-            crearTarjetaDesdeFicha(ficha);
+            crearTarjetaDesdeFicha(ficha, indice);
 
         if (tarjeta) {
-            contenedor.appendChild(tarjeta);
+            fragmento.appendChild(tarjeta);
         }
 
     });
+
+    contenedor.replaceChildren(fragmento);
 
 }
 
@@ -661,7 +671,7 @@ function renderizarResultados(resultados) {
 // CREAR TARJETA
 // =======================================================
 
-function crearTarjetaDesdeFicha(ficha) {
+function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
 
     if (!ficha) {
         return null;
@@ -727,7 +737,11 @@ function crearTarjetaDesdeFicha(ficha) {
     imagen.alt =
         obtenerNombreFicha(ficha);
 
-    imagen.loading = "lazy";
+    imagen.loading =
+        indice < FICHAS_PRIMERA_PANTALLA
+            ? "eager"
+            : "lazy";
+    imagen.decoding = "async";
 
     imagen.onerror = function () {
 
