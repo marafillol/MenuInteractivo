@@ -1,5 +1,7 @@
 const Plantilla = require("../modelos/plantilla");
 
+const { interpretarJson } =
+    require("../utilidades/interpretarJson");
 // ======================================
 // LISTAR PLANTILLAS
 // ======================================
@@ -51,7 +53,7 @@ const obtenerPlantilla = async(req,res)=>{
         }
 
         plantilla.plantilla_json =
-        JSON.parse(plantilla.plantilla_json);
+            interpretarJson(plantilla.plantilla_json);
 
         res.json(plantilla);
 
@@ -94,7 +96,7 @@ const obtenerPlantillaPorMenu = async(req,res)=>{
         }
 
         plantilla.plantilla_json =
-        JSON.parse(plantilla.plantilla_json);
+            interpretarJson(plantilla.plantilla_json);
 
         res.json(plantilla);
 
