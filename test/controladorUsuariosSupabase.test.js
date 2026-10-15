@@ -23,6 +23,8 @@ test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) =
     };
     let fallarAltaPerfil = false;
     let fallarActualizacionPerfil = false;
+    let fallarEliminacionPerfil = false;
+    let resultadoEliminarAuth = null;
 
     const usuarioFalso = {
         async obtenerPorEmail(email) {
@@ -44,6 +46,7 @@ test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) =
         },
         async eliminarUsuario(id) {
             llamadas.push({ tipo: "eliminarPerfil", id });
+            if (fallarEliminacionPerfil) throw new Error("fallo simulado al borrar perfil");
         },
         async contarAdministradoresActivos() { return 2; }
     };
@@ -59,7 +62,7 @@ test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) =
         },
         async deleteUser(id) {
             llamadas.push({ tipo: "eliminarAuth", id });
-            return { data: { user: { id } }, error: null };
+            return resultadoEliminarAuth || { data: { user: { id } }, error: null };
         }
     };
 
@@ -195,5 +198,86 @@ test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) =
         assert.equal(res.statusCode, 200);
         assert.ok(llamadas.some((x) => x.tipo === "actualizarAuth" &&
             x.id === "uid-existente" && x.cambios.password === "nueva-clave-segura"));
+    });
+
+    await t.test("si Supabase Auth no puede borrar la identidad, conserva el perfil para reintentar", async () => {
+        llamadas.length = 0;
+        perfil = {
+            id_usuario: 12, supabase_uid: "uid-existente", nombre: "Usuario",
+            email: "actual@example.com", rol: "editor", activo: 1
+        };
+        resultadoEliminarAuth = { data: null, error: { code: "unexpected_failure", status: 500 } };
+        const res = respuestaFalsa();
+
+        await controlador.eliminarUsuario({
+            params: { id: "12" },
+            usuario: { id_usuario: 99, rol: "admin", activo: 1 }
+        }, res);
+
+        assert.equal(res.statusCode, 502);
+        assert.equal(llamadas.some((x) => x.tipo === "eliminarAuth"), true);
+        assert.equal(llamadas.some((x) => x.tipo === "eliminarPerfil"), false);
+        resultadoEliminarAuth = null;
+    });
+
+    await t.test("si Auth ya no encuentra la identidad, permite reintentar la eliminación del perfil", async () => {
+        llamadas.length = 0;
+        perfil = {
+            id_usuario: 12, supabase_uid: "uid-existente", nombre: "Usuario",
+            email: "actual@example.com", rol: "editor", activo: 1
+        };
+        resultadoEliminarAuth = { data: null, error: { code: "user_not_found", status: 404 } };
+        const res = respuestaFalsa();
+
+        await controlador.eliminarUsuario({
+            params: { id: "12" },
+            usuario: { id_usuario: 99, rol: "admin", activo: 1 }
+        }, res);
+
+        assert.equal(res.statusCode, 200);
+        assert.deepEqual(
+            llamadas.filter((x) => ["eliminarAuth", "eliminarPerfil"].includes(x.tipo)).map((x) => x.tipo),
+            ["eliminarAuth", "eliminarPerfil"]
+        );
+        resultadoEliminarAuth = null;
+    });
+
+    await t.test("si falla el borrado del perfil luego de eliminar Auth, un segundo intento puede completar la limpieza", async () => {
+        llamadas.length = 0;
+        perfil = {
+            id_usuario: 12, supabase_uid: "uid-existente", nombre: "Usuario",
+            email: "actual@example.com", rol: "editor", activo: 1
+        };
+        fallarEliminacionPerfil = true;
+        const primeraRespuesta = respuestaFalsa();
+
+        await controlador.eliminarUsuario({
+            params: { id: "12" },
+            usuario: { id_usuario: 99, rol: "admin", activo: 1 }
+        }, primeraRespuesta);
+
+        assert.equal(primeraRespuesta.statusCode, 502);
+        assert.deepEqual(
+            llamadas.filter((x) => ["eliminarAuth", "eliminarPerfil"].includes(x.tipo)).map((x) => x.tipo),
+            ["eliminarAuth", "eliminarPerfil"]
+        );
+
+        fallarEliminacionPerfil = false;
+        llamadas.length = 0;
+        resultadoEliminarAuth = { data: null, error: { code: "user_not_found", status: 404 } };
+        const segundaRespuesta = respuestaFalsa();
+
+        await controlador.eliminarUsuario({
+            params: { id: "12" },
+            usuario: { id_usuario: 99, rol: "admin", activo: 1 }
+        }, segundaRespuesta);
+
+        assert.equal(segundaRespuesta.statusCode, 200);
+        assert.deepEqual(
+            llamadas.filter((x) => ["eliminarAuth", "eliminarPerfil"].includes(x.tipo)).map((x) => x.tipo),
+            ["eliminarAuth", "eliminarPerfil"]
+        );
+        fallarEliminacionPerfil = false;
+        resultadoEliminarAuth = null;
     });
 });

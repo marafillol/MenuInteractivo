@@ -266,14 +266,27 @@ const eliminarUsuario = async (req, res) => {
         const authId = exigirUidSupabase(usuario);
         const cliente = exigirClienteAuth();
 
-        // Eliminar primero el perfil evita que una cuenta remanente conserve permisos en la aplicación.
-        await Usuario.eliminarUsuario(id);
-
+        // Primero elimina la identidad Auth. Si falla por un error recuperable,
+        // conserva el perfil para permitir reintentar desde el panel.
         const { error } = await cliente.auth.admin.deleteUser(authId);
-        if (error) {
-            console.error("El perfil se eliminó, pero no se pudo eliminar la cuenta Auth; código=", error.code || "sin_codigo");
+        const identidadYaNoExiste = error &&
+            (error.code === "user_not_found" || Number(error.status) === 404);
+
+        if (error && !identidadYaNoExiste) {
+            console.error("No se pudo eliminar la cuenta Auth; código=", error.code || "sin_codigo");
             return res.status(502).json({
-                error: "Se eliminó el perfil del sistema, pero no se pudo eliminar la cuenta Auth. Contactá al administrador."
+                error: "No se pudo eliminar la cuenta de autenticación. El perfil se conserva para que puedas reintentar."
+            });
+        }
+
+        // Si la eliminación del perfil falla luego de borrar Auth, se conserva el perfil
+        // y un nuevo intento puede completar la limpieza: Auth devolverá user_not_found.
+        try {
+            await Usuario.eliminarUsuario(id);
+        } catch (errorBD) {
+            console.error("La identidad Auth ya se eliminó, pero no se pudo borrar el perfil; código=", errorBD.code || "sin_codigo");
+            return res.status(502).json({
+                error: "La cuenta de autenticación ya se eliminó, pero no se pudo eliminar el perfil. Volvé a intentar la operación para completar la limpieza."
             });
         }
 
