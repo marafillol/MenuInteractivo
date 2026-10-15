@@ -142,6 +142,8 @@ test("detalle público consulta etiquetas, relaciones y multimedia en paralelo",
     try {
         const res = crearRespuesta();
         const solicitud = controlador.obtenerFichaPorId({ params: { id_ficha: "7" } }, res);
+        // Deja continuar la resolución asíncrona de la ficha base, sin resolver asociaciones.
+        await Promise.resolve();
 
         // Las tres funciones deben arrancar antes de resolver cualquiera de ellas.
         assert.deepEqual(llamadas, ["etiquetas", "relacionadas", "multimedia"]);
