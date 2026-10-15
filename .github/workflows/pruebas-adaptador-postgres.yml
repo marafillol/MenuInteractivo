@@ -28,8 +28,6 @@ jobs:
       - name: Comprobar sintaxis
         run: |
           node --check src/app.js
-          node --check src/firebase/firebaseAdmin.js
-          node --check src/middleware/autenticarFirebase.js
           node --check src/controladores/public/fichasController.js
           node --check src/databasePostgres.js
           node --check src/databaseSqlCompat.js
@@ -39,6 +37,9 @@ jobs:
           node --check src/controladores/relacionFichaControlador.js
           node --check src/controladores/multimedia.js
           node --check src/config/almacenamientoSupabase.js
+          node --check src/config/supabaseAuth.js
+          node --check src/middleware/autenticarSupabase.js
+          node --check src/controladores/usuarios.js
           node --check src/frontend-admin/js/multimedia.js
           node --check src/utilidades/interpretarJson.js
           node --check scripts/verificar-adaptador-postgres-lectura.js
