@@ -37,7 +37,7 @@ const informarConsultaLenta = (sql, inicioSolicitado, inicioEjecucion, fin, fila
     const esperaSerialMs = Number(inicioEjecucion - inicioSolicitado) / 1e6;
     const consultaMs = Number(fin - inicioEjecucion) / 1e6;
     const estado = codigoError ? `[error=${codigoError}]` : `filas=${filas ?? "n/d"}`;
-    console.warn(`[db][lenta] total=${totalMs.toFixed(1)} ms; espera_serial=${esperaSerialMs.toFixed(1)} ms; pool_query=${consultaMs.toFixed(1)} ms; ${resumenConsulta(sql)}; ${estado}`);
+    console.warn(`[db][lenta] total=${totalMs.toFixed(1)} ms; espera_serial=${esperaSerialMs.toFixed(1)} ms; espera_pool_y_query=${consultaMs.toFixed(1)} ms; ${resumenConsulta(sql)}; ${estado}`);
 };
 
 const ejecutar = (consulta, valores = [], contexto = contextoAsync.getStore()) => {
