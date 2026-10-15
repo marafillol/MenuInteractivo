@@ -110,7 +110,7 @@ router.put(
 
 // ===============================
 // ELIMINAR MENÚ
-// SOLO ADMIN
+// Admin y Editor
 // ===============================
 
 router.delete(
