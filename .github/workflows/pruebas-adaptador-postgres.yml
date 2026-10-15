@@ -21,10 +21,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Instalar dependencias
+        run: npm ci
       - name: Ejecutar pruebas automatizadas
         run: npm test
       - name: Comprobar sintaxis
         run: |
+          node --check src/app.js
+          node --check src/firebase/firebaseAdmin.js
+          node --check src/middleware/autenticarFirebase.js
+          node --check src/controladores/public/fichasController.js
           node --check src/databasePostgres.js
           node --check src/databaseSqlCompat.js
           node --check src/utilidades/interpretarJson.js
+          node --check scripts/verificar-adaptador-postgres-lectura.js
