@@ -368,15 +368,15 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
 (async () => {
     try {
         const columnas = await consultarSQLite("PRAGMA table_info(usuario)");
-        const tieneProveedorAnterior = columnas.some((columna) => columna.name === "firebase_uid");
+        const tieneIdentificadorAuthAnterior = columnas.some((columna) => columna.name.endsWith("_uid") && columna.name !== "supabase_uid");
         const tieneSupabaseUid = columnas.some((columna) => columna.name === "supabase_uid");
 
-        if (!tieneProveedorAnterior && !tieneSupabaseUid) {
+        if (!tieneIdentificadorAuthAnterior && !tieneSupabaseUid) {
             await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN supabase_uid TEXT");
             return;
         }
 
-        if (!tieneProveedorAnterior) {
+        if (!tieneIdentificadorAuthAnterior) {
             return;
         }
 

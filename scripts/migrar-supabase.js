@@ -33,7 +33,7 @@ const tablas = [
 const estructuras = `
     CREATE TABLE IF NOT EXISTS usuario (
         id_usuario SERIAL PRIMARY KEY,
-        firebase_uid TEXT UNIQUE NOT NULL,
+        supabase_uid UUID UNIQUE,
         nombre TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         rol TEXT NOT NULL,
@@ -110,7 +110,7 @@ const estructuras = `
 `;
 
 const definiciones = {
-    usuario:["id_usuario", "firebase_uid", "nombre", "email", "rol", "activo", "creado", "actualizado"],
+    usuario:["id_usuario", "supabase_uid", "nombre", "email", "rol", "activo", "creado", "actualizado"],
     plantilla:["id_plantilla", "nombre", "descripcion", "plantilla_json", "activo", "creado", "actualizado"],
     menu:["id_menu", "nombre", "descripcion", "imagen", "id_plantilla", "visible", "creado", "actualizado"],
     ficha:["id_ficha", "id_menu", "titulo", "resumen", "texto", "imagen", "datos_json", "visible", "id_usuario", "creado", "actualizado"],
@@ -144,7 +144,7 @@ async function importarTabla(db, tabla){
     const filas = await leerTabla(db, tabla);
 
     for(const fila of filas){
-        const valores = columnas.map(columna=>fila[columna]);
+        const valores = columnas.map(columna=>fila[columna] ?? null);
         const parametros = columnas.map((_, indice)=>`$${indice + 1}`).join(", ");
         const conflicto = tabla === "ficha_etiqueta"
             ? "ON CONFLICT (id_ficha, id_etiqueta) DO NOTHING"
