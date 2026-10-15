@@ -131,6 +131,16 @@ function traducirParametros(consulta) {
 
 function traducirConsulta(consulta) {
     let sql = traducirParametros(traducirFuncionesFecha(consulta));
+
+    // En Supabase, plantilla.actualizado es TEXT, aunque SQLite admite CURRENT_TIMESTAMP.
+    // Se conserva la fecha UTC con el formato que SQLite usa por defecto.
+    if (/^\s*UPDATE\s+plantilla\b/i.test(sql)) {
+        sql = sql.replace(
+            /(\bactualizado\s*=\s*)CURRENT_TIMESTAMP\b/i,
+            "$1TO_CHAR(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')"
+        );
+    }
+
     const inicioUpsert = /^\s*INSERT\s+OR\s+REPLACE\s+INTO\s+configuracion\b/i;
     if (inicioUpsert.test(sql)) {
         sql = sql.trim().replace(/;\s*$/, "");
