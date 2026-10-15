@@ -1,6 +1,7 @@
 const { createClient } = require("@supabase/supabase-js");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
+const urlProyectoConfigurada = process.env.SUPABASE_URL;
 const estaConfigurado = Boolean(
     process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
 );
@@ -54,7 +55,7 @@ const eliminarArchivo = async (rutaPublica) => {
 
     try {
         url = new URL(rutaPublica);
-        urlProyecto = new URL(process.env.SUPABASE_URL);
+        urlProyecto = new URL(urlProyectoConfigurada);
     } catch {
         return false;
     }
@@ -79,7 +80,7 @@ const eliminarArchivo = async (rutaPublica) => {
     if (
         !rutaObjeto ||
         segmentos.some((segmento) =>
-            !segmento || segmento === "." || segmento === ".." || segmento.includes("\\\\")
+            !segmento || segmento === "." || segmento === ".." || segmento.includes("\\")
         )
     ) {
         return false;
