@@ -33,5 +33,9 @@ jobs:
           node --check src/controladores/public/fichasController.js
           node --check src/databasePostgres.js
           node --check src/databaseSqlCompat.js
+          node --check src/modelos/fichaEtiquetaModelo.js
+          node --check src/controladores/multimedia.js
+          node --check src/config/almacenamientoSupabase.js
+          node --check src/frontend-admin/js/multimedia.js
           node --check src/utilidades/interpretarJson.js
           node --check scripts/verificar-adaptador-postgres-lectura.js
