@@ -5,6 +5,7 @@ const path = require("node:path");
 
 const estado = {
     obtenerPorId: async () => null,
+    crear: async () => { throw new Error("No debería intentar crear."); },
     actualizar: async () => { throw new Error("No debería intentar actualizar."); },
     eliminar: async () => { throw new Error("No debería intentar eliminar."); },
     subirArchivo: async () => { throw new Error("No debería subir un archivo."); },
@@ -19,6 +20,7 @@ Module._load = function (solicitud, padre, esPrincipal) {
     if (padre?.filename === controladorPath && solicitud === "../modelos/multimedia") {
         return {
             obtenerPorId: (...args) => estado.obtenerPorId(...args),
+            crear: (...args) => estado.crear(...args),
             actualizar: (...args) => estado.actualizar(...args),
             eliminar: (...args) => estado.eliminar(...args)
         };
@@ -207,4 +209,48 @@ test("si falla la limpieza de Storage, la respuesta informa la advertencia sin o
 
     assert.equal(res.statusCode, 200);
     assert.match(res.cuerpo.advertencia, /no se pudo eliminar el archivo/);
+});
+
+
+test("si falla el alta en base de datos, limpia el archivo recién subido", async () => {
+    let rutaLimpiada = null;
+    estado.subirArchivo = async () =>
+        "https://proyecto-prueba.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/nuevo.png";
+    estado.crear = async () => { throw new Error("fallo de base simulado"); };
+    estado.eliminarArchivo = async (ruta) => { rutaLimpiada = ruta; return true; };
+
+    const res = crearRespuesta();
+    await controlador.crearMultimedia({
+        body: { id_ficha: "3", tipo_multi: "imagen", activo: "1" },
+        file: { originalname: "nuevo.png" }
+    }, res);
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(rutaLimpiada, "https://proyecto-prueba.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/nuevo.png");
+});
+
+test("si falla la edición en base de datos, limpia el archivo nuevo y conserva la ruta actual", async () => {
+    let rutaLimpiada = null;
+    estado.obtenerPorId = async () => ({
+        id_multi: 8,
+        id_ficha: 3,
+        tipo_multi: "imagen",
+        miniatura: "🖼️",
+        activo: 1,
+        ruta_archivo: "https://proyecto-prueba.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/actual.png"
+    });
+    estado.subirArchivo = async () =>
+        "https://proyecto-prueba.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/nuevo.png";
+    estado.actualizar = async () => { throw new Error("fallo de base simulado"); };
+    estado.eliminarArchivo = async (ruta) => { rutaLimpiada = ruta; return true; };
+
+    const res = crearRespuesta();
+    await controlador.actualizarMultimedia({
+        params: { id: "8" },
+        body: { id_ficha: "3", tipo_multi: "imagen", activo: "1" },
+        file: { originalname: "nuevo.png" }
+    }, res);
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(rutaLimpiada, "https://proyecto-prueba.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/nuevo.png");
 });
