@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "node --test test/controladorFichasPublicas.test.js test/databasePostgres.test.js test/databaseSqlCompat.test.js test/interpretarJson.test.js test/firebaseAdminOptional.test.js test/autenticarFirebaseNoConfig.test.js"
+    "test": "node --test test/controladorFichasPublicas.test.js test/databasePostgres.test.js test/databaseSqlCompat.test.js test/interpretarJson.test.js test/interpretarDatosJson.test.js test/firebaseAdminOptional.test.js test/autenticarFirebaseNoConfig.test.js"
   },
   "keywords": [],
   "author": "",
