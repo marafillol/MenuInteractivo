@@ -277,155 +277,53 @@ class RelacionFicha {
     // - relaciones: arreglo de relaciones nuevas.
     //
 
-    static guardarRelaciones(idFicha,relaciones){
+    static guardarRelaciones(idFicha, relaciones) {
+        return new Promise((resolve, reject) => {
+            if (!Array.isArray(relaciones)) {
+                reject(new TypeError("Las relaciones deben enviarse como una lista."));
+                return;
+            }
 
-        return new Promise((resolve,reject)=>{
+            if (relaciones.length === 0) {
+                resolve();
+                return;
+            }
 
+            try {
+                db.serialize(() => {
+                    const sentencia = db.prepare(
+                        `
+                        INSERT INTO relacion_ficha
+                        (
+                            id_ficha_origen,
+                            id_ficha_destino,
+                            tipo_relacion
+                        )
+                        VALUES (?, ?, ?)
+                        `
+                    );
 
-            db.serialize(()=>{
-
-
-
-
-
-                // ---------------------------------------
-                // ELIMINAR RELACIONES EXISTENTES
-                // ---------------------------------------
-
-                db.run(
-
-                    `
-                    DELETE FROM relacion_ficha
-                    WHERE id_ficha_origen = ?
-                    `,
-
-
-                    [idFicha],
-
-
-                    error=>{
-
-
-                        if(error){
-
-
-                            reject(error);
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // SI NO EXISTEN RELACIONES NUEVAS
-                        // FINALIZA LA OPERACIÓN
-                        // ---------------------------------------
-
-                        if(relaciones.length===0){
-
-
-                            resolve();
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // INSERTAR NUEVAS RELACIONES
-                        // ---------------------------------------
-
-                        const sentencia = db.prepare(
-
-                            `
-                            INSERT INTO relacion_ficha
-                            (
-                                id_ficha_origen,
-                                id_ficha_destino,
-                                tipo_relacion
-                            )
-                            VALUES(?,?,?)
-                            `
-
+                    relaciones.forEach((relacion) => {
+                        sentencia.run(
+                            idFicha,
+                            relacion.id_ficha_destino,
+                            relacion.tipo_relacion
                         );
+                    });
 
-
-
-
-
-
-                        relaciones.forEach(relacion=>{
-
-
-                            sentencia.run(
-
-                                idFicha,
-
-                                relacion.id_ficha_destino,
-
-                                relacion.tipo_relacion
-
-                            );
-
-
-                        });
-
-
-
-
-
-
-
-
-                        // Finaliza la sentencia preparada
-
-                        sentencia.finalize(error=>{
-
-
-                            if(error)
-
-                                reject(error);
-
-                            else
-
-                                resolve();
-
-
-                        });
-
-
-
-                    }
-
-                );
-
-
-
-            });
-
-
+                    sentencia.finalize((error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            } catch (error) {
+                reject(error);
+            }
         });
-
     }
-
-
-
-
-
-
-
 
 
     // ===================================================
