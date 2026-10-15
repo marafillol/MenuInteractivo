@@ -171,22 +171,16 @@ async function obtenerFichaPorId(req,res){
         }
 
 
-        ficha.etiquetas =
-        await Ficha.obtenerEtiquetas(
-            ficha.id_ficha
-        );
+        // Estas consultas son independientes entre sí, así que se ejecutan en paralelo.
+        const [etiquetas, relacionadas, multimedia] = await Promise.all([
+            Ficha.obtenerEtiquetas(ficha.id_ficha),
+            Ficha.obtenerRelacionadas(ficha.id_ficha),
+            Ficha.obtenerMultimedia(ficha.id_ficha)
+        ]);
 
-
-        ficha.relacionadas =
-        await Ficha.obtenerRelacionadas(
-            ficha.id_ficha
-        );
-
-
-        ficha.multimedia =
-        await Ficha.obtenerMultimedia(
-            ficha.id_ficha
-        );
+        ficha.etiquetas = etiquetas;
+        ficha.relacionadas = relacionadas;
+        ficha.multimedia = multimedia;
 
 
         if(ficha.datos_json){
