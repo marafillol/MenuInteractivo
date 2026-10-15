@@ -71,7 +71,7 @@ db.serialize(() => {
 
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            firebase_uid TEXT UNIQUE NOT NULL,
+            supabase_uid TEXT UNIQUE,
 
             nombre TEXT NOT NULL,
 
@@ -357,6 +357,66 @@ db.serialize(() => {
 
 // Exporta la conexión para que los modelos puedan utilizarla
 // y ejecutar consultas sobre la base de datos.
+// Migra instalaciones SQLite existentes: conserva los perfiles, no las identidades del proveedor anterior.
+const consultarSQLite = (sql, parametros = []) => new Promise((resolve, reject) => {
+    db.all(sql, parametros, (error, filas) => error ? reject(error) : resolve(filas));
+});
+const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
+    db.run(sql, (error) => error ? reject(error) : resolve());
+});
+
+(async () => {
+    try {
+        const columnas = await consultarSQLite("PRAGMA table_info(usuario)");
+        const tieneProveedorAnterior = columnas.some((columna) => columna.name === "firebase_uid");
+        const tieneSupabaseUid = columnas.some((columna) => columna.name === "supabase_uid");
+
+        if (!tieneProveedorAnterior && !tieneSupabaseUid) {
+            await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN supabase_uid TEXT");
+            return;
+        }
+
+        if (!tieneProveedorAnterior) {
+            return;
+        }
+
+        await ejecutarSQLite("PRAGMA foreign_keys = OFF");
+        await ejecutarSQLite("BEGIN IMMEDIATE");
+        try {
+            await ejecutarSQLite(`
+                CREATE TABLE usuario_migracion (
+                    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+                    supabase_uid TEXT UNIQUE,
+                    nombre TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    rol TEXT NOT NULL,
+                    activo INTEGER DEFAULT 1,
+                    creado DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    actualizado DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+
+            const valorUid = tieneSupabaseUid ? "supabase_uid" : "NULL";
+            await ejecutarSQLite(`
+                INSERT INTO usuario_migracion
+                    (id_usuario, supabase_uid, nombre, email, rol, activo, creado, actualizado)
+                SELECT id_usuario, ${valorUid}, nombre, email, rol, activo, creado, actualizado
+                FROM usuario
+            `);
+            await ejecutarSQLite("DROP TABLE usuario");
+            await ejecutarSQLite("ALTER TABLE usuario_migracion RENAME TO usuario");
+            await ejecutarSQLite("COMMIT");
+        } catch (error) {
+            await ejecutarSQLite("ROLLBACK");
+            throw error;
+        } finally {
+            await ejecutarSQLite("PRAGMA foreign_keys = ON");
+        }
+    } catch (error) {
+        console.error("No se pudo migrar la tabla local de usuarios; código=", error.code || "sin_codigo");
+    }
+})();
+
 module.exports = db;
 
 }

@@ -257,6 +257,19 @@ app.use(
     etiquetasPublicasRoutes
 );
 
+// Configuración pública mínima para inicializar Supabase Auth en el navegador.
+// La clave de servicio nunca se envía al cliente.
+app.get("/api/public/auth-config", (req, res) => {
+    const { obtenerConfiguracionPublica } = require("./config/supabaseAuth");
+    const configuracion = obtenerConfiguracionPublica();
+    if (!configuracion) {
+        return res.status(503).json({
+            error: "Falta configurar la URL o la clave pública de Supabase."
+        });
+    }
+    return res.json(configuracion);
+});
+
 // =======================================================
 // ESTADO DEL SERVIDOR
 // =======================================================
