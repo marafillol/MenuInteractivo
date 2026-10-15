@@ -2,10 +2,21 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const Module = require("node:module");
 const ejecuciones = [];
+const consultasTransaccion = [];
+let clientesLiberados = 0;
 let devolverIdComoTexto = false;
 class PoolFalso {
     constructor() {}
     on() {}
+    async connect() {
+        return {
+            query: async (sql, valores = []) => {
+                consultasTransaccion.push(String(sql).trim());
+                return this.query(sql, valores);
+            },
+            release: () => { clientesLiberados += 1; }
+        };
+    }
     query(sql, valores = []) {
         const marca = valores[0] ?? "sin-parametro";
         ejecuciones.push("inicio:" + marca);
@@ -94,4 +105,44 @@ test("run convierte a Number los IDs BIGINT seguros devueltos como string", asyn
     }));
     assert.equal(id, 999);
     devolverIdComoTexto = false;
+});
+
+
+test("withTransaction confirma las consultas sobre un cliente dedicado", async () => {
+    consultasTransaccion.length = 0;
+    clientesLiberados = 0;
+
+    const resultado = await db.withTransaction(async (consultar) => {
+        await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [34]);
+        await consultar(
+            "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)",
+            [34, 2]
+        );
+        return "terminado";
+    });
+
+    assert.equal(resultado, "terminado");
+    assert.deepEqual(
+        consultasTransaccion.map((sql) => sql.split(/\\s+/).slice(0, 2).join(" ").toUpperCase()),
+        ["BEGIN", "DELETE FROM", "INSERT INTO", "COMMIT"]
+    );
+    assert.equal(clientesLiberados, 1);
+});
+
+test("withTransaction revierte la operación cuando falla el trabajo", async () => {
+    consultasTransaccion.length = 0;
+    clientesLiberados = 0;
+
+    await assert.rejects(
+        db.withTransaction(async (consultar) => {
+            await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [34]);
+            throw new Error("fallo simulado");
+        }),
+        /fallo simulado/
+    );
+
+    assert.equal(consultasTransaccion.includes("BEGIN"), true);
+    assert.equal(consultasTransaccion.includes("ROLLBACK"), true);
+    assert.equal(consultasTransaccion.includes("COMMIT"), false);
+    assert.equal(clientesLiberados, 1);
 });
