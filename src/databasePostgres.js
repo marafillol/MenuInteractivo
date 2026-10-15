@@ -204,6 +204,36 @@ const db = {
         };
     },
 
+    // Ejecuta una serie de consultas en una única transacción PostgreSQL.
+    // El cliente dedicado evita que otras peticiones se mezclen en la transacción.
+    async withTransaction(trabajo) {
+        if (typeof trabajo !== "function") {
+            throw new TypeError("La transacción requiere una función.");
+        }
+
+        const cliente = await pool.connect();
+
+        try {
+            await cliente.query("BEGIN");
+
+            const consultar = (consulta, valores = []) =>
+                cliente.query(traducirConsulta(consulta), valores);
+
+            const resultado = await trabajo(consultar);
+            await cliente.query("COMMIT");
+            return resultado;
+        } catch (error) {
+            try {
+                await cliente.query("ROLLBACK");
+            } catch (errorRollback) {
+                registrarErrorSinCallback("rollback", errorRollback);
+            }
+            throw error;
+        } finally {
+            cliente.release();
+        }
+    },
+
     close(callback) {
         pool.end().then(
             () => callback && callback(null),
