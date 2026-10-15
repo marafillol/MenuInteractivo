@@ -8,11 +8,11 @@ require("../../controladores/usuarios");
 
 
 // =======================================
-// AUTENTICACIÓN FIREBASE
+// AUTENTICACIÓN SUPABASE
 // =======================================
 
-const autenticarFirebase =
-require("../../middleware/autenticarFirebase");
+const autenticarSupabase =
+require("../../middleware/autenticarSupabase");
 
 
 const verificarRol =
@@ -22,14 +22,14 @@ require("../../middleware/verificarRol");
 
 router.get(
     "/me",
-    autenticarFirebase,
+    autenticarSupabase,
     usuarioControlador.obtenerMiUsuario
 );
 
 
 router.get(
     "/",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     usuarioControlador.obtenerUsuarios
 );
@@ -37,14 +37,14 @@ router.get(
 
 router.post(
     "/",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     usuarioControlador.crearUsuario
 );
 
 router.put(
     "/:id/password",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     usuarioControlador.cambiarPassword
 );
@@ -52,7 +52,7 @@ router.put(
 
 router.put(
     "/:id",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     usuarioControlador.actualizarUsuario
 );
@@ -60,7 +60,7 @@ router.put(
 
 router.delete(
     "/:id",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     usuarioControlador.eliminarUsuario
 );
