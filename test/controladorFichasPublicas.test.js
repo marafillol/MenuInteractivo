@@ -115,6 +115,54 @@ test("filtro por etiqueta admite objetos JSONB", async () => {
     assert.deepEqual(res.cuerpo[0].plantilla, { campos: [] });
 });
 
+test("detalle público consulta etiquetas, relaciones y multimedia en paralelo", async () => {
+    estado.ficha = crearFicha({ descripcion: "Detalle" }, { campos: [] });
+
+    const originales = {
+        etiquetas: modeloFalso.obtenerEtiquetas,
+        relacionadas: modeloFalso.obtenerRelacionadas,
+        multimedia: modeloFalso.obtenerMultimedia
+    };
+    const llamadas = [];
+    const resolver = {};
+
+    modeloFalso.obtenerEtiquetas = () => {
+        llamadas.push("etiquetas");
+        return new Promise((resolve) => { resolver.etiquetas = resolve; });
+    };
+    modeloFalso.obtenerRelacionadas = () => {
+        llamadas.push("relacionadas");
+        return new Promise((resolve) => { resolver.relacionadas = resolve; });
+    };
+    modeloFalso.obtenerMultimedia = () => {
+        llamadas.push("multimedia");
+        return new Promise((resolve) => { resolver.multimedia = resolve; });
+    };
+
+    try {
+        const res = crearRespuesta();
+        const solicitud = controlador.obtenerFichaPorId({ params: { id_ficha: "7" } }, res);
+
+        // Las tres funciones deben arrancar antes de resolver cualquiera de ellas.
+        assert.deepEqual(llamadas, ["etiquetas", "relacionadas", "multimedia"]);
+
+        resolver.etiquetas([{ id_etiqueta: 1 }]);
+        resolver.relacionadas([{ id_ficha_destino: 8 }]);
+        resolver.multimedia([{ id_multi: 2 }]);
+
+        await solicitud;
+
+        assert.equal(res.statusCode, 200);
+        assert.deepEqual(res.cuerpo.etiquetas, [{ id_etiqueta: 1 }]);
+        assert.deepEqual(res.cuerpo.relacionadas, [{ id_ficha_destino: 8 }]);
+        assert.deepEqual(res.cuerpo.multimedia, [{ id_multi: 2 }]);
+    } finally {
+        modeloFalso.obtenerEtiquetas = originales.etiquetas;
+        modeloFalso.obtenerRelacionadas = originales.relacionadas;
+        modeloFalso.obtenerMultimedia = originales.multimedia;
+    }
+});
+
 test("detalle público admite objetos JSONB en ficha y plantilla", async () => {
     estado.ficha = crearFicha({ descripcion: "Detalle" }, { campos: [{ nombre: "descripcion" }] });
 
