@@ -467,9 +467,7 @@ async function vistaPreviaFicha(id_ficha) {
 
                 datos =
                     ficha.datos_json
-                        ? JSON.parse(
-                            ficha.datos_json
-                        )
+                        ? window.interpretarDatosJson(ficha.datos_json)
                         : {};
 
             } catch (error) {
@@ -1256,9 +1254,7 @@ async function editarFicha(id_ficha) {
 
             datos =
                 ficha.datos_json
-                    ? JSON.parse(
-                        ficha.datos_json
-                    )
+                    ? window.interpretarDatosJson(ficha.datos_json)
                     : {};
 
         } catch (error) {
