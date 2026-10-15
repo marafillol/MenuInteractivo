@@ -344,3 +344,49 @@ test("los errores de base de datos se propagan en la creación de menú", async 
         /error simulado/
     );
 });
+
+
+test("reemplazar etiquetas usa la transacción PostgreSQL si está disponible", async () => {
+    llamadas.length = 0;
+
+    dbFalso.withTransaction = async (trabajo) => {
+        llamadas.push({ tipo: "transaction.begin" });
+        try {
+            const resultado = await trabajo(async (sql, parametros = []) => {
+                llamadas.push({
+                    tipo: "transaction.query",
+                    sql: String(sql),
+                    parametros
+                });
+                return { rowCount: 1, rows: [] };
+            });
+            llamadas.push({ tipo: "transaction.commit" });
+            return resultado;
+        } catch (error) {
+            llamadas.push({ tipo: "transaction.rollback" });
+            throw error;
+        }
+    };
+
+    try {
+        const resultado = await FichaEtiqueta.reemplazar(34, [2, 5]);
+
+        assert.equal(resultado, true);
+        assert.equal(llamadas[0].tipo, "transaction.begin");
+        assert.match(llamadas[1].sql, /DELETE FROM ficha_etiqueta/i);
+        assert.deepEqual(llamadas[1].parametros, [34]);
+        assert.match(llamadas[2].sql, /INSERT INTO ficha_etiqueta/i);
+        assert.deepEqual(llamadas[2].parametros, [34, 2]);
+        assert.deepEqual(llamadas[3].parametros, [34, 5]);
+        assert.equal(llamadas.at(-1).tipo, "transaction.commit");
+    } finally {
+        delete dbFalso.withTransaction;
+    }
+});
+
+test("reemplazar etiquetas rechaza un valor que no sea una lista", async () => {
+    await assert.rejects(
+        FichaEtiqueta.reemplazar(34, null),
+        /Las etiquetas deben enviarse como una lista/
+    );
+});
