@@ -1,5 +1,7 @@
 -- Ejecutar manualmente en Supabase SQL Editor SOLO después de importar las cuentas a Supabase Auth.
 -- No crea ni elimina cuentas Auth. No continuar si falta vincular algún perfil.
+-- Esta primera migración conserva firebase_uid para permitir una reversión controlada.
+-- La retirada de esa columna debe hacerse en otra migración, después de validar producción.
 BEGIN;
 
 ALTER TABLE public.usuario
@@ -30,8 +32,6 @@ $$;
 CREATE UNIQUE INDEX IF NOT EXISTS usuario_supabase_uid_unique
     ON public.usuario (supabase_uid);
 
--- Solo se elimina el identificador antiguo cuando todos los perfiles ya quedaron asociados.
-ALTER TABLE public.usuario
-    DROP COLUMN IF EXISTS firebase_uid;
-
+-- No eliminar firebase_uid en esta etapa: se conserva para permitir volver temporalmente
+-- al código anterior si las pruebas de Supabase Auth fallan.
 COMMIT;

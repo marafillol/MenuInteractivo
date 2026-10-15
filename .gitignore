@@ -6,3 +6,6 @@ public/uploads/
 .env.*
 !.env.example
 
+# Credenciales privadas de Firebase: mantenerlas excluidas aunque el proyecto migre de proveedor
+src/firebase/serviceAccountKey.json
+museo-malvinas-firebase-adminsdk-*.json
