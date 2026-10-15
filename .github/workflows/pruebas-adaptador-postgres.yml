@@ -40,6 +40,10 @@ jobs:
           node --check src/config/supabaseAuth.js
           node --check src/middleware/autenticarSupabase.js
           node --check src/controladores/usuarios.js
+          node --check --input-type=module < src/frontend-admin/js/login.js
+          node --check --input-type=module < src/frontend-admin/js/supabaseClient.js
+          node --check --input-type=module < src/frontend-admin/js/authSupabase.js
+          node --check src/frontend-admin/js/apiSupabase.js
           node --check src/frontend-admin/js/multimedia.js
           node --check src/utilidades/interpretarJson.js
           node --check scripts/verificar-adaptador-postgres-lectura.js
