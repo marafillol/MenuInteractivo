@@ -123,7 +123,13 @@ test("withTransaction confirma las consultas sobre un cliente dedicado", async (
 
     assert.equal(resultado, "terminado");
     assert.deepEqual(
-        consultasTransaccion.map((sql) => sql.split(/\\s+/).slice(0, 2).join(" ").toUpperCase()),
+        consultasTransaccion.map((sql) => {
+            const normalizada = sql.trim().toUpperCase();
+            if (normalizada.startsWith("BEGIN")) return "BEGIN";
+            if (normalizada.startsWith("DELETE FROM")) return "DELETE FROM";
+            if (normalizada.startsWith("INSERT INTO")) return "INSERT INTO";
+            return normalizada;
+        }),
         ["BEGIN", "DELETE FROM", "INSERT INTO", "COMMIT"]
     );
     assert.equal(clientesLiberados, 1);
