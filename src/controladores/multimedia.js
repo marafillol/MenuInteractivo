@@ -95,8 +95,10 @@ const crearMultimedia = async(req,res)=>{
 
             activo: req.body.activo ?? 1,
 
-            creado:fechaArgentina(),
+            // creado es timestamptz en PostgreSQL: guardar el instante con zona UTC explícita.
+            creado: new Date().toISOString(),
 
+            // actualizado es TEXT y la interfaz espera la hora local argentina.
             actualizado: fechaArgentina()
 
         };
