@@ -83,6 +83,10 @@ test("actualizar multimedia inexistente devuelve 404 sin subir archivos ni escri
 });
 
 test("eliminar multimedia inexistente devuelve 404", async () => {
+    estado.obtenerPorId = async () => ({
+        id_multi: 99999,
+        ruta_archivo: "https://ejemplo.invalid/archivo.png"
+    });
     estado.eliminar = async () => {
         throw new Error("No se encontró la multimedia.");
     };
@@ -95,6 +99,10 @@ test("eliminar multimedia inexistente devuelve 404", async () => {
 });
 
 test("un error inesperado al eliminar multimedia mantiene respuesta 500", async () => {
+    estado.obtenerPorId = async () => ({
+        id_multi: 8,
+        ruta_archivo: "https://ejemplo.invalid/archivo.png"
+    });
     estado.eliminar = async () => {
         throw new Error("Error interno simulado.");
     };
