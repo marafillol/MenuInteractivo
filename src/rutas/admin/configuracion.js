@@ -1,34 +1,34 @@
 const express = require("express");
 const router = express.Router();
 
-const autenticarFirebase = require("../../middleware/autenticarFirebase");
+const autenticarSupabase = require("../../middleware/autenticarSupabase");
 const verificarRol = require("../../middleware/verificarRol");
 const controlador = require("../../controladores/configuracion");
 
 router.get(
     "/estilo-visitante",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     controlador.obtenerEstiloVisitante
 );
 
 router.put(
     "/estilo-visitante",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     controlador.guardarEstiloVisitante
 );
 
 router.get(
     "/estilo-admin",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     controlador.obtenerEstiloAdmin
 );
 
 router.put(
     "/estilo-admin",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     controlador.guardarEstiloAdmin
 );
