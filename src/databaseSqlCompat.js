@@ -23,14 +23,14 @@ function traducirFuncionesFecha(consulta) {
                 const desplazada = resto.match(/^datetime\s*\(\s*'now'\s*,\s*'-3 hours'\s*\)/i);
                 if (desplazada) {
                     salida += actualizadoTexto
-                        ? "TO_CHAR(CURRENT_TIMESTAMP - INTERVAL '3 hours', 'YYYY-MM-DD HH24:MI:SS')"
-                        : "(CURRENT_TIMESTAMP - INTERVAL '3 hours')";
+                        ? "TO_CHAR(CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM-DD HH24:MI:SS')"
+                        : "CURRENT_TIMESTAMP";
                     i += desplazada[0].length; continue;
                 }
-                const actual = resto.match(/^datetime\s*\(\s*'now'\s*\)/i);
+                const actual = resto.match(/^datetime\\s*\\(\\s*'now'\\s*\\)/i);
                 if (actual) {
                     salida += actualizadoTexto
-                        ? "TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS')"
+                        ? "TO_CHAR(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')"
                         : "CURRENT_TIMESTAMP";
                     i += actual[0].length; continue;
                 }
