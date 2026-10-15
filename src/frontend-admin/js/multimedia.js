@@ -1553,8 +1553,11 @@ async function guardarMultimedia() {
 
         cerrarNuevoMultimedia();
 
-
         await cargarMultimedia();
+
+        if (resultado.advertencia) {
+            mostrarMensaje("Aviso", resultado.advertencia);
+        }
 
 
     } catch (error) {
@@ -2466,8 +2469,11 @@ async function confirmarEliminarMultimedia() {
 
         cerrarEliminarMultimedia();
 
-
         await cargarMultimedia();
+
+        if (resultado.advertencia) {
+            mostrarMensaje("Aviso", resultado.advertencia);
+        }
 
 
     } catch (error) {
