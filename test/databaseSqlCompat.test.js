@@ -25,3 +25,10 @@ test("traduce fechas SQLite respetando columnas textuales y temporales", () => {
 test("traduce INSERT OR REPLACE de configuración a upsert", () => {
     assert.equal(traducirConsulta("INSERT OR REPLACE INTO configuracion(clave, valor, actualizado) VALUES (?, ?, CURRENT_TIMESTAMP);"), "INSERT INTO configuracion(clave, valor, actualizado) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, actualizado = EXCLUDED.actualizado");
 });
+
+test("convierte CURRENT_TIMESTAMP a texto al actualizar la fecha de una plantilla", () => {
+    assert.equal(
+        traducirConsulta("UPDATE plantilla SET nombre = ?, actualizado = CURRENT_TIMESTAMP WHERE id_plantilla = ?"),
+        "UPDATE plantilla SET nombre = $1, actualizado = TO_CHAR(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS') WHERE id_plantilla = $2"
+    );
+});
