@@ -1,5 +1,6 @@
 const Ficha =
 require("../../modelos/public/ficha");
+const { interpretarJson } = require("../../utilidades/interpretarJson");
 
 async function obtenerFichas(req,res){
 
@@ -15,7 +16,7 @@ async function obtenerFichas(req,res){
             ficha.datos_json =
             ficha.datos_json
             ?
-            JSON.parse(ficha.datos_json)
+            interpretarJson(ficha.datos_json)
             :
             {};
 
@@ -23,7 +24,7 @@ async function obtenerFichas(req,res){
             ficha.plantilla =
             ficha.plantilla_json
             ?
-            JSON.parse(ficha.plantilla_json)
+            interpretarJson(ficha.plantilla_json)
             :
             null;
 
@@ -72,7 +73,7 @@ async function obtenerFichasPorMenu(req,res){
             ficha.datos_json =
             ficha.datos_json
             ?
-            JSON.parse(ficha.datos_json)
+            interpretarJson(ficha.datos_json)
             :
             {};
 
@@ -80,7 +81,7 @@ async function obtenerFichasPorMenu(req,res){
             ficha.plantilla =
             ficha.plantilla_json
             ?
-            JSON.parse(ficha.plantilla_json)
+            interpretarJson(ficha.plantilla_json)
             :
             null;
 
@@ -123,14 +124,14 @@ async function obtenerFichasPorEtiqueta(req,res){
             ficha.datos_json =
             ficha.datos_json
             ?
-            JSON.parse(ficha.datos_json)
+            interpretarJson(ficha.datos_json)
             :
             {};
 
             ficha.plantilla =
             ficha.plantilla_json
             ?
-            JSON.parse(ficha.plantilla_json)
+            interpretarJson(ficha.plantilla_json)
             :
             null;
 
@@ -191,7 +192,7 @@ async function obtenerFichaPorId(req,res){
         if(ficha.datos_json){
 
             ficha.datos_json =
-            JSON.parse(ficha.datos_json);
+            interpretarJson(ficha.datos_json);
 
         }else{
 
@@ -203,7 +204,7 @@ async function obtenerFichaPorId(req,res){
         if(ficha.plantilla_json){
 
             ficha.plantilla =
-            JSON.parse(ficha.plantilla_json);
+            interpretarJson(ficha.plantilla_json);
 
             delete ficha.plantilla_json;
 
