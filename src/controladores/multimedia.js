@@ -11,7 +11,7 @@ const miniaturaPorTipo = (tipo) => ({
 }[tipo] || "📁");
 
 const idPositivo = (valor) =>
-    /^\\d+$/.test(String(valor ?? "")) &&
+    /^\d+$/.test(String(valor ?? "")) &&
     Number.isSafeInteger(Number(valor)) &&
     Number(valor) > 0;
 
