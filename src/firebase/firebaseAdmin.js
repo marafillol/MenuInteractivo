@@ -2,73 +2,41 @@ const {
     initializeApp,
     getApps,
     cert
-}
-=
-require("firebase-admin/app");
+} = require("firebase-admin/app");
 
-
-const {
-    getAuth
-}
-=
-require("firebase-admin/auth");
-
-
+const { getAuth } = require("firebase-admin/auth");
 const fs = require("fs");
 const path = require("path");
 
-const rutaClaveLocal =
-path.join(__dirname, "serviceAccountKey.json");
+const rutaClaveLocal = path.join(__dirname, "serviceAccountKey.json");
+const rutaClaveRender = "/etc/secrets/serviceAccountKey.json";
+const rutaClaveFirebase = fs.existsSync(rutaClaveLocal)
+    ? rutaClaveLocal
+    : rutaClaveRender;
 
-const rutaClaveRender =
-"/etc/secrets/serviceAccountKey.json";
+let auth = null;
 
-const rutaClaveFirebase =
-fs.existsSync(rutaClaveLocal)
-? rutaClaveLocal
-: rutaClaveRender;
-
-if(!fs.existsSync(rutaClaveFirebase)){
-
-    throw new Error(
-        "No se encontro la clave de Firebase. Configura el secreto serviceAccountKey.json en Render."
+if (fs.existsSync(rutaClaveFirebase)) {
+    const serviceAccount = JSON.parse(
+        fs.readFileSync(rutaClaveFirebase, "utf8")
     );
 
+    if (getApps().length === 0) {
+        initializeApp({
+            credential: cert(serviceAccount)
+        });
+    }
+
+    auth = getAuth();
+} else if (getApps().length > 0) {
+    // Si otro módulo inicializó Firebase Admin, reutilizar la app existente.
+    auth = getAuth();
+} else {
+    // Permite iniciar rutas públicas en entornos locales sin la clave.
+    // El middleware protegido responde 503 mientras Firebase no esté configurado.
+    console.warn(
+        "Firebase Admin no está configurado en este entorno; las rutas protegidas no estarán disponibles."
+    );
 }
 
-const serviceAccount =
-JSON.parse(
-    fs.readFileSync(rutaClaveFirebase, "utf8")
-);
-
-
-
-// =======================================
-// INICIALIZAR FIREBASE ADMIN
-// =======================================
-
-if(getApps().length === 0){
-
-
-    initializeApp({
-
-        credential:
-        cert(serviceAccount)
-
-    });
-
-
-}
-
-
-
-// =======================================
-// EXPORTAR AUTH
-// =======================================
-
-module.exports = {
-
-    auth:
-    getAuth()
-
-};
+module.exports = { auth };
