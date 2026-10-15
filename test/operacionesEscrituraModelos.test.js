@@ -310,6 +310,21 @@ test("reemplazar etiquetas con una lista vacía quita las asociaciones de esa fi
     assert.match(llamadas[0].sql, /DELETE\s+FROM\s+ficha_etiqueta/i);
 });
 
+test("reemplazar etiquetas rechaza IDs inválidos antes de iniciar una escritura", async () => {
+    llamadas.length = 0;
+    await assert.rejects(
+        FichaEtiqueta.reemplazar(34, [0]),
+        /ID entero positivo/
+    );
+    assert.deepEqual(llamadas, []);
+
+    await assert.rejects(
+        FichaEtiqueta.reemplazar(0, [2]),
+        /ficha debe tener un ID entero positivo/
+    );
+    assert.deepEqual(llamadas, []);
+});
+
 test("guardar configuración usa el upsert compatible y conserva el JSON recibido", async () => {
     llamadas.length = 0;
     const valor = JSON.stringify({ fondo: "pergamino", tiempoInactividad: 30 });

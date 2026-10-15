@@ -80,6 +80,56 @@ test("guardarRelaciones agrega las nuevas sin borrar las relaciones existentes",
         assert.deepEqual(llamadas, []);
     });
 
+    await t.test("rechaza IDs inválidos antes de ejecutar consultas", async () => {
+        llamadas.length = 0;
+        await assert.rejects(
+            RelacionFicha.guardarRelaciones("10", [{ id_ficha_destino: "abc", tipo_relacion: "relacionada" }]),
+            /ID de destino válido/
+        );
+        assert.deepEqual(llamadas, []);
+
+        await assert.rejects(
+            RelacionFicha.guardarRelaciones("no-id", [{ id_ficha_destino: "12", tipo_relacion: "relacionada" }]),
+            /ficha de origen debe tener un ID entero positivo/
+        );
+        assert.deepEqual(llamadas, []);
+    });
+
+    await t.test("usa transacción PostgreSQL para añadir relaciones sin borrar las existentes", async () => {
+        llamadas.length = 0;
+        dbFalso.withTransaction = async (trabajo) => {
+            llamadas.push({ tipo: "tx", accion: "BEGIN" });
+            try {
+                const resultado = await trabajo(async (sql, parametros) => {
+                    llamadas.push({ tipo: "txQuery", sql, parametros });
+                    return { rows: [], rowCount: 1 };
+                });
+                llamadas.push({ tipo: "tx", accion: "COMMIT" });
+                return resultado;
+            } catch (error) {
+                llamadas.push({ tipo: "tx", accion: "ROLLBACK" });
+                throw error;
+            }
+        };
+
+        try {
+            await RelacionFicha.guardarRelaciones("10", [
+                { id_ficha_destino: "12", tipo_relacion: "relacionada" },
+                { id_ficha_destino: "15", tipo_relacion: "complementaria" }
+            ]);
+            assert.deepEqual(
+                llamadas.filter((x) => x.tipo === "tx").map((x) => x.accion),
+                ["BEGIN", "COMMIT"]
+            );
+            const queries = llamadas.filter((x) => x.tipo === "txQuery");
+            assert.equal(queries.length, 2);
+            assert.ok(queries.every((x) => /INSERT INTO relacion_ficha/i.test(x.sql)));
+            assert.equal(queries.some((x) => /DELETE FROM relacion_ficha/i.test(x.sql)), false);
+        } finally {
+            delete dbFalso.withTransaction;
+        }
+    });
+
     await t.test("rechaza un valor que no sea una lista", async () => {
         llamadas.length = 0;
 

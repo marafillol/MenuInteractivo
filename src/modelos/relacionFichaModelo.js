@@ -248,46 +248,68 @@ class RelacionFicha {
     // - relaciones: lista de relaciones nuevas.
     //
 
-    static guardarRelaciones(idFicha, relaciones) {
+        static guardarRelaciones(idFicha, relaciones) {
+        if (!Number.isSafeInteger(Number(idFicha)) || Number(idFicha) <= 0) {
+            return Promise.reject(new TypeError("La ficha de origen debe tener un ID entero positivo."));
+        }
+        if (!Array.isArray(relaciones)) {
+            return Promise.reject(new TypeError("Las relaciones deben enviarse como una lista."));
+        }
+
+        const relacionesValidas = relaciones.every((relacion) => {
+            if (!relacion || typeof relacion !== "object" || Array.isArray(relacion)) {
+                return false;
+            }
+            if (!Number.isSafeInteger(Number(relacion.id_ficha_destino)) ||
+                Number(relacion.id_ficha_destino) <= 0) {
+                return false;
+            }
+            return relacion.tipo_relacion === undefined ||
+                relacion.tipo_relacion === null ||
+                typeof relacion.tipo_relacion === "string";
+        });
+
+        if (!relacionesValidas) {
+            return Promise.reject(
+                new TypeError("Cada relación debe tener un ID de destino válido y un tipo de texto.")
+            );
+        }
+
+        if (relaciones.length === 0) {
+            return Promise.resolve();
+        }
+
+        // PostgreSQL: insertar de forma atómica sin borrar relaciones existentes.
+        if (typeof db.withTransaction === "function") {
+            return db.withTransaction(async (consultar) => {
+                for (const relacion of relaciones) {
+                    await consultar(
+                        "INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)",
+                        [idFicha, relacion.id_ficha_destino, relacion.tipo_relacion ?? null]
+                    );
+                }
+            });
+        }
+
+        // Compatibilidad con SQLite.
         return new Promise((resolve, reject) => {
-            if (!Array.isArray(relaciones)) {
-                reject(new TypeError("Las relaciones deben enviarse como una lista."));
-                return;
-            }
-
-            if (relaciones.length === 0) {
-                resolve();
-                return;
-            }
-
             try {
                 db.serialize(() => {
                     const sentencia = db.prepare(
-                        `
-                        INSERT INTO relacion_ficha
-                        (
-                            id_ficha_origen,
-                            id_ficha_destino,
-                            tipo_relacion
-                        )
-                        VALUES (?, ?, ?)
-                        `
+                        "INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)"
                     );
 
                     relaciones.forEach((relacion) => {
                         sentencia.run(
                             idFicha,
                             relacion.id_ficha_destino,
-                            relacion.tipo_relacion
+                            relacion.tipo_relacion ?? null
                         );
                     });
 
                     sentencia.finalize((error) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve();
-                        }
+                        if (error) reject(error);
+                        else resolve();
                     });
                 });
             } catch (error) {
@@ -295,6 +317,7 @@ class RelacionFicha {
             }
         });
     }
+
 
 
     // ===================================================

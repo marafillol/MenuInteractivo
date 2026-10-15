@@ -156,16 +156,18 @@ class FichaEtiqueta {
     // - etiquetas: arreglo con IDs de etiquetas.
     //
 
-    static reemplazar(idFicha, etiquetas){
-
+        static reemplazar(idFicha, etiquetas) {
+        if (!Number.isSafeInteger(Number(idFicha)) || Number(idFicha) <= 0) {
+            return Promise.reject(new TypeError("La ficha debe tener un ID entero positivo."));
+        }
         if (!Array.isArray(etiquetas)) {
-            return Promise.reject(
-                new TypeError("Las etiquetas deben enviarse como una lista.")
-            );
+            return Promise.reject(new TypeError("Las etiquetas deben enviarse como una lista."));
+        }
+        if (!etiquetas.every((id) => Number.isSafeInteger(Number(id)) && Number(id) > 0)) {
+            return Promise.reject(new TypeError("Cada etiqueta debe tener un ID entero positivo."));
         }
 
-        // PostgreSQL usa una transacción real: si falla una inserción,
-        // se revierten tanto las altas como la eliminación previa.
+        // PostgreSQL usa una transacción real: un error revierte el DELETE y las inserciones.
         if (typeof db.withTransaction === "function") {
             return db.withTransaction(async (consultar) => {
                 await consultar(
@@ -218,6 +220,7 @@ class FichaEtiqueta {
             });
         });
     }
+
 
     // =======================================================
     // OBTENER FICHAS DE UNA ETIQUETA
