@@ -26,3 +26,14 @@ No publiques ni compartas la clave de servicio. Nunca debe llegar al navegador.
 El script `scripts/migrar-supabase.js` es el antiguo importador de datos desde SQLite y exige que las tablas destino estén vacías. **No lo ejecutes contra la base de Supabase que ya contiene datos**, porque está diseñado para una migración inicial, no para actualizar una base ya poblada.
 
 La eliminación de Firebase Auth es un cambio independiente de la migración de menús, fichas y archivos multimedia. No borres usuarios ni ejecutes SQL destructivo solo para probar la aplicación.
+## Auditoría de datos y archivos
+
+Antes de declarar completa la migración, ejecuta en un entorno local seguro:
+
+```bash
+node scripts/verificar-supabase-completo.js
+```
+
+Este informe usa consultas de solo lectura y el listado de Storage. Presenta conteos de tablas, cantidad de archivos en el bucket y categorías de las rutas de imágenes (Supabase Storage, rutas antiguas, URL externas y otras rutas), sin mostrar URLs individuales ni modificar datos. Requiere `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y, opcionalmente, `SUPABASE_BUCKET`. No subas el archivo `.env` ni compartas las credenciales.
+
+La auditoría no demuestra por sí sola que cada archivo se pueda descargar en el navegador; después de revisar sus conteos se debe probar una muestra de URL pública y realizar una carga de prueba controlada. El script no crea, reemplaza ni borra archivos.
