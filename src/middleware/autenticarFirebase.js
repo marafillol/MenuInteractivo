@@ -17,6 +17,12 @@ require("../modelos/usuario");
 
 const autenticarFirebase = async(req,res,next)=>{
 
+    if (!auth) {
+        return res.status(503).json({
+            error: "La autenticación de Firebase no está configurada en este entorno."
+        });
+    }
+
     try{
 
 
