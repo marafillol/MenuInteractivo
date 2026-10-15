@@ -1,0 +1,30 @@
+name: pruebas-adaptador-postgres
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - fix/postgres-adapter-compat
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ejecutar pruebas automatizadas
+        run: npm test
+      - name: Comprobar sintaxis
+        run: |
+          node --check src/databasePostgres.js
+          node --check src/databaseSqlCompat.js
+          node --check src/utilidades/interpretarJson.js
