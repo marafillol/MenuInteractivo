@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "node --test test/controladorFichasPublicas.test.js test/databasePostgres.test.js test/databaseSqlCompat.test.js test/interpretarJson.test.js test/interpretarDatosJson.test.js test/relacionFichaModelo.test.js test/operacionesEscrituraModelos.test.js test/controladorMultimediaErrores.test.js test/almacenamientoSupabase.test.js test/autenticarSupabase.test.js test/migracionSupabaseAuth.test.js"
+    "test": "node --test test/controladorFichasPublicas.test.js test/databasePostgres.test.js test/databaseSqlCompat.test.js test/interpretarJson.test.js test/interpretarDatosJson.test.js test/relacionFichaModelo.test.js test/operacionesEscrituraModelos.test.js test/controladorMultimediaErrores.test.js test/almacenamientoSupabase.test.js test/autenticarSupabase.test.js test/migracionSupabaseAuth.test.js test/controladorUsuariosSupabase.test.js"
   },
   "keywords": [],
   "author": "",
