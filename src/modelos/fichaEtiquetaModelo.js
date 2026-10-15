@@ -158,128 +158,65 @@ class FichaEtiqueta {
 
     static reemplazar(idFicha, etiquetas){
 
-        return new Promise((resolve,reject)=>{
+        if (!Array.isArray(etiquetas)) {
+            return Promise.reject(
+                new TypeError("Las etiquetas deben enviarse como una lista.")
+            );
+        }
 
-            db.serialize(()=>{
-
-
-
-                // ---------------------------------------
-                // ELIMINAR RELACIONES EXISTENTES
-                // ---------------------------------------
-
-                db.run(
-                    `
-                    DELETE
-                    FROM ficha_etiqueta
-                    WHERE id_ficha=?
-                    `,
-                    [idFicha],
-                    (error)=>{
-
-                        if(error){
-
-                            reject(error);
-
-                            return;
-
-                        }
-
-
-
-
-
-                        // ---------------------------------------
-                        // SI NO HAY ETIQUETAS NUEVAS
-                        // FINALIZA LA OPERACIÓN
-                        // ---------------------------------------
-
-                        if(etiquetas.length===0){
-
-                            resolve(true);
-
-                            return;
-
-                        }
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // INSERTAR NUEVAS RELACIONES
-                        // ---------------------------------------
-
-                        const consulta =
-                        `
-                        INSERT INTO ficha_etiqueta
-                        (
-                            id_ficha,
-                            id_etiqueta
-                        )
-                        VALUES (?,?)
-                        `;
-
-
-
-
-                        // Sentencia preparada para
-                        // insertar múltiples relaciones.
-
-                        const sentencia =
-                        db.prepare(consulta);
-
-
-
-
-
-
-                        etiquetas.forEach(idEtiqueta=>{
-
-
-                            sentencia.run(
-
-                                idFicha,
-
-                                idEtiqueta
-
-                            );
-
-
-                        });
-
-
-
-
-
-
-                        // Finaliza la sentencia preparada
-
-                        sentencia.finalize((error)=>{
-
-
-                            if(error)
-
-                                reject(error);
-
-                            else
-
-                                resolve(true);
-
-
-                        });
-
-
-
-                    }
-
+        // PostgreSQL usa una transacción real: si falla una inserción,
+        // se revierten tanto las altas como la eliminación previa.
+        if (typeof db.withTransaction === "function") {
+            return db.withTransaction(async (consultar) => {
+                await consultar(
+                    "DELETE FROM ficha_etiqueta WHERE id_ficha = ?",
+                    [idFicha]
                 );
 
+                for (const idEtiqueta of etiquetas) {
+                    await consultar(
+                        "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)",
+                        [idFicha, idEtiqueta]
+                    );
+                }
+
+                return true;
             });
+        }
 
+        // Compatibilidad con SQLite, que mantiene su API de callbacks.
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run(
+                    "DELETE FROM ficha_etiqueta WHERE id_ficha = ?",
+                    [idFicha],
+                    (error) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        if (etiquetas.length === 0) {
+                            resolve(true);
+                            return;
+                        }
+
+                        const sentencia = db.prepare(
+                            "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)"
+                        );
+
+                        etiquetas.forEach((idEtiqueta) => {
+                            sentencia.run(idFicha, idEtiqueta);
+                        });
+
+                        sentencia.finalize((errorFinal) => {
+                            if (errorFinal) reject(errorFinal);
+                            else resolve(true);
+                        });
+                    }
+                );
+            });
         });
-
     }
 
     // =======================================================
