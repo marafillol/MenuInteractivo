@@ -2,7 +2,7 @@
 /* =========================================================
    USUARIOS
    Museo Malvinas
-   Gestión de usuarios / Firebase
+   Gestión de usuarios
 ========================================================= */
 
 console.log("usuarios.js cargado");
@@ -26,7 +26,7 @@ async function cargarUsuarios() {
     try {
 
         const token =
-            await window.obtenerTokenFirebase();
+            await window.obtenerTokenSupabase();
 
         const respuesta =
             await window.fetchProtegido(
@@ -165,7 +165,7 @@ function abrirModalEliminarUsuarios(id, nombre) {
             al usuario <strong>${nombre}</strong>?
             <br><br>
             Esta acción eliminará el usuario
-            del sistema y de Firebase.
+            del sistema y de Supabase Auth.
         `;
     }
 
@@ -432,7 +432,7 @@ async function guardarUsuarioUsuarios() {
     try {
 
         const token =
-            await window.obtenerTokenFirebase();
+            await window.obtenerTokenSupabase();
 
         let url = "/api/usuarios";
         let metodo = "POST";
@@ -572,7 +572,7 @@ async function editarUsuarioUsuarios(id) {
     try {
 
         const token =
-            await window.obtenerTokenFirebase();
+            await window.obtenerTokenSupabase();
 
         const respuesta =
             await window.fetchProtegido(
@@ -729,7 +729,7 @@ async function guardarPasswordUsuarios() {
     try {
 
         const token =
-            await window.obtenerTokenFirebase();
+            await window.obtenerTokenSupabase();
 
 
         const respuesta =
