@@ -151,6 +151,12 @@ const actualizarMultimedia = async(req,res)=>{
         const multimediaActual =
         await Multimedia.obtenerPorId(req.params.id);
 
+        if (!multimediaActual) {
+            return res.status(404).json({
+                error: "No se encontró la multimedia."
+            });
+        }
+
         const datos = {
 
             id_ficha: req.body.id_ficha,
@@ -214,7 +220,9 @@ const eliminarMultimedia = async(req,res)=>{
 
     }catch(error){
 
-        res.status(500).json({
+        const noEncontrada = error.message === "No se encontró la multimedia.";
+
+        res.status(noEncontrada ? 404 : 500).json({
 
             error:error.message
 
