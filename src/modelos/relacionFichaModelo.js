@@ -235,46 +235,17 @@ class RelacionFicha {
 
 
     // ===================================================
-    // GUARDAR RELACIONES DE UNA FICHA
+    // AGREGAR RELACIONES A UNA FICHA
     // ===================================================
     //
-    // Actualiza las relaciones de una ficha.
-    //
-    // Funcionamiento:
-    //
-    // 1) Elimina todas las relaciones actuales
-    //    de la ficha origen.
-    //
-    // 2) Inserta nuevamente las relaciones recibidas.
-    //
-    //
-    // Ejemplo:
-    //
-    // Antes:
-    //
-    // Ficha A
-    //  |
-    //  ├── Ficha B
-    //  └── Ficha C
-    //
-    //
-    // Nuevas relaciones:
-    //
-    //  ├── Ficha C
-    //  └── Ficha D
-    //
-    //
-    // Resultado:
-    //
-    // Ficha A
-    //  |
-    //  ├── Ficha C
-    //  └── Ficha D
-    //
+    // Inserta las relaciones nuevas recibidas desde el panel.
+    // Las relaciones que se quitaron se eliminan por separado
+    // mediante eliminarRelacion(), por lo que esta función
+    // no debe borrar relaciones existentes.
     //
     // Recibe:
     // - idFicha: ficha origen.
-    // - relaciones: arreglo de relaciones nuevas.
+    // - relaciones: lista de relaciones nuevas.
     //
 
     static guardarRelaciones(idFicha, relaciones) {
