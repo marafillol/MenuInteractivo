@@ -40,12 +40,17 @@ const guardarRelacionesFicha = async(req,res)=>{
 
     try{
 
+        const relaciones = req.body?.relaciones;
+
+        if (!Array.isArray(relaciones)) {
+            return res.status(400).json({
+                error: "El campo relaciones debe ser un arreglo."
+            });
+        }
+
         await RelacionFicha.guardarRelaciones(
-
             req.params.id,
-
-            req.body.relaciones || []
-
+            relaciones
         );
 
         res.json({
@@ -56,12 +61,13 @@ const guardarRelacionesFicha = async(req,res)=>{
 
     }catch(error){
 
+        if (error instanceof TypeError) {
+            return res.status(400).json({ error: error.message });
+        }
+
         res.status(500).json({
-
             error:error.message
-
         });
-
     }
 
 };

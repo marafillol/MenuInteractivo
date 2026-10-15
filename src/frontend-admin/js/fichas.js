@@ -1,5 +1,22 @@
 console.log("Modulo fichas cargado");
 
+function interpretarDatosJsonFrontend(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        return valor;
+    }
+    if (typeof valor === "string") {
+        try {
+            const resultado = JSON.parse(valor);
+            return resultado && typeof resultado === "object" && !Array.isArray(resultado)
+                ? resultado
+                : {};
+        } catch (_) {
+            return {};
+        }
+    }
+    return {};
+}
+
 function obtenerRutaImagenFicha(ruta) {
 
     if (!ruta) {
@@ -465,12 +482,7 @@ async function vistaPreviaFicha(id_ficha) {
 
             try {
 
-                datos =
-                    ficha.datos_json
-                        ? JSON.parse(
-                            ficha.datos_json
-                        )
-                        : {};
+                datos = interpretarDatosJsonFrontend(ficha.datos_json);
 
             } catch (error) {
 
@@ -1254,12 +1266,7 @@ async function editarFicha(id_ficha) {
 
         try {
 
-            datos =
-                ficha.datos_json
-                    ? JSON.parse(
-                        ficha.datos_json
-                    )
-                    : {};
+            datos = interpretarDatosJsonFrontend(ficha.datos_json);
 
         } catch (error) {
 

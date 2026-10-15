@@ -277,148 +277,96 @@ class RelacionFicha {
     // - relaciones: arreglo de relaciones nuevas.
     //
 
-    static guardarRelaciones(idFicha,relaciones){
-
-        return new Promise((resolve,reject)=>{
-
-
-            db.serialize(()=>{
-
-
-
-
-
-                // ---------------------------------------
-                // ELIMINAR RELACIONES EXISTENTES
-                // ---------------------------------------
-
-                db.run(
-
-                    `
-                    DELETE FROM relacion_ficha
-                    WHERE id_ficha_origen = ?
-                    `,
-
-
-                    [idFicha],
-
-
-                    error=>{
-
-
-                        if(error){
-
-
-                            reject(error);
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // SI NO EXISTEN RELACIONES NUEVAS
-                        // FINALIZA LA OPERACIÓN
-                        // ---------------------------------------
-
-                        if(relaciones.length===0){
-
-
-                            resolve();
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // INSERTAR NUEVAS RELACIONES
-                        // ---------------------------------------
-
-                        const sentencia = db.prepare(
-
-                            `
-                            INSERT INTO relacion_ficha
-                            (
-                                id_ficha_origen,
-                                id_ficha_destino,
-                                tipo_relacion
-                            )
-                            VALUES(?,?,?)
-                            `
-
-                        );
-
-
-
-
-
-
-                        relaciones.forEach(relacion=>{
-
-
-                            sentencia.run(
-
-                                idFicha,
-
-                                relacion.id_ficha_destino,
-
-                                relacion.tipo_relacion
-
-                            );
-
-
-                        });
-
-
-
-
-
-
-
-
-                        // Finaliza la sentencia preparada
-
-                        sentencia.finalize(error=>{
-
-
-                            if(error)
-
-                                reject(error);
-
-                            else
-
-                                resolve();
-
-
-                        });
-
-
-
-                    }
-
-                );
-
-
-
-            });
-
-
+        static guardarRelaciones(idFicha, relaciones) {
+        const idFichaNumerico = Number(idFicha);
+        if (!Number.isSafeInteger(idFichaNumerico) || idFichaNumerico <= 0) {
+            throw new TypeError("La ficha de origen debe tener un ID entero positivo.");
+        }
+        if (!Array.isArray(relaciones)) {
+            throw new TypeError("Las relaciones deben enviarse como un arreglo.");
+        }
+
+        const listaRelaciones = relaciones.map((relacion) => {
+            if (!relacion || typeof relacion !== "object" || Array.isArray(relacion)) {
+                throw new TypeError("Cada relación debe ser un objeto válido.");
+            }
+
+            const idDestino = Number(relacion.id_ficha_destino);
+            if (!Number.isSafeInteger(idDestino) || idDestino <= 0) {
+                throw new TypeError("Cada relación debe tener un ID de ficha destino entero positivo.");
+            }
+
+            if (relacion.tipo_relacion !== undefined &&
+                relacion.tipo_relacion !== null &&
+                typeof relacion.tipo_relacion !== "string") {
+                throw new TypeError("El tipo de relación debe ser texto o null.");
+            }
+
+            return {
+                id_ficha_destino: idDestino,
+                tipo_relacion: relacion.tipo_relacion ?? null
+            };
         });
 
+        if (typeof db.transaction === "function") {
+            return db.transaction(async (tx) => {
+                await tx.query(
+                    `DELETE FROM relacion_ficha WHERE id_ficha_origen = ?`,
+                    [idFichaNumerico]
+                );
+
+                for (const relacion of listaRelaciones) {
+                    await tx.query(
+                        `INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)`,
+                        [idFichaNumerico, relacion.id_ficha_destino, relacion.tipo_relacion]
+                    );
+                }
+            });
+        }
+
+        // SQLite conserva su implementación compatible con sqlite3.
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run(
+                    `DELETE FROM relacion_ficha WHERE id_ficha_origen = ?`,
+                    [idFichaNumerico],
+                    (error) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        if (listaRelaciones.length === 0) {
+                            resolve();
+                            return;
+                        }
+
+                        const sentencia = db.prepare(
+                            `INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)`
+                        );
+
+                        listaRelaciones.forEach((relacion) => {
+                            sentencia.run(
+                                idFichaNumerico,
+                                relacion.id_ficha_destino,
+                                relacion.tipo_relacion
+                            );
+                        });
+
+                        sentencia.finalize((errorFinal) => {
+                            if (errorFinal) {
+                                reject(errorFinal);
+                            } else {
+                                resolve();
+                            }
+                        });
+                    }
+                );
+            });
+        });
     }
+
+
 
 
 

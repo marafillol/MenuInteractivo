@@ -156,131 +156,80 @@ class FichaEtiqueta {
     // - etiquetas: arreglo con IDs de etiquetas.
     //
 
-    static reemplazar(idFicha, etiquetas){
-
-        return new Promise((resolve,reject)=>{
-
-            db.serialize(()=>{
-
-
-
-                // ---------------------------------------
-                // ELIMINAR RELACIONES EXISTENTES
-                // ---------------------------------------
-
-                db.run(
-                    `
-                    DELETE
-                    FROM ficha_etiqueta
-                    WHERE id_ficha=?
-                    `,
-                    [idFicha],
-                    (error)=>{
-
-                        if(error){
-
-                            reject(error);
-
-                            return;
-
-                        }
-
-
-
-
-
-                        // ---------------------------------------
-                        // SI NO HAY ETIQUETAS NUEVAS
-                        // FINALIZA LA OPERACIÓN
-                        // ---------------------------------------
-
-                        if(etiquetas.length===0){
-
-                            resolve(true);
-
-                            return;
-
-                        }
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // INSERTAR NUEVAS RELACIONES
-                        // ---------------------------------------
-
-                        const consulta =
-                        `
-                        INSERT INTO ficha_etiqueta
-                        (
-                            id_ficha,
-                            id_etiqueta
-                        )
-                        VALUES (?,?)
-                        `;
-
-
-
-
-                        // Sentencia preparada para
-                        // insertar múltiples relaciones.
-
-                        const sentencia =
-                        db.prepare(consulta);
-
-
-
-
-
-
-                        etiquetas.forEach(idEtiqueta=>{
-
-
-                            sentencia.run(
-
-                                idFicha,
-
-                                idEtiqueta
-
-                            );
-
-
-                        });
-
-
-
-
-
-
-                        // Finaliza la sentencia preparada
-
-                        sentencia.finalize((error)=>{
-
-
-                            if(error)
-
-                                reject(error);
-
-                            else
-
-                                resolve(true);
-
-
-                        });
-
-
-
-                    }
-
-                );
-
-            });
-
+        static reemplazar(idFicha, etiquetas) {
+        const idFichaNumerico = Number(idFicha);
+        if (!Number.isSafeInteger(idFichaNumerico) || idFichaNumerico <= 0) {
+            throw new TypeError("La ficha debe tener un ID entero positivo.");
+        }
+        if (!Array.isArray(etiquetas)) {
+            throw new TypeError("Las etiquetas deben enviarse como un arreglo.");
+        }
+
+        const listaEtiquetas = etiquetas.map((idEtiqueta) => {
+            const id = Number(idEtiqueta);
+            if (!Number.isSafeInteger(id) || id <= 0) {
+                throw new TypeError("Cada etiqueta debe tener un ID entero positivo.");
+            }
+            return id;
         });
 
+        if (typeof db.transaction === "function") {
+            return db.transaction(async (tx) => {
+                await tx.query(
+                    `DELETE FROM ficha_etiqueta WHERE id_ficha = ?`,
+                    [idFichaNumerico]
+                );
+
+                for (const idEtiqueta of listaEtiquetas) {
+                    await tx.query(
+                        `INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)`,
+                        [idFichaNumerico, idEtiqueta]
+                    );
+                }
+
+                return true;
+            });
+        }
+
+        // SQLite conserva su implementación compatible con sqlite3.
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run(
+                    `DELETE FROM ficha_etiqueta WHERE id_ficha = ?`,
+                    [idFichaNumerico],
+                    (error) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        if (listaEtiquetas.length === 0) {
+                            resolve(true);
+                            return;
+                        }
+
+                        const sentencia = db.prepare(
+                            `INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)`
+                        );
+
+                        listaEtiquetas.forEach((idEtiqueta) => {
+                            sentencia.run(idFichaNumerico, idEtiqueta);
+                        });
+
+                        sentencia.finalize((errorFinal) => {
+                            if (errorFinal) {
+                                reject(errorFinal);
+                            } else {
+                                resolve(true);
+                            }
+                        });
+                    }
+                );
+            });
+        });
     }
+
+
 
     // =======================================================
     // OBTENER FICHAS DE UNA ETIQUETA
