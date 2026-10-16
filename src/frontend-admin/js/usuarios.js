@@ -63,71 +63,40 @@ async function cargarUsuarios() {
             return;
         }
 
-        tabla.innerHTML = "";
+        tabla.replaceChildren();
 
         datos.forEach(usuario => {
+            const fila = document.createElement("tr");
+            fila.className = usuario.activo ? "" : "usuario-inactivo";
 
-            tabla.innerHTML += `
+            [
+                usuario.nombre,
+                usuario.email,
+                usuario.rol,
+                usuario.activo ? "Activo" : "Inactivo"
+            ].forEach(valor => {
+                const celda = document.createElement("td");
+                celda.textContent = String(valor ?? "");
+                fila.appendChild(celda);
+            });
 
-                <tr class="${
-                    usuario.activo
-                        ? ""
-                        : "usuario-inactivo"
-                }">
+            const celdaAcciones = document.createElement("td");
+            const acciones = [
+                ["Editar", () => editarUsuarioUsuarios(usuario.id_usuario)],
+                ["Cambiar contraseña", () => abrirCambioPasswordUsuarios(usuario.id_usuario)],
+                ["Eliminar", () => abrirModalEliminarUsuarios(usuario.id_usuario, usuario.nombre)]
+            ];
 
-                    <td>
-                        ${usuario.nombre}
-                    </td>
+            acciones.forEach(([etiqueta, accion]) => {
+                const boton = document.createElement("button");
+                boton.type = "button";
+                boton.textContent = etiqueta;
+                boton.addEventListener("click", accion);
+                celdaAcciones.appendChild(boton);
+            });
 
-                    <td>
-                        ${usuario.email}
-                    </td>
-
-                    <td>
-                        ${usuario.rol}
-                    </td>
-
-                    <td>
-                        ${usuario.activo
-                            ? "Activo"
-                            : "Inactivo"}
-                    </td>
-
-                    <td>
-
-                        <button
-                            type="button"
-                            onclick="editarUsuarioUsuarios(${usuario.id_usuario})">
-
-                            Editar
-
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick="abrirCambioPasswordUsuarios(${usuario.id_usuario})">
-
-                            Cambiar contraseña
-
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick="abrirModalEliminarUsuarios(
-                                ${usuario.id_usuario},
-                                '${usuario.nombre}'
-                            )">
-
-                            Eliminar
-
-                        </button>
-
-                    </td>
-
-                </tr>
-
-            `;
-
+            fila.appendChild(celdaAcciones);
+            tabla.appendChild(fila);
         });
 
     } catch (error) {
@@ -159,14 +128,8 @@ function abrirModalEliminarUsuarios(id, nombre) {
         );
 
     if (texto) {
-
-        texto.innerHTML = `
-            ¿Estás seguro de que querés eliminar
-            al usuario <strong>${nombre}</strong>?
-            <br><br>
-            Esta acción eliminará el usuario
-            del sistema y de Supabase Auth.
-        `;
+        texto.textContent =
+            `¿Estás seguro de que querés eliminar al usuario ${String(nombre ?? "")}? Esta acción eliminará el usuario del sistema y de Supabase Auth.`;
     }
 
     const modal =
