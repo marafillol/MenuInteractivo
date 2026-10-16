@@ -14,7 +14,7 @@ console.log("Modulo multimedia cargado");
 
 let multimediaEditando = null;
 let multimediaEliminar = null;
-
+let guardandoMultimedia = false;
 
 /* =========================================================
    UTILIDADES
@@ -1305,6 +1305,11 @@ async function cargarFichasMultimedia() {
 
 async function guardarMultimedia() {
 
+
+    if (guardandoMultimedia) {
+    return;
+}
+
     const archivoInput =
         obtenerElemento(
             "multiArchivo"
@@ -1455,6 +1460,20 @@ async function guardarMultimedia() {
             : "POST";
 
 
+            // Bloquear nuevos envíos mientras se procesa este
+            // guardado.
+        guardandoMultimedia = true;
+
+    const botonGuardar = document.querySelector(
+        '#modalMultimediaNuevo button[onclick*="guardarMultimedia"]'
+    );
+
+    if (botonGuardar) {
+        botonGuardar.disabled = true;
+        botonGuardar.textContent = "Guardando...";
+    }
+
+
     try {
 
         const respuesta =
@@ -1559,24 +1578,29 @@ async function guardarMultimedia() {
             mostrarMensaje("Aviso", resultado.advertencia);
         }
 
-
-    } catch (error) {
-
+        } catch (error) {
         console.error(
             "Error guardando multimedia:",
             error
         );
-
 
         mostrarMensaje(
             "Error",
             error.message ||
             "Ocurrió un error al guardar la multimedia."
         );
+    } finally {
+        // Permitir nuevos intentos de guardado.
+        guardandoMultimedia = false;
 
+        if (botonGuardar) {
+            botonGuardar.disabled = false;
+            botonGuardar.textContent = "Guardar";
+        }
     }
-
 }
+
+
 
 
 /* =========================================================
