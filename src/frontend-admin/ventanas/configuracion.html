@@ -3,44 +3,16 @@
     <div class="cabecera-configuracion">
         <div>
             <h2>Configuración</h2>
-            <p>Definí cómo se presenta el contenido y la orientación del tótem del museo.</p>
+            <p>Definí la orientación y la inactividad del tótem del museo.</p>
         </div>
     </div>
 
 
     <!-- =====================================================
-         PRESENTACIÓN DEL CONTENIDO
+         CONFIGURACIÓN DEL TÓTEM
          ===================================================== -->
 
     <form id="formularioEstiloVisitante" class="formulario-estilo-visitante">
-
-        <section class="bloque-configuracion">
-
-            <span class="referencia-configuracion">
-                MENÚ PÚBLICO
-            </span>
-
-            <h3>Presentación del contenido</h3>
-
-
-            <label for="densidadTarjetasConfiguracion">
-                Tamaño de tarjetas
-            </label>
-
-            <select id="densidadTarjetasConfiguracion">
-
-                <option value="normal">
-                    Normal
-                </option>
-
-                <option value="compacta">
-                    Compacta
-                </option>
-
-            </select>
-
-        </section>
-
 
         <!-- =================================================
              ORIENTACIÓN DEL TÓTEM
@@ -137,70 +109,6 @@
 
         <p
                 id="mensajeConfiguracion"
-                class="mensaje-configuracion"
-                aria-live="polite"
-        ></p>
-
-    </form>
-
-
-    <!-- =====================================================
-         CONFIGURACIÓN ADMIN
-         ===================================================== -->
-
-    <form
-            id="formularioEstiloAdmin"
-            class="formulario-estilo-admin"
-    >
-
-        <section class="bloque-configuracion">
-
-            <span class="referencia-configuracion">
-                PANEL ADMINISTRADOR
-            </span>
-
-            <h3>Presentación del contenido</h3>
-
-
-            <label for="densidadAdminConfiguracion">
-                Densidad de la interfaz
-            </label>
-
-            <select id="densidadAdminConfiguracion">
-
-                <option value="normal">
-                    Normal
-                </option>
-
-                <option value="compacta">
-                    Compacta
-                </option>
-
-            </select>
-
-
-            <p class="ayuda-configuracion">
-                La vista compacta reduce los espacios para
-                mostrar más información en pantalla.
-            </p>
-
-        </section>
-
-
-        <div class="acciones-configuracion">
-
-            <button
-                    type="submit"
-                    class="btn-guardar-configuracion"
-            >
-                Guardar configuración
-            </button>
-
-        </div>
-
-
-        <p
-                id="mensajeConfiguracionAdmin"
                 class="mensaje-configuracion"
                 aria-live="polite"
         ></p>

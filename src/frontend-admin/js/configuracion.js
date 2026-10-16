@@ -4,7 +4,7 @@
 //
 // Esta configuración maneja solamente:
 // • Orientación del tótem
-// • Presentación del contenido
+// • Tiempo de inactividad
 // =========================================================
 
 
@@ -46,24 +46,6 @@ async function cargarConfiguracionEstilo(){
             configuracion.error ||
             "No se pudo cargar la configuración."
         );
-
-    }
-
-
-    // -----------------------------------------------------
-    // PRESENTACIÓN DEL CONTENIDO
-    // -----------------------------------------------------
-
-    const densidad =
-        document.getElementById(
-            "densidadTarjetasConfiguracion"
-        );
-
-    if(densidad){
-
-        densidad.value =
-            configuracion.densidadTarjetas ||
-            "normal";
 
     }
 
@@ -204,27 +186,11 @@ async function guardarConfiguracionEstilo(evento){
     );
 
 
-    // -----------------------------------------------------
-    // PRESENTACIÓN DEL CONTENIDO
-    // -----------------------------------------------------
-
-    const densidad =
-        document.getElementById(
-            "densidadTarjetasConfiguracion"
-        );
-
-
     const configuracion = {
 
         orientacionTotem:
 
             orientacionTotem,
-
-        densidadTarjetas:
-
-            densidad
-                ? densidad.value
-                : "normal",
 
         // Solo se envía si el campo existe en el formulario
         ...(inputInactividad
@@ -279,174 +245,6 @@ async function guardarConfiguracionEstilo(evento){
     }catch(error){
 
         mostrarMensajeConfiguracion(
-            error.message,
-            true
-        );
-
-    }
-
-}
-
-
-// =========================================================
-// CONFIGURACIÓN DEL ADMIN
-// =========================================================
-//
-// Se mantiene solamente la configuración necesaria para
-// la presentación del contenido.
-//
-// Ya NO se manejan:
-// • colores
-// • fondos
-// • fuentes
-// • apariencia visual
-// =========================================================
-
-async function cargarConfiguracionAdmin(){
-
-    const respuesta =
-        await window.fetchProtegido(
-            "/api/configuracion/estilo-admin"
-        );
-
-
-    const configuracion =
-        await leerRespuestaConfiguracion(
-            respuesta
-        );
-
-
-    if(!respuesta.ok){
-
-        throw new Error(
-            configuracion.error ||
-            "No se pudo cargar la configuración del panel."
-        );
-
-    }
-
-
-    const densidad =
-        document.getElementById(
-            "densidadAdminConfiguracion"
-        );
-
-
-    if(densidad){
-
-        densidad.value =
-            configuracion.densidad ||
-            "normal";
-
-    }
-
-}
-
-
-// =========================================================
-// MENSAJE CONFIGURACIÓN ADMIN
-// =========================================================
-
-function mostrarMensajeConfiguracionAdmin(
-    mensaje,
-    esError = false
-){
-
-    const elemento =
-        document.getElementById(
-            "mensajeConfiguracionAdmin"
-        );
-
-
-    if(!elemento){
-
-        return;
-
-    }
-
-
-    elemento.textContent =
-        mensaje;
-
-
-    elemento.style.color =
-        esError
-            ? "#8b3a3a"
-            : "#163A61";
-
-}
-
-
-// =========================================================
-// GUARDAR CONFIGURACIÓN ADMIN
-// =========================================================
-
-async function guardarConfiguracionAdmin(evento){
-
-    evento.preventDefault();
-
-
-    const densidad =
-        document.getElementById(
-            "densidadAdminConfiguracion"
-        );
-
-
-    const configuracion = {
-
-        densidad:
-            densidad
-                ? densidad.value
-                : "normal"
-
-    };
-
-
-    try{
-
-        const respuesta =
-            await window.fetchProtegido(
-                "/api/configuracion/estilo-admin",
-                {
-                    method:"PUT",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(
-                            configuracion
-                        )
-                }
-            );
-
-
-        const resultado =
-            await leerRespuestaConfiguracion(
-                respuesta
-            );
-
-
-        if(!respuesta.ok){
-
-            throw new Error(
-                resultado.error ||
-                "No se pudo guardar la configuración."
-            );
-
-        }
-
-
-        mostrarMensajeConfiguracionAdmin(
-            "Configuración guardada correctamente."
-        );
-
-
-    }catch(error){
-
-        mostrarMensajeConfiguracionAdmin(
             error.message,
             true
         );
@@ -521,12 +319,6 @@ function iniciarConfiguracion(){
         );
 
 
-    const formularioAdmin =
-        document.getElementById(
-            "formularioEstiloAdmin"
-        );
-
-
     // -----------------------------------------------------
     // VISITANTE
     // -----------------------------------------------------
@@ -543,30 +335,6 @@ function iniciarConfiguracion(){
             .catch(
                 error =>
                     mostrarMensajeConfiguracion(
-                        error.message,
-                        true
-                    )
-            );
-
-    }
-
-
-    // -----------------------------------------------------
-    // ADMIN
-    // -----------------------------------------------------
-
-    if(formularioAdmin){
-
-        formularioAdmin.addEventListener(
-            "submit",
-            guardarConfiguracionAdmin
-        );
-
-
-        cargarConfiguracionAdmin()
-            .catch(
-                error =>
-                    mostrarMensajeConfiguracionAdmin(
                         error.message,
                         true
                     )
