@@ -768,38 +768,6 @@ function crearTarjetaFicha(
         "async";
 
 
-    // Fade-in al terminar de cargar: sin "saltos" de imágenes.
-    imagen.style.opacity =
-        "0";
-
-    imagen.style.transition =
-        "opacity .25s ease";
-
-    const mostrarImagen =
-        () => {
-            imagen.style.opacity = "1";
-        };
-
-    imagen.addEventListener(
-        "load",
-        mostrarImagen,
-        { once: true }
-    );
-
-    imagen.addEventListener(
-        "error",
-        mostrarImagen,
-        { once: true }
-    );
-
-    if (
-        imagen.complete &&
-        imagen.naturalWidth > 0
-    ) {
-        mostrarImagen();
-    }
-
-
     contenedorImagen.appendChild(
         imagen
     );

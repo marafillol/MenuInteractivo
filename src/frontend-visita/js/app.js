@@ -1,11 +1,4 @@
 // =======================================================
-// TRANSICIONES
-// =======================================================
-
-import transitions from "./transitions/engine.js";
-
-
-// =======================================================
 // CONFIGURACIÓN
 // =======================================================
 
@@ -24,7 +17,7 @@ const ESPERAR_IMAGENES_DE_VISTA = true;
 // Si es true, mientras se prepara la vista nueva (y tarda más
 // de 250 ms) se muestra un cartel sobre la vista actual, para
 // que el toque no parezca "ignorado".
-const MOSTRAR_INDICADOR_DE_CARGA = true;
+const MOSTRAR_INDICADOR_DE_CARGA = false;
 
 // Tiempo máximo de espera de imágenes/fuentes (ms).
 // Evita que el tótem quede colgado si falla la red.
@@ -357,8 +350,7 @@ function crearIndicadorCarga() {
 
     el.style.cssText =
         "position:fixed;left:0;right:0;bottom:8%;text-align:center;" +
-        "z-index:9999;pointer-events:none;opacity:0;" +
-        "transition:opacity .25s ease;" +
+        "z-index:9999;pointer-events:none;" +
         "font:700 1.2rem 'Courier Prime',monospace;" +
         "letter-spacing:.15em;color:#fff;text-shadow:0 0 8px #000;";
 
@@ -420,11 +412,6 @@ async function cambiarVista(
             );
 
 
-            transitions.mount(
-                app
-            );
-
-
             viewportListo =
                 true;
 
@@ -483,12 +470,6 @@ async function cambiarVista(
 
                         document.body.appendChild(
                             indicador
-                        );
-
-                        requestAnimationFrame(
-                            () => {
-                                indicador.style.opacity = "1";
-                            }
                         );
 
                     },
@@ -629,18 +610,6 @@ async function cambiarVista(
 
         app.classList.add(
             "transicionando"
-        );
-
-
-        await transitions.run(
-            presetId,
-            {
-                fromEl:
-                    vistaSaliente,
-
-                toEl:
-                    vistaEntrante
-            }
         );
 
 
