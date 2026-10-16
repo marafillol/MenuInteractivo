@@ -168,8 +168,7 @@ const actualizarFicha = async(req,res)=>{
     }
 
     let imagenNueva = null;
-    let imagenAnterior = null;
-    let guardado = false;
+    
 
     try{
         const datos = {
@@ -187,31 +186,16 @@ const actualizarFicha = async(req,res)=>{
             if(!fichaActual){
                 return res.status(404).json({ error:"No se encontró la ficha." });
             }
-            imagenAnterior = fichaActual.imagen;
             imagenNueva = await subirArchivo(req.file, "fichas");
             datos.imagen = imagenNueva;
         }
 
         await Ficha.actualizar(req.params.id_ficha, datos);
-        guardado = true;
-
-        let advertencia = null;
-        if(imagenNueva && imagenAnterior && imagenAnterior !== imagenNueva){
-            try{
-                await eliminarArchivo(imagenAnterior);
-            }catch{
-                advertencia = "Se guardaron los cambios, pero no se pudo eliminar la imagen anterior del almacenamiento.";
-                console.error("No se pudo limpiar la imagen anterior de la ficha.");
-            }
-        }
-
+        // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
         imagenNueva = null;
-        return res.json({
-            mensaje:"Ficha actualizada correctamente",
-            ...(advertencia ? { advertencia } : {})
-        });
+        return res.json({ mensaje:"Ficha actualizada correctamente" });
     }catch(error){
-        if(imagenNueva && !guardado){
+        if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
         }
         console.error("Error actualizando ficha; código=", error.code || "sin_codigo");

@@ -97,8 +97,7 @@ const obtenerMenu = async(req,res)=>{
 
 const actualizarMenu = async(req,res)=>{
     let imagenNueva = null;
-    let guardado = false;
-    let imagenAnterior = null;
+    
 
     try{
         const nombre = req.body.nombre?.trim();
@@ -123,31 +122,16 @@ const actualizarMenu = async(req,res)=>{
             if(!menuActual){
                 return res.status(404).json({ error:"No se encontró el menú." });
             }
-            imagenAnterior = menuActual.imagen;
             imagenNueva = await subirArchivo(req.file, "menus");
             datos.imagen = imagenNueva;
         }
 
         await Menu.actualizar(req.params.id, datos);
-        guardado = true;
-
-        let advertencia = null;
-        if(imagenNueva && imagenAnterior && imagenAnterior !== imagenNueva){
-            try{
-                await eliminarArchivo(imagenAnterior);
-            }catch{
-                advertencia = "Se guardaron los cambios, pero no se pudo eliminar la imagen anterior del almacenamiento.";
-                console.error("No se pudo limpiar la imagen anterior del menú.");
-            }
-        }
-
+        // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
         imagenNueva = null;
-        return res.json({
-            mensaje:"Menú actualizado",
-            ...(advertencia ? { advertencia } : {})
-        });
+        return res.json({ mensaje:"Menú actualizado" });
     }catch(error){
-        if(imagenNueva && !guardado){
+        if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
         }
         return res.status(500).json({ error:error.message });

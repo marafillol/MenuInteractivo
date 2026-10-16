@@ -154,7 +154,7 @@ test("actualizar menú limpia la imagen nueva si falla la base y conserva la ant
     ]);
 });
 
-test("actualizar menú elimina la imagen anterior solamente después de guardar", async () => {
+test("actualizar menú conserva la imagen anterior hasta verificar que no esté compartida", async () => {
     reiniciar();
     const res = crearRespuesta();
 
@@ -166,9 +166,7 @@ test("actualizar menú elimina la imagen anterior solamente después de guardar"
 
     assert.equal(res.statusCode, 200);
     assert.equal(state.datosMenu.imagen, "https://project.supabase.co/storage/v1/object/public/multimedia/menus/nuevo.png");
-    assert.deepEqual(state.eliminaciones, [
-        "https://project.supabase.co/storage/v1/object/public/multimedia/menus/old.png"
-    ]);
+    assert.deepEqual(state.eliminaciones, []);
 });
 
 test("crear ficha limpia la imagen nueva si falla el guardado en la base", async () => {
@@ -205,7 +203,7 @@ test("actualizar ficha limpia la imagen nueva si falla la base y conserva la ant
     ]);
 });
 
-test("actualizar ficha elimina la imagen anterior solamente después de guardar", async () => {
+test("actualizar ficha conserva la imagen anterior hasta verificar que no esté compartida", async () => {
     reiniciar();
     const res = crearRespuesta();
 
@@ -217,7 +215,5 @@ test("actualizar ficha elimina la imagen anterior solamente después de guardar"
 
     assert.equal(res.statusCode, 200);
     assert.equal(state.datosFicha.imagen, "https://project.supabase.co/storage/v1/object/public/multimedia/fichas/nuevo.png");
-    assert.deepEqual(state.eliminaciones, [
-        "https://project.supabase.co/storage/v1/object/public/multimedia/fichas/old.png"
-    ]);
+    assert.deepEqual(state.eliminaciones, []);
 });
