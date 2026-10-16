@@ -48,3 +48,11 @@ test("las claves privadas de autenticación no se incluyen en archivos del naveg
     assert.match(config, /SUPABASE_SERVICE_ROLE_KEY/);
     assert.match(config, /SUPABASE_ANON_KEY|SUPABASE_PUBLISHABLE_KEY/);
 });
+
+test("la gestión de usuarios evita insertar datos de usuarios como HTML", () => {
+    const usuariosJs = leer("src/frontend-admin/js/usuarios.js");
+
+    assert.doesNotMatch(usuariosJs, /tabla\\.innerHTML|texto\\.innerHTML/);
+    assert.match(usuariosJs, /celda\\.textContent\\s*=/);
+    assert.match(usuariosJs, /boton\\.addEventListener\\("click",\\s*accion\\)/);
+});
