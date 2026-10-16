@@ -7,6 +7,7 @@ const moduloAnterior = require.cache[rutaModulo];
 const entornoAnterior = {
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
     SUPABASE_BUCKET: process.env.SUPABASE_BUCKET
 };
 
@@ -16,6 +17,7 @@ const urlPrueba = "https://proyecto-prueba.supabase.co";
 
 process.env.SUPABASE_URL = urlPrueba;
 process.env.SUPABASE_SERVICE_ROLE_KEY = "credencial-falsa-de-prueba";
+delete process.env.SUPABASE_SECRET_KEY;
 process.env.SUPABASE_BUCKET = "multimedia";
 
 const cargarOriginal = Module._load;
@@ -55,6 +57,51 @@ try {
         else process.env[nombre] = valor;
     }
 }
+
+test("acepta SUPABASE_SECRET_KEY como alternativa a SUPABASE_SERVICE_ROLE_KEY", () => {
+    const moduloCacheadoAntes = require.cache[rutaModulo];
+    const entorno = {
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
+        SUPABASE_BUCKET: process.env.SUPABASE_BUCKET
+    };
+    const loadAnterior = Module._load;
+    const claveSecretaPrueba = "clave-secreta-falsa-de-prueba";
+
+    try {
+        process.env.SUPABASE_URL = urlPrueba;
+        delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+        process.env.SUPABASE_SECRET_KEY = claveSecretaPrueba;
+        process.env.SUPABASE_BUCKET = "multimedia";
+
+        Module._load = function (solicitud, padre, esPrincipal) {
+            if (solicitud === "@supabase/supabase-js") {
+                return {
+                    createClient(url, clave, opciones) {
+                        assert.equal(url, urlPrueba);
+                        assert.equal(clave, claveSecretaPrueba);
+                        assert.equal(opciones.auth.persistSession, false);
+                        return { storage: {} };
+                    }
+                };
+            }
+            return loadAnterior.call(this, solicitud, padre, esPrincipal);
+        };
+
+        delete require.cache[rutaModulo];
+        const moduloAlternativo = require("../src/config/almacenamientoSupabase");
+        assert.equal(moduloAlternativo.estaConfigurado, true);
+    } finally {
+        Module._load = loadAnterior;
+        delete require.cache[rutaModulo];
+        if (moduloCacheadoAntes) require.cache[rutaModulo] = moduloCacheadoAntes;
+        for (const [nombre, valor] of Object.entries(entorno)) {
+            if (valor === undefined) delete process.env[nombre];
+            else process.env[nombre] = valor;
+        }
+    }
+});
 
 test.after(() => {
     if (moduloAnterior) require.cache[rutaModulo] = moduloAnterior;

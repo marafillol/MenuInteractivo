@@ -2,14 +2,22 @@ const { createClient } = require("@supabase/supabase-js");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
 const urlProyectoConfigurada = process.env.SUPABASE_URL;
+const clavePrivadaSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 const estaConfigurado = Boolean(
-    process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.SUPABASE_URL && clavePrivadaSupabase
 );
 
 const supabase = estaConfigurado
     ? createClient(
         process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
+        clavePrivadaSupabase,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+                detectSessionInUrl: false
+            }
+        }
     )
     : null;
 
