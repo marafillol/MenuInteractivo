@@ -1,17 +1,6 @@
 const Ficha =
 require("../../modelos/public/ficha");
-
-const interpretarJson = (valor, predeterminado) => {
-
-    if (!valor) {
-        return predeterminado;
-    }
-
-    return typeof valor === "string"
-        ? JSON.parse(valor)
-        : valor;
-
-};
+const { interpretarJson } = require("../../utilidades/interpretarJson");
 
 async function obtenerFichas(req,res){
 
@@ -25,11 +14,19 @@ async function obtenerFichas(req,res){
 
 
             ficha.datos_json =
-            interpretarJson(ficha.datos_json, {});
+            ficha.datos_json
+            ?
+            interpretarJson(ficha.datos_json)
+            :
+            {};
 
 
             ficha.plantilla =
-            interpretarJson(ficha.plantilla_json, null);
+            ficha.plantilla_json
+            ?
+            interpretarJson(ficha.plantilla_json)
+            :
+            null;
 
 
             delete ficha.plantilla_json;
@@ -74,11 +71,19 @@ async function obtenerFichasPorMenu(req,res){
 
 
             ficha.datos_json =
-            interpretarJson(ficha.datos_json, {});
+            ficha.datos_json
+            ?
+            interpretarJson(ficha.datos_json)
+            :
+            {};
 
 
             ficha.plantilla =
-            interpretarJson(ficha.plantilla_json, null);
+            ficha.plantilla_json
+            ?
+            interpretarJson(ficha.plantilla_json)
+            :
+            null;
 
 
             delete ficha.plantilla_json;
@@ -117,10 +122,18 @@ async function obtenerFichasPorEtiqueta(req,res){
 
         fichas = fichas.map(ficha=>{
             ficha.datos_json =
-            interpretarJson(ficha.datos_json, {});
+            ficha.datos_json
+            ?
+            interpretarJson(ficha.datos_json)
+            :
+            {};
 
             ficha.plantilla =
-            interpretarJson(ficha.plantilla_json, null);
+            ficha.plantilla_json
+            ?
+            interpretarJson(ficha.plantilla_json)
+            :
+            null;
 
             delete ficha.plantilla_json;
 
@@ -158,32 +171,38 @@ async function obtenerFichaPorId(req,res){
         }
 
 
-        ficha.etiquetas =
-        await Ficha.obtenerEtiquetas(
-            ficha.id_ficha
-        );
+        // Estas consultas son independientes entre sí, así que se ejecutan en paralelo.
+        const [etiquetas, relacionadas, multimedia] = await Promise.all([
+            Ficha.obtenerEtiquetas(ficha.id_ficha),
+            Ficha.obtenerRelacionadas(ficha.id_ficha),
+            Ficha.obtenerMultimedia(ficha.id_ficha)
+        ]);
+
+        ficha.etiquetas = etiquetas;
+        ficha.relacionadas = relacionadas;
+        ficha.multimedia = multimedia;
 
 
-        ficha.relacionadas =
-        await Ficha.obtenerRelacionadas(
-            ficha.id_ficha
-        );
+        if(ficha.datos_json){
+
+            ficha.datos_json =
+            interpretarJson(ficha.datos_json);
+
+        }else{
+
+            ficha.datos_json = {};
+
+        }
 
 
-        ficha.multimedia =
-        await Ficha.obtenerMultimedia(
-            ficha.id_ficha
-        );
+        if(ficha.plantilla_json){
 
+            ficha.plantilla =
+            interpretarJson(ficha.plantilla_json);
 
-        ficha.datos_json =
-        interpretarJson(ficha.datos_json, {});
+            delete ficha.plantilla_json;
 
-
-        ficha.plantilla =
-        interpretarJson(ficha.plantilla_json, null);
-
-        delete ficha.plantilla_json;
+        }
 
 
         res.json(ficha);

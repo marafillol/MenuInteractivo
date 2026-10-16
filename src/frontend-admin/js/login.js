@@ -1,229 +1,61 @@
-import { auth } from "./firebase.js";
+import { obtenerClienteSupabase } from "./supabaseClient.js";
 
-import {
-    signInWithEmailAndPassword,
-    signOut
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
-function mostrarMensajeLogin(titulo,texto){
-
-
-    document
-    .getElementById("tituloLoginMensaje")
-    .textContent = titulo;
-
-
-
-    document
-    .getElementById("textoLoginMensaje")
-    .textContent = texto;
-
-
-
-    document
-    .getElementById("modalLoginMensaje")
-    .style.display="flex";
-
-
+function mostrarMensajeLogin(titulo, texto) {
+    const tituloEl = document.getElementById("tituloLoginMensaje");
+    const textoEl = document.getElementById("textoLoginMensaje");
+    const modal = document.getElementById("modalLoginMensaje");
+    if (tituloEl) tituloEl.textContent = titulo;
+    if (textoEl) textoEl.textContent = texto;
+    if (modal) modal.style.display = "flex";
 }
 
-function mensajeErrorFirebase(error){
-
-
-    switch(error.code){
-
-
-        case "auth/invalid-credential":
-
-            return "El usuario o la contraseña son incorrectos.";
-
-
-        case "auth/user-not-found":
-
-            return "No existe un usuario registrado con ese correo.";
-
-
-        case "auth/wrong-password":
-
-            return "La contraseña ingresada es incorrecta.";
-
-
-        case "auth/too-many-requests":
-
-            return "Demasiados intentos fallidos. Intentá nuevamente más tarde.";
-
-
-        default:
-
-            return "No se pudo iniciar sesión. Verifique los datos ingresados.";
-
-    }
-
-
-}
-
-document
-.getElementById("btnAceptarLogin")
-.addEventListener(
-    "click",
-    async()=>{
-
-
-        document
-        .getElementById("modalLoginMensaje")
-        .style.display="none";
-
-
-        await signOut(auth);
-
-
-    }
-);
-
-document
-.getElementById("formLogin")
-.addEventListener("submit", async(e)=>{
-
-
-    e.preventDefault();
-
-
-
-    const email =
-    document.getElementById("usuario").value;
-
-
-
-    const password =
-    document.getElementById("password").value;
-
-
-
-    try{
-
-
-        // ==========================
-        // LOGIN FIREBASE
-        // ==========================
-
-        const credencial =
-        await signInWithEmailAndPassword(
-
-            auth,
-            email,
-            password
-
-        );
-
-
-
-        console.log(
-            "Login Firebase correcto"
-        );
-
-
-
-        // ==========================
-        // OBTENER TOKEN
-        // ==========================
-
-        const token =
-        await credencial.user.getIdToken();
-
-
-
-
-        // ==========================
-        // VALIDAR USUARIO SISTEMA
-        // ==========================
-
-        const respuesta =
-        await fetch(
-
-            "/api/usuarios/me",
-
-            {
-
-                headers:{
-
-                    Authorization:
-                    "Bearer " + token
-
-                }
-
-            }
-
-        );
-
-
-
-        const datos =
-        await respuesta.json();
-
-
-
-
-        // ==========================
-        // USUARIO BLOQUEADO
-        // ==========================
-
-        if(!respuesta.ok){
-
-
+document.getElementById("btnAceptarLogin")?.addEventListener("click", () => {
+    const modal = document.getElementById("modalLoginMensaje");
+    if (modal) modal.style.display = "none";
+});
+
+document.getElementById("formLogin")?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const email = document.getElementById("usuario").value.trim().toLowerCase();
+    const password = document.getElementById("password").value;
+    const boton = evento.currentTarget.querySelector('button[type="submit"]');
+    if (boton) boton.disabled = true;
+
+    try {
+        const cliente = await obtenerClienteSupabase();
+        const { data, error } = await cliente.auth.signInWithPassword({ email, password });
+
+        if (error || !data?.session?.access_token) {
             mostrarMensajeLogin(
-
-                "Acceso denegado",
-
-                datos.error
-
+                "No se pudo iniciar sesión",
+                "El correo o la contraseña son incorrectos, o la cuenta necesita restablecer su contraseña."
             );
-
-
             return;
-
-
         }
 
+        const respuesta = await fetch("/api/usuarios/me", {
+            headers: { Authorization: "Bearer " + data.session.access_token }
+        });
+        const perfil = await respuesta.json().catch(() => ({}));
 
+        if (!respuesta.ok) {
+            await cliente.auth.signOut();
+            mostrarMensajeLogin(
+                "Acceso denegado",
+                perfil.error || "La cuenta no está habilitada para el sistema."
+            );
+            return;
+        }
 
-
-        // ==========================
-        // TODO OK
-        // ==========================
-
-        console.log(
-            "Usuario autorizado:",
-            datos
+        window.location.href = "panel.html";
+    } catch (error) {
+        console.error("No se pudo completar el inicio de sesión con Supabase.");
+        mostrarMensajeLogin(
+            "Error de acceso",
+            "No se pudo conectar con la autenticación. Revisá la configuración de Supabase."
         );
-
-
-
-        window.location.href =
-        "panel.html";
-
-
-
-    }catch(error){
-
-
-         console.error(
-             "Error login:",
-             error
-         );
-
-
-
-         mostrarMensajeLogin(
-
-             "Error de acceso",
-
-             mensajeErrorFirebase(error)
-
-         );
-
-
+    } finally {
+        if (boton) boton.disabled = false;
     }
-
-
 });

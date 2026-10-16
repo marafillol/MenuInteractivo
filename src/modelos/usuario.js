@@ -36,7 +36,7 @@ const obtenerPorEmail = (email)=>{
 
 
 
-const vincularFirebaseUID = (id_usuario, firebase_uid)=>{
+const vincularSupabaseUID = (id_usuario, supabase_uid)=>{
 
     return new Promise((resolve,reject)=>{
 
@@ -45,12 +45,12 @@ const vincularFirebaseUID = (id_usuario, firebase_uid)=>{
 
             `
             UPDATE usuario
-            SET firebase_uid = ?
+            SET supabase_uid = ?
             WHERE id_usuario = ?
             `,
 
             [
-                firebase_uid,
+                supabase_uid,
                 id_usuario
             ],
 
@@ -121,7 +121,7 @@ const crearUsuario = (datos)=>{
             `
             INSERT INTO usuario
             (
-            firebase_uid,
+            supabase_uid,
             nombre,
             email,
             rol,
@@ -132,7 +132,7 @@ const crearUsuario = (datos)=>{
             `,
 
             [
-             datos.firebase_uid,
+             datos.supabase_uid,
              datos.nombre,
              datos.email,
              datos.rol,
@@ -164,7 +164,7 @@ const crearUsuario = (datos)=>{
 
 
 // ======================================
-// OBTENER USUARIO POR FIREBASE UID
+// OBTENER USUARIO POR SUPABASE UID
 // ======================================
 
 const obtenerPorId = (id_usuario)=>{
@@ -282,7 +282,7 @@ const eliminarUsuario = (id_usuario)=>{
 };
 
 
-const existeFirebaseUID = (firebase_uid)=>{
+const existeSupabaseUID = (supabase_uid)=>{
 
     return new Promise((resolve,reject)=>{
 
@@ -292,10 +292,10 @@ const existeFirebaseUID = (firebase_uid)=>{
             `
             SELECT *
             FROM usuario
-            WHERE firebase_uid = ?
+            WHERE supabase_uid = ?
             `,
 
-            [firebase_uid],
+            [supabase_uid],
 
             (error,fila)=>{
 
@@ -320,7 +320,7 @@ const existeFirebaseUID = (firebase_uid)=>{
 };
 
 
-const obtenerPorFirebaseUID = (firebase_uid)=>{
+const obtenerPorSupabaseUID = (supabase_uid)=>{
 
     return new Promise((resolve,reject)=>{
 
@@ -330,10 +330,10 @@ const obtenerPorFirebaseUID = (firebase_uid)=>{
             `
             SELECT *
             FROM usuario
-            WHERE firebase_uid = ?
+            WHERE supabase_uid = ?
             `,
 
-            [firebase_uid],
+            [supabase_uid],
 
             (error,fila)=>{
 
@@ -401,10 +401,10 @@ module.exports = {
     obtenerUsuarios,
     crearUsuario,
     obtenerPorId,
-    vincularFirebaseUID,
+    vincularSupabaseUID,
     actualizarUsuario,
     eliminarUsuario,
-    existeFirebaseUID,
-    obtenerPorFirebaseUID,
+    existeSupabaseUID,
+    obtenerPorSupabaseUID,
     contarAdministradoresActivos
 };

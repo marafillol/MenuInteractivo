@@ -235,196 +235,88 @@ class RelacionFicha {
 
 
     // ===================================================
-    // GUARDAR RELACIONES DE UNA FICHA
+    // AGREGAR RELACIONES A UNA FICHA
     // ===================================================
     //
-    // Actualiza las relaciones de una ficha.
-    //
-    // Funcionamiento:
-    //
-    // 1) Elimina todas las relaciones actuales
-    //    de la ficha origen.
-    //
-    // 2) Inserta nuevamente las relaciones recibidas.
-    //
-    //
-    // Ejemplo:
-    //
-    // Antes:
-    //
-    // Ficha A
-    //  |
-    //  ├── Ficha B
-    //  └── Ficha C
-    //
-    //
-    // Nuevas relaciones:
-    //
-    //  ├── Ficha C
-    //  └── Ficha D
-    //
-    //
-    // Resultado:
-    //
-    // Ficha A
-    //  |
-    //  ├── Ficha C
-    //  └── Ficha D
-    //
+    // Inserta las relaciones nuevas recibidas desde el panel.
+    // Las relaciones que se quitaron se eliminan por separado
+    // mediante eliminarRelacion(), por lo que esta función
+    // no debe borrar relaciones existentes.
     //
     // Recibe:
     // - idFicha: ficha origen.
-    // - relaciones: arreglo de relaciones nuevas.
+    // - relaciones: lista de relaciones nuevas.
     //
 
-    static guardarRelaciones(idFicha,relaciones){
-
-        return new Promise((resolve,reject)=>{
-
-
-            db.serialize(()=>{
-
-
-
-
-
-                // ---------------------------------------
-                // ELIMINAR RELACIONES EXISTENTES
-                // ---------------------------------------
-
-                db.run(
-
-                    `
-                    DELETE FROM relacion_ficha
-                    WHERE id_ficha_origen = ?
-                    `,
-
-
-                    [idFicha],
-
-
-                    error=>{
-
-
-                        if(error){
-
-
-                            reject(error);
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // SI NO EXISTEN RELACIONES NUEVAS
-                        // FINALIZA LA OPERACIÓN
-                        // ---------------------------------------
-
-                        if(relaciones.length===0){
-
-
-                            resolve();
-
-                            return;
-
-
-                        }
-
-
-
-
-
-
-
-
-                        // ---------------------------------------
-                        // INSERTAR NUEVAS RELACIONES
-                        // ---------------------------------------
-
-                        const sentencia = db.prepare(
-
-                            `
-                            INSERT INTO relacion_ficha
-                            (
-                                id_ficha_origen,
-                                id_ficha_destino,
-                                tipo_relacion
-                            )
-                            VALUES(?,?,?)
-                            `
-
-                        );
-
-
-
-
-
-
-                        relaciones.forEach(relacion=>{
-
-
-                            sentencia.run(
-
-                                idFicha,
-
-                                relacion.id_ficha_destino,
-
-                                relacion.tipo_relacion
-
-                            );
-
-
-                        });
-
-
-
-
-
-
-
-
-                        // Finaliza la sentencia preparada
-
-                        sentencia.finalize(error=>{
-
-
-                            if(error)
-
-                                reject(error);
-
-                            else
-
-                                resolve();
-
-
-                        });
-
-
-
-                    }
-
-                );
-
-
-
-            });
-
-
+        static guardarRelaciones(idFicha, relaciones) {
+        if (!Number.isSafeInteger(Number(idFicha)) || Number(idFicha) <= 0) {
+            return Promise.reject(new TypeError("La ficha de origen debe tener un ID entero positivo."));
+        }
+        if (!Array.isArray(relaciones)) {
+            return Promise.reject(new TypeError("Las relaciones deben enviarse como una lista."));
+        }
+
+        const relacionesValidas = relaciones.every((relacion) => {
+            if (!relacion || typeof relacion !== "object" || Array.isArray(relacion)) {
+                return false;
+            }
+            if (!Number.isSafeInteger(Number(relacion.id_ficha_destino)) ||
+                Number(relacion.id_ficha_destino) <= 0) {
+                return false;
+            }
+            return relacion.tipo_relacion === undefined ||
+                relacion.tipo_relacion === null ||
+                typeof relacion.tipo_relacion === "string";
         });
 
+        if (!relacionesValidas) {
+            return Promise.reject(
+                new TypeError("Cada relación debe tener un ID de destino válido y un tipo de texto.")
+            );
+        }
+
+        if (relaciones.length === 0) {
+            return Promise.resolve();
+        }
+
+        // PostgreSQL: insertar de forma atómica sin borrar relaciones existentes.
+        if (typeof db.withTransaction === "function") {
+            return db.withTransaction(async (consultar) => {
+                for (const relacion of relaciones) {
+                    await consultar(
+                        "INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)",
+                        [idFicha, relacion.id_ficha_destino, relacion.tipo_relacion ?? null]
+                    );
+                }
+            });
+        }
+
+        // Compatibilidad con SQLite.
+        return new Promise((resolve, reject) => {
+            try {
+                db.serialize(() => {
+                    const sentencia = db.prepare(
+                        "INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)"
+                    );
+
+                    relaciones.forEach((relacion) => {
+                        sentencia.run(
+                            idFicha,
+                            relacion.id_ficha_destino,
+                            relacion.tipo_relacion ?? null
+                        );
+                    });
+
+                    sentencia.finalize((error) => {
+                        if (error) reject(error);
+                        else resolve();
+                    });
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
-
-
-
-
-
-
 
 
 

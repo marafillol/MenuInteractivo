@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const autenticarFirebase = require("../../middleware/autenticarFirebase");
+const autenticarSupabase = require("../../middleware/autenticarSupabase");
 const verificarRol = require("../../middleware/verificarRol");
 const controlador = require("../../controladores/buscar");
 
 router.get(
     "/",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin", "editor", "consulta"),
     controlador.buscar
 );

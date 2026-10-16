@@ -37,8 +37,13 @@ class FichaEtiquetaControlador{
             const idFicha =
             req.params.id;
 
-            const etiquetas =
-            req.body.etiquetas || [];
+            const etiquetas = req.body?.etiquetas;
+
+            if (!Array.isArray(etiquetas)) {
+                return res.status(400).json({
+                    error: "El campo etiquetas debe ser una lista."
+                });
+            }
 
             await FichaEtiqueta.reemplazar(
                 idFicha,
@@ -51,13 +56,13 @@ class FichaEtiquetaControlador{
 
         }
         catch(error){
-
+            if (error instanceof TypeError) {
+                return res.status(400).json({ error: error.message });
+            }
             console.error(error);
-
             res.status(500).json({
                 error:"Error al actualizar las etiquetas."
             });
-
         }
 
     }

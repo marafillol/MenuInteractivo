@@ -8,11 +8,11 @@ require("../../controladores/menus");
 
 
 // ===============================
-// FIREBASE SEGURIDAD
+// SUPABASE AUTH
 // ===============================
 
-const autenticarFirebase =
-require("../../middleware/autenticarFirebase");
+const autenticarSupabase =
+require("../../middleware/autenticarSupabase");
 
 const verificarRol =
 require("../../middleware/verificarRol");
@@ -27,7 +27,7 @@ router.get(
 
     "/",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -49,7 +49,7 @@ router.post(
 
     "/",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -72,7 +72,7 @@ router.get(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -94,7 +94,7 @@ router.put(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -110,14 +110,14 @@ router.put(
 
 // ===============================
 // ELIMINAR MENÚ
-// SOLO ADMIN
+// Admin y Editor
 // ===============================
 
 router.delete(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",

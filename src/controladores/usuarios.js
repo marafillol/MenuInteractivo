@@ -2,10 +2,27 @@ const Usuario =
 require("../modelos/usuario");
 
 const {
-    getAuth
-}
-=
-require("firebase-admin/auth");
+    estaSupabaseAuthConfigurado,
+    obtenerClienteSupabaseAdmin
+} = require("../config/supabaseAuth");
+
+const exigirClienteAuth = () => {
+    if (!estaSupabaseAuthConfigurado) {
+        const error = new Error("La autenticación de Supabase no está configurada.");
+        error.status = 503;
+        throw error;
+    }
+    return obtenerClienteSupabaseAdmin();
+};
+
+const exigirUidSupabase = (usuario) => {
+    if (!usuario?.supabase_uid) {
+        const error = new Error("La cuenta no está vinculada a Supabase Auth. Primero hay que importar las cuentas y ejecutar la migración de usuarios.");
+        error.status = 409;
+        throw error;
+    }
+    return usuario.supabase_uid;
+};
 
 
 
@@ -43,21 +60,12 @@ const obtenerUsuarioPorEmail = async(req,res)=>{
 // =======================================================
 
 const obtenerMiUsuario = async(req,res)=>{
-
-    try{
-
-        res.json(req.usuario);
-
-    }catch(error){
-
-        res.status(500).json({
-
-            error:error.message
-
-        });
-
+    try {
+        const { supabase_uid, ...perfilPublico } = req.usuario;
+        res.json(perfilPublico);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
 };
 
 
@@ -93,465 +101,233 @@ const obtenerUsuarios = async(req,res)=>{
 // CREAR USUARIO
 // =======================================================
 
-const crearUsuario = async(req,res)=>{
+const crearUsuario = async (req, res) => {
+    let usuarioAuthCreado = null;
 
-    try{
+    try {
+        const { nombre, email, password, rol, activo } = req.body || {};
+        if (!String(nombre || "").trim() || !String(email || "").trim() ||
+            typeof password !== "string" || password.length < 6 ||
+            !["admin", "editor", "consulta"].includes(rol)) {
+            return res.status(400).json({
+                error: "Completá nombre, correo, una contraseña de al menos 6 caracteres y un rol válido."
+            });
+        }
 
-        const {
-            nombre,
-            email,
+        const cliente = exigirClienteAuth();
+        const { data, error } = await cliente.auth.admin.createUser({
+            email: String(email).trim().toLowerCase(),
             password,
-            rol,
-            activo
-        } = req.body;
+            email_confirm: true,
+            user_metadata: { nombre: String(nombre).trim() }
+        });
 
+        if (error) {
+            if (/already|registered|exists/i.test(error.message || "") || error.code === "email_exists") {
+                return res.status(400).json({
+                    error: "Ese correo ya está registrado en Supabase Auth."
+                });
+            }
+            console.error("Error creando cuenta de autenticación; código=", error.code || "sin_codigo");
+            return res.status(400).json({ error: "No se pudo crear la cuenta de autenticación." });
+        }
 
-
-        // Crear usuario en Firebase
-
-        let usuarioFirebase;
-
+        usuarioAuthCreado = data?.user;
+        if (!usuarioAuthCreado?.id) {
+            throw new Error("Supabase Auth no devolvió el identificador de la cuenta.");
+        }
 
         try {
-
-
-            usuarioFirebase =
-            await getAuth().createUser({
-
-                email,
-                password
-
+            await Usuario.crearUsuario({
+                supabase_uid: usuarioAuthCreado.id,
+                nombre: String(nombre).trim(),
+                email: String(email).trim().toLowerCase(),
+                rol,
+                activo: activo === undefined ? 1 : activo
             });
-
-
-        }catch(error){
-
-
-             if(error.code === "auth/email-already-exists"){
-
-
-                 return res.status(400).json({
-
-                     error:
-                     "El correo electrónico ya está registrado. No se puede crear otro usuario con el mismo email."
-
-                 });
-
-
-             }
-
-
-             throw error;
-
-
+        } catch (errorBD) {
+            // Compensa el alta remota si no se pudo crear el perfil de la aplicación.
+            try {
+                await cliente.auth.admin.deleteUser(usuarioAuthCreado.id);
+            } catch (errorCompensacion) {
+                console.error("No se pudo compensar el alta en Supabase Auth; código=", errorCompensacion.code || "sin_codigo");
+            }
+            throw errorBD;
         }
 
-
-
-        // Guardar usuario en SQLite
-
-        await Usuario.crearUsuario({
-
-            firebase_uid:
-            usuarioFirebase.uid,
-
-            nombre,
-
-            email,
-
-            rol,
-
-            activo
-
-        });
-
-
-
-        res.json({
-
-            mensaje:
-            "Usuario creado correctamente"
-
-        });
-
-    }catch(error){
-
-         console.error(
-             "ERROR CREANDO USUARIO:",
-             error
-         );
-
-
-         if(error.code === "auth/email-already-exists"){
-
-             return res.status(400).json({
-
-                 error:
-                 "No se pudo crear el usuario porque ese correo electrónico ya está registrado. Ingrese un correo diferente o revise los usuarios existentes."
-
-             });
-
-         }
-
-
-         res.status(500).json({
-
-             error:
-             "Ocurrió un error inesperado al crear el usuario."
-
-         });
-
-
+        return res.status(201).json({ mensaje: "Usuario creado correctamente." });
+    } catch (error) {
+        if (error.status) return res.status(error.status).json({ error: error.message });
+        if (error.code === "23505" || /unique constraint|already exists/i.test(error.message || "")) {
+            return res.status(400).json({ error: "Ya existe un usuario con ese correo." });
+        }
+        console.error("Error creando usuario; código=", error.code || "sin_codigo");
+        return res.status(500).json({ error: "No se pudo crear el usuario." });
     }
-
 };
 
-
-const actualizarUsuario = async(req,res)=>{
-
-
-    try{
-
-
+const actualizarUsuario = async (req, res) => {
+    try {
         const id = req.params.id;
+        const usuario = await Usuario.obtenerPorId(id);
 
-
-        const usuario =
-        await Usuario.obtenerPorId(id);
-
-
-
-        if(!usuario){
-
-            return res.status(404).json({
-
-                error:"Usuario no encontrado"
-
-            });
-
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado." });
         }
 
+        // No dejar que el sistema quede sin un administrador activo.
+        if (usuario.rol === "admin" && Number(usuario.activo) === 1 &&
+            Number(req.body.activo) === 0) {
+            const cantidadAdmins = await Usuario.contarAdministradoresActivos();
+            if (cantidadAdmins <= 1) {
+                return res.status(400).json({
+                    error: "No se puede desactivar el último administrador activo."
+                });
+            }
+        }
 
+        if (usuario.rol === "admin" && Number(usuario.activo) === 1 &&
+            req.body.rol !== "admin") {
+            const cantidadAdmins = await Usuario.contarAdministradoresActivos();
+            if (cantidadAdmins <= 1) {
+                return res.status(400).json({
+                    error: "No se puede cambiar el rol del último administrador activo."
+                });
+            }
+        }
 
-        // ==============================
-        // CAMBIO DE EMAIL EN FIREBASE
-        // ==============================
+        const emailAnterior = usuario.email;
+        const emailNuevo = String(req.body.email || "").trim().toLowerCase();
+        let authId = null;
+        let cambioEmailAuth = false;
+        const cliente = exigirClienteAuth();
 
-        if(usuario.email !== req.body.email){
+        if (emailNuevo && emailNuevo !== emailAnterior) {
+            authId = exigirUidSupabase(usuario);
+            const { error } = await cliente.auth.admin.updateUserById(authId, {
+                email: emailNuevo
+            });
+            if (error) {
+                console.error("Error actualizando correo de autenticación; código=", error.code || "sin_codigo");
+                return res.status(400).json({ error: "No se pudo actualizar el correo de la cuenta en Supabase Auth." });
+            }
+            cambioEmailAuth = true;
+        }
 
-
-            await getAuth()
-            .updateUser(
-
-                usuario.firebase_uid,
-
-                {
-
-                    email:req.body.email
-
+        try {
+            await Usuario.actualizarUsuario(id, {
+                ...req.body,
+                email: emailNuevo || emailAnterior
+            });
+        } catch (errorBD) {
+            if (cambioEmailAuth && authId) {
+                try {
+                    await cliente.auth.admin.updateUserById(authId, { email: emailAnterior });
+                } catch (errorCompensacion) {
+                    console.error("No se pudo restaurar el correo de autenticación; código=", errorCompensacion.code || "sin_codigo");
                 }
-
-            );
-
-
-        }
-
-
-
-
-        // ==============================
-        // NO DESACTIVAR ÚLTIMO ADMIN
-        // ==============================
-
-        if(
-
-            usuario.rol === "admin" &&
-            usuario.activo == 1 &&
-            req.body.activo == 0
-
-        ){
-
-
-            const cantidadAdmins =
-            await Usuario.contarAdministradoresActivos();
-
-
-
-            if(cantidadAdmins <= 1){
-
-
-                return res.status(400).json({
-
-                    error:
-                    "No se puede desactivar el último administrador activo del sistema."
-
-                });
-
-
             }
-
-
+            throw errorBD;
         }
 
-
-        // ==============================
-        // NO CAMBIAR ROL DEL ÚLTIMO ADMIN
-        // ==============================
-
-        if(
-
-            usuario.rol === "admin" &&
-            usuario.activo == 1 &&
-            req.body.rol !== "admin"
-
-        ){
-
-            const cantidadAdmins =
-            await Usuario.contarAdministradoresActivos();
-
-
-
-            if(cantidadAdmins <= 1){
-
-
-                return res.status(400).json({
-
-                    error:
-                    "No se puede cambiar el rol del último administrador activo. Debe existir al menos un administrador en el sistema."
-
-                });
-
-
-            }
-
+        return res.json({ mensaje: "Usuario actualizado correctamente." });
+    } catch (error) {
+        if (error.status) return res.status(error.status).json({ error: error.message });
+        if (error.code === "23505" || /unique constraint|already exists/i.test(error.message || "")) {
+            return res.status(400).json({ error: "Ya existe un usuario con ese correo." });
         }
-
-
-        // ==============================
-        // ACTUALIZAR SQLITE
-        // ==============================
-
-
-        await Usuario.actualizarUsuario(
-
-            id,
-
-            req.body
-
-        );
-
-
-
-
-
-        res.json({
-
-            mensaje:
-            "Usuario actualizado correctamente"
-
-        });
-
-
-
-    }catch(error){
-
-
-        console.error(
-            "ERROR ACTUALIZANDO USUARIO:",
-            error
-        );
-
-
-        res.status(500).json({
-
-            error:error.message
-
-        });
-
-
+        console.error("Error actualizando usuario; código=", error.code || "sin_codigo");
+        return res.status(500).json({ error: "No se pudo actualizar el usuario." });
     }
-
-
 };
 
-const eliminarUsuario = async(req,res)=>{
-
-    try{
-
+const eliminarUsuario = async (req, res) => {
+    try {
         const id = req.params.id;
+        const usuario = await Usuario.obtenerPorId(id);
 
-        const usuario =
-        await Usuario.obtenerPorId(id);
-
-        console.log(usuario);
-        if(!usuario){
-
-            return res.status(404).json({
-
-                error:"Usuario no encontrado"
-
-            });
-
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado." });
         }
 
-
-        // No permitir eliminarse a sí mismo
-
-        if(req.usuario.id_usuario == usuario.id_usuario){
-
+        if (Number(req.usuario.id_usuario) === Number(usuario.id_usuario)) {
             return res.status(400).json({
-
-                error:"No podés eliminar tu propio usuario porque perderías el acceso al sistema. Si necesitás eliminar esta cuenta, iniciá sesión con otro administrador."
-
+                error: "No podés eliminar tu propio usuario mientras estás usando el panel."
             });
-
         }
 
-
-        // Si es administrador, verificar que no sea el último
-        if(
-
-            usuario.rol === "admin"
-            &&
-            usuario.activo
-
-        ){
-
-            const cantidadAdmins =
-
-            await Usuario.contarAdministradoresActivos();
-
-
-            if(cantidadAdmins <= 1){
-
-                return res.status(400).json({
-
-                    error:
-                    "No se puede eliminar el último administrador."
-
-                });
-
+        if (usuario.rol === "admin" && Number(usuario.activo) === 1) {
+            const cantidadAdmins = await Usuario.contarAdministradoresActivos();
+            if (cantidadAdmins <= 1) {
+                return res.status(400).json({ error: "No se puede eliminar el último administrador." });
             }
-
         }
 
+        const authId = exigirUidSupabase(usuario);
+        const cliente = exigirClienteAuth();
 
-        // Eliminar Firebase
-        if(usuario.firebase_uid){
+        // Primero elimina la identidad Auth. Si falla por un error recuperable,
+        // conserva el perfil para permitir reintentar desde el panel.
+        const { error } = await cliente.auth.admin.deleteUser(authId);
+        const identidadYaNoExiste = error &&
+            (error.code === "user_not_found" || Number(error.status) === 404);
 
-            await getAuth().deleteUser(
-
-                usuario.firebase_uid
-
-            );
-
+        if (error && !identidadYaNoExiste) {
+            console.error("No se pudo eliminar la cuenta Auth; código=", error.code || "sin_codigo");
+            return res.status(502).json({
+                error: "No se pudo eliminar la cuenta de autenticación. El perfil se conserva para que puedas reintentar."
+            });
         }
 
+        // Si la eliminación del perfil falla luego de borrar Auth, se conserva el perfil
+        // y un nuevo intento puede completar la limpieza: Auth devolverá user_not_found.
+        try {
+            await Usuario.eliminarUsuario(id);
+        } catch (errorBD) {
+            console.error("La identidad Auth ya se eliminó, pero no se pudo borrar el perfil; código=", errorBD.code || "sin_codigo");
+            return res.status(502).json({
+                error: "La cuenta de autenticación ya se eliminó, pero no se pudo eliminar el perfil. Volvé a intentar la operación para completar la limpieza."
+            });
+        }
 
-        // Eliminar SQLite
-
-        await Usuario.eliminarUsuario(id);
-
-
-        res.json({
-
-            mensaje:
-            "Usuario eliminado correctamente"
-
-        });
-
-
-    }catch(error){
-
-        console.error(error);
-
-        res.status(500).json({
-
-            error:error.message
-
-        });
-
+        return res.json({ mensaje: "Usuario eliminado correctamente." });
+    } catch (error) {
+        if (error.status) return res.status(error.status).json({ error: error.message });
+        console.error("Error eliminando usuario; código=", error.code || "sin_codigo");
+        return res.status(500).json({ error: "No se pudo eliminar el usuario." });
     }
-
 };
 
-
-
-const cambiarPassword = async(req,res)=>{
-
-
-    try{
-
-
-        const usuario =
-        await Usuario.obtenerPorId(
-        req.params.id
-        );
-
-
-
-        await getAuth()
-        .updateUser(
-
-        usuario.firebase_uid,
-
-        {
-
-        password:
-        req.body.password
-
+const cambiarPassword = async (req, res) => {
+    try {
+        const password = req.body?.password;
+        if (typeof password !== "string" || password.length < 6) {
+            return res.status(400).json({
+                error: "La contraseña debe tener al menos 6 caracteres."
+            });
         }
 
-        );
+        const usuario = await Usuario.obtenerPorId(req.params.id);
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado." });
+        }
 
+        const authId = exigirUidSupabase(usuario);
+        const cliente = exigirClienteAuth();
+        const { error } = await cliente.auth.admin.updateUserById(authId, { password });
 
+        if (error) {
+            console.error("Error cambiando contraseña; código=", error.code || "sin_codigo");
+            return res.status(400).json({ error: "No se pudo cambiar la contraseña de la cuenta." });
+        }
 
-        res.json({
-
-        mensaje:
-        "Contraseña actualizada"
-
-        });
-
-
-    }catch(error){
-
-
-         console.error(
-             "ERROR CAMBIANDO CONTRASEÑA:",
-             error
-         );
-
-
-         if(
-             error.code === "auth/password-does-not-meet-requirements" ||
-             error.code === "auth/invalid-password"
-         ){
-
-             return res.status(400).json({
-
-                 error:
-                 "La contraseña debe tener al menos 6 caracteres. Ingrese una contraseña más segura."
-
-             });
-
-         }
-
-
-
-         res.status(500).json({
-
-             error:
-             error.message
-
-         });
-
-
+        return res.json({ mensaje: "Contraseña actualizada." });
+    } catch (error) {
+        if (error.status) return res.status(error.status).json({ error: error.message });
+        console.error("Error cambiando contraseña; código=", error.code || "sin_codigo");
+        return res.status(500).json({ error: "No se pudo cambiar la contraseña." });
     }
-
-
 };
-
 
 // =======================================================
 // EXPORTAR
