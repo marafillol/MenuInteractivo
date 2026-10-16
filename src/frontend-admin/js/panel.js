@@ -679,7 +679,7 @@ function cerrarModalCerrarSesion(){
 async function confirmarCerrarSesion(){
 
 
-    await window.cerrarSesionFirebase();
+    await window.cerrarSesionSupabase();
 
 
     window.location.href="index.html";

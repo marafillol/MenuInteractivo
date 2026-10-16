@@ -14,11 +14,11 @@ const {
 
 
 // ===============================
-// FIREBASE SEGURIDAD
+// SUPABASE AUTH
 // ===============================
 
-const autenticarFirebase =
-require("../../middleware/autenticarFirebase");
+const autenticarSupabase =
+require("../../middleware/autenticarSupabase");
 
 const verificarRol =
 require("../../middleware/verificarRol");
@@ -33,7 +33,7 @@ router.get(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -55,7 +55,7 @@ router.post(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",
@@ -76,7 +76,7 @@ router.delete(
 
     "/:id",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",

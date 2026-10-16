@@ -8,11 +8,11 @@ require("../../controladores/plantillas");
 
 
 // =======================================
-// AUTENTICACIÓN FIREBASE
+// AUTENTICACIÓN SUPABASE
 // =======================================
 
-const autenticarFirebase =
-require("../../middleware/autenticarFirebase");
+const autenticarSupabase =
+require("../../middleware/autenticarSupabase");
 
 
 const verificarRol =
@@ -62,7 +62,7 @@ const permitirLectura =
 
 router.get(
     "/",
-    autenticarFirebase,
+    autenticarSupabase,
     permitirLectura,
     plantillaController.listarPlantillas
 );
@@ -76,7 +76,7 @@ router.get(
 
 router.get(
     "/menu/:id_menu",
-    autenticarFirebase,
+    autenticarSupabase,
     permitirLectura,
     plantillaController.obtenerPlantillaPorMenu
 );
@@ -90,7 +90,7 @@ router.get(
 
 router.get(
     "/:id_plantilla",
-    autenticarFirebase,
+    autenticarSupabase,
     permitirLectura,
     plantillaController.obtenerPlantilla
 );
@@ -104,7 +104,7 @@ router.get(
 
 router.post(
     "/",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     plantillaController.crearPlantilla
 );
@@ -118,7 +118,7 @@ router.post(
 
 router.put(
     "/:id",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     plantillaController.actualizarPlantilla
 );
@@ -132,7 +132,7 @@ router.put(
 
 router.delete(
     "/:id",
-    autenticarFirebase,
+    autenticarSupabase,
     verificarRol("admin"),
     plantillaController.eliminarPlantilla
 );

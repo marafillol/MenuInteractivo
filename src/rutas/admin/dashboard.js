@@ -7,11 +7,11 @@ require("../../controladores/dashboard");
 
 
 // =======================================
-// FIREBASE SEGURIDAD
+// SUPABASE AUTH
 // =======================================
 
-const autenticarFirebase =
-require("../../middleware/autenticarFirebase");
+const autenticarSupabase =
+require("../../middleware/autenticarSupabase");
 
 const verificarRol =
 require("../../middleware/verificarRol");
@@ -26,7 +26,7 @@ router.get(
 
     "/",
 
-    autenticarFirebase,
+    autenticarSupabase,
 
     verificarRol(
         "admin",

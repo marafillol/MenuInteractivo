@@ -1,0 +1,52 @@
+name: pruebas-adaptador-postgres
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - fix/postgres-adapter-compat
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar pruebas automatizadas
+        run: npm test
+      - name: Comprobar sintaxis
+        run: |
+          node --check src/app.js
+          node --check scripts/migrar-supabase.js
+          node --check scripts/verificar-adaptador-postgres-lectura.js
+          node --check scripts/verificar-supabase-completo.js
+          node --check src/controladores/public/fichasController.js
+          node --check src/databasePostgres.js
+          node --check src/databaseSqlCompat.js
+          node --check src/modelos/fichaEtiquetaModelo.js
+          node --check src/modelos/relacionFichaModelo.js
+          node --check src/controladores/fichaEtiquetaControlador.js
+          node --check src/controladores/relacionFichaControlador.js
+          node --check src/controladores/multimedia.js
+          node --check src/config/almacenamientoSupabase.js
+          node --check src/config/supabaseAuth.js
+          node --check src/middleware/autenticarSupabase.js
+          node --check src/controladores/usuarios.js
+          node --check --input-type=module < src/frontend-admin/js/login.js
+          node --check --input-type=module < src/frontend-admin/js/supabaseClient.js
+          node --check --input-type=module < src/frontend-admin/js/authSupabase.js
+          node --check src/frontend-admin/js/apiSupabase.js
+          node --check src/frontend-admin/js/multimedia.js
+          node --check src/utilidades/interpretarJson.js
+          node --check scripts/verificar-adaptador-postgres-lectura.js

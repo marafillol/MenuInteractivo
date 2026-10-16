@@ -1,7 +1,16 @@
 const Ficha = require("../modelos/ficha");
 const RelacionFicha = require("../modelos/relacionFichaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
-const { subirArchivo } = require("../config/almacenamientoSupabase");
+const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
+
+const limpiarArchivoSubido = async (ruta) => {
+    if (!ruta) return;
+    try {
+        await eliminarArchivo(ruta);
+    } catch {
+        console.error("No se pudo limpiar un archivo nuevo de ficha.");
+    }
+};
 
 const listarFichas = async(req,res)=>{
 
@@ -121,147 +130,77 @@ const obtenerFicha = async(req,res)=>{
 // ==========================
 
 const crearFicha = async(req,res)=>{
-
     const titulo = req.body.titulo?.trim();
-
     if(!titulo){
-
-        return res.status(400).json({
-            error:"Debe ingresar un título para la ficha."
-        });
-
+        return res.status(400).json({ error:"Debe ingresar un título para la ficha." });
     }
 
+    let imagenSubida = null;
     try{
-
-
+        imagenSubida = await subirArchivo(req.file, "fichas");
         const datos = {
-
             id_menu: req.body.id_menu,
-
             titulo,
-
             resumen: req.body.resumen,
-
             texto: req.body.texto,
-
-            imagen: await subirArchivo(req.file, "fichas"),
-
-
+            imagen: imagenSubida,
             datos_json: req.body.datos_json,
-
             visible: req.body.visible
-
         };
 
-
-        const id =
-        await Ficha.crear(datos);
-
-
-
-        res.json({
-
-            mensaje:"Ficha creada correctamente",
-
-            id_ficha:id
-
-        });
-
-
-
+        const id = await Ficha.crear(datos);
+        imagenSubida = null;
+        return res.json({ mensaje:"Ficha creada correctamente", id_ficha:id });
     }catch(error){
-
-
-        res.status(500).json({
-
-            error:error.message
-
-        });
-
-
+        await limpiarArchivoSubido(imagenSubida);
+        return res.status(500).json({ error:error.message });
     }
-
 };
-
 
 // ==========================
 // ACTUALIZAR FICHA
 // ==========================
 
 const actualizarFicha = async(req,res)=>{
-
     const titulo = req.body.titulo?.trim();
-
     if(!titulo){
-
-        return res.status(400).json({
-            error:"Debe ingresar un título para la ficha."
-        });
-
+        return res.status(400).json({ error:"Debe ingresar un título para la ficha." });
     }
+
+    let imagenNueva = null;
+    
 
     try{
-
-
         const datos = {
-
             id_menu: req.body.id_menu,
-
             titulo,
-
             resumen: req.body.resumen,
-
             texto: req.body.texto,
-
-
-            // si llega una imagen nueva la guardamos
-            // si no llega queda undefined para conservar la anterior
-
-            imagen: await subirArchivo(req.file, "fichas"),
-
-
+            imagen: null,
             datos_json: req.body.datos_json,
-
             visible: req.body.visible
-
         };
 
+        if(req.file){
+            const fichaActual = await Ficha.obtenerPorId(req.params.id_ficha);
+            if(!fichaActual){
+                return res.status(404).json({ error:"No se encontró la ficha." });
+            }
+            imagenNueva = await subirArchivo(req.file, "fichas");
+            datos.imagen = imagenNueva;
+        }
 
-
-        await Ficha.actualizar(
-
-            req.params.id_ficha,
-
-            datos
-
-        );
-
-
-
-        res.json({
-
-            mensaje:"Ficha actualizada correctamente"
-
-        });
-
-
-
+        await Ficha.actualizar(req.params.id_ficha, datos);
+        // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
+        imagenNueva = null;
+        return res.json({ mensaje:"Ficha actualizada correctamente" });
     }catch(error){
-
-
-        console.error(error);
-
-
-        res.status(500).json({
-
-            error:error.message
-
-        });
-
-
+        if(imagenNueva){
+            await limpiarArchivoSubido(imagenNueva);
+        }
+        console.error("Error actualizando ficha; código=", error.code || "sin_codigo");
+        return res.status(500).json({ error:error.message });
     }
-
 };
 
 // ==========================
