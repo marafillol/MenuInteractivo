@@ -38,3 +38,10 @@ body.cargando-visita{
 
 
 
+
+
+/* Cada vista crea su propio contexto de apilamiento, para que los fondos
+   con ::after y z-index:-1 (mar.png) no queden tapados por el color de fondo. */
+#app > *{
+    isolation: isolate;
+}

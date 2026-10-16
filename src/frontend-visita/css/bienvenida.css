@@ -19,6 +19,10 @@
     box-sizing: border-box;
 
     background-color: #0a2645;
+
+    /* Crea su propio contexto de apilamiento: sin esto, el fondo de mar
+       (::after con z-index:-1) queda tapado por el background-color. */
+    isolation: isolate;
 }
 
 /* Fondo de mar en su propia capa: así el blur/opacidad para pruebas
