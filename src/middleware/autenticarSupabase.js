@@ -1,11 +1,12 @@
 const Usuario = require("../modelos/usuario");
 const {
     estaSupabaseAuthConfigurado,
-    obtenerClienteSupabaseAdmin
+    estaSupabaseVerificacionConfigurada,
+    obtenerClienteSupabaseVerificacion
 } = require("../config/supabaseAuth");
 
 const autenticarSupabase = async (req, res, next) => {
-    if (!estaSupabaseAuthConfigurado) {
+    if (!estaSupabaseAuthConfigurado || !estaSupabaseVerificacionConfigurada) {
         return res.status(503).json({
             error: "La autenticación de Supabase no está configurada en este entorno."
         });
@@ -21,7 +22,9 @@ const autenticarSupabase = async (req, res, next) => {
     }
 
     try {
-        const cliente = obtenerClienteSupabaseAdmin();
+        // Validar tokens de usuario con la clave pública; reservar la clave secreta
+        // para operaciones administrativas de Auth.
+        const cliente = obtenerClienteSupabaseVerificacion();
         const { data, error } = await cliente.auth.getUser(coincidencia[1]);
 
         if (error || !data?.user) {

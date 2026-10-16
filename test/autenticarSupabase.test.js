@@ -5,7 +5,7 @@ const middlewarePath = require.resolve("../src/middleware/autenticarSupabase");
 const usuarioPath = require.resolve("../src/modelos/usuario");
 const authConfigPath = require.resolve("../src/config/supabaseAuth");
 
-async function ejecutarMiddleware({ configurado = true, authorization, authResult, usuario } = {}) {
+async function ejecutarMiddleware({ configurado = true, verificacionConfigurada = true, authorization, authResult, usuario } = {}) {
     const anteriores = new Map([
         [middlewarePath, require.cache[middlewarePath]],
         [usuarioPath, require.cache[usuarioPath]],
@@ -37,7 +37,9 @@ async function ejecutarMiddleware({ configurado = true, authorization, authResul
         id: authConfigPath, filename: authConfigPath, loaded: true,
         exports: {
             estaSupabaseAuthConfigurado: configurado,
-            obtenerClienteSupabaseAdmin: () => clienteFalso
+            estaSupabaseVerificacionConfigurada: verificacionConfigurada,
+            obtenerClienteSupabaseAdmin: () => clienteFalso,
+            obtenerClienteSupabaseVerificacion: () => clienteFalso
         }
     };
     delete require.cache[middlewarePath];
@@ -63,6 +65,16 @@ async function ejecutarMiddleware({ configurado = true, authorization, authResul
 
 test("devuelve 503 si Supabase Auth no está configurado", async () => {
     const r = await ejecutarMiddleware({ configurado: false, authorization: "Bearer token" });
+    assert.equal(r.res.statusCode, 503);
+    assert.equal(r.nextLlamado, false);
+});
+
+test("devuelve 503 si falta configurar la clave pública para verificar tokens", async () => {
+    const r = await ejecutarMiddleware({
+        configurado: true,
+        verificacionConfigurada: false,
+        authorization: "Bearer token"
+    });
     assert.equal(r.res.statusCode, 503);
     assert.equal(r.nextLlamado, false);
 });

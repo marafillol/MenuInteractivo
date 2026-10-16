@@ -7,6 +7,18 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPA
 const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 const estaSupabaseAuthConfigurado = Boolean(supabaseUrl && serviceRoleKey);
+const estaSupabaseVerificacionConfigurada = Boolean(supabaseUrl && publishableKey);
+
+const clienteSupabaseVerificacion = estaSupabaseVerificacionConfigurada
+    ? createClient(supabaseUrl, publishableKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+            detectSessionInUrl: false
+        }
+    })
+    : null;
+
 const clienteSupabaseAdmin = estaSupabaseAuthConfigurado
     ? createClient(supabaseUrl, serviceRoleKey, {
         auth: {
@@ -16,6 +28,17 @@ const clienteSupabaseAdmin = estaSupabaseAuthConfigurado
         }
     })
     : null;
+
+const obtenerClienteSupabaseVerificacion = () => {
+    if (!clienteSupabaseVerificacion) {
+        const error = new Error(
+            "Falta configurar la clave pública de Supabase para verificar sesiones."
+        );
+        error.status = 503;
+        throw error;
+    }
+    return clienteSupabaseVerificacion;
+};
 
 const obtenerClienteSupabaseAdmin = () => {
     if (!clienteSupabaseAdmin) {
@@ -40,6 +63,9 @@ const obtenerConfiguracionPublica = () => {
 
 module.exports = {
     estaSupabaseAuthConfigurado,
+    estaSupabaseVerificacionConfigurada,
+    clienteSupabaseVerificacion,
+    obtenerClienteSupabaseVerificacion,
     clienteSupabaseAdmin,
     obtenerClienteSupabaseAdmin,
     obtenerConfiguracionPublica
