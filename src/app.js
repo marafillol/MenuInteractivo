@@ -1,6 +1,11 @@
+require("dotenv").config();
+
+
 // =======================================================
 // IMPORTACIÓN DE LIBRERÍAS
 // =======================================================
+
+
 
 const express = require("express");
 const cors = require("cors");
