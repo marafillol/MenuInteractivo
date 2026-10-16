@@ -1,5 +1,14 @@
 const Menu = require("../modelos/menu");
-const { subirArchivo } = require("../config/almacenamientoSupabase");
+const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
+
+const limpiarArchivoSubido = async (ruta) => {
+    if (!ruta) return;
+    try {
+        await eliminarArchivo(ruta);
+    } catch {
+        console.error("No se pudo limpiar un archivo nuevo de menú.");
+    }
+};
 
 // ==========================
 // LISTAR MENÚS
@@ -28,54 +37,36 @@ const listarMenus = async(req,res)=>{
 // ==========================
 
 const crearMenu = async(req,res)=>{
+    let imagenSubida = null;
 
     try{
-
         const nombre = req.body.nombre?.trim();
         const id_plantilla = req.body.id_plantilla;
 
         if(!nombre){
-
-            return res.status(400).json({
-                error:"Debe ingresar un nombre para el menú."
-            });
-
+            return res.status(400).json({ error:"Debe ingresar un nombre para el menú." });
         }
-
         if(!id_plantilla){
-
-            return res.status(400).json({
-                error:"Debe seleccionar una plantilla."
-            });
-
+            return res.status(400).json({ error:"Debe seleccionar una plantilla." });
         }
 
+        imagenSubida = await subirArchivo(req.file, "menus");
         const datosMenu = {
-
             nombre,
             descripcion: req.body.descripcion?.trim() || null,
             id_plantilla,
             visible: req.body.visible,
-
-            imagen: await subirArchivo(req.file, "menus")
-
+            imagen: imagenSubida
         };
 
         const id = await Menu.crear(datosMenu);
+        imagenSubida = null;
 
-        res.json({
-            mensaje:"Menú creado correctamente",
-            id_menu:id
-        });
-
+        return res.json({ mensaje:"Menú creado correctamente", id_menu:id });
     }catch(error){
-
-        res.status(500).json({
-            error:error.message
-        });
-
+        await limpiarArchivoSubido(imagenSubida);
+        return res.status(500).json({ error:error.message });
     }
-
 };
 
 // ==========================
@@ -105,59 +96,63 @@ const obtenerMenu = async(req,res)=>{
 // ==========================
 
 const actualizarMenu = async(req,res)=>{
+    let imagenNueva = null;
+    let guardado = false;
+    let imagenAnterior = null;
 
     try{
-
         const nombre = req.body.nombre?.trim();
         const id_plantilla = req.body.id_plantilla;
 
         if(!nombre){
-
-            return res.status(400).json({
-                error:"Debe ingresar un nombre para el menú."
-            });
-
+            return res.status(400).json({ error:"Debe ingresar un nombre para el menú." });
         }
-
         if(!id_plantilla){
-
-            return res.status(400).json({
-                error:"Debe seleccionar una plantilla."
-            });
-
+            return res.status(400).json({ error:"Debe seleccionar una plantilla." });
         }
 
         const datos = {
-
             nombre,
             descripcion: req.body.descripcion?.trim() || null,
             id_plantilla,
             visible: req.body.visible
-
         };
 
         if(req.file){
-
-            datos.imagen = await subirArchivo(req.file, "menus");
-
+            const menuActual = await Menu.obtenerPorId(req.params.id);
+            if(!menuActual){
+                return res.status(404).json({ error:"No se encontró el menú." });
+            }
+            imagenAnterior = menuActual.imagen;
+            imagenNueva = await subirArchivo(req.file, "menus");
+            datos.imagen = imagenNueva;
         }
 
         await Menu.actualizar(req.params.id, datos);
+        guardado = true;
 
-        res.json({
-            mensaje:"Menú actualizado"
+        let advertencia = null;
+        if(imagenNueva && imagenAnterior && imagenAnterior !== imagenNueva){
+            try{
+                await eliminarArchivo(imagenAnterior);
+            }catch{
+                advertencia = "Se guardaron los cambios, pero no se pudo eliminar la imagen anterior del almacenamiento.";
+                console.error("No se pudo limpiar la imagen anterior del menú.");
+            }
+        }
+
+        imagenNueva = null;
+        return res.json({
+            mensaje:"Menú actualizado",
+            ...(advertencia ? { advertencia } : {})
         });
-
     }catch(error){
-
-        res.status(500).json({
-            error:error.message
-        });
-
+        if(imagenNueva && !guardado){
+            await limpiarArchivoSubido(imagenNueva);
+        }
+        return res.status(500).json({ error:error.message });
     }
-
 };
-
 
 const eliminarMenu = async(req,res)=>{
 
