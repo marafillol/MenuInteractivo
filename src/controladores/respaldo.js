@@ -107,33 +107,93 @@ async function listarArchivos(bucket, carpeta = "") {
 // Agrega una entrada al zip y espera a que se procese, así
 // se escribe un archivo a la vez (cuida la memoria en Render)
 // ---------------------------------------------------------
+
 function agregar(zip, contenido, nombre, opciones = {}) {
-
-    return new Promise((resolve) => {
-
+    return new Promise((resolve, reject) => {
         const limpiar = () => {
             zip.off("entry", alTerminar);
             zip.off("error", alError);
         };
 
-        const alError = () => {
+        const alError = (error) => {
             limpiar();
-            resolve();
+            reject(error);
         };
 
         const alTerminar = (entrada) => {
             if (entrada.name !== nombre) return;
+
             limpiar();
             resolve();
         };
 
         zip.on("entry", alTerminar);
         zip.on("error", alError);
-        zip.append(contenido, { name: nombre, ...opciones });
 
+        try {
+            zip.append(contenido, {
+                name: nombre,
+                ...opciones
+            });
+        } catch (error) {
+            limpiar();
+            reject(error);
+        }
     });
-
 }
+
+
+function esperarFinRespuesta(res) {
+    return new Promise((resolve, reject) => {
+        if (res.writableFinished) {
+            resolve();
+            return;
+        }
+
+        const limpiar = () => {
+            res.off("finish", alTerminar);
+            res.off("close", alCerrar);
+            res.off("error", alError);
+        };
+
+        const alTerminar = () => {
+            limpiar();
+            resolve();
+        };
+
+        const alCerrar = () => {
+            limpiar();
+
+            if (res.writableFinished) {
+                resolve();
+            } else {
+                reject(
+                    new Error(
+                        "La descarga se interrumpió antes de finalizar."
+                    )
+                );
+            }
+        };
+
+        const alError = (error) => {
+            limpiar();
+            reject(error);
+        };
+
+        res.once("finish", alTerminar);
+        res.once("close", alCerrar);
+        res.once("error", alError);
+
+        // Volver a comprobar por si terminó justo al registrar
+        // los eventos.
+        if (res.writableFinished) {
+            limpiar();
+            resolve();
+        }
+    });
+}
+
+
 
 
 // ---------------------------------------------------------
@@ -163,16 +223,24 @@ async function descargarCopiaSeguridad(req, res) {
         }
     });
 
-    zip.on("warning", (err) => manifiesto.errores.push(err.message));
+    let errorFatalZip = null;
 
-    zip.on("error", (err) => {
-        console.error("[respaldo] Error en el zip:", err.message);
-        if (!res.headersSent) {
-            res.status(500).json({ error: "No se pudo generar la copia de seguridad." });
-        } else {
-            res.destroy(err);
-        }
-    });
+zip.on("warning", (err) => {
+    console.error("[respaldo] Advertencia en el zip:", err.message);
+
+    manifiesto.errores.push(`ZIP: ${err.message}`);
+});
+
+
+zip.on("error", (err) => {
+    errorFatalZip = err;
+
+    console.error(
+        "[respaldo] Error fatal en el zip:",
+        err.message
+    );
+});
+
 
     res.setHeader("Content-Type", "application/zip");
     res.setHeader(
@@ -203,6 +271,10 @@ async function descargarCopiaSeguridad(req, res) {
                 manifiesto.tablas[tabla] = filas.length;
 
             } catch (e) {
+
+                if (errorFatalZip) {
+                    throw errorFatalZip;
+                }
 
                 manifiesto.errores.push(`tabla ${tabla}: ${e.code || e.message}`);
 
@@ -262,6 +334,10 @@ async function descargarCopiaSeguridad(req, res) {
 
                             } catch (e) {
 
+                                if (errorFatalZip) {
+                                    throw errorFatalZip;
+                                }
+
                                 manifiesto.errores.push(`${bucket.name}/${ruta}: ${e.message}`);
 
                             }
@@ -269,6 +345,10 @@ async function descargarCopiaSeguridad(req, res) {
                         }
 
                     } catch (e) {
+
+                        if (errorFatalZip) {
+                            throw errorFatalZip;
+                        }
 
                         manifiesto.errores.push(`bucket ${bucket.name}: ${e.message}`);
 
@@ -293,12 +373,26 @@ async function descargarCopiaSeguridad(req, res) {
 
 
         // 4. Manifiesto y cierre ---------------------------
-        zip.append(
-            JSON.stringify(manifiesto, null, 2),
-            { name: "manifiesto.json" }
-        );
 
-        await zip.finalize();
+// No generar un manifiesto aparentemente válido si el ZIP falló.
+if (errorFatalZip) {
+    throw errorFatalZip;
+}
+
+zip.append(
+    JSON.stringify(manifiesto, null, 2),
+    { name: "manifiesto.json" }
+);
+
+
+await zip.finalize();
+
+if (errorFatalZip) {
+    throw errorFatalZip;
+}
+
+// Esperar hasta que Express termine de enviar el ZIP.
+await esperarFinRespuesta(res);
 
     } catch (error) {
 
@@ -307,10 +401,12 @@ async function descargarCopiaSeguridad(req, res) {
         zip.abort();
 
         if (!res.headersSent) {
-            res.status(500).json({ error: "No se pudo generar la copia de seguridad." });
-        } else {
-            res.destroy(error);
-        }
+    res.status(500).json({
+        error: "No se pudo generar la copia de seguridad."
+    });
+} else if (!res.destroyed) {
+    res.destroy(error);
+}
 
     }
 

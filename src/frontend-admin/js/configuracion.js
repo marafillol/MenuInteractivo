@@ -370,8 +370,8 @@ async function descargarCopiaSeguridad(){
         );
 
 
-        mostrarMensajeCopiaSeguridad(
-            "Copia de seguridad descargada correctamente."
+       mostrarMensajeCopiaSeguridad(
+        "ZIP descargado. Revisá manifiesto.json para confirmar que no haya errores."
         );
 
     }catch(error){
