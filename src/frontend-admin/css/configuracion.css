@@ -124,6 +124,23 @@
     font-weight:700;
 }
 
+.bloque-respaldo{
+    margin-top:20px;
+}
+
+.bloque-respaldo .btn-guardar-configuracion{
+    margin-top:14px;
+}
+
+.btn-guardar-configuracion:disabled{
+    opacity:.6;
+    cursor:wait;
+}
+
+.bloque-respaldo .mensaje-configuracion{
+    margin-top:12px;
+}
+
 @media(max-width:700px){
     .formulario-estilo-visitante{
         grid-template-columns:1fr;

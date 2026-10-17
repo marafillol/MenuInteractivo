@@ -115,4 +115,40 @@
 
     </form>
 
+
+    <!-- =====================================================
+         COPIA DE SEGURIDAD
+         ===================================================== -->
+
+    <section class="bloque-configuracion bloque-respaldo">
+
+        <span class="referencia-configuracion">
+            SISTEMA
+        </span>
+
+        <h3>Copia de seguridad</h3>
+
+        <p class="ayuda-configuracion">
+            Descarga un archivo .zip con los datos de la base de datos
+            y todos los archivos del almacenamiento (fotos, videos, etc.).
+            Puede tardar varios minutos según la cantidad de archivos;
+            no cierres esta ventana mientras se genera.
+        </p>
+
+        <button
+                type="button"
+                id="btnCopiaSeguridad"
+                class="btn-guardar-configuracion"
+        >
+            Descargar copia de seguridad
+        </button>
+
+        <p
+                id="mensajeCopiaSeguridad"
+                class="mensaje-configuracion"
+                aria-live="polite"
+        ></p>
+
+    </section>
+
 </section>

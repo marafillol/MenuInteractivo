@@ -255,6 +255,142 @@ async function guardarConfiguracionEstilo(evento){
 
 
 // =========================================================
+// COPIA DE SEGURIDAD (base de datos + almacenamiento, en .zip)
+// =========================================================
+
+function mostrarMensajeCopiaSeguridad(
+    mensaje,
+    esError = false
+){
+
+    const elemento =
+        document.getElementById(
+            "mensajeCopiaSeguridad"
+        );
+
+    if(!elemento){
+
+        return;
+
+    }
+
+    elemento.textContent = mensaje;
+
+    elemento.style.color =
+        esError
+            ? "#8b3a3a"
+            : "#163A61";
+
+}
+
+
+async function descargarCopiaSeguridad(){
+
+    const boton =
+        document.getElementById(
+            "btnCopiaSeguridad"
+        );
+
+    if(!boton || boton.disabled){
+
+        return;
+
+    }
+
+    boton.disabled = true;
+
+    mostrarMensajeConfiguracion("");
+
+    mostrarMensajeCopiaSeguridad(
+        "Generando la copia de seguridad, esto puede tardar varios minutos..."
+    );
+
+
+    try{
+
+        const respuesta =
+            await window.fetchProtegido(
+                "/api/configuracion/copia-seguridad"
+            );
+
+
+        if(!respuesta.ok){
+
+            let detalle = "";
+
+            try{
+
+                const datos =
+                    await respuesta.json();
+
+                detalle =
+                    datos.error || "";
+
+            }catch(e){
+
+                // la respuesta de error no era JSON
+
+            }
+
+            throw new Error(
+                detalle ||
+                "No se pudo generar la copia de seguridad."
+            );
+
+        }
+
+
+        const blob =
+            await respuesta.blob();
+
+
+        const fecha =
+            new Date()
+                .toISOString()
+                .slice(0, 10);
+
+        const enlace =
+            document.createElement("a");
+
+        enlace.href =
+            URL.createObjectURL(blob);
+
+        enlace.download =
+            `copia-seguridad-${fecha}.zip`;
+
+        document.body.appendChild(enlace);
+
+        enlace.click();
+
+        enlace.remove();
+
+        setTimeout(
+            () => URL.revokeObjectURL(enlace.href),
+            60000
+        );
+
+
+        mostrarMensajeCopiaSeguridad(
+            "Copia de seguridad descargada correctamente."
+        );
+
+    }catch(error){
+
+        mostrarMensajeCopiaSeguridad(
+            error.message,
+            true
+        );
+
+    }finally{
+
+        boton.disabled = false;
+
+    }
+
+}
+
+
+// =========================================================
 // APLICAR CONFIGURACIÓN ADMIN GUARDADA
 // =========================================================
 //
@@ -339,6 +475,25 @@ function iniciarConfiguracion(){
                         true
                     )
             );
+
+    }
+
+
+    // -----------------------------------------------------
+    // COPIA DE SEGURIDAD
+    // -----------------------------------------------------
+
+    const botonCopia =
+        document.getElementById(
+            "btnCopiaSeguridad"
+        );
+
+    if(botonCopia){
+
+        botonCopia.addEventListener(
+            "click",
+            descargarCopiaSeguridad
+        );
 
     }
 
