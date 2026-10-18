@@ -1,8 +1,8 @@
 /* =========================================================
    MULTIMEDIA.JS
    Museo Malvinas
-   Gestión de archivos multimedia
-   Versión limpia y consolidada
+   GestiÃƒÂ³n de archivos multimedia
+   VersiÃƒÂ³n limpia y consolidada
 ========================================================= */
 
 console.log("Modulo multimedia cargado");
@@ -16,12 +16,92 @@ let multimediaEditando = null;
 let multimediaEliminar = null;
 let guardandoMultimedia = false;
 
+
+
+/* =========================================================
+   BORRADORES DE MULTIMEDIA
+========================================================= */
+
+function obtenerClaveBorradorMultimedia() {
+    if (!window.Borradores || !window.usuarioActual?.id_usuario) {
+        return null;
+    }
+
+    if (multimediaEditando) {
+        return String(multimediaEditando);
+    }
+
+    if (window.multimediaFichaActual && fichaSeleccionada) {
+        return `nuevo-ficha-${fichaSeleccionada}`;
+    }
+
+    return "nuevo";
+}
+
+function obtenerDatosBorradorMultimedia() {
+    return {
+        id_ficha: window.multimediaFichaActual
+            ? (fichaSeleccionada ?? "")
+            : (obtenerElemento("multiFicha")?.value ?? ""),
+        descripcion: obtenerElemento("multiDescripcion")?.value ?? "",
+        tipo_multi: obtenerElemento("multiTipo")?.value ?? "",
+        activo: obtenerElemento("multiActivo")?.checked ?? true
+    };
+}
+
+function guardarBorradorMultimedia() {
+    const modal = obtenerElemento("modalMultimediaNuevo");
+    const clave = obtenerClaveBorradorMultimedia();
+
+    if (!modal || modal.style.display === "none" || !clave) {
+        return;
+    }
+
+    window.Borradores.guardar(
+        "multimedia",
+        clave,
+        obtenerDatosBorradorMultimedia()
+    );
+}
+
+function recuperarBorradorMultimedia() {
+    const clave = obtenerClaveBorradorMultimedia();
+
+    if (!clave || !window.Borradores) {
+        return false;
+    }
+
+    const borrador = window.Borradores.leer("multimedia", clave);
+
+    if (!borrador?.datos) {
+        return false;
+    }
+
+    const datos = borrador.datos;
+
+    const descripcion = obtenerElemento("multiDescripcion");
+    const tipo = obtenerElemento("multiTipo");
+    const activo = obtenerElemento("multiActivo");
+    const ficha = obtenerElemento("multiFicha");
+
+    if (descripcion) descripcion.value = datos.descripcion ?? "";
+    if (tipo) tipo.value = datos.tipo_multi ?? "";
+    if (activo) activo.checked = datos.activo ?? true;
+
+    if (ficha && !window.multimediaFichaActual) {
+        ficha.value = String(datos.id_ficha ?? "");
+    }
+
+    return true;
+}
+
+
 /* =========================================================
    UTILIDADES
 ========================================================= */
 
 /**
- * Inicializa los iconos Lucide si están disponibles.
+ * Inicializa los iconos Lucide si estÃƒÂ¡n disponibles.
  */
 function actualizarIconosLucide() {
 
@@ -224,7 +304,7 @@ async function cargarMultimedia() {
 
             if (titulo) {
                 titulo.textContent =
-                    "Gestión de Multimedia";
+                    "GestiÃƒÂ³n de Multimedia";
             }
 
 
@@ -330,7 +410,7 @@ async function cargarMultimedia() {
                         </strong>
 
                         <p>
-                            Esta ficha todavía no tiene
+                            Esta ficha todavÃƒÂ­a no tiene
                             archivos multimedia asociados.
                         </p>
 
@@ -373,7 +453,7 @@ async function cargarMultimedia() {
 
             const descripcion =
                 item.descripcion ||
-                "Sin descripción";
+                "Sin descripciÃƒÂ³n";
 
 
             contenedor.innerHTML += `
@@ -636,7 +716,7 @@ function generarVistaMiniatura(item) {
 
 
 /* =========================================================
-   ICONO SEGÚN TIPO
+   ICONO SEGÃƒÅ¡N TIPO
 ========================================================= */
 
 function obtenerIconoMultimedia(tipo) {
@@ -687,7 +767,7 @@ async function vistaPreviaMultimedia(id_multi) {
 
             mostrarMensaje(
                 "Archivo no encontrado",
-                "No se encontró el archivo multimedia."
+                "No se encontrÃƒÂ³ el archivo multimedia."
             );
 
             return;
@@ -902,7 +982,7 @@ async function vistaPreviaMultimedia(id_multi) {
                         <div>
 
                             <span>
-                                INFORMACIÓN
+                                INFORMACIÃƒâ€œN
                             </span>
 
                             <h3>
@@ -964,13 +1044,13 @@ async function vistaPreviaMultimedia(id_multi) {
                         <div class="dato-multimedia dato-descripcion">
 
                             <span>
-                                Descripción
+                                DescripciÃƒÂ³n
                             </span>
 
                             <strong>
                                 ${
                                     item.descripcion ||
-                                    "Sin descripción"
+                                    "Sin descripciÃƒÂ³n"
                                 }
                             </strong>
 
@@ -1026,7 +1106,7 @@ async function vistaPreviaMultimedia(id_multi) {
                     <div class="ruta-multimedia">
 
                         <span>
-                            Ubicación del archivo
+                            UbicaciÃƒÂ³n del archivo
                         </span>
 
                         <code>
@@ -1154,70 +1234,55 @@ function cerrarVistaMultimedia() {
 
 
 /* =========================================================
-   NUEVO MULTIMEDIA — GENERAL
+   NUEVO MULTIMEDIA Ã¢â‚¬â€ GENERAL
 ========================================================= */
 
-function nuevoMultimedia() {
+async function nuevoMultimedia() {
 
-    const modal =
-        obtenerElemento(
-            "modalMultimediaNuevo"
-        );
-
+    const modal = obtenerElemento("modalMultimediaNuevo");
 
     if (!modal) {
-
         console.error(
-            "No se encontró modalMultimediaNuevo"
+            "No se encontrÃƒÂ³ modalMultimediaNuevo"
         );
-
         return;
-
     }
-
 
     window.multimediaFichaActual = false;
-
     multimediaEditando = null;
 
-
     /* Mostrar selector de ficha */
-
     const contenedorFicha =
-        obtenerElemento(
-            "contenedorFichaMultimedia"
-        );
-
+        obtenerElemento("contenedorFichaMultimedia");
 
     if (contenedorFicha) {
-
         contenedorFicha.style.display = "block";
-
     }
 
 
-    /* Cargar fichas */
+try {
+    await cargarFichasMultimedia();
+} catch (error) {
+    mostrarMensaje(
+        "Error",
+        "No se pudieron cargar las fichas. IntentÃƒÂ¡ nuevamente."
+    );
+    return;
+}
 
-    cargarFichasMultimedia();
-
-
-    /* Título */
-
-    const titulo =
-        modal.querySelector("h3");
-
+    /* TÃƒÂ­tulo */
+    const titulo = modal.querySelector("h3");
 
     if (titulo) {
-
-        titulo.textContent =
-            "Nuevo archivo";
-
+        titulo.textContent = "Nuevo archivo";
     }
 
-
+    /* Mostrar modal y recuperar borrador */
     modal.style.display = "flex";
 
+    recuperarBorradorMultimedia();
 }
+
 
 
 /* =========================================================
@@ -1288,13 +1353,13 @@ async function cargarFichasMultimedia() {
 
 
     } catch (error) {
+    console.error(
+        "Error cargando fichas:",
+        error
+    );
 
-        console.error(
-            "Error cargando fichas:",
-            error
-        );
-
-    }
+    throw error;
+}
 
 }
 
@@ -1319,6 +1384,7 @@ async function guardarMultimedia() {
     const archivo =
         archivoInput?.files[0];
 
+    const claveBorradorMultimedia = obtenerClaveBorradorMultimedia();
 
     /* =================================================
        VALIDAR ARCHIVO
@@ -1445,7 +1511,7 @@ async function guardarMultimedia() {
 
 
     /* =================================================
-       URL Y MÉTODO
+       URL Y MÃƒâ€°TODO
     ================================================= */
 
     const url =
@@ -1460,7 +1526,7 @@ async function guardarMultimedia() {
             : "POST";
 
 
-            // Bloquear nuevos envíos mientras se procesa este
+            // Bloquear nuevos envÃƒÂ­os mientras se procesa este
             // guardado.
         guardandoMultimedia = true;
 
@@ -1507,13 +1573,13 @@ async function guardarMultimedia() {
         } catch (errorJSON) {
 
             console.error(
-                "El servidor no devolvió JSON:",
+                "El servidor no devolviÃƒÂ³ JSON:",
                 texto
             );
 
 
             throw new Error(
-                `El servidor respondió HTTP ${respuesta.status}`
+                `El servidor respondiÃƒÂ³ HTTP ${respuesta.status}`
             );
 
         }
@@ -1552,6 +1618,13 @@ async function guardarMultimedia() {
             resultado
         );
 
+        if (window.Borradores && claveBorradorMultimedia) {
+    window.Borradores.eliminar(
+        "multimedia",
+        claveBorradorMultimedia
+    );
+}
+
 
         multimediaEditando = null;
 
@@ -1587,7 +1660,7 @@ async function guardarMultimedia() {
         mostrarMensaje(
             "Error",
             error.message ||
-            "Ocurrió un error al guardar la multimedia."
+            "OcurriÃƒÂ³ un error al guardar la multimedia."
         );
     } finally {
         // Permitir nuevos intentos de guardado.
@@ -1817,7 +1890,7 @@ function cerrarNuevoMultimedia() {
 
 
     /* =================================================
-       RESTAURAR TÍTULO
+       RESTAURAR TÃƒÂTULO
     ================================================= */
 
     const titulo =
@@ -1866,7 +1939,19 @@ async function editarMultimedia(id) {
             await respuesta.json();
 
 
-        await cargarFichasMultimedia();
+
+try {
+    await cargarFichasMultimedia();
+} catch (error) {
+    multimediaEditando = null;
+
+    mostrarMensaje(
+        "Error",
+        "No se pudieron cargar las fichas. IntentÃƒÂ¡ nuevamente."
+    );
+    return;
+}
+
 
 
         /* =================================================
@@ -1940,6 +2025,9 @@ async function editarMultimedia(id) {
             archivo.value = "";
 
         }
+
+        // Recuperar borrador local de la multimedia editada
+        recuperarBorradorMultimedia();
 
 
         /* =================================================
@@ -2017,8 +2105,8 @@ async function editarMultimedia(id) {
                 "
             >
 
-                Si seleccionás otro archivo,
-                reemplazará al actual.
+                Si seleccionÃƒÂ¡s otro archivo,
+                reemplazarÃƒÂ¡ al actual.
 
             </p>
 
@@ -2032,7 +2120,7 @@ async function editarMultimedia(id) {
 
 
         /* =================================================
-           TÍTULO
+           TÃƒÂTULO
         ================================================= */
 
         const titulo =
@@ -2085,7 +2173,7 @@ async function editarMultimedia(id) {
 
 
 /* =========================================================
-   PREVIEW PARA EDICIÓN
+   PREVIEW PARA EDICIÃƒâ€œN
 ========================================================= */
 
 function generarVistaEdicion(item, ruta) {
@@ -2215,7 +2303,7 @@ function generarVistaEdicion(item, ruta) {
    NUEVO MULTIMEDIA DESDE UNA FICHA
 ========================================================= */
 
-function nuevoMultimediaDesdeFicha() {
+async function nuevoMultimediaDesdeFicha() {
 
     const modal =
         obtenerElemento(
@@ -2226,7 +2314,7 @@ function nuevoMultimediaDesdeFicha() {
     if (!modal) {
 
         console.error(
-            "No se encontró modalMultimediaNuevo"
+            "No se encontrÃƒÂ³ modalMultimediaNuevo"
         );
 
         return;
@@ -2356,7 +2444,7 @@ function nuevoMultimediaDesdeFicha() {
 
 
     /* =================================================
-       TÍTULO
+       TÃƒÂTULO
     ================================================= */
 
     const titulo =
@@ -2376,6 +2464,8 @@ function nuevoMultimediaDesdeFicha() {
     ================================================= */
 
     modal.style.display = "flex";
+
+    recuperarBorradorMultimedia();
 
 }
 
@@ -2420,7 +2510,7 @@ function eliminarMultimedia(id_multi) {
 
 
 /* =========================================================
-   CERRAR ELIMINACIÓN
+   CERRAR ELIMINACIÃƒâ€œN
 ========================================================= */
 
 function cerrarEliminarMultimedia() {
@@ -2446,7 +2536,7 @@ function cerrarEliminarMultimedia() {
 
 
 /* =========================================================
-   CONFIRMAR ELIMINACIÓN
+   CONFIRMAR ELIMINACIÃƒâ€œN
 ========================================================= */
 
 async function confirmarEliminarMultimedia() {
@@ -2510,7 +2600,7 @@ async function confirmarEliminarMultimedia() {
 
         mostrarMensaje(
             "Error",
-            "Ocurrió un error al eliminar la multimedia."
+            "OcurriÃƒÂ³ un error al eliminar la multimedia."
         );
 
     }
@@ -2678,3 +2768,25 @@ document.addEventListener("click", function (event) {
     }
 
 });
+
+
+
+/* =========================================================
+   EVENTOS DE AUTOGUARDADO DE MULTIMEDIA
+========================================================= */
+
+if (!window.__autoguardadoMultimediaInicializado) {
+    window.__autoguardadoMultimediaInicializado = true;
+
+    document.addEventListener("input", (evento) => {
+        if (evento.target.closest("#modalMultimediaNuevo")) {
+            guardarBorradorMultimedia();
+        }
+    });
+
+    document.addEventListener("change", (evento) => {
+        if (evento.target.closest("#modalMultimediaNuevo")) {
+            guardarBorradorMultimedia();
+        }
+    });
+}

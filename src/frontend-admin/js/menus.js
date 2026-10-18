@@ -1,5 +1,48 @@
 console.log("Modulo menus cargado");
 
+
+const BORRADOR_MENU_NUEVO = "nuevo";
+
+function obtenerDatosBorradorMenu() {
+    return {
+        nombre: document.getElementById("nuevoNombre")?.value ?? "",
+        descripcion: document.getElementById("nuevaDescripcion")?.value ?? "",
+        id_plantilla: document.getElementById("plantillaMenu")?.value ?? "",
+        visible: document.getElementById("nuevoVisible")?.checked ?? true
+    };
+}
+
+function guardarBorradorMenu() {
+    if (!window.Borradores) return;
+
+    const id = document.getElementById("id_menu")?.value || BORRADOR_MENU_NUEVO;
+    const datos = obtenerDatosBorradorMenu();
+
+    window.Borradores.guardar("menus", id, datos);
+}
+
+function recuperarBorradorMenu(id = BORRADOR_MENU_NUEVO) {
+    if (!window.Borradores) return false;
+
+    const borrador = window.Borradores.leer("menus", id);
+    if (!borrador?.datos) return false;
+
+    const datos = borrador.datos;
+
+    const nombre = document.getElementById("nuevoNombre");
+    const descripcion = document.getElementById("nuevaDescripcion");
+    const plantilla = document.getElementById("plantillaMenu");
+    const visible = document.getElementById("nuevoVisible");
+
+    if (nombre) nombre.value = datos.nombre ?? "";
+    if (descripcion) descripcion.value = datos.descripcion ?? "";
+    if (plantilla) plantilla.value = datos.id_plantilla ?? "";
+    if (visible) visible.checked = datos.visible ?? true;
+
+    return true;
+}
+
+
 function obtenerRutaImagenMenu(ruta) {
 
     if (!ruta) {
@@ -68,7 +111,7 @@ async function cargarMenus(){
                 <div class="menu-info">
 
                     <span class="campo-titulo-menu">
-                        TÍTULO
+                        TÃTULO
                     </span>
                     <h3>
                         ${menu.nombre}
@@ -77,7 +120,7 @@ async function cargarMenus(){
 
 
                     <p>
-                        ${(menu.descripcion || "Sin descripción").replace(/\n/g," ")}
+                        ${(menu.descripcion || "Sin descripciÃ³n").replace(/\n/g," ")}
                     </p>
 
 
@@ -178,7 +221,7 @@ async function crearMenu(datos){
         const resultado = await respuesta.json();
 
 
-        console.log("Menú creado:", resultado);
+        console.log("MenÃº creado:", resultado);
 
 
         cargarMenus();
@@ -187,7 +230,7 @@ async function crearMenu(datos){
     }catch(error){
 
         console.error(
-            "Error creando menú:",
+            "Error creando menÃº:",
             error
         );
 
@@ -219,7 +262,7 @@ async function guardarNuevoMenu(){
 
         mostrarMensaje(
             "Campos obligatorios",
-            "Debe ingresar un nombre para el menú."
+            "Debe ingresar un nombre para el menÃº."
         );
 
         document.getElementById("nuevoNombre").focus();
@@ -294,28 +337,32 @@ async function guardarNuevoMenu(){
 
             mostrarMensaje(
                 "No se pudo guardar",
-                resultado.error || "Ocurrió un error al guardar el menú."
+                resultado.error || "OcurriÃ³ un error al guardar el menÃº."
             );
-
-            return;
 
             return;
 
         }
 
-        console.log("Menú guardado:", resultado);
+        console.log("MenÃº guardado:", resultado);
 
-        document.getElementById("ventanaEmergente").style.display = "none";
+const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
 
-        cargarMenus();
+if (window.Borradores) {
+    window.Borradores.eliminar("menus", idBorrador);
+}
+
+document.getElementById("ventanaEmergente").style.display = "none";
+
+cargarMenus();
 
     }catch(error){
 
-        console.error("Error guardando menú:", error);
+        console.error("Error guardando menÃº:", error);
 
         mostrarMensaje(
             "Error",
-            "Ocurrió un error al guardar el menú."
+            "OcurriÃ³ un error al guardar el menÃº."
         );
 
     }
@@ -323,7 +370,7 @@ async function guardarNuevoMenu(){
 }
 
 // ==========================================================
-// EVENTOS DE MENÚS
+// EVENTOS DE MENÃšS
 // ==========================================================
 
 if (!window.__eventosMenusInicializados) {
@@ -335,7 +382,7 @@ if (!window.__eventosMenusInicializados) {
         console.log("Click detectado:", e.target);
 
         // ==================================================
-        // NUEVO MENÚ
+        // NUEVO MENÃš
         // ==================================================
 
         if (e.target.closest("#nuevoMenu")) {
@@ -353,7 +400,7 @@ if (!window.__eventosMenusInicializados) {
                 modal.querySelector(".modal-contenido h3");
 
             if (titulo) {
-                titulo.textContent = "Crear nuevo menú";
+                titulo.textContent = "Crear nuevo menÃº";
             }
 
             const bloqueImagen =
@@ -385,14 +432,16 @@ if (!window.__eventosMenusInicializados) {
                 document.getElementById("nuevaImagen");
 
             if (imagen) {
-                imagen.value = "";
-            }
+    imagen.value = "";
+}
 
-            return;
+recuperarBorradorMenu("nuevo");
+
+return;
         }
 
         // ==================================================
-        // CERRAR MODAL MENÚ
+        // CERRAR MODAL MENÃš
         // ==================================================
 
         if (
@@ -461,6 +510,24 @@ async function cargarSelectPlantillas(){
 console.log("Eventos de menu preparados");
 
 
+if (!window.__autoguardadoMenusInicializado) {
+    window.__autoguardadoMenusInicializado = true;
+
+    document.addEventListener("input", (e) => {
+        if (e.target.closest("#formularioMenu")) {
+            guardarBorradorMenu();
+        }
+    });
+
+    document.addEventListener("change", (e) => {
+        if (e.target.closest("#formularioMenu")) {
+            guardarBorradorMenu();
+        }
+    });
+}
+
+
+
 
 window.addEventListener("click", function(e){
 
@@ -497,14 +564,17 @@ async function editarMenu(id_menu){
         document.querySelector(
         "#ventanaEmergente .modal-contenido h3"
         ).textContent =
-            "Editar menú";
+            "Editar menÃº";
 
         document.getElementById("bloqueImagenActual").style.display = "block";
 
         document.getElementById("ventanaEmergente").style.display = "flex";
 
-        const preview =
-        document.getElementById("previewImagen");
+        recuperarBorradorMenu(String(id_menu));
+
+        const preview = document.getElementById("previewImagen");
+
+
 
         if(menu.imagen){
 
@@ -518,7 +588,7 @@ async function editarMenu(id_menu){
 
     }catch(error){
 
-        console.error("Error cargando menú:", error);
+        console.error("Error cargando menÃº:", error);
 
     }
 
@@ -620,7 +690,7 @@ async function vistaPreviaMenu(id_menu){
             menu.id_plantilla;
 
         document.getElementById("previewVisible").textContent =
-            menu.visible == 1 ? "Sí" : "No";
+            menu.visible == 1 ? "SÃ­" : "No";
 
         document.getElementById("previewCreado").textContent =
             menu.creado || "-";

@@ -1296,6 +1296,13 @@ async function editarFicha(id_ficha) {
         ).textContent =
             "Actualizar ficha";
 
+        // Recuperar los cambios guardados localmente para esta ficha.
+const borradorRecuperado = recuperarBorradorFicha();
+
+if (borradorRecuperado) {
+    console.log("Borrador de ficha recuperado al editar.");
+}
+
 
     } catch (error) {
 
@@ -1336,6 +1343,128 @@ function verMultimediaFicha(id_ficha, titulo) {
 
     cargarVentana("multimedia", true);
 }
+
+
+function obtenerClaveBorradorFicha() {
+    const modal = document.getElementById("modalFicha");
+
+    if (!modal) return null;
+
+    const idFicha = modal.dataset.idFicha;
+    const idMenu = modal.dataset.idMenu;
+
+    if (idFicha) {
+        return String(idFicha);
+    }
+
+    if (idMenu) {
+        return `nuevo-menu-${idMenu}`;
+    }
+
+    return null;
+}
+
+function obtenerDatosBorradorFicha() {
+    const obtenerValor = (id) =>
+        document.getElementById(id)?.value ?? "";
+
+    const camposDinamicos = {};
+
+    document.querySelectorAll(".campo-dinamico").forEach(campo => {
+        const nombre = campo.dataset.campo;
+
+        if (nombre) {
+            camposDinamicos[nombre] = campo.value;
+        }
+    });
+
+    return {
+        titulo: obtenerValor("tituloFicha"),
+        resumen: obtenerValor("resumenFicha"),
+        texto: obtenerValor("textoFicha"),
+        visible: document.getElementById("visibleFicha")?.checked ?? true,
+        camposDinamicos
+    };
+}
+
+function guardarBorradorFicha() {
+    const modal = document.getElementById("modalFicha");
+
+    if (
+        !window.Borradores ||
+        !modal ||
+        modal.style.display === "none"
+    ) {
+        return;
+    }
+
+    const clave = obtenerClaveBorradorFicha();
+
+    if (!clave) return;
+
+    window.Borradores.guardar(
+        "fichas",
+        clave,
+        obtenerDatosBorradorFicha()
+    );
+}
+
+function recuperarBorradorFicha() {
+    const clave = obtenerClaveBorradorFicha();
+
+    if (!window.Borradores || !clave) return false;
+
+    const borrador = window.Borradores.leer("fichas", clave);
+
+    if (!borrador?.datos) return false;
+
+    const datos = borrador.datos;
+
+    const titulo = document.getElementById("tituloFicha");
+    const resumen = document.getElementById("resumenFicha");
+    const texto = document.getElementById("textoFicha");
+    const visible = document.getElementById("visibleFicha");
+
+    if (titulo) titulo.value = datos.titulo ?? "";
+    if (resumen) resumen.value = datos.resumen ?? "";
+    if (texto) texto.value = datos.texto ?? "";
+    if (visible) visible.checked = datos.visible ?? true;
+
+    document.querySelectorAll(".campo-dinamico").forEach(campo => {
+        const nombre = campo.dataset.campo;
+
+        if (
+            nombre &&
+            datos.camposDinamicos &&
+            Object.prototype.hasOwnProperty.call(
+                datos.camposDinamicos,
+                nombre
+            )
+        ) {
+            campo.value = datos.camposDinamicos[nombre];
+        }
+    });
+
+    return true;
+}
+
+
+if (!window.__autoguardadoFichasInicializado) {
+    window.__autoguardadoFichasInicializado = true;
+
+    document.addEventListener("input", (e) => {
+        if (e.target.closest("#modalFicha")) {
+            guardarBorradorFicha();
+        }
+    });
+
+    document.addEventListener("change", (e) => {
+        if (e.target.closest("#modalFicha")) {
+            guardarBorradorFicha();
+        }
+    });
+}
+
 
 
 /* =========================================================
@@ -1654,6 +1783,13 @@ async function abrirNuevaFicha() {
             modalFicha.style.display =
                 "flex";
 
+            // Recuperar el borrador guardado para este menú.
+const borradorRecuperado = recuperarBorradorFicha();
+
+if (borradorRecuperado) {
+    console.log("Borrador de ficha recuperado.");
+}
+
 
         } catch (error) {
 
@@ -1785,6 +1921,8 @@ async function guardarFicha() {
 
     const id_ficha =
         modalFicha.dataset.idFicha || "";
+
+    const claveBorradorFicha = obtenerClaveBorradorFicha();
 
 
     const titulo =
@@ -2102,21 +2240,14 @@ async function guardarFicha() {
 
 
                 if (!respuestaEliminar.ok) {
-
-                    console.error(
-                        "No se pudo eliminar la relación:",
-                        idRelacion
-                    );
-
-                }
+    throw new Error(
+        `No se pudo eliminar la relación ${idRelacion}.`
+    );
+}
 
             } catch (error) {
-
-                console.error(
-                    "Error eliminando relación:",
-                    error
-                );
-            }
+    throw error;
+}
         }
 
 
@@ -2183,12 +2314,10 @@ async function guardarFicha() {
 
 
             if (!respuestaRelaciones.ok) {
-
-                console.error(
-                    "Error guardando relaciones."
-                );
-
-            }
+    throw new Error(
+        "No se pudieron guardar las relaciones de la ficha."
+    );
+}
         }
 
 
@@ -2204,6 +2333,14 @@ async function guardarFicha() {
         relacionesEliminadasPendientes = [];
 
         fichaEditando = null;
+
+        // Eliminar el borrador después de guardar la ficha.
+if (window.Borradores && claveBorradorFicha) {
+    window.Borradores.eliminar(
+        "fichas",
+        claveBorradorFicha
+    );
+}
 
 
         cerrarFicha();
@@ -2632,8 +2769,14 @@ async function cambioTipoFicha(
 
         mostrarRelacionesPendientes();
 
+// Recuperar el borrador correspondiente al menú elegido.
+const borradorRecuperado = recuperarBorradorFicha();
 
-    } catch (error) {
+if (borradorRecuperado) {
+    console.log("Borrador de ficha recuperado.");
+}
+
+} catch (error) {
 
         console.error(
             "Error cargando plantilla:",
