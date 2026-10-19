@@ -302,15 +302,11 @@ async function cargarVentana(nombre, mantenerMenu=false){
 
         // Ejecutar función correspondiente
 
-        if(nombre === "menus"){
-
-            cargarMenus();
-
-            cargarSelectPlantillas();
-
-            aplicarPermisosConsulta();
-
-        }
+        if (nombre === "menus") {
+    await cargarMenus();
+    await cargarSelectPlantillas();
+    aplicarPermisosConsulta();
+}
 
         if(nombre === "fichas"){
 
@@ -475,6 +471,8 @@ async function iniciarPanel(){
     actualizarFecha();
 
     await cargarUsuarioActual();
+
+    await cargarScriptVentana("borradores");
 
     await cargarScriptVentana("configuracion");
     aplicarConfiguracionAdminGuardada();

@@ -4,7 +4,7 @@
 //
 // Esta configuración maneja solamente:
 // • Orientación del tótem
-// • Presentación del contenido
+// • Tiempo de inactividad
 // =========================================================
 
 
@@ -46,24 +46,6 @@ async function cargarConfiguracionEstilo(){
             configuracion.error ||
             "No se pudo cargar la configuración."
         );
-
-    }
-
-
-    // -----------------------------------------------------
-    // PRESENTACIÓN DEL CONTENIDO
-    // -----------------------------------------------------
-
-    const densidad =
-        document.getElementById(
-            "densidadTarjetasConfiguracion"
-        );
-
-    if(densidad){
-
-        densidad.value =
-            configuracion.densidadTarjetas ||
-            "normal";
 
     }
 
@@ -204,27 +186,11 @@ async function guardarConfiguracionEstilo(evento){
     );
 
 
-    // -----------------------------------------------------
-    // PRESENTACIÓN DEL CONTENIDO
-    // -----------------------------------------------------
-
-    const densidad =
-        document.getElementById(
-            "densidadTarjetasConfiguracion"
-        );
-
-
     const configuracion = {
 
         orientacionTotem:
 
             orientacionTotem,
-
-        densidadTarjetas:
-
-            densidad
-                ? densidad.value
-                : "normal",
 
         // Solo se envía si el campo existe en el formulario
         ...(inputInactividad
@@ -289,74 +255,18 @@ async function guardarConfiguracionEstilo(evento){
 
 
 // =========================================================
-// CONFIGURACIÓN DEL ADMIN
-// =========================================================
-//
-// Se mantiene solamente la configuración necesaria para
-// la presentación del contenido.
-//
-// Ya NO se manejan:
-// • colores
-// • fondos
-// • fuentes
-// • apariencia visual
+// COPIA DE SEGURIDAD (base de datos + almacenamiento, en .zip)
 // =========================================================
 
-async function cargarConfiguracionAdmin(){
-
-    const respuesta =
-        await window.fetchProtegido(
-            "/api/configuracion/estilo-admin"
-        );
-
-
-    const configuracion =
-        await leerRespuestaConfiguracion(
-            respuesta
-        );
-
-
-    if(!respuesta.ok){
-
-        throw new Error(
-            configuracion.error ||
-            "No se pudo cargar la configuración del panel."
-        );
-
-    }
-
-
-    const densidad =
-        document.getElementById(
-            "densidadAdminConfiguracion"
-        );
-
-
-    if(densidad){
-
-        densidad.value =
-            configuracion.densidad ||
-            "normal";
-
-    }
-
-}
-
-
-// =========================================================
-// MENSAJE CONFIGURACIÓN ADMIN
-// =========================================================
-
-function mostrarMensajeConfiguracionAdmin(
+function mostrarMensajeCopiaSeguridad(
     mensaje,
     esError = false
 ){
 
     const elemento =
         document.getElementById(
-            "mensajeConfiguracionAdmin"
+            "mensajeCopiaSeguridad"
         );
-
 
     if(!elemento){
 
@@ -364,10 +274,7 @@ function mostrarMensajeConfiguracionAdmin(
 
     }
 
-
-    elemento.textContent =
-        mensaje;
-
+    elemento.textContent = mensaje;
 
     elemento.style.color =
         esError
@@ -377,79 +284,106 @@ function mostrarMensajeConfiguracionAdmin(
 }
 
 
-// =========================================================
-// GUARDAR CONFIGURACIÓN ADMIN
-// =========================================================
+async function descargarCopiaSeguridad(){
 
-async function guardarConfiguracionAdmin(evento){
-
-    evento.preventDefault();
-
-
-    const densidad =
+    const boton =
         document.getElementById(
-            "densidadAdminConfiguracion"
+            "btnCopiaSeguridad"
         );
 
+    if(!boton || boton.disabled){
 
-    const configuracion = {
+        return;
 
-        densidad:
-            densidad
-                ? densidad.value
-                : "normal"
+    }
 
-    };
+    boton.disabled = true;
+
+    mostrarMensajeConfiguracion("");
+
+    mostrarMensajeCopiaSeguridad(
+        "Generando la copia de seguridad, esto puede tardar varios minutos..."
+    );
 
 
     try{
 
         const respuesta =
             await window.fetchProtegido(
-                "/api/configuracion/estilo-admin",
-                {
-                    method:"PUT",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(
-                            configuracion
-                        )
-                }
-            );
-
-
-        const resultado =
-            await leerRespuestaConfiguracion(
-                respuesta
+                "/api/configuracion/copia-seguridad"
             );
 
 
         if(!respuesta.ok){
 
+            let detalle = "";
+
+            try{
+
+                const datos =
+                    await respuesta.json();
+
+                detalle =
+                    datos.error || "";
+
+            }catch(e){
+
+                // la respuesta de error no era JSON
+
+            }
+
             throw new Error(
-                resultado.error ||
-                "No se pudo guardar la configuración."
+                detalle ||
+                "No se pudo generar la copia de seguridad."
             );
 
         }
 
 
-        mostrarMensajeConfiguracionAdmin(
-            "Configuración guardada correctamente."
+        const blob =
+            await respuesta.blob();
+
+
+        const fecha =
+            new Date()
+                .toISOString()
+                .slice(0, 10);
+
+        const enlace =
+            document.createElement("a");
+
+        enlace.href =
+            URL.createObjectURL(blob);
+
+        enlace.download =
+            `copia-seguridad-${fecha}.zip`;
+
+        document.body.appendChild(enlace);
+
+        enlace.click();
+
+        enlace.remove();
+
+        setTimeout(
+            () => URL.revokeObjectURL(enlace.href),
+            60000
         );
 
+
+       mostrarMensajeCopiaSeguridad(
+        "ZIP descargado. Revisá manifiesto.json para confirmar que no haya errores."
+        );
 
     }catch(error){
 
-        mostrarMensajeConfiguracionAdmin(
+        mostrarMensajeCopiaSeguridad(
             error.message,
             true
         );
+
+    }finally{
+
+        boton.disabled = false;
 
     }
 
@@ -521,12 +455,6 @@ function iniciarConfiguracion(){
         );
 
 
-    const formularioAdmin =
-        document.getElementById(
-            "formularioEstiloAdmin"
-        );
-
-
     // -----------------------------------------------------
     // VISITANTE
     // -----------------------------------------------------
@@ -552,25 +480,20 @@ function iniciarConfiguracion(){
 
 
     // -----------------------------------------------------
-    // ADMIN
+    // COPIA DE SEGURIDAD
     // -----------------------------------------------------
 
-    if(formularioAdmin){
-
-        formularioAdmin.addEventListener(
-            "submit",
-            guardarConfiguracionAdmin
+    const botonCopia =
+        document.getElementById(
+            "btnCopiaSeguridad"
         );
 
+    if(botonCopia){
 
-        cargarConfiguracionAdmin()
-            .catch(
-                error =>
-                    mostrarMensajeConfiguracionAdmin(
-                        error.message,
-                        true
-                    )
-            );
+        botonCopia.addEventListener(
+            "click",
+            descargarCopiaSeguridad
+        );
 
     }
 

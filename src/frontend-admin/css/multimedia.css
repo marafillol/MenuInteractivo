@@ -666,26 +666,36 @@
    DATOS TARJETA
 ========================================================= */
 
+
 .ventana-multimedia .datos-multimedia {
-
     display: flex;
-
     flex-direction: column;
-
-    gap: 8px;
-
+    gap: 5px;
     margin-top: auto;
-
-    padding: 13px;
-
-    background: rgba(232, 221, 197, .55);
-
+    padding: 9px 11px;
+    background: rgba(232, 221, 197, .35);
     border: 1px solid #d0c5ac;
-
     border-left: 3px solid var(--multi-amarillo);
-
-    border-radius: 4px;
+    border-radius: 5px;
 }
+
+.ventana-multimedia .datos-multimedia small {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.ventana-multimedia .datos-multimedia small svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
 
 
 .ventana-multimedia .dato-multimedia-card {

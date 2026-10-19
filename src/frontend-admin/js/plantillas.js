@@ -1,9 +1,9 @@
 
-console.log("Módulo plantillas cargado");
+console.log("MÃƒÂ³dulo plantillas cargado");
 
 
 /* =========================================================
-   ESTADO DEL MÓDULO
+   ESTADO DEL MÃƒâ€œDULO
 ========================================================= */
 
 let plantillaEditando = null;
@@ -14,7 +14,7 @@ let plantillaEliminar = null;
 
 
 /* =========================================================
-   CONFIGURACIÓN PREDETERMINADA
+   CONFIGURACIÃƒâ€œN PREDETERMINADA
 ========================================================= */
 
 const CONFIG_PLANTILLA_DEFAULT = {
@@ -205,7 +205,7 @@ function normalizarPlantilla(datos = {}) {
 
 
 /* =========================================================
-   LEER CONFIGURACIÓN DE LA INTERFAZ
+   LEER CONFIGURACIÃƒâ€œN DE LA INTERFAZ
 ========================================================= */
 
 function leerConfiguracionInterfaz() {
@@ -412,7 +412,7 @@ function leerConfiguracionInterfaz() {
 
 
     console.log(
-        "Configuración de plantilla actualizada:",
+        "ConfiguraciÃƒÂ³n de plantilla actualizada:",
         plantillaActual
     );
 
@@ -420,7 +420,7 @@ function leerConfiguracionInterfaz() {
 
 
 /* =========================================================
-   CAMBIOS DE CONFIGURACIÓN
+   CAMBIOS DE CONFIGURACIÃƒâ€œN
 ========================================================= */
 
 const IDS_CONFIGURACION_PLANTILLA = [
@@ -472,12 +472,118 @@ document.addEventListener("change", event => {
 
 
 /* =========================================================
-   INICIAR MÓDULO
+   BORRADORES DE PLANTILLAS
+========================================================= */
+
+function obtenerClaveBorradorPlantilla() {
+    if (!window.Borradores || !window.usuarioActual?.id_usuario) {
+        return null;
+    }
+
+    return plantillaEditando
+        ? String(plantillaEditando)
+        : "nuevo";
+}
+
+function obtenerDatosBorradorPlantilla() {
+    leerConfiguracionInterfaz();
+
+    return {
+        nombre: document.getElementById("nombrePlantilla")?.value ?? "",
+        descripcion: document.getElementById("descripcionPlantilla")?.value ?? "",
+        activo: document.getElementById("activoPlantilla")?.checked ?? true,
+        plantilla: JSON.parse(JSON.stringify(plantillaActual))
+    };
+}
+
+function guardarBorradorPlantilla() {
+    const modal = document.getElementById("modalPlantilla");
+    const clave = obtenerClaveBorradorPlantilla();
+
+    if (
+        !modal ||
+        modal.style.display === "none" ||
+        !clave ||
+        !window.Borradores
+    ) {
+        return;
+    }
+
+    window.Borradores.guardar(
+        "plantillas",
+        clave,
+        obtenerDatosBorradorPlantilla()
+    );
+}
+
+function recuperarBorradorPlantilla() {
+    const clave = obtenerClaveBorradorPlantilla();
+
+    if (!clave || !window.Borradores) {
+        return false;
+    }
+
+    const borrador = window.Borradores.leer(
+        "plantillas",
+        clave
+    );
+
+    if (!borrador?.datos) {
+        return false;
+    }
+
+    const datos = borrador.datos;
+
+    const nombre = document.getElementById("nombrePlantilla");
+    const descripcion = document.getElementById("descripcionPlantilla");
+    const activo = document.getElementById("activoPlantilla");
+
+    if (nombre) nombre.value = datos.nombre ?? "";
+    if (descripcion) descripcion.value = datos.descripcion ?? "";
+    if (activo) activo.checked = datos.activo ?? true;
+
+    plantillaActual = normalizarPlantilla(datos.plantilla ?? {});
+
+    cargarConfiguracionEnFormulario();
+    mostrarCamposPlantilla();
+    actualizarVistaPreviaPlantilla();
+
+    return true;
+}
+
+
+/* =========================================================
+   EVENTOS DE AUTOGUARDADO DE PLANTILLAS
+========================================================= */
+
+if (!window.__autoguardadoPlantillasInicializado) {
+    window.__autoguardadoPlantillasInicializado = true;
+
+    const guardarSiCorresponde = (event) => {
+        const modal = document.getElementById("modalPlantilla");
+
+        if (
+            modal &&
+            modal.contains(event.target) &&
+            event.target.id !== "btnGuardarPlantilla"
+        ) {
+            guardarBorradorPlantilla();
+        }
+    };
+
+    document.addEventListener("input", guardarSiCorresponde);
+    document.addEventListener("change", guardarSiCorresponde);
+}
+
+
+
+/* =========================================================
+   INICIAR MÃƒâ€œDULO
 ========================================================= */
 
 function iniciarPlantillas() {
 
-    console.log("Inicializando módulo plantillas");
+    console.log("Inicializando mÃƒÂ³dulo plantillas");
 
     const modulo =
         document.getElementById("moduloPlantillas");
@@ -508,10 +614,9 @@ function iniciarPlantillas() {
             document.getElementById("modalPlantilla");
 
         if (modal) {
-
-            modal.style.display = "flex";
-
-        }
+    modal.style.display = "flex";
+    recuperarBorradorPlantilla();
+}
 
     });
 
@@ -733,11 +838,16 @@ function guardarCampo() {
     }
 
 
-    cerrarCampoPlantilla();
 
-    mostrarCamposPlantilla();
+cerrarCampoPlantilla();
 
-    actualizarVistaPreviaPlantilla();
+mostrarCamposPlantilla();
+
+actualizarVistaPreviaPlantilla();
+
+// Guardar los cambios de la plantilla en el borrador local.
+guardarBorradorPlantilla();
+
 
 }
 
@@ -809,13 +919,13 @@ function mostrarCamposPlantilla() {
                     <small>
 
                         Tarjeta:
-                        ${campo.mostrarTarjeta ? "✔" : "✖"}
+                        ${campo.mostrarTarjeta ? "Ã¢Å“â€" : "Ã¢Å“â€“"}
 
                         |
 
 
                         Historia:
-                        ${campo.mostrarHistoria ? "✔" : "✖"}
+                        ${campo.mostrarHistoria ? "Ã¢Å“â€" : "Ã¢Å“â€“"}
 
                     </small>
 
@@ -919,7 +1029,7 @@ function limpiarFormularioPlantilla() {
 
 
 /* =========================================================
-   CARGAR CONFIGURACIÓN EN FORMULARIO
+   CARGAR CONFIGURACIÃƒâ€œN EN FORMULARIO
 ========================================================= */
 
 function cargarConfiguracionEnFormulario() {
@@ -1265,12 +1375,16 @@ function confirmarEliminarCampo() {
     campoEliminar = null;
 
 
-    mostrarCamposPlantilla();
 
-    actualizarVistaPreviaPlantilla();
+mostrarCamposPlantilla();
 
+actualizarVistaPreviaPlantilla();
 
-    cerrarEliminarCampoPlantilla();
+// Guardar el cambio en el borrador local.
+guardarBorradorPlantilla();
+
+cerrarEliminarCampoPlantilla();
+
 
 }
 
@@ -1422,7 +1536,7 @@ function actualizarVistaPreviaPlantilla() {
         document.createElement("h2");
 
     titulo.textContent =
-        "Ejemplo de menú";
+        "Ejemplo de menÃƒÂº";
 
     titulo.style.color =
         apariencia.colorPrincipal;
@@ -1447,7 +1561,7 @@ function actualizarVistaPreviaPlantilla() {
             "preview-buscador";
 
         buscador.innerHTML = `
-            <span>🔎</span>
+            <span>Ã°Å¸â€Å½</span>
             <span>Buscar...</span>
         `;
 
@@ -1464,7 +1578,7 @@ function actualizarVistaPreviaPlantilla() {
 
 
     /* -----------------------------------------------------
-       ÍNDICE
+       ÃƒÂNDICE
     ----------------------------------------------------- */
 
     if (elementos.mostrarIndice) {
@@ -1476,7 +1590,7 @@ function actualizarVistaPreviaPlantilla() {
             "preview-indice";
 
         indice.innerHTML = `
-            <strong>Índice</strong>
+            <strong>ÃƒÂndice</strong>
             <span>A</span>
             <span>B</span>
             <span>C</span>
@@ -1602,7 +1716,7 @@ function actualizarVistaPreviaPlantilla() {
 
 
         /* -------------------------------------------------
-           TAMAÑO
+           TAMAÃƒâ€˜O
         ------------------------------------------------- */
 
         switch (interfaz.tamanoFicha) {
@@ -1658,7 +1772,7 @@ function actualizarVistaPreviaPlantilla() {
                 "preview-ficha-imagen";
 
             imagen.innerHTML = `
-                <span>FOTOGRAFÍA</span>
+                <span>FOTOGRAFÃƒÂA</span>
             `;
 
             imagen.style.background =
@@ -1685,7 +1799,7 @@ function actualizarVistaPreviaPlantilla() {
             "preview-ficha-contenido";
 
 
-        /* TÍTULO */
+        /* TÃƒÂTULO */
 
         const tituloFicha =
             document.createElement("h3");
@@ -1795,7 +1909,7 @@ function actualizarVistaPreviaPlantilla() {
 
 
     /* -----------------------------------------------------
-       INFORMACIÓN TÉCNICA
+       INFORMACIÃƒâ€œN TÃƒâ€°CNICA
     ----------------------------------------------------- */
 
     const informacion =
@@ -1807,7 +1921,7 @@ function actualizarVistaPreviaPlantilla() {
     informacion.innerHTML = `
 
         <strong>
-            Configuración actual
+            ConfiguraciÃƒÂ³n actual
         </strong>
 
         <span>
@@ -1852,7 +1966,7 @@ function actualizarVistaPreviaPlantilla() {
 async function guardarPlantilla() {
 
     console.log(
-        "BOTÓN GUARDAR PLANTILLA DETECTADO"
+        "BOTÃƒâ€œN GUARDAR PLANTILLA DETECTADO"
     );
 
 
@@ -1909,12 +2023,15 @@ async function guardarPlantilla() {
     };
 
 
-    try {
+try {
 
-        const url =
-            plantillaEditando
-                ? `/api/plantillas/${plantillaEditando}`
-                : "/api/plantillas";
+    // Conservar la clave antes de cerrar el modal.
+    const claveBorrador = obtenerClaveBorradorPlantilla();
+
+    const url =
+        plantillaEditando
+            ? `/api/plantillas/${plantillaEditando}`
+            : "/api/plantillas";
 
 
         const metodo =
@@ -1956,16 +2073,21 @@ async function guardarPlantilla() {
         }
 
 
-        mostrarMensajePlantilla(
-            plantillaEditando
-                ? "Plantilla actualizada correctamente."
-                : "Plantilla creada correctamente."
-        );
+mostrarMensajePlantilla(
+    plantillaEditando
+        ? "Plantilla actualizada correctamente."
+        : "Plantilla creada correctamente."
+);
 
+// Eliminar el borrador solo despuÃƒÂ©s de confirmar el ÃƒÂ©xito.
+if (window.Borradores && claveBorrador) {
+    window.Borradores.eliminar("plantillas", claveBorrador);
+}
 
-        cerrarModalPlantilla();
+cerrarModalPlantilla();
 
-        cargarPlantillas();
+cargarPlantillas();
+
 
     }
     catch (error) {
@@ -1976,7 +2098,7 @@ async function guardarPlantilla() {
         );
 
         mostrarMensajePlantilla(
-            "Ocurrió un error al guardar la plantilla."
+            "OcurriÃƒÂ³ un error al guardar la plantilla."
         );
 
     }
@@ -2243,7 +2365,7 @@ async function vistaPreviaPlantilla(id) {
 
 
         /* -----------------------------------------------------
-           TÍTULO
+           TÃƒÂTULO
         ----------------------------------------------------- */
 
         contenedor.insertAdjacentHTML(
@@ -2251,7 +2373,7 @@ async function vistaPreviaPlantilla(id) {
             `
 
             <h2 class="titulo-preview-plantilla">
-                Título de ejemplo
+                TÃƒÂ­tulo de ejemplo
             </h2>
 
             `
@@ -2308,7 +2430,7 @@ async function vistaPreviaPlantilla(id) {
 
 
         /* -----------------------------------------------------
-           INFORMACIÓN
+           INFORMACIÃƒâ€œN
         ----------------------------------------------------- */
 
         contenedor.insertAdjacentHTML(
@@ -2431,7 +2553,7 @@ async function editarPlantilla(id) {
 
 
         /* -----------------------------------------------------
-           MARCAR EDICIÓN
+           MARCAR EDICIÃƒâ€œN
         ----------------------------------------------------- */
 
         plantillaEditando =
@@ -2542,7 +2664,7 @@ async function editarPlantilla(id) {
 
 
         /* -----------------------------------------------------
-           CARGAR CONFIGURACIÓN
+           CARGAR CONFIGURACIÃƒâ€œN
         ----------------------------------------------------- */
 
         cargarConfiguracionEnFormulario();
@@ -2561,23 +2683,17 @@ async function editarPlantilla(id) {
 
         actualizarVistaPreviaPlantilla();
 
+/* -----------------------------------------------------
+   ABRIR MODAL Y RECUPERAR BORRADOR
+----------------------------------------------------- */
 
-        /* -----------------------------------------------------
-           ABRIR MODAL
-        ----------------------------------------------------- */
+const modal = document.getElementById("modalPlantilla");
 
-        const modal =
-            document.getElementById(
-                "modalPlantilla"
-            );
+if (modal) {
+    modal.style.display = "flex";
+    recuperarBorradorPlantilla();
+}
 
-
-        if (modal) {
-
-            modal.style.display =
-                "flex";
-
-        }
 
     }
     catch (error) {
@@ -2588,7 +2704,7 @@ async function editarPlantilla(id) {
         );
 
         mostrarMensajePlantilla(
-            "Ocurrió un error al cargar la plantilla."
+            "OcurriÃƒÂ³ un error al cargar la plantilla."
         );
 
     }
@@ -2699,7 +2815,7 @@ async function confirmarEliminarPlantilla() {
         );
 
         mostrarMensajePlantilla(
-            "Ocurrió un error al eliminar la plantilla."
+            "OcurriÃƒÂ³ un error al eliminar la plantilla."
         );
 
     }

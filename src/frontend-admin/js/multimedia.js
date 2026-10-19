@@ -16,9 +16,111 @@ let multimediaEditando = null;
 let multimediaEliminar = null;
 let guardandoMultimedia = false;
 
+
+
+/* =========================================================
+   BORRADORES DE MULTIMEDIA
+========================================================= */
+
+function obtenerClaveBorradorMultimedia() {
+    if (!window.Borradores || !window.usuarioActual?.id_usuario) {
+        return null;
+    }
+
+    if (multimediaEditando) {
+        return String(multimediaEditando);
+    }
+
+    if (window.multimediaFichaActual && fichaSeleccionada) {
+        return `nuevo-ficha-${fichaSeleccionada}`;
+    }
+
+    return "nuevo";
+}
+
+function obtenerDatosBorradorMultimedia() {
+    return {
+        id_ficha: window.multimediaFichaActual
+            ? (fichaSeleccionada ?? "")
+            : (obtenerElemento("multiFicha")?.value ?? ""),
+        descripcion: obtenerElemento("multiDescripcion")?.value ?? "",
+        tipo_multi: obtenerElemento("multiTipo")?.value ?? "",
+        activo: obtenerElemento("multiActivo")?.checked ?? true
+    };
+}
+
+function guardarBorradorMultimedia() {
+    const modal = obtenerElemento("modalMultimediaNuevo");
+    const clave = obtenerClaveBorradorMultimedia();
+
+    if (!modal || modal.style.display === "none" || !clave) {
+        return;
+    }
+
+    window.Borradores.guardar(
+        "multimedia",
+        clave,
+        obtenerDatosBorradorMultimedia()
+    );
+}
+
+function recuperarBorradorMultimedia() {
+    const clave = obtenerClaveBorradorMultimedia();
+
+    if (!clave || !window.Borradores) {
+        return false;
+    }
+
+    const borrador = window.Borradores.leer("multimedia", clave);
+
+    if (!borrador?.datos) {
+        return false;
+    }
+
+    const datos = borrador.datos;
+
+    const descripcion = obtenerElemento("multiDescripcion");
+    const tipo = obtenerElemento("multiTipo");
+    const activo = obtenerElemento("multiActivo");
+    const ficha = obtenerElemento("multiFicha");
+
+    if (descripcion) descripcion.value = datos.descripcion ?? "";
+    if (tipo) tipo.value = datos.tipo_multi ?? "";
+    if (activo) activo.checked = datos.activo ?? true;
+
+    if (ficha && !window.multimediaFichaActual) {
+        ficha.value = String(datos.id_ficha ?? "");
+    }
+
+    return true;
+}
+
+
 /* =========================================================
    UTILIDADES
 ========================================================= */
+
+function formatearFechaMultimedia(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
 
 /**
  * Inicializa los iconos Lucide si están disponibles.
@@ -425,34 +527,23 @@ async function cargarMultimedia() {
                         </div>
 
 
-                        <div class="datos-multimedia">
+<div class="datos-multimedia">
+    <small>
+        <i data-lucide="file-text" aria-hidden="true"></i>
+        ${item.ficha || "Ficha sin nombre"} - #${item.id_ficha}
+    </small>
 
+    <small>
+        <i data-lucide="folder" aria-hidden="true"></i>
+        Menu: ${item.menu || "Sin menu"}
+    </small>
 
-                            <small>
+    <small>
+        <i data-lucide="calendar" aria-hidden="true"></i>
+        ${formatearFechaMultimedia(item.creado)}
+    </small>
+</div>
 
-                                <i
-                                    data-lucide="folder"
-                                    aria-hidden="true">
-                                </i>
-
-                                Ficha #${item.id_ficha}
-
-                            </small>
-
-
-                            <small>
-
-                                <i
-                                    data-lucide="calendar"
-                                    aria-hidden="true">
-                                </i>
-
-                                ${item.creado || "-"}
-
-                            </small>
-
-
-                        </div>
 
 
                         <div class="acciones-multimedia">
@@ -1001,7 +1092,7 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.creado || "-"}
+                                ${formatearFechaMultimedia(item.creado)}
                             </strong>
 
                         </div>
@@ -1014,7 +1105,7 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.actualizado || "-"}
+                                ${formatearFechaMultimedia(item.actualizado)}
                             </strong>
 
                         </div>
@@ -1154,70 +1245,55 @@ function cerrarVistaMultimedia() {
 
 
 /* =========================================================
-   NUEVO MULTIMEDIA — GENERAL
+   NUEVO MULTIMEDIA - GENERAL
 ========================================================= */
 
-function nuevoMultimedia() {
+async function nuevoMultimedia() {
 
-    const modal =
-        obtenerElemento(
-            "modalMultimediaNuevo"
-        );
-
+    const modal = obtenerElemento("modalMultimediaNuevo");
 
     if (!modal) {
-
         console.error(
             "No se encontró modalMultimediaNuevo"
         );
-
         return;
-
     }
-
 
     window.multimediaFichaActual = false;
-
     multimediaEditando = null;
 
-
     /* Mostrar selector de ficha */
-
     const contenedorFicha =
-        obtenerElemento(
-            "contenedorFichaMultimedia"
-        );
-
+        obtenerElemento("contenedorFichaMultimedia");
 
     if (contenedorFicha) {
-
         contenedorFicha.style.display = "block";
-
     }
 
 
-    /* Cargar fichas */
+try {
+    await cargarFichasMultimedia();
+} catch (error) {
+    mostrarMensaje(
+        "Error",
+        "No se pudieron cargar las fichas. Intentá nuevamente."
+    );
+    return;
+}
 
-    cargarFichasMultimedia();
-
-
-    /* Título */
-
-    const titulo =
-        modal.querySelector("h3");
-
+    /* TÍTULO */
+    const titulo = modal.querySelector("h3");
 
     if (titulo) {
-
-        titulo.textContent =
-            "Nuevo archivo";
-
+        titulo.textContent = "Nuevo archivo";
     }
 
-
+    /* Mostrar modal y recuperar borrador */
     modal.style.display = "flex";
 
+    recuperarBorradorMultimedia();
 }
+
 
 
 /* =========================================================
@@ -1288,13 +1364,13 @@ async function cargarFichasMultimedia() {
 
 
     } catch (error) {
+    console.error(
+        "Error cargando fichas:",
+        error
+    );
 
-        console.error(
-            "Error cargando fichas:",
-            error
-        );
-
-    }
+    throw error;
+}
 
 }
 
@@ -1319,6 +1395,7 @@ async function guardarMultimedia() {
     const archivo =
         archivoInput?.files[0];
 
+    const claveBorradorMultimedia = obtenerClaveBorradorMultimedia();
 
     /* =================================================
        VALIDAR ARCHIVO
@@ -1551,6 +1628,13 @@ async function guardarMultimedia() {
             "Multimedia guardada correctamente:",
             resultado
         );
+
+        if (window.Borradores && claveBorradorMultimedia) {
+    window.Borradores.eliminar(
+        "multimedia",
+        claveBorradorMultimedia
+    );
+}
 
 
         multimediaEditando = null;
@@ -1866,7 +1950,19 @@ async function editarMultimedia(id) {
             await respuesta.json();
 
 
-        await cargarFichasMultimedia();
+
+try {
+    await cargarFichasMultimedia();
+} catch (error) {
+    multimediaEditando = null;
+
+    mostrarMensaje(
+        "Error",
+        "No se pudieron cargar las fichas. Intentá nuevamente."
+    );
+    return;
+}
+
 
 
         /* =================================================
@@ -1940,6 +2036,9 @@ async function editarMultimedia(id) {
             archivo.value = "";
 
         }
+
+        // Recuperar borrador local de la multimedia editada
+        recuperarBorradorMultimedia();
 
 
         /* =================================================
@@ -2215,7 +2314,7 @@ function generarVistaEdicion(item, ruta) {
    NUEVO MULTIMEDIA DESDE UNA FICHA
 ========================================================= */
 
-function nuevoMultimediaDesdeFicha() {
+async function nuevoMultimediaDesdeFicha() {
 
     const modal =
         obtenerElemento(
@@ -2356,7 +2455,7 @@ function nuevoMultimediaDesdeFicha() {
 
 
     /* =================================================
-       TÍTULO
+      TÍTULO
     ================================================= */
 
     const titulo =
@@ -2376,6 +2475,8 @@ function nuevoMultimediaDesdeFicha() {
     ================================================= */
 
     modal.style.display = "flex";
+
+    recuperarBorradorMultimedia();
 
 }
 
@@ -2678,3 +2779,25 @@ document.addEventListener("click", function (event) {
     }
 
 });
+
+
+
+/* =========================================================
+   EVENTOS DE AUTOGUARDADO DE MULTIMEDIA
+========================================================= */
+
+if (!window.__autoguardadoMultimediaInicializado) {
+    window.__autoguardadoMultimediaInicializado = true;
+
+    document.addEventListener("input", (evento) => {
+        if (evento.target.closest("#modalMultimediaNuevo")) {
+            guardarBorradorMultimedia();
+        }
+    });
+
+    document.addEventListener("change", (evento) => {
+        if (evento.target.closest("#modalMultimediaNuevo")) {
+            guardarBorradorMultimedia();
+        }
+    });
+}

@@ -52,42 +52,33 @@ const db = require("../database");
 // Lista de archivos multimedia registrados.
 //
 
+
 const obtenerMultimedia = () => {
-
     return new Promise((resolve, reject) => {
-
         db.all(
-
             `
             SELECT
                 multimedia.*,
-                ficha.titulo AS ficha
+                ficha.titulo AS ficha,
+                menu.nombre AS menu
             FROM multimedia
             LEFT JOIN ficha
-            ON multimedia.id_ficha = ficha.id_ficha
+                ON multimedia.id_ficha = ficha.id_ficha
+            LEFT JOIN menu
+                ON ficha.id_menu = menu.id_menu
             `,
-
             [],
-
             (error, filas) => {
-
-                if(error){
-
+                if (error) {
                     reject(error);
-
-                }else{
-
+                } else {
                     resolve(filas);
-
                 }
-
             }
-
         );
-
     });
-
 };
+
 
 
 
@@ -375,41 +366,30 @@ const eliminar = (id) => {
 //
 
 const obtenerPorFicha = (id_ficha) => {
-
-    return new Promise((resolve,reject)=>{
-
-
+    return new Promise((resolve, reject) => {
         db.all(
-
             `
-            SELECT *
+            SELECT
+                multimedia.*,
+                ficha.titulo AS ficha,
+                menu.nombre AS menu
             FROM multimedia
-            WHERE id_ficha = ?
+            LEFT JOIN ficha
+                ON multimedia.id_ficha = ficha.id_ficha
+            LEFT JOIN menu
+                ON ficha.id_menu = menu.id_menu
+            WHERE multimedia.id_ficha = ?
             `,
-
             [id_ficha],
-
-
-            (error,datos)=>{
-
-
-                if(error){
-
+            (error, datos) => {
+                if (error) {
                     reject(error);
-
-                }else{
-
+                } else {
                     resolve(datos);
-
                 }
-
             }
-
         );
-
-
     });
-
 };
 
 
@@ -428,50 +408,32 @@ const obtenerPorFicha = (id_ficha) => {
 // Incluye el título de la ficha relacionada.
 //
 
-const obtenerPorId = (id)=>{
-
-    return new Promise((resolve,reject)=>{
-
-
+const obtenerPorId = (id) => {
+    return new Promise((resolve, reject) => {
         db.get(
-
             `
             SELECT
                 multimedia.*,
-                ficha.titulo AS ficha
+                ficha.titulo AS ficha,
+                menu.nombre AS menu
             FROM multimedia
             LEFT JOIN ficha
-            ON multimedia.id_ficha = ficha.id_ficha
+                ON multimedia.id_ficha = ficha.id_ficha
+            LEFT JOIN menu
+                ON ficha.id_menu = menu.id_menu
             WHERE multimedia.id_multi = ?
             `,
-
             [id],
-
-
-            (error,fila)=>{
-
-
-                if(error){
-
+            (error, fila) => {
+                if (error) {
                     reject(error);
-
-                }else{
-
+                } else {
                     resolve(fila);
-
                 }
-
             }
-
         );
-
-
     });
-
 };
-
-
-
 
 
 
