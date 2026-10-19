@@ -3915,21 +3915,43 @@ function eliminarRelacionPendiente(
    FECHA ARGENTINA
 ========================================================= */
 
-function mostrarFechaArgentina(
-    fecha
-) {
 
-    if (!fecha) {
+/* =========================================================
+   FECHA ARGENTINA
+========================================================= */
+
+function mostrarFechaArgentina(fecha) {
+
+    if (
+        fecha === null ||
+        fecha === undefined ||
+        fecha === "" ||
+        fecha === "undefined" ||
+        fecha === "null"
+    ) {
         return "-";
     }
 
+    const valor = new Date(fecha);
 
-    const partes =
-        fecha.split(" ");
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
 
+    const fechaFormateada =
+        valor.toLocaleDateString("es-AR");
 
-    return `${partes[0]} ${partes[1]}`;
+    const horaFormateada =
+        valor.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        });
+
+    return `${fechaFormateada} — ${horaFormateada}`;
 }
+
 
 
 /* =========================================================

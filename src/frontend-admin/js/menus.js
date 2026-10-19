@@ -111,7 +111,7 @@ async function cargarMenus(){
                 <div class="menu-info">
 
                     <span class="campo-titulo-menu">
-                        TÃTULO
+                        TÍTULO
                     </span>
                     <h3>
                         ${menu.nombre}
@@ -120,7 +120,7 @@ async function cargarMenus(){
 
 
                     <p>
-                        ${(menu.descripcion || "Sin descripciÃ³n").replace(/\n/g," ")}
+                        ${(menu.descripcion || "Sin descripcion").replace(/\n/g," ")}
                     </p>
 
 
@@ -221,7 +221,7 @@ async function crearMenu(datos){
         const resultado = await respuesta.json();
 
 
-        console.log("MenÃº creado:", resultado);
+        console.log("Menú creado:", resultado);
 
 
         cargarMenus();
@@ -230,7 +230,7 @@ async function crearMenu(datos){
     }catch(error){
 
         console.error(
-            "Error creando menÃº:",
+            "Error creando menú:",
             error
         );
 
@@ -262,7 +262,7 @@ async function guardarNuevoMenu(){
 
         mostrarMensaje(
             "Campos obligatorios",
-            "Debe ingresar un nombre para el menÃº."
+            "Debe ingresar un nombre para el menú."
         );
 
         document.getElementById("nuevoNombre").focus();
@@ -337,14 +337,14 @@ async function guardarNuevoMenu(){
 
             mostrarMensaje(
                 "No se pudo guardar",
-                resultado.error || "OcurriÃ³ un error al guardar el menÃº."
+                resultado.error || "Ocurrió un error al guardar el menú."
             );
 
             return;
 
         }
 
-        console.log("MenÃº guardado:", resultado);
+        console.log("Menú guardado:", resultado);
 
 const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
 
@@ -358,11 +358,11 @@ cargarMenus();
 
     }catch(error){
 
-        console.error("Error guardando menÃº:", error);
+        console.error("Error guardando menú:", error);
 
         mostrarMensaje(
             "Error",
-            "OcurriÃ³ un error al guardar el menÃº."
+            "Ocurrió un error al guardar el menú."
         );
 
     }
@@ -370,7 +370,7 @@ cargarMenus();
 }
 
 // ==========================================================
-// EVENTOS DE MENÃšS
+// EVENTOS DE MENú
 // ==========================================================
 
 if (!window.__eventosMenusInicializados) {
@@ -400,7 +400,7 @@ if (!window.__eventosMenusInicializados) {
                 modal.querySelector(".modal-contenido h3");
 
             if (titulo) {
-                titulo.textContent = "Crear nuevo menÃº";
+                titulo.textContent = "Crear nuevo menú";
             }
 
             const bloqueImagen =
@@ -564,7 +564,7 @@ async function editarMenu(id_menu){
         document.querySelector(
         "#ventanaEmergente .modal-contenido h3"
         ).textContent =
-            "Editar menÃº";
+            "Editar menú";
 
         document.getElementById("bloqueImagenActual").style.display = "block";
 
@@ -588,7 +588,7 @@ async function editarMenu(id_menu){
 
     }catch(error){
 
-        console.error("Error cargando menÃº:", error);
+        console.error("Error cargando menú:", error);
 
     }
 
@@ -690,13 +690,52 @@ async function vistaPreviaMenu(id_menu){
             menu.id_plantilla;
 
         document.getElementById("previewVisible").textContent =
-            menu.visible == 1 ? "SÃ­" : "No";
+            menu.visible == 1 ? "SÍ" : "No";
 
-        document.getElementById("previewCreado").textContent =
-            menu.creado || "-";
 
-        document.getElementById("previewActualizado").textContent =
-            menu.actualizado || "-";
+        function separarFechaHora(valor) {
+            if (
+                valor === null ||
+                valor === undefined ||
+                valor === "" ||
+                valor === "undefined" ||
+                valor === "null"
+            ) {
+                return { fecha: "-", hora: "-" };
+            }
+
+            const fecha = new Date(valor);
+
+            if (Number.isNaN(fecha.getTime())) {
+                return { fecha: "-", hora: "-" };
+            }
+
+            return {
+                fecha: fecha.toLocaleDateString("es-AR"),
+                hora: fecha.toLocaleTimeString("es-AR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false
+                })
+            };
+        }
+
+        const creado = separarFechaHora(menu.creado);
+
+        document.getElementById("previewCreadoFecha").textContent =
+            creado.fecha;
+
+        document.getElementById("previewCreadoHora").textContent =
+            creado.hora;
+
+        const actualizado = separarFechaHora(menu.actualizado);
+
+        document.getElementById("previewActualizadoFecha").textContent =
+            actualizado.fecha;
+
+        document.getElementById("previewActualizadoHora").textContent =
+            actualizado.hora;
 
         const imagen = document.getElementById("previewMenuImagen");
 
