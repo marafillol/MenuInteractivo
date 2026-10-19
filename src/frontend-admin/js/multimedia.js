@@ -505,34 +505,23 @@ async function cargarMultimedia() {
                         </div>
 
 
-                        <div class="datos-multimedia">
+<div class="datos-multimedia">
+    <small>
+        <i data-lucide="file-text" aria-hidden="true"></i>
+        ${item.ficha || "Ficha sin nombre"} - #${item.id_ficha}
+    </small>
 
+    <small>
+        <i data-lucide="folder" aria-hidden="true"></i>
+        Menu: ${item.menu || "Sin menu"}
+    </small>
 
-                            <small>
+    <small>
+        <i data-lucide="calendar" aria-hidden="true"></i>
+        ${item.creado || "-"}
+    </small>
+</div>
 
-                                <i
-                                    data-lucide="folder"
-                                    aria-hidden="true">
-                                </i>
-
-                                Ficha #${item.id_ficha}
-
-                            </small>
-
-
-                            <small>
-
-                                <i
-                                    data-lucide="calendar"
-                                    aria-hidden="true">
-                                </i>
-
-                                ${item.creado || "-"}
-
-                            </small>
-
-
-                        </div>
 
 
                         <div class="acciones-multimedia">
