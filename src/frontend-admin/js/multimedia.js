@@ -1,8 +1,8 @@
 /* =========================================================
    MULTIMEDIA.JS
    Museo Malvinas
-   GestiÃƒÂ³n de archivos multimedia
-   VersiÃƒÂ³n limpia y consolidada
+   Gestión de archivos multimedia
+   Versión limpia y consolidada
 ========================================================= */
 
 console.log("Modulo multimedia cargado");
@@ -100,8 +100,30 @@ function recuperarBorradorMultimedia() {
    UTILIDADES
 ========================================================= */
 
+function formatearFechaMultimedia(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
+
 /**
- * Inicializa los iconos Lucide si estÃƒÂ¡n disponibles.
+ * Inicializa los iconos Lucide si están disponibles.
  */
 function actualizarIconosLucide() {
 
@@ -304,7 +326,7 @@ async function cargarMultimedia() {
 
             if (titulo) {
                 titulo.textContent =
-                    "GestiÃƒÂ³n de Multimedia";
+                    "Gestión de Multimedia";
             }
 
 
@@ -410,7 +432,7 @@ async function cargarMultimedia() {
                         </strong>
 
                         <p>
-                            Esta ficha todavÃƒÂ­a no tiene
+                            Esta ficha todavía no tiene
                             archivos multimedia asociados.
                         </p>
 
@@ -453,7 +475,7 @@ async function cargarMultimedia() {
 
             const descripcion =
                 item.descripcion ||
-                "Sin descripciÃƒÂ³n";
+                "Sin descripción";
 
 
             contenedor.innerHTML += `
@@ -518,7 +540,7 @@ async function cargarMultimedia() {
 
     <small>
         <i data-lucide="calendar" aria-hidden="true"></i>
-        ${item.creado || "-"}
+        ${formatearFechaMultimedia(item.creado)}
     </small>
 </div>
 
@@ -705,7 +727,7 @@ function generarVistaMiniatura(item) {
 
 
 /* =========================================================
-   ICONO SEGÃƒÅ¡N TIPO
+   ICONO SEGÚN TIPO
 ========================================================= */
 
 function obtenerIconoMultimedia(tipo) {
@@ -756,7 +778,7 @@ async function vistaPreviaMultimedia(id_multi) {
 
             mostrarMensaje(
                 "Archivo no encontrado",
-                "No se encontrÃƒÂ³ el archivo multimedia."
+                "No se encontró el archivo multimedia."
             );
 
             return;
@@ -971,7 +993,7 @@ async function vistaPreviaMultimedia(id_multi) {
                         <div>
 
                             <span>
-                                INFORMACIÃƒâ€œN
+                                INFORMACIÓN
                             </span>
 
                             <h3>
@@ -1033,13 +1055,13 @@ async function vistaPreviaMultimedia(id_multi) {
                         <div class="dato-multimedia dato-descripcion">
 
                             <span>
-                                DescripciÃƒÂ³n
+                                Descripción
                             </span>
 
                             <strong>
                                 ${
                                     item.descripcion ||
-                                    "Sin descripciÃƒÂ³n"
+                                    "Sin descripción"
                                 }
                             </strong>
 
@@ -1070,7 +1092,7 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.creado || "-"}
+                                ${formatearFechaMultimedia(item.creado)}
                             </strong>
 
                         </div>
@@ -1083,7 +1105,7 @@ async function vistaPreviaMultimedia(id_multi) {
                             </span>
 
                             <strong>
-                                ${item.actualizado || "-"}
+                                ${formatearFechaMultimedia(item.actualizado)}
                             </strong>
 
                         </div>
@@ -1095,7 +1117,7 @@ async function vistaPreviaMultimedia(id_multi) {
                     <div class="ruta-multimedia">
 
                         <span>
-                            UbicaciÃƒÂ³n del archivo
+                            Ubicación del archivo
                         </span>
 
                         <code>
@@ -1223,7 +1245,7 @@ function cerrarVistaMultimedia() {
 
 
 /* =========================================================
-   NUEVO MULTIMEDIA Ã¢â‚¬â€ GENERAL
+   NUEVO MULTIMEDIA - GENERAL
 ========================================================= */
 
 async function nuevoMultimedia() {
@@ -1232,7 +1254,7 @@ async function nuevoMultimedia() {
 
     if (!modal) {
         console.error(
-            "No se encontrÃƒÂ³ modalMultimediaNuevo"
+            "No se encontró modalMultimediaNuevo"
         );
         return;
     }
@@ -1254,12 +1276,12 @@ try {
 } catch (error) {
     mostrarMensaje(
         "Error",
-        "No se pudieron cargar las fichas. IntentÃƒÂ¡ nuevamente."
+        "No se pudieron cargar las fichas. Intentá nuevamente."
     );
     return;
 }
 
-    /* TÃƒÂ­tulo */
+    /* TÍTULO */
     const titulo = modal.querySelector("h3");
 
     if (titulo) {
@@ -1500,7 +1522,7 @@ async function guardarMultimedia() {
 
 
     /* =================================================
-       URL Y MÃƒâ€°TODO
+       URL Y MÉTODO
     ================================================= */
 
     const url =
@@ -1515,7 +1537,7 @@ async function guardarMultimedia() {
             : "POST";
 
 
-            // Bloquear nuevos envÃƒÂ­os mientras se procesa este
+            // Bloquear nuevos envíos mientras se procesa este
             // guardado.
         guardandoMultimedia = true;
 
@@ -1562,13 +1584,13 @@ async function guardarMultimedia() {
         } catch (errorJSON) {
 
             console.error(
-                "El servidor no devolviÃƒÂ³ JSON:",
+                "El servidor no devolvió JSON:",
                 texto
             );
 
 
             throw new Error(
-                `El servidor respondiÃƒÂ³ HTTP ${respuesta.status}`
+                `El servidor respondió HTTP ${respuesta.status}`
             );
 
         }
@@ -1649,7 +1671,7 @@ async function guardarMultimedia() {
         mostrarMensaje(
             "Error",
             error.message ||
-            "OcurriÃƒÂ³ un error al guardar la multimedia."
+            "Ocurrió un error al guardar la multimedia."
         );
     } finally {
         // Permitir nuevos intentos de guardado.
@@ -1879,7 +1901,7 @@ function cerrarNuevoMultimedia() {
 
 
     /* =================================================
-       RESTAURAR TÃƒÂTULO
+       RESTAURAR TÍTULO
     ================================================= */
 
     const titulo =
@@ -1936,7 +1958,7 @@ try {
 
     mostrarMensaje(
         "Error",
-        "No se pudieron cargar las fichas. IntentÃƒÂ¡ nuevamente."
+        "No se pudieron cargar las fichas. Intentá nuevamente."
     );
     return;
 }
@@ -2094,8 +2116,8 @@ try {
                 "
             >
 
-                Si seleccionÃƒÂ¡s otro archivo,
-                reemplazarÃƒÂ¡ al actual.
+                Si seleccionás otro archivo,
+                reemplazará al actual.
 
             </p>
 
@@ -2109,7 +2131,7 @@ try {
 
 
         /* =================================================
-           TÃƒÂTULO
+           TÍTULO
         ================================================= */
 
         const titulo =
@@ -2162,7 +2184,7 @@ try {
 
 
 /* =========================================================
-   PREVIEW PARA EDICIÃƒâ€œN
+   PREVIEW PARA EDICIÓN
 ========================================================= */
 
 function generarVistaEdicion(item, ruta) {
@@ -2303,7 +2325,7 @@ async function nuevoMultimediaDesdeFicha() {
     if (!modal) {
 
         console.error(
-            "No se encontrÃƒÂ³ modalMultimediaNuevo"
+            "No se encontró modalMultimediaNuevo"
         );
 
         return;
@@ -2433,7 +2455,7 @@ async function nuevoMultimediaDesdeFicha() {
 
 
     /* =================================================
-       TÃƒÂTULO
+      TÍTULO
     ================================================= */
 
     const titulo =
@@ -2499,7 +2521,7 @@ function eliminarMultimedia(id_multi) {
 
 
 /* =========================================================
-   CERRAR ELIMINACIÃƒâ€œN
+   CERRAR ELIMINACIÓN
 ========================================================= */
 
 function cerrarEliminarMultimedia() {
@@ -2525,7 +2547,7 @@ function cerrarEliminarMultimedia() {
 
 
 /* =========================================================
-   CONFIRMAR ELIMINACIÃƒâ€œN
+   CONFIRMAR ELIMINACIÓN
 ========================================================= */
 
 async function confirmarEliminarMultimedia() {
@@ -2589,7 +2611,7 @@ async function confirmarEliminarMultimedia() {
 
         mostrarMensaje(
             "Error",
-            "OcurriÃƒÂ³ un error al eliminar la multimedia."
+            "Ocurrió un error al eliminar la multimedia."
         );
 
     }
