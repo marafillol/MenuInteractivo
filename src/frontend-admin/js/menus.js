@@ -2,6 +2,7 @@ console.log("Modulo menus cargado");
 
 
 const BORRADOR_MENU_NUEVO = "nuevo";
+let guardandoMenu = false;
 
 function obtenerDatosBorradorMenu() {
     return {
@@ -42,6 +43,59 @@ function recuperarBorradorMenu(id = BORRADOR_MENU_NUEVO) {
     return true;
 }
 
+function obtenerFechaMenu(menu) {
+    const creado = menu.creado;
+    const actualizado = menu.actualizado;
+
+    // Si no hay fecha de actualización, usar la de creación.
+    if (!actualizado) {
+        return {
+            etiqueta: "Creado",
+            fecha: formatearFechaMenu(creado)
+        };
+    }
+
+    // Si las dos fechas son iguales, todavía no hubo cambios.
+    const fechaCreacion = new Date(creado).getTime();
+    const fechaActualizacion = new Date(actualizado).getTime();
+
+    if (
+        Number.isFinite(fechaCreacion) &&
+        fechaCreacion === fechaActualizacion
+    ) {
+        return {
+            etiqueta: "Creado",
+            fecha: formatearFechaMenu(creado)
+        };
+    }
+
+    return {
+        etiqueta: "Última modificación",
+        fecha: formatearFechaMenu(actualizado)
+    };
+}
+
+function formatearFechaMenu(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
 
 function obtenerRutaImagenMenu(ruta) {
 
@@ -86,6 +140,8 @@ async function cargarMenus(){
 
         menus.forEach(menu=>{
 
+            const fechaMenu = obtenerFechaMenu(menu);
+
 
             console.log(menu);
 
@@ -123,6 +179,20 @@ async function cargarMenus(){
                         ${(menu.descripcion || "Sin descripcion").replace(/\n/g," ")}
                     </p>
 
+                    <div class="datos-menu">
+
+                        <small>
+                            <i data-lucide="layers" aria-hidden="true"></i>
+                            Plantilla: ${menu.nombre_plantilla || "Sin nombre"}
+                            - #${menu.id_plantilla ?? "Sin asignar"}
+                        </small>
+
+                        <small>
+                            <i data-lucide="calendar" aria-hidden="true"></i>
+                            ${fechaMenu.etiqueta}: ${fechaMenu.fecha}
+                        </small>
+
+                    </div>
 
 
                     <div class="menu-acciones">
@@ -169,6 +239,9 @@ async function cargarMenus(){
 
         });
 
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
 
     }catch(error){
 
@@ -313,7 +386,13 @@ async function guardarNuevoMenu(){
 
     }
 
-    try{
+    if (guardandoMenu) {
+        return;
+    }
+
+    guardandoMenu = true;
+
+    try {
 
         const url = id_menu
             ? `/api/menus/${id_menu}`
@@ -346,17 +425,17 @@ async function guardarNuevoMenu(){
 
         console.log("Menú guardado:", resultado);
 
-const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
+        const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
 
-if (window.Borradores) {
-    window.Borradores.eliminar("menus", idBorrador);
-}
+        if (window.Borradores) {
+            window.Borradores.eliminar("menus", idBorrador);
+        }
 
-document.getElementById("ventanaEmergente").style.display = "none";
+        document.getElementById("ventanaEmergente").style.display = "none";
 
-cargarMenus();
+        cargarMenus();
 
-    }catch(error){
+    } catch(error){
 
         console.error("Error guardando menú:", error);
 
@@ -364,6 +443,10 @@ cargarMenus();
             "Error",
             "Ocurrió un error al guardar el menú."
         );
+
+    } finally {
+
+        guardandoMenu = false;
 
     }
 
@@ -414,12 +497,16 @@ if (!window.__eventosMenusInicializados) {
             document.getElementById("nuevoNombre").value = "";
             document.getElementById("nuevaDescripcion").value = "";
 
+
             const plantilla =
                 document.getElementById("plantillaMenu");
 
             if (plantilla) {
+                plantilla.disabled = false;
+                plantilla.title = "";
                 plantilla.selectedIndex = 0;
             }
+
 
             const visible =
                 document.getElementById("nuevoVisible");
@@ -449,6 +536,12 @@ return;
             e.target.closest("#cancelarMenu")
         ) {
 
+            const idMenu = document.getElementById("id_menu").value;
+            const idBorrador = idMenu || BORRADOR_MENU_NUEVO;
+
+            if (window.Borradores) {
+                window.Borradores.eliminar("menus", idBorrador);
+            }
             const modal =
                 document.getElementById("ventanaEmergente");
 
@@ -470,41 +563,69 @@ return;
 
 }
 
-async function cargarSelectPlantillas(){
-
-    try{
-
+async function cargarSelectPlantillas(idPlantillaActual = null) {
+    try {
         const respuesta = await window.fetchProtegido("/api/plantillas");
-        const plantillas = await respuesta.json();
 
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las plantillas.");
+        }
+
+        const plantillas = await respuesta.json();
         const select = document.getElementById("plantillaMenu");
 
-        if(!select){
+        if (!select) {
             return;
         }
 
+        const seleccionActual = select.value;
+        const idActual = idPlantillaActual == null
+            ? ""
+            : String(idPlantillaActual);
+
         select.innerHTML = `
-            <option value="">
-                Seleccione una plantilla
-            </option>
+            <option value="">Seleccione una plantilla</option>
         `;
 
-        plantillas.forEach(plantilla=>{
+        plantillas.forEach(plantilla => {
+            const activa =
+                plantilla.activo === 1 ||
+                plantilla.activo === true ||
+                plantilla.activo === "1";
 
-            select.innerHTML += `
-                <option value="${plantilla.id_plantilla}">
-                    ${plantilla.nombre}
-                </option>
-            `;
+            const perteneceAlMenuActual =
+                idActual !== "" &&
+                String(plantilla.id_plantilla) === idActual;
 
+            // Mostrar activas siempre e inactivas únicamente
+            // si ya están asignadas al menú que se está editando.
+            if (!activa && !perteneceAlMenuActual) {
+                return;
+            }
+
+            const opcion = document.createElement("option");
+            opcion.value = plantilla.id_plantilla;
+            opcion.textContent = activa
+                ? plantilla.nombre
+                : `${plantilla.nombre} (Inactiva)`;
+
+            select.appendChild(opcion);
         });
 
-    }catch(error){
+        const valorASeleccionar = idActual || seleccionActual;
 
-        console.error(error);
+        if (
+            valorASeleccionar &&
+            [...select.options].some(
+                opcion => opcion.value === String(valorASeleccionar)
+            )
+        ) {
+            select.value = String(valorASeleccionar);
+        }
 
+    } catch (error) {
+        console.error("Error cargando plantillas para el menú:", error);
     }
-
 }
 
 console.log("Eventos de menu preparados");
@@ -555,7 +676,18 @@ async function editarMenu(id_menu){
 
         document.getElementById("nuevaDescripcion").value = menu.descripcion || "";
 
-        document.getElementById("plantillaMenu").value = menu.id_plantilla;
+
+
+        await cargarSelectPlantillas(menu.id_plantilla);
+
+        const selectorPlantilla = document.getElementById("plantillaMenu");
+        selectorPlantilla.value = String(menu.id_plantilla);
+        selectorPlantilla.disabled = false;
+        selectorPlantilla.title = "";
+
+
+
+
 
         document.getElementById("nuevoVisible").checked = menu.visible == 1;
 
@@ -642,15 +774,28 @@ async function confirmarEliminarMenu(){
 }
 
 
-function mostrarMensaje(titulo, texto){
 
-    document.getElementById("tituloMensaje").textContent = titulo;
 
-    document.getElementById("textoMensaje").textContent = texto;
 
-    document.getElementById("modalMensaje").style.display = "flex";
+function mostrarMensaje(titulo, texto) {
+    const modal =
+        document.getElementById("modalMensaje") ||
+        document.getElementById("modalMensajeFicha");
 
+    const tituloElemento = modal?.querySelector("#tituloMensaje");
+    const textoElemento = modal?.querySelector("#textoMensaje");
+
+    if (!modal || !tituloElemento || !textoElemento) {
+        console.error(`${titulo}: ${texto}`);
+        return;
+    }
+
+    tituloElemento.textContent = titulo;
+    textoElemento.textContent = texto;
+    modal.style.display = "flex";
 }
+
+
 
 function cerrarMensaje(){
 
@@ -687,7 +832,7 @@ async function vistaPreviaMenu(id_menu){
             menu.descripcion || "-";
 
         document.getElementById("previewPlantilla").textContent =
-            menu.id_plantilla;
+            `N.º ${menu.id_plantilla ?? "Sin asignar"} — ${menu.nombre_plantilla || "Sin nombre"}`;
 
         document.getElementById("previewVisible").textContent =
             menu.visible == 1 ? "SÍ" : "No";

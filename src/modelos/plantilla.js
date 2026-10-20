@@ -41,59 +41,30 @@ const db = require("../database");
 
 
 // =======================================================
-// OBTENER TODAS LAS PLANTILLAS ACTIVAS
+// OBTENER TODAS LAS PLANTILLAS
 // =======================================================
-//
-// Obtiene todas las plantillas disponibles.
-//
-// Filtra solamente aquellas que tienen:
-//
-// activo = 1
-//
-// Ordena los resultados por nombre.
-//
-// Se utiliza principalmente para mostrar las plantillas
-// disponibles en el panel administrativo.
-//
+// Incluye plantillas activas e inactivas para que desde
+// el administrador siempre se puedan editar y previsualizar.
+// La visibilidad pública se controla por separado.
 
-const obtenerPlantillas = ()=>{
-
-    return new Promise((resolve,reject)=>{
-
-
+const obtenerPlantillas = () => {
+    return new Promise((resolve, reject) => {
         db.all(
-
             `
             SELECT *
             FROM plantilla
-            WHERE activo = 1
             ORDER BY nombre
             `,
-
             [],
-
-
-            (error,filas)=>{
-
-
-                if(error){
-
+            (error, filas) => {
+                if (error) {
                     reject(error);
-
-                }else{
-
+                } else {
                     resolve(filas);
-
                 }
-
             }
-
-
         );
-
-
     });
-
 };
 
 

@@ -2500,3 +2500,38 @@
 
     text-transform: uppercase;
 }
+
+
+.datos-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+
+
+.datos-menu small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #777;
+}
+
+
+
+.datos-menu i,
+.datos-menu i svg,
+.datos-menu svg {
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
+    flex-shrink: 0;
+}
+
+
+

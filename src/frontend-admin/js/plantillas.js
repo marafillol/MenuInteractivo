@@ -31,6 +31,7 @@ const CONFIG_PLANTILLA_DEFAULT = {
         vista: "grid",
         columnas: 4,
         formaFicha: "circular",
+        ordenFichas: "titulo_asc",
 
         mostrarImagen: true,
         mostrarResumen: true,
@@ -142,6 +143,12 @@ function leerConfiguracionInterfaz() {
     const vista = obtenerValor("vistaPlantilla");
     const columnas = obtenerValor("columnasPlantilla");
     const formaFicha = obtenerValor("formaFichaPlantilla");
+
+    const ordenFichas = obtenerValor("ordenFichasPlantilla");
+
+    if (ordenFichas !== undefined) {
+        plantillaActual.interfaz.ordenFichas = ordenFichas;
+    }
 
     if (vista !== undefined) {
         plantillaActual.interfaz.vista = vista;
@@ -473,6 +480,11 @@ function cargarConfiguracionEnFormulario() {
     asignarValor("columnasPlantilla", interfaz.columnas);
     asignarValor("formaFichaPlantilla", interfaz.formaFicha);
 
+    asignarValor(
+        "ordenFichasPlantilla",
+        interfaz.ordenFichas || "titulo_asc"
+    );
+
     asignarMarcado("mostrarImagenPlantilla", interfaz.mostrarImagen);
     asignarMarcado("mostrarResumenPlantilla", interfaz.mostrarResumen);
     asignarMarcado("mostrarEtiquetasPlantilla", interfaz.mostrarEtiquetas);
@@ -648,27 +660,90 @@ function mostrarCamposPlantilla() {
         const tipo = document.createElement("small");
         tipo.textContent = campo.tipo || "text";
 
-        informacion.append(etiqueta, document.createElement("br"), nombre,
-            document.createElement("br"), tipo);
+        informacion.append(
+            etiqueta,
+            document.createElement("br"),
+            nombre,
+            document.createElement("br"),
+            tipo
+        );
 
         const acciones = document.createElement("div");
 
+        // Subir campo
+        const botonSubir = document.createElement("button");
+        botonSubir.type = "button";
+        botonSubir.className = "btn-editar-plantilla";
+        botonSubir.textContent = "↑ Subir";
+        botonSubir.disabled = indice === 0;
+        botonSubir.title = "Mover campo hacia arriba";
+        botonSubir.addEventListener("click", () => {
+            moverCampoPlantilla(indice, -1);
+        });
+
+        // Bajar campo
+        const botonBajar = document.createElement("button");
+        botonBajar.type = "button";
+        botonBajar.className = "btn-editar-plantilla";
+        botonBajar.textContent = "↓ Bajar";
+        botonBajar.disabled = indice === campos.length - 1;
+        botonBajar.title = "Mover campo hacia abajo";
+        botonBajar.addEventListener("click", () => {
+            moverCampoPlantilla(indice, 1);
+        });
+
+        // Editar campo
         const botonEditar = document.createElement("button");
         botonEditar.type = "button";
         botonEditar.className = "btn-editar-plantilla";
         botonEditar.textContent = "Editar";
         botonEditar.addEventListener("click", () => editarCampo(indice));
 
+        // Eliminar campo
         const botonEliminar = document.createElement("button");
         botonEliminar.type = "button";
         botonEliminar.className = "btn-eliminar-plantilla";
         botonEliminar.textContent = "Eliminar";
         botonEliminar.addEventListener("click", () => eliminarCampo(indice));
 
-        acciones.append(botonEditar, botonEliminar);
+        acciones.append(
+            botonSubir,
+            botonBajar,
+            botonEditar,
+            botonEliminar
+        );
+
         item.append(informacion, acciones);
         lista.appendChild(item);
     });
+}
+
+
+function moverCampoPlantilla(indice, direccion) {
+    const campos = plantillaActual?.estructura?.campos;
+
+    if (!Array.isArray(campos)) {
+        return;
+    }
+
+    const nuevoIndice = indice + direccion;
+
+    if (nuevoIndice < 0 || nuevoIndice >= campos.length) {
+        return;
+    }
+
+    // Intercambiar la posición de los campos.
+    [campos[indice], campos[nuevoIndice]] = [
+        campos[nuevoIndice],
+        campos[indice]
+    ];
+
+    // Actualizar la lista y la vista previa.
+    mostrarCamposPlantilla();
+    actualizarVistaPreviaPlantilla();
+
+    // Guardar el nuevo orden en el borrador.
+    guardarBorradorPlantilla();
 }
 
 
@@ -1068,7 +1143,14 @@ async function cargarPlantillas() {
             const campos = datos.estructura?.campos || [];
             const tarjeta = document.createElement("article");
 
-            tarjeta.className = "tarjeta-plantilla";
+            const plantillaActiva =
+                plantilla.activo === 1 ||
+                plantilla.activo === true ||
+                plantilla.activo === "1";
+
+            tarjeta.className = plantillaActiva
+                ? "tarjeta-plantilla"
+                : "tarjeta-plantilla plantilla-inactiva";
 
             const informacion = document.createElement("div");
             informacion.className = "info-plantilla";
@@ -1086,7 +1168,7 @@ async function cargarPlantillas() {
             const salto = document.createElement("br");
 
             const estado = document.createElement("small");
-            estado.textContent = plantilla.activo ? "Activa" : "Inactiva";
+            estado.textContent = plantillaActiva ? "Activa" : "Inactiva";
 
             const acciones = document.createElement("div");
             acciones.className = "acciones-plantilla";

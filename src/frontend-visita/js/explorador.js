@@ -655,27 +655,7 @@ function renderizarResultados(resultados, opciones = {}) {
         return;
     }
 
-    const ordenados =
-        [...resultados].sort(
-            (a, b) => {
-
-                const nombreA =
-                    normalizarTexto(
-                        obtenerNombreFicha(a)
-                    );
-
-                const nombreB =
-                    normalizarTexto(
-                        obtenerNombreFicha(b)
-                    );
-
-                return nombreA.localeCompare(
-                    nombreB,
-                    "es"
-                );
-
-            }
-        );
+    const ordenados = [...resultados];
 
     // Se arma todo fuera de pantalla y se reemplaza de una vez:
     // el contenedor nunca queda vacío entre repintadas.
@@ -1162,8 +1142,94 @@ function renderizarIndice() {
 // FILTRAR POR MENÚ
 // =======================================================
 
-function mostrarFichasPorMenu(idMenu) {
 
+function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
+    const orden = plantilla?.interfaz?.ordenFichas || "titulo_asc";
+    const resultado = [...fichas];
+
+    const obtenerTitulo = ficha =>
+        String(ficha?.titulo || ficha?.nombre || "").trim();
+
+    const obtenerFecha = ficha => {
+        const fecha = Date.parse(ficha?.creado || "");
+        return Number.isFinite(fecha) ? fecha : 0;
+    };
+
+    switch (orden) {
+        case "titulo_asc":
+            return resultado.sort((a, b) =>
+                obtenerTitulo(a).localeCompare(
+                    obtenerTitulo(b), "es", { sensitivity: "base" }
+                )
+            );
+
+        case "titulo_desc":
+            return resultado.sort((a, b) =>
+                obtenerTitulo(b).localeCompare(
+                    obtenerTitulo(a), "es", { sensitivity: "base" }
+                )
+            );
+
+        case "recientes":
+            return resultado.sort((a, b) =>
+                obtenerFecha(b) - obtenerFecha(a)
+            );
+
+        case "antiguas":
+            return resultado.sort((a, b) =>
+                obtenerFecha(a) - obtenerFecha(b)
+            );
+
+        case "aleatorio": {
+            if (!ordenarFichasPorPlantilla.ordenesAleatorios) {
+                ordenarFichasPorPlantilla.ordenesAleatorios = new Map();
+            }
+
+            const cache = ordenarFichasPorPlantilla.ordenesAleatorios;
+            const clave = String(idMenu);
+            const idsActuales = new Set(
+                resultado.map(ficha => String(ficha.id_ficha))
+            );
+
+            let ordenGuardado = cache.get(clave);
+
+            if (!ordenGuardado) {
+                ordenGuardado = [...resultado];
+
+                for (let i = ordenGuardado.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [ordenGuardado[i], ordenGuardado[j]] =
+                        [ordenGuardado[j], ordenGuardado[i]];
+                }
+            } else {
+                ordenGuardado = [
+                    ...ordenGuardado.filter(ficha =>
+                        idsActuales.has(String(ficha.id_ficha))
+                    ),
+                    ...resultado.filter(ficha =>
+                        !ordenGuardado.some(guardada =>
+                            String(guardada.id_ficha) ===
+                            String(ficha.id_ficha)
+                        )
+                    )
+                ];
+            }
+
+            cache.set(clave, ordenGuardado);
+            return ordenGuardado;
+        }
+
+        default:
+            return resultado.sort((a, b) =>
+                obtenerTitulo(a).localeCompare(
+                    obtenerTitulo(b), "es", { sensitivity: "base" }
+                )
+            );
+    }
+}
+
+
+function mostrarFichasPorMenu(idMenu) {
     console.log(
         "[explorador] Filtrando por menú:",
         idMenu
@@ -1177,18 +1243,37 @@ function mostrarFichasPorMenu(idMenu) {
         ficha => Number(ficha.id_menu) === Number(idMenu)
     );
 
+    const plantilla = menuSeleccionado?.plantilla || null;
+
     console.log(
-        "[explorador] Plantilla del menú:",
-        menuSeleccionado?.plantilla
+        "[explorador] Orden configurado:",
+        plantilla?.interfaz?.ordenFichas || "titulo_asc"
     );
 
-    renderizarResultados(fichasFiltradas, {
-        plantilla: menuSeleccionado?.plantilla
+    const fichasOrdenadas = ordenarFichasPorPlantilla(
+        fichasFiltradas,
+        plantilla,
+        idMenu
+    );
+
+    console.log("[PRUEBA] Orden recibido:", plantilla?.interfaz?.ordenFichas);
+
+    console.table(fichasFiltradas.map(f => ({
+        id: f.id_ficha,
+        titulo: f.titulo,
+        creadoOriginal: f.creado,
+        fechaInterpretada: Date.parse(f.creado || ""),
+        fechaValida: Number.isFinite(Date.parse(f.creado || ""))
+    })));
+
+    renderizarResultados(fichasOrdenadas, {
+        plantilla: plantilla
     });
 
     cerrarPaneles();
     actualizarMensajeCentral();
 }
+
 
 // =======================================================
 // FILTRAR POR ETIQUETA

@@ -2766,3 +2766,21 @@ select {
     width: 100%;
     margin-bottom: 16px;
 }
+
+
+/* Plantillas desactivadas: apariencia opaca y en blanco y negro */
+.tarjeta-plantilla.plantilla-inactiva {
+    filter: grayscale(100%);
+    opacity: 0.55;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+/* Al pasar el cursor, se distingue mejor sin perder el efecto */
+.tarjeta-plantilla.plantilla-inactiva:hover {
+    opacity: 0.75;
+}
+
+/* Mantener los botones utilizables */
+.tarjeta-plantilla.plantilla-inactiva button {
+    pointer-events: auto;
+}

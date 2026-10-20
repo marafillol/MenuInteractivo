@@ -1452,10 +1452,13 @@
     line-height: 1;
 }
 
+
 .etiqueta-vista.etiqueta-inactiva,
 .etiqueta-vista-desactivada {
     filter: grayscale(100%);
+    opacity: 0.55;
 }
+
 
 .sin-etiquetas {
     color: #777;

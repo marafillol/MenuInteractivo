@@ -303,41 +303,30 @@ async function cargarVentana(nombre, mantenerMenu=false){
         // Ejecutar función correspondiente
 
         if (nombre === "menus") {
-    await cargarMenus();
-    await cargarSelectPlantillas();
-    aplicarPermisosConsulta();
-}
+            await cargarMenus();
+            await cargarSelectPlantillas();
+            aplicarPermisosConsulta();
+        }
 
-        if(nombre === "fichas"){
 
-            console.log(
-                "ENTRANDO A FICHAS",
-                {
-                    mantenerMenu,
-                    menuSeleccionadoAntes: menuSeleccionado
-                }
-            );
 
-            if(!mantenerMenu){
+        if (nombre === "fichas") {
+            console.log("ENTRANDO A FICHAS", {
+                mantenerMenu,
+                menuSeleccionado
+            });
 
-                console.log(
-                    "⚠️ SE VA A RESETEAR menuSeleccionado"
-                );
-
+            // Si se entra desde el panel general, quitar el filtro.
+            if (!mantenerMenu) {
                 menuSeleccionado = null;
-
+                nombreMenuSeleccionado = "";
             }
 
-            console.log(
-                "menuSeleccionado DESPUÉS:",
-                menuSeleccionado
-            );
-
             cargarFichas();
-
             aplicarPermisosConsulta();
-
         }
+
+
 
         if(nombre === "multimedia"){
 
@@ -674,16 +663,24 @@ function cerrarModalCerrarSesion(){
 
 
 
-async function confirmarCerrarSesion(){
 
+
+async function confirmarCerrarSesion() {
+    if (window.Borradores) {
+        ["menus", "fichas"].forEach(tipo => {
+            const borradores = window.Borradores.obtenerTodos(tipo);
+
+            borradores.forEach(borrador => {
+                window.Borradores.eliminar(tipo, borrador.idRegistro);
+            });
+        });
+    }
 
     await window.cerrarSesionSupabase();
-
-
-    window.location.href="index.html";
-
-
+    window.location.href = "index.html";
 }
+
+
 
 
 function activarAccesosRapidos(){
