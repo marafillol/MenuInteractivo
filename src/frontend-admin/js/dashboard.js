@@ -300,10 +300,9 @@ function mostrarUltimasFichas(
     fichas
 ) {
 
-    const lista =
-        document.getElementById(
-            "listaFichas"
-        );
+    const lista = document.querySelector(
+        ".ventana.dashboard #listaFichas"
+    );
 
 
     if (!lista) {
@@ -413,10 +412,9 @@ function mostrarUltimosMenus(
     menus
 ) {
 
-    const lista =
-        document.getElementById(
-            "listaMenus"
-        );
+    const lista = document.querySelector(
+        ".ventana.dashboard #listaMenus"
+    );
 
 
     if (!lista) {
