@@ -30,6 +30,10 @@ function preparar() {
             fichas: [...fichas],
             opciones
         }),
+        ordenarFichasPorPlantilla: fichas => [...fichas],
+        window: {
+            abrirHistoriaCompleta() {}
+        },
         document: {
             getElementById: id => elementos.get(id) || null
         },
@@ -42,6 +46,7 @@ function preparar() {
         Date
     };
     const codigoBase = [
+        extraerFuncion("abrirVeterano", "// =======================================================\n// ACTUALIZAR MENSAJE CENTRAL"),
         extraerFuncion("normalizarTexto", "// =======================================================\n// RENDERIZAR RESULTADOS"),
         extraerFuncion("fichaCoincideBusqueda", "// =======================================================\n// NORMALIZAR TEXTO"),
         extraerFuncion("obtenerFichasDelMenuSeleccionado", "function obtenerFichasVisibles"),
@@ -60,7 +65,7 @@ function preparar() {
         .replace(/\n\s*renderizarIndice\(\);/g, "");
     vm.createContext(contexto);
     vm.runInContext(codigoBase + "\n" + menuFunc +
-        "\nglobalThis.api = { obtenerFichasVisibles, filtrarFichasExplorador, mostrarTodasLasFichas, mostrarFichasPorMenu };",
+        "\nglobalThis.api = { obtenerFichasVisibles, filtrarFichasExplorador, mostrarTodasLasFichas, mostrarFichasPorMenu, abrirVeterano };",
         contexto);
     return { contexto, renderizados, elementos };
 }
@@ -139,5 +144,16 @@ test("seleccionar otro menú actualiza resultados conservando el término", () =
     p.contexto.api.mostrarFichasPorMenu(20);
     assert.deepEqual(p.renderizados.at(-1).fichas.map(f => f.id_ficha), [2]);
     assert.equal(p.contexto.menuExploradorSeleccionado, 20);
+    assert.equal(p.contexto.terminoBusquedaExplorador, "veterano");
+});
+
+
+test("abrir una ficha no reinicia el menú ni el término de búsqueda", () => {
+    const p = preparar();
+    p.contexto.fichasExplorador = [ficha(1, 10, "Veterano A")];
+    p.contexto.menuExploradorSeleccionado = 10;
+    p.contexto.terminoBusquedaExplorador = "veterano";
+    p.contexto.api.abrirVeterano(p.contexto.fichasExplorador[0]);
+    assert.equal(p.contexto.menuExploradorSeleccionado, 10);
     assert.equal(p.contexto.terminoBusquedaExplorador, "veterano");
 });
