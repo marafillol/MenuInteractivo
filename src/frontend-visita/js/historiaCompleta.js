@@ -46,6 +46,7 @@ function iniciarHistoriaCompleta() {
 
     prepararEventosHistoria();
     prepararCarruselMultimedia();
+    prepararBotonAudioHistoria();
 
     console.log("[HISTORIA] Inicialización completa.");
 
@@ -162,6 +163,8 @@ function prepararEventosHistoria() {
 // =======================================================
 
 async function abrirHistoriaCompleta(idFicha) {
+
+    detenerAudioHistoria();
 
     if (
         idFicha === undefined ||
@@ -454,6 +457,7 @@ function mostrarHistoriaCompleta() {
 
 function cerrarHistoriaCompleta() {
 
+    detenerAudioHistoria();
     solicitudHistoriaActual += 1;
 
     cerrarCarruselMultimedia();
@@ -2483,3 +2487,78 @@ window.cerrarHistoriaCompleta =
 console.log(
     "[HISTORIA] historiaCompleta.js cargado correctamente."
 );
+
+// =======================================================
+// LECTURA EN VOZ ALTA DE LA FICHA
+// Usa la síntesis de voz del navegador; no modifica la base.
+// =======================================================
+
+let audioHistoriaActivo = false;
+
+function prepararBotonAudioHistoria() {
+    const boton = document.getElementById("botonAudioHistoria");
+    if (!boton) return;
+    boton.addEventListener("click", alternarAudioHistoria);
+}
+
+function alternarAudioHistoria() {
+    const boton = document.getElementById("botonAudioHistoria");
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+        if (boton) boton.title = "Este navegador no admite lectura en voz alta";
+        return;
+    }
+
+    if (audioHistoriaActivo) {
+        window.speechSynthesis.cancel();
+        actualizarBotonAudioHistoria(false);
+        return;
+    }
+
+    const ficha = historiaFichaActual;
+    if (!ficha) return;
+
+    const partes = [ficha.titulo, ficha.resumen, ficha.texto];
+    const campos = ficha?.plantilla?.estructura?.campos;
+    if (Array.isArray(campos)) {
+        campos.forEach(campo => {
+            if (!campo || campo.mostrarHistoria !== true) return;
+            const valor = ficha?.datos_json?.[campo.nombre];
+            if (valor === undefined || valor === null || valor === "") return;
+            partes.push(campo.etiqueta || campo.nombre, convertirValorTexto(valor));
+        });
+    }
+
+    const texto = partes
+        .filter(valor => valor !== undefined && valor !== null && String(valor).trim())
+        .map(valor => String(valor).trim())
+        .join(". ");
+
+    if (!texto) return;
+
+    window.speechSynthesis.cancel();
+    const lectura = new SpeechSynthesisUtterance(texto);
+    lectura.lang = "es-AR";
+    lectura.rate = 0.9;
+    lectura.onstart = () => actualizarBotonAudioHistoria(true);
+    lectura.onend = () => actualizarBotonAudioHistoria(false);
+    lectura.onerror = () => actualizarBotonAudioHistoria(false);
+    window.speechSynthesis.speak(lectura);
+}
+
+function actualizarBotonAudioHistoria(leyendo) {
+    audioHistoriaActivo = leyendo;
+    const boton = document.getElementById("botonAudioHistoria");
+    if (!boton) return;
+    boton.setAttribute("aria-pressed", String(leyendo));
+    boton.setAttribute("aria-label", leyendo ? "Detener lectura" : "Escuchar ficha");
+    boton.title = leyendo ? "Detener lectura" : "Escuchar ficha";
+    const texto = boton.querySelector(".texto-audio-historia");
+    if (texto) texto.textContent = leyendo ? "Detener" : "Escuchar";
+    const icono = boton.querySelector("span[aria-hidden='true']");
+    if (icono) icono.textContent = leyendo ? "⏹" : "🔊";
+}
+
+function detenerAudioHistoria() {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    actualizarBotonAudioHistoria(false);
+}
