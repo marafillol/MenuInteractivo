@@ -5,7 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const archivo = path.join(__dirname, "../src/frontend-visita/js/explorador.js");
-const codigo = fs.readFileSync(archivo, "utf8");
+const codigo = fs.readFileSync(archivo, "utf8").replace(/\r\n/g, "\n");
 
 function extraerFuncion(nombre, siguienteMarcador) {
     const inicio = codigo.indexOf(`function ${nombre}(`);
