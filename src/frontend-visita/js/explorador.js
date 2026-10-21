@@ -546,24 +546,31 @@ function obtenerFichasDelMenuSeleccionado() {
 
 function obtenerFichasVisibles() {
     let fichas = obtenerFichasDelMenuSeleccionado();
+    const termino = normalizarTexto(terminoBusquedaExplorador);
 
-    if (etiquetaExploradorSeleccionada !== null) {
+    if (termino) {
         fichas = fichas.filter(ficha =>
-            (ficha.etiquetas || []).some(etiqueta =>
-                Number(etiqueta.id_etiqueta) ===
-                Number(etiquetaExploradorSeleccionada)
-            )
+            fichaCoincideBusqueda(ficha, termino)
         );
     }
 
-    const termino = normalizarTexto(terminoBusquedaExplorador);
-    if (!termino) {
-        return fichas;
+    // Mantener el orden y la plantilla propios del menú mientras se busca
+    // o se borra el texto, en lugar de volver al estilo global.
+    if (menuExploradorSeleccionado !== null) {
+        const menu = menusExplorador.find(
+            elemento =>
+                Number(elemento.id_menu) ===
+                Number(menuExploradorSeleccionado)
+        );
+
+        return ordenarFichasPorPlantilla(
+            fichas,
+            menu?.plantilla || null,
+            menuExploradorSeleccionado
+        );
     }
 
-    return fichas.filter(ficha =>
-        fichaCoincideBusqueda(ficha, termino)
-    );
+    return fichas;
 }
 
 function mostrarTodasLasFichas() {
