@@ -15,6 +15,12 @@ let fichasExplorador = [];
 let menusExplorador = [];
 let etiquetasExplorador = [];
 
+// El menú y el criterio de búsqueda sobreviven al cierre de paneles,
+// a la apertura de una ficha y al regreso al índice.
+let menuExploradorSeleccionado = null; // null representa «Todos».
+let terminoBusquedaExplorador = "";
+let etiquetaExploradorSeleccionada = null;
+
 // Cuántas tarjetas entran en la primera pantalla. Sus fotos se cargan
 // al instante (eager) y la vista espera a que estén listas; el resto
 // queda en "lazy" para no bajar cientos de imágenes de golpe.
@@ -178,7 +184,9 @@ async function inicializarExplorador() {
             buscador.value = "";
         }
 
-        mostrarTodasLasFichas();
+        terminoBusquedaExplorador = "";
+        etiquetaExploradorSeleccionada = null;
+        renderizarResultados(obtenerFichasVisibles());
         cerrarPaneles();
 
     });
@@ -196,8 +204,10 @@ async function inicializarExplorador() {
         }
 
         buscador.value = "";
+        terminoBusquedaExplorador = "";
+        etiquetaExploradorSeleccionada = null;
 
-        mostrarTodasLasFichas();
+        renderizarResultados(obtenerFichasVisibles());
 
 
 
@@ -209,8 +219,10 @@ async function inicializarExplorador() {
 
     buscador?.addEventListener("input", () => {
 
+        terminoBusquedaExplorador = buscador.value;
+        etiquetaExploradorSeleccionada = null;
         filtrarFichasExplorador(
-            buscador.value
+            terminoBusquedaExplorador
         );
 
     });
@@ -319,6 +331,7 @@ async function inicializarExplorador() {
     // ESTADO INICIAL
     // ===================================================
 
+    renderizarResultados(obtenerFichasVisibles());
     renderizarIndice();
 
     console.log(
@@ -434,7 +447,22 @@ async function cargarFichasExplorador() {
         etiquetasExplorador = datosEtiquetas;
 
 
-        mostrarTodasLasFichas();
+        // No reiniciar la selección al volver a cargar datos del explorador.
+        if (
+            menuExploradorSeleccionado !== null &&
+            !menusExplorador.some(menu =>
+                Number(menu.id_menu) === Number(menuExploradorSeleccionado)
+            )
+        ) {
+            menuExploradorSeleccionado = null;
+        }
+
+        const buscadorActual = document.getElementById("buscador");
+        if (buscadorActual) {
+            buscadorActual.value = terminoBusquedaExplorador;
+        }
+
+        renderizarResultados(obtenerFichasVisibles());
         renderizarIndice();
         actualizarMensajeCentral();
 
@@ -501,42 +529,58 @@ function normalizarFicha(ficha) {
 }
 
 // =======================================================
-// MOSTRAR TODAS LAS FICHAS
+// ESTADO Y FILTRADO DE FICHAS
 // =======================================================
 
-function mostrarTodasLasFichas() {
-
-    renderizarResultados(
-        fichasExplorador
-    );
-
-}
-
-// =======================================================
-// FILTRAR FICHAS
-// =======================================================
-
-function filtrarFichasExplorador(texto) {
-
-    const termino =
-        normalizarTexto(texto);
-
-    if (!termino) {
-        mostrarTodasLasFichas();
-        return;
+function obtenerFichasDelMenuSeleccionado() {
+    if (menuExploradorSeleccionado === null) {
+        return [...fichasExplorador];
     }
 
-    const resultados =
-        fichasExplorador.filter(
-            ficha =>
-                fichaCoincideBusqueda(
-                    ficha,
-                    termino
-                )
+    return fichasExplorador.filter(
+        ficha =>
+            Number(ficha.id_menu) ===
+            Number(menuExploradorSeleccionado)
+    );
+}
+
+function obtenerFichasVisibles() {
+    let fichas = obtenerFichasDelMenuSeleccionado();
+
+    if (etiquetaExploradorSeleccionada !== null) {
+        fichas = fichas.filter(ficha =>
+            (ficha.etiquetas || []).some(etiqueta =>
+                Number(etiqueta.id_etiqueta) ===
+                Number(etiquetaExploradorSeleccionada)
+            )
         );
+    }
 
-    renderizarResultados(resultados);
+    const termino = normalizarTexto(terminoBusquedaExplorador);
+    if (!termino) {
+        return fichas;
+    }
 
+    return fichas.filter(ficha =>
+        fichaCoincideBusqueda(ficha, termino)
+    );
+}
+
+function mostrarTodasLasFichas() {
+    menuExploradorSeleccionado = null;
+    etiquetaExploradorSeleccionada = null;
+    terminoBusquedaExplorador = "";
+
+    const buscador = document.getElementById("buscador");
+    if (buscador) buscador.value = "";
+
+    renderizarResultados(obtenerFichasVisibles());
+}
+
+function filtrarFichasExplorador(texto) {
+    terminoBusquedaExplorador = String(texto ?? "");
+    etiquetaExploradorSeleccionada = null;
+    renderizarResultados(obtenerFichasVisibles());
 }
 
 // =======================================================
@@ -1024,6 +1068,14 @@ function renderizarIndice() {
 
     botonTodos.className =
         "item-indice boton-todos";
+    botonTodos.classList.toggle(
+        "seleccionado",
+        menuExploradorSeleccionado === null
+    );
+    botonTodos.setAttribute(
+        "aria-pressed",
+        String(menuExploradorSeleccionado === null)
+    );
 
     botonTodos.textContent =
         "TODOS";
@@ -1035,6 +1087,7 @@ function renderizarIndice() {
             evento.stopPropagation();
 
             mostrarTodasLasFichas();
+            renderizarIndice();
             cerrarPaneles();
             actualizarMensajeCentral();
 
@@ -1053,6 +1106,14 @@ function renderizarIndice() {
 
             boton.type = "button";
             boton.className = "item-indice";
+            boton.classList.toggle(
+                "seleccionado",
+                Number(menuExploradorSeleccionado) === Number(menu.id_menu)
+            );
+            boton.setAttribute(
+                "aria-pressed",
+                String(Number(menuExploradorSeleccionado) === Number(menu.id_menu))
+            );
             boton.textContent = menu.nombre;
 
             boton.addEventListener(
@@ -1230,6 +1291,13 @@ function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
 
 
 function mostrarFichasPorMenu(idMenu) {
+    menuExploradorSeleccionado = idMenu;
+    etiquetaExploradorSeleccionada = null;
+    const buscador = document.getElementById("buscador");
+    if (buscador) {
+        terminoBusquedaExplorador = buscador.value;
+    }
+
     console.log(
         "[explorador] Filtrando por menú:",
         idMenu
@@ -1266,9 +1334,15 @@ function mostrarFichasPorMenu(idMenu) {
         fechaValida: Number.isFinite(Date.parse(f.creado || ""))
     })));
 
-    renderizarResultados(fichasOrdenadas, {
+    const termino = normalizarTexto(terminoBusquedaExplorador);
+    const resultados = termino
+        ? fichasOrdenadas.filter(ficha => fichaCoincideBusqueda(ficha, termino))
+        : fichasOrdenadas;
+
+    renderizarResultados(resultados, {
         plantilla: plantilla
     });
+    renderizarIndice();
 
     cerrarPaneles();
     actualizarMensajeCentral();
@@ -1311,9 +1385,19 @@ async function mostrarFichasPorEtiqueta(idEtiqueta) {
         const fichasFiltradas =
             fichas.map(normalizarFicha);
 
-        renderizarResultados(
-            fichasFiltradas
+        etiquetaExploradorSeleccionada = idEtiqueta;
+        terminoBusquedaExplorador = "";
+        const buscador = document.getElementById("buscador");
+        if (buscador) buscador.value = "";
+        const permitidas = new Set(
+            obtenerFichasDelMenuSeleccionado().map(ficha => String(ficha.id_ficha))
         );
+        const resultados = fichasFiltradas.filter(ficha =>
+            permitidas.has(String(ficha.id_ficha))
+        );
+
+        renderizarResultados(resultados);
+        renderizarIndice();
 
         cerrarPaneles();
         actualizarMensajeCentral();
@@ -1527,19 +1611,16 @@ function manejarClickExterior(evento) {
 // =======================================================
 
 window.exploradorPublico = {
-
-    cargar:
-        cargarFichasExplorador,
-
-    obtener:
-        () => [...fichasExplorador],
-
-    buscar:
-        filtrarFichasExplorador,
-
-    cerrar:
-        cerrarPaneles
-
+    cargar: cargarFichasExplorador,
+    obtener: () => [...fichasExplorador],
+    buscar: filtrarFichasExplorador,
+    cerrar: cerrarPaneles,
+    obtenerFichasVisibles,
+    obtenerEstado: () => ({
+        menuId: menuExploradorSeleccionado,
+        termino: terminoBusquedaExplorador,
+        etiquetaId: etiquetaExploradorSeleccionada
+    })
 };
 
 
