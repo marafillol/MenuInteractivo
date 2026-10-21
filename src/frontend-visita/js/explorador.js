@@ -186,7 +186,7 @@ async function inicializarExplorador() {
 
         terminoBusquedaExplorador = "";
         etiquetaExploradorSeleccionada = null;
-        renderizarResultados(obtenerFichasVisibles());
+        renderizarFichasVisibles();
         cerrarPaneles();
 
     });
@@ -207,7 +207,7 @@ async function inicializarExplorador() {
         terminoBusquedaExplorador = "";
         etiquetaExploradorSeleccionada = null;
 
-        renderizarResultados(obtenerFichasVisibles());
+        renderizarFichasVisibles();
 
 
 
@@ -331,7 +331,7 @@ async function inicializarExplorador() {
     // ESTADO INICIAL
     // ===================================================
 
-    renderizarResultados(obtenerFichasVisibles());
+    renderizarFichasVisibles();
     renderizarIndice();
 
     console.log(
@@ -462,7 +462,7 @@ async function cargarFichasExplorador() {
             buscadorActual.value = terminoBusquedaExplorador;
         }
 
-        renderizarResultados(obtenerFichasVisibles());
+        renderizarFichasVisibles();
         renderizarIndice();
         actualizarMensajeCentral();
 
@@ -573,6 +573,20 @@ function obtenerFichasVisibles() {
     return fichas;
 }
 
+function renderizarFichasVisibles() {
+    const menu = menuExploradorSeleccionado === null
+        ? null
+        : menusExplorador.find(
+            elemento =>
+                Number(elemento.id_menu) ===
+                Number(menuExploradorSeleccionado)
+        );
+
+    renderizarResultados(obtenerFichasVisibles(), {
+        plantilla: menu?.plantilla || null
+    });
+}
+
 function mostrarTodasLasFichas() {
     menuExploradorSeleccionado = null;
     etiquetaExploradorSeleccionada = null;
@@ -581,13 +595,13 @@ function mostrarTodasLasFichas() {
     const buscador = document.getElementById("buscador");
     if (buscador) buscador.value = "";
 
-    renderizarResultados(obtenerFichasVisibles());
+    renderizarFichasVisibles();
 }
 
 function filtrarFichasExplorador(texto) {
     terminoBusquedaExplorador = String(texto ?? "");
     etiquetaExploradorSeleccionada = null;
-    renderizarResultados(obtenerFichasVisibles());
+    renderizarFichasVisibles();
 }
 
 // =======================================================
