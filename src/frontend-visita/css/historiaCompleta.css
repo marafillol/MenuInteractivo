@@ -2401,3 +2401,33 @@ body.carrusel-abierto {
         transition: none;
     }
 }
+
+/* Botón accesible para escuchar el contenido de una ficha */
+#historiaCompleta .boton-audio-historia {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #b7a475;
+    border-radius: 3px;
+    background: #284047;
+    color: #f0e6cb;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+#historiaCompleta .boton-audio-historia:hover,
+#historiaCompleta .boton-audio-historia[aria-pressed="true"] {
+    background: #162c31;
+    border-color: #e2c27c;
+}
+#historiaCompleta .boton-audio-historia:focus-visible {
+    outline: 3px solid #e2c27c;
+    outline-offset: 3px;
+}
+@media (max-width: 500px) {
+    #historiaCompleta .boton-audio-historia { min-height: 36px; padding: 6px 8px; font-size: 10px; }
+}
