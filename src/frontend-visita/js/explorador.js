@@ -402,12 +402,37 @@ async function cargarFichasExplorador() {
             );
         }
 
+
         fichasExplorador =
             datosFichas.map(normalizarFicha);
 
-        menusExplorador = datosMenus;
+        menusExplorador = datosMenus.map(menu => {
+            let plantilla = null;
+
+            try {
+                plantilla = menu.plantilla_json
+                    ? (
+                        typeof menu.plantilla_json === "string"
+                            ? JSON.parse(menu.plantilla_json)
+                            : menu.plantilla_json
+                    )
+                    : null;
+            } catch (error) {
+                console.error(
+                    "[explorador] Error leyendo la plantilla del menú:",
+                    menu.id_menu,
+                    error
+                );
+            }
+
+            return {
+                ...menu,
+                plantilla
+            };
+        });
 
         etiquetasExplorador = datosEtiquetas;
+
 
         mostrarTodasLasFichas();
         renderizarIndice();
@@ -593,7 +618,7 @@ function normalizarTexto(texto) {
 // RENDERIZAR RESULTADOS
 // =======================================================
 
-function renderizarResultados(resultados) {
+function renderizarResultados(resultados, opciones = {}) {
 
     const contenedor =
         document.getElementById(
@@ -608,6 +633,11 @@ function renderizarResultados(resultados) {
 
         return;
     }
+
+    aplicarPlantillaAlContenedor(
+        contenedor,
+        opciones.plantilla || null
+    );
 
     if (
         !Array.isArray(resultados) ||
@@ -625,27 +655,7 @@ function renderizarResultados(resultados) {
         return;
     }
 
-    const ordenados =
-        [...resultados].sort(
-            (a, b) => {
-
-                const nombreA =
-                    normalizarTexto(
-                        obtenerNombreFicha(a)
-                    );
-
-                const nombreB =
-                    normalizarTexto(
-                        obtenerNombreFicha(b)
-                    );
-
-                return nombreA.localeCompare(
-                    nombreB,
-                    "es"
-                );
-
-            }
-        );
+    const ordenados = [...resultados];
 
     // Se arma todo fuera de pantalla y se reemplaza de una vez:
     // el contenedor nunca queda vacío entre repintadas.
@@ -721,6 +731,22 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
     cabecera.appendChild(numero);
     tarjeta.appendChild(cabecera);
 
+    // Textos curvos: solamente para fichas circulares
+    if (
+        document.querySelector(
+            "#contenedorFichas.con-plantilla[data-forma-ficha='circular']"
+        )
+    ) {
+        const textoSuperior = crearTextoCurvo(
+            `EXP. Nº ${ficha.id_ficha}`,
+            `expediente-${ficha.id_ficha}`,
+            "superior"
+        );
+
+        tarjeta.appendChild(textoSuperior);
+    }
+
+
     // Imagen
     const imagenContenedor =
         document.createElement("div");
@@ -733,6 +759,9 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
 
     imagen.src =
         obtenerImagenExplorador(ficha);
+
+    console.log("Ficha:", ficha.id_ficha);
+    console.log("Imagen:", imagen.src);
 
     imagen.alt =
         obtenerNombreFicha(ficha);
@@ -765,13 +794,26 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
         "infoFicha";
 
     // Título
-    const titulo =
-        document.createElement("h3");
+    const titulo = document.createElement("h3");
 
-    titulo.textContent =
-        obtenerNombreFicha(ficha);
+    titulo.className = "tituloCurvoFicha";
+    titulo.textContent = obtenerNombreFicha(ficha);
 
-    informacion.appendChild(titulo);
+    if (
+        document.querySelector(
+            "#contenedorFichas.con-plantilla[data-forma-ficha='circular']"
+        )
+    ) {
+        const tituloCurvo = crearTextoCurvo(
+            obtenerNombreFicha(ficha),
+            `titulo-${ficha.id_ficha}`,
+            "titulo"
+        );
+
+        tarjeta.appendChild(tituloCurvo);
+    } else {
+        informacion.appendChild(titulo);
+    }
 
     // Campos de la plantilla
     const campos =
@@ -788,62 +830,7 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
             ?.estructura
             ?.campos;
 
-    if (Array.isArray(camposPlantilla)) {
 
-        camposPlantilla.forEach(campo => {
-
-            if (
-                !campo ||
-                campo.mostrarTarjeta !== true
-            ) {
-                return;
-            }
-
-            const valor =
-                datos[campo.nombre];
-
-            if (
-                valor === undefined ||
-                valor === null ||
-                String(valor).trim() === ""
-            ) {
-                return;
-            }
-
-            const fila =
-                document.createElement("div");
-
-            fila.className =
-                "campoFicha";
-
-            const etiqueta =
-                document.createElement("span");
-
-            etiqueta.className =
-                "etiquetaCampo";
-
-            etiqueta.textContent =
-                campo.etiqueta ||
-                campo.nombre ||
-                "";
-
-            const valorElemento =
-                document.createElement("span");
-
-            valorElemento.className =
-                "valorCampo";
-
-            valorElemento.textContent =
-                valor;
-
-            fila.appendChild(etiqueta);
-            fila.appendChild(valorElemento);
-
-            campos.appendChild(fila);
-
-        });
-
-    }
 
     informacion.appendChild(campos);
     tarjeta.appendChild(informacion);
@@ -859,6 +846,21 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
         "CONSULTAR EXPEDIENTE";
 
     tarjeta.appendChild(pie);
+    // Texto curvo inferior: solamente para fichas circulares
+    if (
+        document.querySelector(
+            "#contenedorFichas.con-plantilla[data-forma-ficha='circular']"
+        )
+    ) {
+        const textoInferior = crearTextoCurvo(
+            "CONSULTAR EXPEDIENTE",
+            `consulta-${ficha.id_ficha}`,
+            "inferior"
+        );
+
+        tarjeta.appendChild(textoInferior);
+    }
+
 
     // Click
     tarjeta.addEventListener(
@@ -1140,28 +1142,138 @@ function renderizarIndice() {
 // FILTRAR POR MENÚ
 // =======================================================
 
-function mostrarFichasPorMenu(idMenu) {
 
+function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
+    const orden = plantilla?.interfaz?.ordenFichas || "titulo_asc";
+    const resultado = [...fichas];
+
+    const obtenerTitulo = ficha =>
+        String(ficha?.titulo || ficha?.nombre || "").trim();
+
+    const obtenerFecha = ficha => {
+        const fecha = Date.parse(ficha?.creado || "");
+        return Number.isFinite(fecha) ? fecha : 0;
+    };
+
+    switch (orden) {
+        case "titulo_asc":
+            return resultado.sort((a, b) =>
+                obtenerTitulo(a).localeCompare(
+                    obtenerTitulo(b), "es", { sensitivity: "base" }
+                )
+            );
+
+        case "titulo_desc":
+            return resultado.sort((a, b) =>
+                obtenerTitulo(b).localeCompare(
+                    obtenerTitulo(a), "es", { sensitivity: "base" }
+                )
+            );
+
+        case "recientes":
+            return resultado.sort((a, b) =>
+                obtenerFecha(b) - obtenerFecha(a)
+            );
+
+        case "antiguas":
+            return resultado.sort((a, b) =>
+                obtenerFecha(a) - obtenerFecha(b)
+            );
+
+        case "aleatorio": {
+            if (!ordenarFichasPorPlantilla.ordenesAleatorios) {
+                ordenarFichasPorPlantilla.ordenesAleatorios = new Map();
+            }
+
+            const cache = ordenarFichasPorPlantilla.ordenesAleatorios;
+            const clave = String(idMenu);
+            const idsActuales = new Set(
+                resultado.map(ficha => String(ficha.id_ficha))
+            );
+
+            let ordenGuardado = cache.get(clave);
+
+            if (!ordenGuardado) {
+                ordenGuardado = [...resultado];
+
+                for (let i = ordenGuardado.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [ordenGuardado[i], ordenGuardado[j]] =
+                        [ordenGuardado[j], ordenGuardado[i]];
+                }
+            } else {
+                ordenGuardado = [
+                    ...ordenGuardado.filter(ficha =>
+                        idsActuales.has(String(ficha.id_ficha))
+                    ),
+                    ...resultado.filter(ficha =>
+                        !ordenGuardado.some(guardada =>
+                            String(guardada.id_ficha) ===
+                            String(ficha.id_ficha)
+                        )
+                    )
+                ];
+            }
+
+            cache.set(clave, ordenGuardado);
+            return ordenGuardado;
+        }
+
+        default:
+            return resultado.sort((a, b) =>
+                obtenerTitulo(a).localeCompare(
+                    obtenerTitulo(b), "es", { sensitivity: "base" }
+                )
+            );
+    }
+}
+
+
+function mostrarFichasPorMenu(idMenu) {
     console.log(
         "[explorador] Filtrando por menú:",
         idMenu
     );
 
-    const fichasFiltradas =
-        fichasExplorador.filter(
-            ficha =>
-                Number(ficha.id_menu) ===
-                Number(idMenu)
-        );
-
-    renderizarResultados(
-        fichasFiltradas
+    const menuSeleccionado = menusExplorador.find(
+        menu => Number(menu.id_menu) === Number(idMenu)
     );
+
+    const fichasFiltradas = fichasExplorador.filter(
+        ficha => Number(ficha.id_menu) === Number(idMenu)
+    );
+
+    const plantilla = menuSeleccionado?.plantilla || null;
+
+    console.log(
+        "[explorador] Orden configurado:",
+        plantilla?.interfaz?.ordenFichas || "titulo_asc"
+    );
+
+    const fichasOrdenadas = ordenarFichasPorPlantilla(
+        fichasFiltradas,
+        plantilla,
+        idMenu
+    );
+
+    console.log("[PRUEBA] Orden recibido:", plantilla?.interfaz?.ordenFichas);
+
+    console.table(fichasFiltradas.map(f => ({
+        id: f.id_ficha,
+        titulo: f.titulo,
+        creadoOriginal: f.creado,
+        fechaInterpretada: Date.parse(f.creado || ""),
+        fechaValida: Number.isFinite(Date.parse(f.creado || ""))
+    })));
+
+    renderizarResultados(fichasOrdenadas, {
+        plantilla: plantilla
+    });
 
     cerrarPaneles();
     actualizarMensajeCentral();
-
 }
+
 
 // =======================================================
 // FILTRAR POR ETIQUETA
@@ -1429,6 +1541,167 @@ window.exploradorPublico = {
         cerrarPaneles
 
 };
+
+
+function crearTextoCurvo(texto, identificador, posicion) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+
+    svg.setAttribute(
+        "class",
+        `textoCurvoFicha textoCurvoFicha--${posicion}`
+    );
+
+    svg.setAttribute("viewBox", "0 0 300 300");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("aria-hidden", "true");
+
+    const id = `arco-${String(identificador).replace(
+        /[^a-zA-Z0-9_-]/g,
+        "-"
+    )}`;
+
+    const camino = document.createElementNS(ns, "path");
+    camino.setAttribute("id", id);
+
+    // Curva superior: más elevada.
+    // Curva inferior: más baja.
+    const recorrido =
+        posicion === "superior"
+            ? "M 18 85 Q 150 45 282 85"
+            : posicion === "inferior"
+                ? "M 18 215 Q 150 255 282 215"
+                : "M 35 125 Q 150 95 265 125";
+
+    camino.setAttribute("d", recorrido);
+    camino.setAttribute("fill", "none");
+
+    svg.appendChild(camino);
+
+    const textoSvg = document.createElementNS(ns, "text");
+    textoSvg.setAttribute("text-anchor", "middle");
+
+    const ruta = document.createElementNS(ns, "textPath");
+    ruta.setAttribute("href", `#${id}`);
+    ruta.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "xlink:href",
+        `#${id}`
+    );
+
+    ruta.setAttribute("startOffset", "50%");
+    ruta.textContent = texto;
+
+    textoSvg.appendChild(ruta);
+    svg.appendChild(textoSvg);
+
+    return svg;
+}
+
+
+function aplicarPlantillaAlContenedor(contenedor, plantilla) {
+    const propiedades = [
+        "--plantilla-color-principal",
+        "--plantilla-color-secundario",
+        "--plantilla-color-fondo",
+        "--plantilla-color-texto",
+        "--plantilla-fuente-titulo",
+        "--plantilla-fuente-texto",
+        "--plantilla-radio-borde",
+        "--plantilla-separacion",
+        "--plantilla-columnas"
+    ];
+
+    propiedades.forEach(propiedad => {
+        contenedor.style.removeProperty(propiedad);
+    });
+
+    contenedor.classList.remove("con-plantilla");
+
+    delete contenedor.dataset.formaFicha;
+    delete contenedor.dataset.tamanoFicha;
+    delete contenedor.dataset.vista;
+    delete contenedor.dataset.mostrarImagen;
+    delete contenedor.dataset.mostrarIndice;
+
+    if (!plantilla) {
+        return;
+    }
+
+    const interfaz = plantilla.interfaz || {};
+    const apariencia = plantilla.apariencia || {};
+    const elementos = plantilla.elementos || {};
+
+    const colorValido = color =>
+        /^#[0-9a-fA-F]{6}$/.test(color || "");
+
+    const colores = {
+        "--plantilla-color-principal": apariencia.colorPrincipal,
+        "--plantilla-color-secundario": apariencia.colorSecundario,
+        "--plantilla-color-fondo": apariencia.colorFondo,
+        "--plantilla-color-texto": apariencia.colorTexto
+    };
+
+    Object.entries(colores).forEach(([propiedad, color]) => {
+        if (colorValido(color)) {
+            contenedor.style.setProperty(propiedad, color);
+        }
+    });
+
+    const fuentesPermitidas = [
+        "Arial",
+        "Verdana",
+        "Georgia",
+        "Tahoma",
+        "Courier New",
+        "Times New Roman"
+    ];
+
+    if (fuentesPermitidas.includes(apariencia.fuenteTitulo)) {
+        contenedor.style.setProperty(
+            "--plantilla-fuente-titulo",
+            `"${apariencia.fuenteTitulo}"`
+        );
+    }
+
+    if (fuentesPermitidas.includes(apariencia.fuenteTexto)) {
+        contenedor.style.setProperty(
+            "--plantilla-fuente-texto",
+            `"${apariencia.fuenteTexto}"`
+        );
+    }
+
+    const columnas = Number(interfaz.columnas);
+    const separacion = Number(interfaz.separacion);
+    const radio = Number(apariencia.radioBorde);
+
+    contenedor.dataset.columnasFicha = String(
+        Math.min(6, Math.max(1, Number.isFinite(columnas) ? columnas : 4))
+    );
+
+    contenedor.style.setProperty(
+        "--plantilla-columnas",
+        Math.min(6, Math.max(1, Number.isFinite(columnas) ? columnas : 4))
+    );
+
+    contenedor.style.setProperty(
+        "--plantilla-separacion",
+        `${Math.min(60, Math.max(0, Number.isFinite(separacion) ? separacion : 20))}px`
+    );
+
+    contenedor.style.setProperty(
+        "--plantilla-radio-borde",
+        `${Math.min(50, Math.max(0, Number.isFinite(radio) ? radio : 8))}px`
+    );
+
+    contenedor.dataset.formaFicha = interfaz.formaFicha || "rectangular";
+    contenedor.dataset.tamanoFicha = interfaz.tamanoFicha || "mediano";
+    contenedor.dataset.vista = interfaz.vista || "grid";
+    contenedor.dataset.mostrarImagen = "true";
+    contenedor.dataset.mostrarIndice ="true";
+
+    contenedor.classList.add("con-plantilla");
+}
 
 // =======================================================
 // DEBUG

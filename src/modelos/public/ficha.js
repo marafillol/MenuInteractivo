@@ -19,6 +19,7 @@ const obtenerTodas = () => {
                 ficha.resumen,
                 ficha.imagen,
                 ficha.datos_json,
+                ficha.creado,
 
                 menu.nombre AS menu,
 

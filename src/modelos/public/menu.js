@@ -12,21 +12,20 @@ const obtenerMenus = () => {
         db.all(
 
             `
+
             SELECT
-
-                id_menu,
-
-                nombre,
-
-                descripcion,
-
-                imagen
-
+                menu.id_menu,
+                menu.nombre,
+                menu.descripcion,
+                menu.imagen,
+                menu.id_plantilla,
+                plantilla.plantilla_json
             FROM menu
+            LEFT JOIN plantilla
+                ON menu.id_plantilla = plantilla.id_plantilla
+            WHERE menu.visible = 1
+            ORDER BY menu.nombre
 
-            WHERE visible = 1
-
-            ORDER BY nombre
             `,
 
             [],

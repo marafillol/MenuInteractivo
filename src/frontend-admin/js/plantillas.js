@@ -1,35 +1,38 @@
+// =======================================================
+// PLANTILLAS
+// Museo Malvinas · Archivo Histórico
+//
+// RESPONSABILIDADES:
+// • Crear, editar, guardar y eliminar plantillas.
+// • Configurar la interfaz y sus campos.
+// • Mostrar la vista previa.
+// • Autoguardar y recuperar borradores.
+//
+// IMPORTANTE:
+// • No utiliza tamanoFicha ni separacion.
+// • Mantiene la vista previa de plantillas guardadas.
+// =======================================================
 
-console.log("MÃƒÂ³dulo plantillas cargado");
+console.log("Módulo plantillas cargado");
 
-
-/* =========================================================
-   ESTADO DEL MÃƒâ€œDULO
-========================================================= */
+// =======================================================
+// ESTADO
+// =======================================================
 
 let plantillaEditando = null;
 let indiceCampoEditando = null;
-
 let campoEliminar = null;
 let plantillaEliminar = null;
 
-
-/* =========================================================
-   CONFIGURACIÃƒâ€œN PREDETERMINADA
-========================================================= */
-
 const CONFIG_PLANTILLA_DEFAULT = {
-
     version: 1,
 
     interfaz: {
         vista: "grid",
         columnas: 4,
-        formaFicha: "rectangular",
-        tamanoFicha: "mediano",
-        separacion: 20
-    },
+        formaFicha: "circular",
+        ordenFichas: "titulo_asc",
 
-    elementos: {
         mostrarImagen: true,
         mostrarResumen: true,
         mostrarEtiquetas: true,
@@ -50,390 +53,183 @@ const CONFIG_PLANTILLA_DEFAULT = {
     estructura: {
         campos: []
     }
-
 };
-
-
-/* =========================================================
-   PLANTILLA ACTUAL
-========================================================= */
 
 let plantillaActual = crearPlantillaDefault();
 
 
-/* =========================================================
-   CREAR PLANTILLA DEFAULT
-========================================================= */
+// =======================================================
+// CREAR CONFIGURACIÓN PREDETERMINADA
+// =======================================================
 
 function crearPlantillaDefault() {
-
-    return {
-
-        version: CONFIG_PLANTILLA_DEFAULT.version,
-
-        interfaz: {
-            ...CONFIG_PLANTILLA_DEFAULT.interfaz
-        },
-
-        elementos: {
-            ...CONFIG_PLANTILLA_DEFAULT.elementos
-        },
-
-        apariencia: {
-            ...CONFIG_PLANTILLA_DEFAULT.apariencia
-        },
-
-        estructura: {
-            campos: []
-        }
-
-    };
-
+    return JSON.parse(JSON.stringify(CONFIG_PLANTILLA_DEFAULT));
 }
 
 
-/* =========================================================
-   NORMALIZAR PLANTILLA
-========================================================= */
+// =======================================================
+// NORMALIZAR CONFIGURACIÓN
+// Completa valores faltantes y descarta propiedades
+// antiguas que ya no se utilizan.
+// =======================================================
 
 function normalizarPlantilla(datos = {}) {
+    const defaults = crearPlantillaDefault();
 
-    return {
+    const interfazRecibida = datos.interfaz || {};
+    const aparienciaRecibida = datos.apariencia || {};
+    const estructuraRecibida = datos.estructura || {};
 
-        version:
-            datos.version ??
-            CONFIG_PLANTILLA_DEFAULT.version,
-
-        interfaz: {
-
-            vista:
-                datos.interfaz?.vista ??
-                CONFIG_PLANTILLA_DEFAULT.interfaz.vista,
-
-            columnas:
-                Number(
-                    datos.interfaz?.columnas ??
-                    CONFIG_PLANTILLA_DEFAULT.interfaz.columnas
-                ),
-
-            formaFicha:
-                datos.interfaz?.formaFicha ??
-                CONFIG_PLANTILLA_DEFAULT.interfaz.formaFicha,
-
-            tamanoFicha:
-                datos.interfaz?.tamanoFicha ??
-                CONFIG_PLANTILLA_DEFAULT.interfaz.tamanoFicha,
-
-            separacion:
-                Number(
-                    datos.interfaz?.separacion ??
-                    CONFIG_PLANTILLA_DEFAULT.interfaz.separacion
-                )
-
-        },
-
-        elementos: {
-
-            mostrarImagen:
-                datos.elementos?.mostrarImagen ??
-                CONFIG_PLANTILLA_DEFAULT.elementos.mostrarImagen,
-
-            mostrarResumen:
-                datos.elementos?.mostrarResumen ??
-                CONFIG_PLANTILLA_DEFAULT.elementos.mostrarResumen,
-
-            mostrarEtiquetas:
-                datos.elementos?.mostrarEtiquetas ??
-                CONFIG_PLANTILLA_DEFAULT.elementos.mostrarEtiquetas,
-
-            mostrarBuscador:
-                datos.elementos?.mostrarBuscador ??
-                CONFIG_PLANTILLA_DEFAULT.elementos.mostrarBuscador,
-
-            mostrarIndice:
-                datos.elementos?.mostrarIndice ??
-                CONFIG_PLANTILLA_DEFAULT.elementos.mostrarIndice
-
-        },
-
-        apariencia: {
-
-            colorPrincipal:
-                datos.apariencia?.colorPrincipal ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.colorPrincipal,
-
-            colorSecundario:
-                datos.apariencia?.colorSecundario ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.colorSecundario,
-
-            colorFondo:
-                datos.apariencia?.colorFondo ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.colorFondo,
-
-            colorTexto:
-                datos.apariencia?.colorTexto ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.colorTexto,
-
-            fuenteTitulo:
-                datos.apariencia?.fuenteTitulo ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.fuenteTitulo,
-
-            fuenteTexto:
-                datos.apariencia?.fuenteTexto ??
-                CONFIG_PLANTILLA_DEFAULT.apariencia.fuenteTexto,
-
-            radioBorde:
-                Number(
-                    datos.apariencia?.radioBorde ??
-                    CONFIG_PLANTILLA_DEFAULT.apariencia.radioBorde
-                )
-
-        },
-
-        estructura: {
-
-            campos:
-                Array.isArray(datos.estructura?.campos)
-                    ? datos.estructura.campos
-                    : []
-
-        }
-
+    const interfaz = {
+        ...defaults.interfaz,
+        ...interfazRecibida
     };
 
+    // No conservar propiedades antiguas que ya no se usan.
+    delete interfaz.tamanoFicha;
+    delete interfaz.separacion;
+
+    const apariencia = {
+        ...defaults.apariencia,
+        ...aparienciaRecibida
+    };
+
+    const campos = Array.isArray(estructuraRecibida.campos)
+        ? estructuraRecibida.campos.map(campo => ({
+            ...campo,
+            mostrarTarjeta: campo.mostrarTarjeta ?? true,
+            mostrarHistoria: campo.mostrarHistoria ?? true
+        }))
+        : [];
+
+    return {
+        version: datos.version ?? defaults.version,
+
+        interfaz,
+
+        apariencia,
+
+        estructura: {
+            ...estructuraRecibida,
+            campos
+        }
+    };
 }
 
 
-/* =========================================================
-   LEER CONFIGURACIÃƒâ€œN DE LA INTERFAZ
-========================================================= */
+// =======================================================
+// LEER CONFIGURACIÓN DEL FORMULARIO
+// =======================================================
 
 function leerConfiguracionInterfaz() {
-
-    const obtener = id =>
-        document.getElementById(id);
-
-
-    /* -----------------------------------------------------
-       INTERFAZ
-    ----------------------------------------------------- */
-
-    const vista = obtener("vistaPlantilla");
-
-    const columnas = obtener("columnasPlantilla");
-
-    const forma = obtener("formaFichaPlantilla");
-
-    const tamano = obtener("tamanoFichaPlantilla");
-
-    const separacion = obtener("separacionPlantilla");
-
-
-    if (vista) {
-
-        plantillaActual.interfaz.vista =
-            vista.value;
-
+    if (!plantillaActual) {
+        plantillaActual = crearPlantillaDefault();
     }
 
+    if (!plantillaActual.interfaz) {
+        plantillaActual.interfaz = {};
+    }
 
-    if (columnas) {
+    if (!plantillaActual.apariencia) {
+        plantillaActual.apariencia = {};
+    }
 
+    const obtenerValor = id =>
+        document.getElementById(id)?.value;
+
+    const obtenerMarcado = (id, predeterminado = false) =>
+        document.getElementById(id)?.checked ?? predeterminado;
+
+    const vista = obtenerValor("vistaPlantilla");
+    const columnas = obtenerValor("columnasPlantilla");
+    const formaFicha = obtenerValor("formaFichaPlantilla");
+
+    const ordenFichas = obtenerValor("ordenFichasPlantilla");
+
+    if (ordenFichas !== undefined) {
+        plantillaActual.interfaz.ordenFichas = ordenFichas;
+    }
+
+    if (vista !== undefined) {
+        plantillaActual.interfaz.vista = vista;
+    }
+
+    if (columnas !== undefined) {
         plantillaActual.interfaz.columnas =
-            Number(columnas.value);
-
+            Number(columnas) || 1;
     }
 
-
-    if (forma) {
-
-        plantillaActual.interfaz.formaFicha =
-            forma.value;
-
+    if (formaFicha !== undefined) {
+        plantillaActual.interfaz.formaFicha = formaFicha;
     }
 
+    plantillaActual.interfaz.mostrarImagen =
+        obtenerMarcado("mostrarImagenPlantilla", true);
 
-    if (tamano) {
+    plantillaActual.interfaz.mostrarResumen =
+        obtenerMarcado("mostrarResumenPlantilla", true);
 
-        plantillaActual.interfaz.tamanoFicha =
-            tamano.value;
+    plantillaActual.interfaz.mostrarEtiquetas =
+        obtenerMarcado("mostrarEtiquetasPlantilla", true);
 
+    plantillaActual.interfaz.mostrarBuscador =
+        obtenerMarcado("mostrarBuscadorPlantilla", true);
+
+    plantillaActual.interfaz.mostrarIndice =
+        obtenerMarcado("mostrarIndicePlantilla", true);
+
+    const apariencia = plantillaActual.apariencia;
+
+    const colorPrincipal = obtenerValor("colorPrincipalPlantilla");
+    const colorSecundario = obtenerValor("colorSecundarioPlantilla");
+    const colorFondo = obtenerValor("colorFondoPlantilla");
+    const colorTexto = obtenerValor("colorTextoPlantilla");
+    const fuenteTitulo = obtenerValor("fuenteTituloPlantilla");
+    const fuenteTexto = obtenerValor("fuenteTextoPlantilla");
+    const radioBorde = obtenerValor("radioBordePlantilla");
+
+    if (colorPrincipal !== undefined) {
+        apariencia.colorPrincipal = colorPrincipal;
     }
 
-
-    if (separacion) {
-
-        plantillaActual.interfaz.separacion =
-            Number(separacion.value);
-
+    if (colorSecundario !== undefined) {
+        apariencia.colorSecundario = colorSecundario;
     }
 
-
-    /* -----------------------------------------------------
-       ELEMENTOS
-    ----------------------------------------------------- */
-
-    const mostrarImagen =
-        obtener("mostrarImagenPlantilla");
-
-    const mostrarResumen =
-        obtener("mostrarResumenPlantilla");
-
-    const mostrarEtiquetas =
-        obtener("mostrarEtiquetasPlantilla");
-
-    const mostrarBuscador =
-        obtener("mostrarBuscadorPlantilla");
-
-    const mostrarIndice =
-        obtener("mostrarIndicePlantilla");
-
-
-    if (mostrarImagen) {
-
-        plantillaActual.elementos.mostrarImagen =
-            mostrarImagen.checked;
-
+    if (colorFondo !== undefined) {
+        apariencia.colorFondo = colorFondo;
     }
 
-
-    if (mostrarResumen) {
-
-        plantillaActual.elementos.mostrarResumen =
-            mostrarResumen.checked;
-
+    if (colorTexto !== undefined) {
+        apariencia.colorTexto = colorTexto;
     }
 
-
-    if (mostrarEtiquetas) {
-
-        plantillaActual.elementos.mostrarEtiquetas =
-            mostrarEtiquetas.checked;
-
+    if (fuenteTitulo !== undefined) {
+        apariencia.fuenteTitulo = fuenteTitulo;
     }
 
-
-    if (mostrarBuscador) {
-
-        plantillaActual.elementos.mostrarBuscador =
-            mostrarBuscador.checked;
-
+    if (fuenteTexto !== undefined) {
+        apariencia.fuenteTexto = fuenteTexto;
     }
 
-
-    if (mostrarIndice) {
-
-        plantillaActual.elementos.mostrarIndice =
-            mostrarIndice.checked;
-
+    if (radioBorde !== undefined) {
+        apariencia.radioBorde = Number(radioBorde) || 0;
     }
 
-
-    /* -----------------------------------------------------
-       APARIENCIA
-    ----------------------------------------------------- */
-
-    const colorPrincipal =
-        obtener("colorPrincipalPlantilla");
-
-    const colorSecundario =
-        obtener("colorSecundarioPlantilla");
-
-    const colorFondo =
-        obtener("colorFondoPlantilla");
-
-    const colorTexto =
-        obtener("colorTextoPlantilla");
-
-    const fuenteTitulo =
-        obtener("fuenteTituloPlantilla");
-
-    const fuenteTexto =
-        obtener("fuenteTextoPlantilla");
-
-    const radioBorde =
-        obtener("radioBordePlantilla");
-
-
-    if (colorPrincipal) {
-
-        plantillaActual.apariencia.colorPrincipal =
-            colorPrincipal.value;
-
-    }
-
-
-    if (colorSecundario) {
-
-        plantillaActual.apariencia.colorSecundario =
-            colorSecundario.value;
-
-    }
-
-
-    if (colorFondo) {
-
-        plantillaActual.apariencia.colorFondo =
-            colorFondo.value;
-
-    }
-
-
-    if (colorTexto) {
-
-        plantillaActual.apariencia.colorTexto =
-            colorTexto.value;
-
-    }
-
-
-    if (fuenteTitulo) {
-
-        plantillaActual.apariencia.fuenteTitulo =
-            fuenteTitulo.value;
-
-    }
-
-
-    if (fuenteTexto) {
-
-        plantillaActual.apariencia.fuenteTexto =
-            fuenteTexto.value;
-
-    }
-
-
-    if (radioBorde) {
-
-        plantillaActual.apariencia.radioBorde =
-            Number(radioBorde.value);
-
-    }
-
-
-    console.log(
-        "ConfiguraciÃƒÂ³n de plantilla actualizada:",
-        plantillaActual
-    );
-
+    // Eliminar posibles propiedades heredadas.
+    delete plantillaActual.interfaz.tamanoFicha;
+    delete plantillaActual.interfaz.separacion;
 }
 
 
-/* =========================================================
-   CAMBIOS DE CONFIGURACIÃƒâ€œN
-========================================================= */
+// =======================================================
+// CAMBIOS DE CONFIGURACIÓN
+// =======================================================
 
 const IDS_CONFIGURACION_PLANTILLA = [
-
-    /* Interfaz */
-
     "vistaPlantilla",
     "columnasPlantilla",
     "formaFichaPlantilla",
-    "tamanoFichaPlantilla",
-    "separacionPlantilla",
-
-    /* Elementos */
 
     "mostrarImagenPlantilla",
     "mostrarResumenPlantilla",
@@ -441,42 +237,37 @@ const IDS_CONFIGURACION_PLANTILLA = [
     "mostrarBuscadorPlantilla",
     "mostrarIndicePlantilla",
 
-    /* Apariencia */
-
     "colorPrincipalPlantilla",
     "colorSecundarioPlantilla",
     "colorFondoPlantilla",
     "colorTextoPlantilla",
+
     "fuenteTituloPlantilla",
     "fuenteTextoPlantilla",
     "radioBordePlantilla"
-
 ];
 
-
-document.addEventListener("change", event => {
-
-    if (
-        !IDS_CONFIGURACION_PLANTILLA.includes(
-            event.target.id
-        )
-    ) {
+document.addEventListener("change", function (event) {
+    if (!IDS_CONFIGURACION_PLANTILLA.includes(event.target.id)) {
         return;
     }
 
     leerConfiguracionInterfaz();
-
     actualizarVistaPreviaPlantilla();
-
+    guardarBorradorPlantilla();
 });
 
 
-/* =========================================================
-   BORRADORES DE PLANTILLAS
-========================================================= */
+// =======================================================
+// AUTOGUARDADO DE BORRADORES
+// Utiliza el módulo window.Borradores.
+// =======================================================
 
 function obtenerClaveBorradorPlantilla() {
-    if (!window.Borradores || !window.usuarioActual?.id_usuario) {
+    if (
+        !window.Borradores ||
+        !window.usuarioActual?.id_usuario
+    ) {
         return null;
     }
 
@@ -485,16 +276,28 @@ function obtenerClaveBorradorPlantilla() {
         : "nuevo";
 }
 
+
 function obtenerDatosBorradorPlantilla() {
     leerConfiguracionInterfaz();
 
+    const plantillaLimpia = normalizarPlantilla(
+        JSON.parse(JSON.stringify(plantillaActual))
+    );
+
     return {
-        nombre: document.getElementById("nombrePlantilla")?.value ?? "",
-        descripcion: document.getElementById("descripcionPlantilla")?.value ?? "",
-        activo: document.getElementById("activoPlantilla")?.checked ?? true,
-        plantilla: JSON.parse(JSON.stringify(plantillaActual))
+        nombre:
+            document.getElementById("nombrePlantilla")?.value ?? "",
+
+        descripcion:
+            document.getElementById("descripcionPlantilla")?.value ?? "",
+
+        activo:
+            document.getElementById("activoPlantilla")?.checked ?? true,
+
+        plantilla: plantillaLimpia
     };
 }
+
 
 function guardarBorradorPlantilla() {
     const modal = document.getElementById("modalPlantilla");
@@ -502,19 +305,26 @@ function guardarBorradorPlantilla() {
 
     if (
         !modal ||
-        modal.style.display === "none" ||
         !clave ||
-        !window.Borradores
+        !window.Borradores ||
+        window.getComputedStyle(modal).display === "none"
     ) {
         return;
     }
 
-    window.Borradores.guardar(
-        "plantillas",
-        clave,
-        obtenerDatosBorradorPlantilla()
-    );
+    try {
+        const datos = obtenerDatosBorradorPlantilla();
+
+        window.Borradores.guardar(
+            "plantillas",
+            clave,
+            datos
+        );
+    } catch (error) {
+        console.error("Error guardando borrador de plantilla:", error);
+    }
 }
+
 
 function recuperarBorradorPlantilla() {
     const clave = obtenerClaveBorradorPlantilla();
@@ -523,43 +333,55 @@ function recuperarBorradorPlantilla() {
         return false;
     }
 
-    const borrador = window.Borradores.leer(
-        "plantillas",
-        clave
-    );
+    try {
+        const borrador = window.Borradores.leer(
+            "plantillas",
+            clave
+        );
 
-    if (!borrador?.datos) {
+        if (!borrador?.datos) {
+            return false;
+        }
+
+        const datos = borrador.datos;
+
+        const nombre = document.getElementById("nombrePlantilla");
+        const descripcion = document.getElementById("descripcionPlantilla");
+        const activo = document.getElementById("activoPlantilla");
+
+        if (nombre) {
+            nombre.value = datos.nombre ?? "";
+        }
+
+        if (descripcion) {
+            descripcion.value = datos.descripcion ?? "";
+        }
+
+        if (activo) {
+            activo.checked = datos.activo ?? true;
+        }
+
+        plantillaActual = normalizarPlantilla(
+            datos.plantilla || {}
+        );
+
+        cargarConfiguracionEnFormulario();
+        mostrarCamposPlantilla();
+        actualizarVistaPreviaPlantilla();
+
+        return true;
+    } catch (error) {
+        console.error("Error recuperando borrador de plantilla:", error);
         return false;
     }
-
-    const datos = borrador.datos;
-
-    const nombre = document.getElementById("nombrePlantilla");
-    const descripcion = document.getElementById("descripcionPlantilla");
-    const activo = document.getElementById("activoPlantilla");
-
-    if (nombre) nombre.value = datos.nombre ?? "";
-    if (descripcion) descripcion.value = datos.descripcion ?? "";
-    if (activo) activo.checked = datos.activo ?? true;
-
-    plantillaActual = normalizarPlantilla(datos.plantilla ?? {});
-
-    cargarConfiguracionEnFormulario();
-    mostrarCamposPlantilla();
-    actualizarVistaPreviaPlantilla();
-
-    return true;
 }
 
 
-/* =========================================================
-   EVENTOS DE AUTOGUARDADO DE PLANTILLAS
-========================================================= */
-
+// Instalar los eventos una sola vez.
 if (!window.__autoguardadoPlantillasInicializado) {
     window.__autoguardadoPlantillasInicializado = true;
 
-    const guardarSiCorresponde = (event) => {
+    const guardarSiCorresponde = event => {
         const modal = document.getElementById("modalPlantilla");
 
         if (
@@ -576,33 +398,21 @@ if (!window.__autoguardadoPlantillasInicializado) {
 }
 
 
-
-/* =========================================================
-   INICIAR MÃƒâ€œDULO
-========================================================= */
+// =======================================================
+// INICIAR MÓDULO DE PLANTILLAS
+// =======================================================
 
 function iniciarPlantillas() {
+    const modulo = document.getElementById("moduloPlantillas");
 
-    console.log("Inicializando mÃƒÂ³dulo plantillas");
-
-    const modulo =
-        document.getElementById("moduloPlantillas");
-
-    if (!modulo) {
-
-        console.warn(
-            "No existe moduloPlantillas"
-        );
-
+    if (!modulo || modulo.dataset.plantillasInicializado === "true") {
         return;
-
     }
 
+    modulo.dataset.plantillasInicializado = "true";
 
-    modulo.addEventListener("click", event => {
-
-        const boton =
-            event.target.closest("#nuevaPlantilla");
+    modulo.addEventListener("click", function (event) {
+        const boton = event.target.closest("#nuevaPlantilla");
 
         if (!boton) {
             return;
@@ -610,392 +420,102 @@ function iniciarPlantillas() {
 
         limpiarFormularioPlantilla();
 
-        const modal =
-            document.getElementById("modalPlantilla");
+        const modal = document.getElementById("modalPlantilla");
 
         if (modal) {
-    modal.style.display = "flex";
-    recuperarBorradorPlantilla();
-}
+            modal.style.display = "flex";
+        }
 
+        if (!recuperarBorradorPlantilla()) {
+            actualizarVistaPreviaPlantilla();
+        }
     });
-
 }
 
 
-/* =========================================================
-   MODAL PLANTILLA
-========================================================= */
+// =======================================================
+// CERRAR MODAL DE PLANTILLA
+// No elimina el borrador: permite recuperarlo después.
+// =======================================================
 
 function cerrarModalPlantilla() {
-
-    const modal =
-        document.getElementById("modalPlantilla");
+    const modal = document.getElementById("modalPlantilla");
 
     if (modal) {
-
         modal.style.display = "none";
-
     }
 
     plantillaEditando = null;
     indiceCampoEditando = null;
-
 }
 
 
-/* =========================================================
-   NUEVO CAMPO
-========================================================= */
+// =======================================================
+// CARGAR CONFIGURACIÓN EN EL FORMULARIO
+// =======================================================
 
-function abrirNuevoCampo() {
+function cargarConfiguracionEnFormulario() {
+    plantillaActual = normalizarPlantilla(plantillaActual);
 
-    indiceCampoEditando = null;
+    const interfaz = plantillaActual.interfaz;
+    const apariencia = plantillaActual.apariencia;
 
+    const asignarValor = (id, valor) => {
+        const elemento = document.getElementById(id);
 
-    const etiqueta =
-        document.getElementById("etiquetaCampo");
-
-    const nombre =
-        document.getElementById("nombreCampo");
-
-    const tipo =
-        document.getElementById("tipoCampo");
-
-    const mostrarTarjeta =
-        document.getElementById("mostrarTarjetaCampo");
-
-
-    const mostrarHistoria =
-        document.getElementById("mostrarHistoriaCampo");
-
-
-    if (etiqueta) {
-        etiqueta.value = "";
-    }
-
-    if (nombre) {
-        nombre.value = "";
-    }
-
-    if (tipo) {
-        tipo.value = "text";
-    }
-
-    if (mostrarTarjeta) {
-        mostrarTarjeta.checked = true;
-    }
-
-
-
-    if (mostrarHistoria) {
-        mostrarHistoria.checked = true;
-    }
-
-
-    const modal =
-        document.getElementById(
-            "modalCampoPlantilla"
-        );
-
-    if (modal) {
-
-        modal.style.display = "flex";
-
-    }
-
-}
-
-
-function cerrarCampoPlantilla() {
-
-    const modal =
-        document.getElementById(
-            "modalCampoPlantilla"
-        );
-
-    if (modal) {
-
-        modal.style.display = "none";
-
-    }
-
-}
-
-
-/* =========================================================
-   EVENTOS PRINCIPALES
-========================================================= */
-
-document.addEventListener("click", event => {
-
-    const id =
-        event.target.id;
-
-
-    if (id === "btnNuevoCampo") {
-
-        abrirNuevoCampo();
-
-        return;
-
-    }
-
-
-    if (id === "btnGuardarCampo") {
-
-        guardarCampo();
-
-        return;
-
-    }
-
-
-    if (id === "btnGuardarPlantilla") {
-
-        guardarPlantilla();
-
-        return;
-
-    }
-
-});
-
-
-/* =========================================================
-   GUARDAR CAMPO
-========================================================= */
-
-function guardarCampo() {
-
-    const etiqueta =
-        document
-            .getElementById("etiquetaCampo")
-            ?.value
-            .trim() || "";
-
-
-    const nombre =
-        document
-            .getElementById("nombreCampo")
-            ?.value
-            .trim() || "";
-
-
-    const tipo =
-        document
-            .getElementById("tipoCampo")
-            ?.value || "text";
-
-
-    if (!etiqueta || !nombre) {
-
-        mostrarMensajePlantilla(
-            "Debes completar la etiqueta y el nombre interno del campo antes de guardar."
-        );
-
-        return;
-
-    }
-
-
-    const campo = {
-
-        nombre,
-
-        tipo,
-
-        etiqueta,
-
-        mostrarTarjeta:
-            document.getElementById(
-                "mostrarTarjetaCampo"
-            )?.checked ?? true,
-
-
-
-        mostrarHistoria:
-            document.getElementById(
-                "mostrarHistoriaCampo"
-            )?.checked ?? true
-
+        if (elemento && valor !== undefined && valor !== null) {
+            elemento.value = valor;
+        }
     };
 
+    const asignarMarcado = (id, valor) => {
+        const elemento = document.getElementById(id);
 
-    if (indiceCampoEditando === null) {
+        if (elemento) {
+            elemento.checked = Boolean(valor);
+        }
+    };
 
-        plantillaActual.estructura.campos.push(
-            campo
-        );
+    asignarValor("vistaPlantilla", interfaz.vista);
+    asignarValor("columnasPlantilla", interfaz.columnas);
+    asignarValor("formaFichaPlantilla", interfaz.formaFicha);
 
-    }
-    else {
+    asignarValor(
+        "ordenFichasPlantilla",
+        interfaz.ordenFichas || "titulo_asc"
+    );
 
-        plantillaActual.estructura.campos[
-            indiceCampoEditando
-        ] = campo;
+    asignarMarcado("mostrarImagenPlantilla", interfaz.mostrarImagen);
+    asignarMarcado("mostrarResumenPlantilla", interfaz.mostrarResumen);
+    asignarMarcado("mostrarEtiquetasPlantilla", interfaz.mostrarEtiquetas);
+    asignarMarcado("mostrarBuscadorPlantilla", interfaz.mostrarBuscador);
+    asignarMarcado("mostrarIndicePlantilla", interfaz.mostrarIndice);
 
-    }
-
-
-
-cerrarCampoPlantilla();
-
-mostrarCamposPlantilla();
-
-actualizarVistaPreviaPlantilla();
-
-// Guardar los cambios de la plantilla en el borrador local.
-guardarBorradorPlantilla();
-
-
+    asignarValor("colorPrincipalPlantilla", apariencia.colorPrincipal);
+    asignarValor("colorSecundarioPlantilla", apariencia.colorSecundario);
+    asignarValor("colorFondoPlantilla", apariencia.colorFondo);
+    asignarValor("colorTextoPlantilla", apariencia.colorTexto);
+    asignarValor("fuenteTituloPlantilla", apariencia.fuenteTitulo);
+    asignarValor("fuenteTextoPlantilla", apariencia.fuenteTexto);
+    asignarValor("radioBordePlantilla", apariencia.radioBorde);
 }
 
 
-/* =========================================================
-   MOSTRAR CAMPOS
-========================================================= */
-
-function mostrarCamposPlantilla() {
-
-    const lista =
-        document.getElementById(
-            "listaCamposPlantilla"
-        );
-
-    if (!lista) {
-        return;
-    }
-
-
-    lista.innerHTML = "";
-
-
-    const campos =
-        plantillaActual.estructura.campos;
-
-
-    if (!campos.length) {
-
-        lista.innerHTML = `
-            <p class="sin-campos-plantilla">
-                No hay campos.
-            </p>
-        `;
-
-        return;
-
-    }
-
-
-    campos.forEach((campo, indice) => {
-
-        lista.insertAdjacentHTML(
-            "beforeend",
-            `
-
-            <div class="item-campo">
-
-                <div>
-
-                    <strong>
-                        ${campo.etiqueta}
-                    </strong>
-
-                    <br>
-
-                    <small>
-                        ${campo.nombre}
-                    </small>
-
-                    <br>
-
-                    <small>
-                        ${campo.tipo}
-                    </small>
-
-                    <br>
-
-                    <small>
-
-                        Tarjeta:
-                        ${campo.mostrarTarjeta ? "Ã¢Å“â€" : "Ã¢Å“â€“"}
-
-                        |
-
-
-                        Historia:
-                        ${campo.mostrarHistoria ? "Ã¢Å“â€" : "Ã¢Å“â€“"}
-
-                    </small>
-
-                </div>
-
-                <div>
-
-                    <button
-                        type="button"
-                        class="btn-editar-plantilla"
-                        onclick="editarCampo(${indice})">
-
-                        Editar
-
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn-eliminar-plantilla"
-                        onclick="eliminarCampo(${indice})">
-
-                        Eliminar
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            `
-        );
-
-    });
-
-}
-
-
-/* =========================================================
-   LIMPIAR FORMULARIO
-========================================================= */
+// =======================================================
+// LIMPIAR FORMULARIO PARA UNA NUEVA PLANTILLA
+// No elimina el borrador anterior.
+// =======================================================
 
 function limpiarFormularioPlantilla() {
-
     plantillaEditando = null;
     indiceCampoEditando = null;
 
-    plantillaActual =
-        crearPlantillaDefault();
+    plantillaActual = crearPlantillaDefault();
 
-
-    const titulo =
-        document.getElementById(
-            "tituloModalPlantilla"
-        );
-
-    const nombre =
-        document.getElementById(
-            "nombrePlantilla"
-        );
-
-    const descripcion =
-        document.getElementById(
-            "descripcionPlantilla"
-        );
-
-    const activo =
-        document.getElementById(
-            "activoPlantilla"
-        );
-
+    const titulo = document.getElementById("tituloModalPlantilla");
+    const nombre = document.getElementById("nombrePlantilla");
+    const descripcion = document.getElementById("descripcionPlantilla");
+    const activo = document.getElementById("activoPlantilla");
 
     if (titulo) {
         titulo.textContent = "Nueva plantilla";
@@ -1013,1903 +533,1006 @@ function limpiarFormularioPlantilla() {
         activo.checked = true;
     }
 
-
-    /* -----------------------------------------------------
-       CARGAR VALORES DEFAULT EN EL FORMULARIO
-    ----------------------------------------------------- */
-
     cargarConfiguracionEnFormulario();
-
-
     mostrarCamposPlantilla();
+    actualizarVistaPreviaPlantilla();
+}
 
+
+// =======================================================
+// CAMPOS DINÁMICOS
+// =======================================================
+
+function abrirNuevoCampo() {
+    indiceCampoEditando = null;
+
+    const etiqueta = document.getElementById("etiquetaCampo");
+    const nombre = document.getElementById("nombreCampo");
+    const tipo = document.getElementById("tipoCampo");
+
+    if (etiqueta) etiqueta.value = "";
+    if (nombre) nombre.value = "";
+    if (tipo) tipo.value = "text";
+
+    const mostrarTarjeta = document.getElementById("mostrarTarjetaCampo");
+    const mostrarHistoria = document.getElementById("mostrarHistoriaCampo");
+
+    if (mostrarTarjeta) mostrarTarjeta.checked = true;
+    if (mostrarHistoria) mostrarHistoria.checked = true;
+
+    const modal = document.getElementById("modalCampoPlantilla");
+
+    if (modal) {
+        modal.style.display = "flex";
+    }
+}
+
+
+function cerrarCampoPlantilla() {
+    const modal = document.getElementById("modalCampoPlantilla");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+
+function guardarCampo() {
+    const etiqueta =
+        document.getElementById("etiquetaCampo")?.value.trim() ?? "";
+
+    const nombre =
+        document.getElementById("nombreCampo")?.value.trim() ?? "";
+
+    const tipo =
+        document.getElementById("tipoCampo")?.value ?? "text";
+
+    const mostrarTarjeta =
+        document.getElementById("mostrarTarjetaCampo")?.checked ?? true;
+
+    const mostrarHistoria =
+        document.getElementById("mostrarHistoriaCampo")?.checked ?? true;
+
+    if (!etiqueta || !nombre) {
+        mostrarMensajePlantilla(
+            "Debés completar la etiqueta y el nombre interno del campo antes de guardar."
+        );
+        return;
+    }
+
+    const campo = {
+        etiqueta,
+        nombre,
+        tipo,
+        mostrarTarjeta,
+        mostrarHistoria
+    };
+
+    if (!plantillaActual.estructura) {
+        plantillaActual.estructura = { campos: [] };
+    }
+
+    if (!Array.isArray(plantillaActual.estructura.campos)) {
+        plantillaActual.estructura.campos = [];
+    }
+
+    if (indiceCampoEditando === null) {
+        plantillaActual.estructura.campos.push(campo);
+    } else {
+        plantillaActual.estructura.campos[indiceCampoEditando] = campo;
+    }
+
+    cerrarCampoPlantilla();
+    mostrarCamposPlantilla();
+    actualizarVistaPreviaPlantilla();
+    guardarBorradorPlantilla();
+}
+
+
+function mostrarCamposPlantilla() {
+    const lista = document.getElementById("listaCamposPlantilla");
+
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = "";
+
+    const campos = plantillaActual?.estructura?.campos || [];
+
+    if (campos.length === 0) {
+        lista.innerHTML = "<p>No hay campos agregados.</p>";
+        return;
+    }
+
+    campos.forEach((campo, indice) => {
+        const item = document.createElement("div");
+        item.className = "item-campo";
+
+        const informacion = document.createElement("div");
+
+        const etiqueta = document.createElement("strong");
+        etiqueta.textContent = campo.etiqueta || campo.nombre || "Campo";
+
+        const nombre = document.createElement("small");
+        nombre.textContent = campo.nombre || "";
+
+        const tipo = document.createElement("small");
+        tipo.textContent = campo.tipo || "text";
+
+        informacion.append(
+            etiqueta,
+            document.createElement("br"),
+            nombre,
+            document.createElement("br"),
+            tipo
+        );
+
+        const acciones = document.createElement("div");
+
+        // Subir campo
+        const botonSubir = document.createElement("button");
+        botonSubir.type = "button";
+        botonSubir.className = "btn-editar-plantilla";
+        botonSubir.textContent = "↑ Subir";
+        botonSubir.disabled = indice === 0;
+        botonSubir.title = "Mover campo hacia arriba";
+        botonSubir.addEventListener("click", () => {
+            moverCampoPlantilla(indice, -1);
+        });
+
+        // Bajar campo
+        const botonBajar = document.createElement("button");
+        botonBajar.type = "button";
+        botonBajar.className = "btn-editar-plantilla";
+        botonBajar.textContent = "↓ Bajar";
+        botonBajar.disabled = indice === campos.length - 1;
+        botonBajar.title = "Mover campo hacia abajo";
+        botonBajar.addEventListener("click", () => {
+            moverCampoPlantilla(indice, 1);
+        });
+
+        // Editar campo
+        const botonEditar = document.createElement("button");
+        botonEditar.type = "button";
+        botonEditar.className = "btn-editar-plantilla";
+        botonEditar.textContent = "Editar";
+        botonEditar.addEventListener("click", () => editarCampo(indice));
+
+        // Eliminar campo
+        const botonEliminar = document.createElement("button");
+        botonEliminar.type = "button";
+        botonEliminar.className = "btn-eliminar-plantilla";
+        botonEliminar.textContent = "Eliminar";
+        botonEliminar.addEventListener("click", () => eliminarCampo(indice));
+
+        acciones.append(
+            botonSubir,
+            botonBajar,
+            botonEditar,
+            botonEliminar
+        );
+
+        item.append(informacion, acciones);
+        lista.appendChild(item);
+    });
+}
+
+
+function moverCampoPlantilla(indice, direccion) {
+    const campos = plantillaActual?.estructura?.campos;
+
+    if (!Array.isArray(campos)) {
+        return;
+    }
+
+    const nuevoIndice = indice + direccion;
+
+    if (nuevoIndice < 0 || nuevoIndice >= campos.length) {
+        return;
+    }
+
+    // Intercambiar la posición de los campos.
+    [campos[indice], campos[nuevoIndice]] = [
+        campos[nuevoIndice],
+        campos[indice]
+    ];
+
+    // Actualizar la lista y la vista previa.
+    mostrarCamposPlantilla();
     actualizarVistaPreviaPlantilla();
 
+    // Guardar el nuevo orden en el borrador.
+    guardarBorradorPlantilla();
 }
 
-
-/* =========================================================
-   CARGAR CONFIGURACIÃƒâ€œN EN FORMULARIO
-========================================================= */
-
-function cargarConfiguracionEnFormulario() {
-
-    const i =
-        plantillaActual.interfaz;
-
-    const e =
-        plantillaActual.elementos;
-
-    const a =
-        plantillaActual.apariencia;
-
-
-    /* -----------------------------------------------------
-       INTERFAZ
-    ----------------------------------------------------- */
-
-    const vista =
-        document.getElementById(
-            "vistaPlantilla"
-        );
-
-    const columnas =
-        document.getElementById(
-            "columnasPlantilla"
-        );
-
-    const forma =
-        document.getElementById(
-            "formaFichaPlantilla"
-        );
-
-    const tamano =
-        document.getElementById(
-            "tamanoFichaPlantilla"
-        );
-
-    const separacion =
-        document.getElementById(
-            "separacionPlantilla"
-        );
-
-
-    if (vista) {
-        vista.value = i.vista;
-    }
-
-    if (columnas) {
-        columnas.value = i.columnas;
-    }
-
-    if (forma) {
-        forma.value = i.formaFicha;
-    }
-
-    if (tamano) {
-        tamano.value = i.tamanoFicha;
-    }
-
-    if (separacion) {
-        separacion.value = i.separacion;
-    }
-
-
-    /* -----------------------------------------------------
-       ELEMENTOS
-    ----------------------------------------------------- */
-
-    const mostrarImagen =
-        document.getElementById(
-            "mostrarImagenPlantilla"
-        );
-
-    const mostrarResumen =
-        document.getElementById(
-            "mostrarResumenPlantilla"
-        );
-
-    const mostrarEtiquetas =
-        document.getElementById(
-            "mostrarEtiquetasPlantilla"
-        );
-
-    const mostrarBuscador =
-        document.getElementById(
-            "mostrarBuscadorPlantilla"
-        );
-
-    const mostrarIndice =
-        document.getElementById(
-            "mostrarIndicePlantilla"
-        );
-
-
-    if (mostrarImagen) {
-        mostrarImagen.checked = e.mostrarImagen;
-    }
-
-    if (mostrarResumen) {
-        mostrarResumen.checked = e.mostrarResumen;
-    }
-
-    if (mostrarEtiquetas) {
-        mostrarEtiquetas.checked = e.mostrarEtiquetas;
-    }
-
-    if (mostrarBuscador) {
-        mostrarBuscador.checked = e.mostrarBuscador;
-    }
-
-    if (mostrarIndice) {
-        mostrarIndice.checked = e.mostrarIndice;
-    }
-
-
-    /* -----------------------------------------------------
-       APARIENCIA
-    ----------------------------------------------------- */
-
-    const colorPrincipal =
-        document.getElementById(
-            "colorPrincipalPlantilla"
-        );
-
-    const colorSecundario =
-        document.getElementById(
-            "colorSecundarioPlantilla"
-        );
-
-    const colorFondo =
-        document.getElementById(
-            "colorFondoPlantilla"
-        );
-
-    const colorTexto =
-        document.getElementById(
-            "colorTextoPlantilla"
-        );
-
-    const fuenteTitulo =
-        document.getElementById(
-            "fuenteTituloPlantilla"
-        );
-
-    const fuenteTexto =
-        document.getElementById(
-            "fuenteTextoPlantilla"
-        );
-
-    const radioBorde =
-        document.getElementById(
-            "radioBordePlantilla"
-        );
-
-
-    if (colorPrincipal) {
-        colorPrincipal.value =
-            a.colorPrincipal;
-    }
-
-    if (colorSecundario) {
-        colorSecundario.value =
-            a.colorSecundario;
-    }
-
-    if (colorFondo) {
-        colorFondo.value =
-            a.colorFondo;
-    }
-
-    if (colorTexto) {
-        colorTexto.value =
-            a.colorTexto;
-    }
-
-    if (fuenteTitulo) {
-        fuenteTitulo.value =
-            a.fuenteTitulo;
-    }
-
-    if (fuenteTexto) {
-        fuenteTexto.value =
-            a.fuenteTexto;
-    }
-
-    if (radioBorde) {
-        radioBorde.value =
-            a.radioBorde;
-    }
-
-}
-
-
-/* =========================================================
-   EDITAR CAMPO
-========================================================= */
 
 function editarCampo(indice) {
-
-    const campo =
-        plantillaActual.estructura.campos[indice];
-
+    const campo = plantillaActual?.estructura?.campos?.[indice];
 
     if (!campo) {
         return;
     }
 
-
     indiceCampoEditando = indice;
 
+    const etiqueta = document.getElementById("etiquetaCampo");
+    const nombre = document.getElementById("nombreCampo");
+    const tipo = document.getElementById("tipoCampo");
+    const mostrarTarjeta = document.getElementById("mostrarTarjetaCampo");
+    const mostrarHistoria = document.getElementById("mostrarHistoriaCampo");
 
-    const etiqueta =
-        document.getElementById(
-            "etiquetaCampo"
-        );
-
-    const nombre =
-        document.getElementById(
-            "nombreCampo"
-        );
-
-    const tipo =
-        document.getElementById(
-            "tipoCampo"
-        );
-
-    const mostrarTarjeta =
-        document.getElementById(
-            "mostrarTarjetaCampo"
-        );
-
-
-
-    const mostrarHistoria =
-        document.getElementById(
-            "mostrarHistoriaCampo"
-        );
-
-
-    if (etiqueta) {
-        etiqueta.value =
-            campo.etiqueta || "";
-    }
-
-    if (nombre) {
-        nombre.value =
-            campo.nombre || "";
-    }
-
-    if (tipo) {
-        tipo.value =
-            campo.tipo || "text";
-    }
+    if (etiqueta) etiqueta.value = campo.etiqueta || "";
+    if (nombre) nombre.value = campo.nombre || "";
+    if (tipo) tipo.value = campo.tipo || "text";
 
     if (mostrarTarjeta) {
-        mostrarTarjeta.checked =
-            campo.mostrarTarjeta ?? true;
+        mostrarTarjeta.checked = campo.mostrarTarjeta ?? true;
     }
 
     if (mostrarHistoria) {
-        mostrarHistoria.checked =
-            campo.mostrarHistoria ?? true;
+        mostrarHistoria.checked = campo.mostrarHistoria ?? true;
     }
 
-
-    const modal =
-        document.getElementById(
-            "modalCampoPlantilla"
-        );
+    const modal = document.getElementById("modalCampoPlantilla");
 
     if (modal) {
-
         modal.style.display = "flex";
-
     }
-
 }
 
 
-/* =========================================================
-   ELIMINAR CAMPO
-========================================================= */
-
 function eliminarCampo(indice) {
-
-    if (
-        !plantillaActual.estructura.campos[indice]
-    ) {
-        return;
-    }
-
-
     campoEliminar = indice;
 
-
-    const modal =
-        document.getElementById(
-            "modalEliminarCampo"
-        );
+    const modal = document.getElementById("modalEliminarCampo");
 
     if (modal) {
-
         modal.style.display = "flex";
-
     }
-
 }
 
 
 function cerrarEliminarCampoPlantilla() {
-
     campoEliminar = null;
 
-
-    const modal =
-        document.getElementById(
-            "modalEliminarCampo"
-        );
+    const modal = document.getElementById("modalEliminarCampo");
 
     if (modal) {
-
         modal.style.display = "none";
-
     }
-
 }
 
 
 function confirmarEliminarCampo() {
-
     if (campoEliminar === null) {
         return;
     }
 
+    plantillaActual.estructura.campos.splice(campoEliminar, 1);
 
-    plantillaActual.estructura.campos.splice(
-        campoEliminar,
-        1
-    );
+    mostrarCamposPlantilla();
+    actualizarVistaPreviaPlantilla();
+    guardarBorradorPlantilla();
 
-
-    campoEliminar = null;
-
-
-
-mostrarCamposPlantilla();
-
-actualizarVistaPreviaPlantilla();
-
-// Guardar el cambio en el borrador local.
-guardarBorradorPlantilla();
-
-cerrarEliminarCampoPlantilla();
-
-
+    cerrarEliminarCampoPlantilla();
 }
 
 
-/* =========================================================
-   VISTA PREVIA EN TIEMPO REAL
-========================================================= */
+// =======================================================
+// VISTA PREVIA EN EL FORMULARIO
+// =======================================================
 
 function actualizarVistaPreviaPlantilla() {
-
-    const contenedor =
-        document.getElementById(
-            "vistaPreviaPlantilla"
-        );
+    const contenedor = document.getElementById("vistaPreviaPlantilla");
 
     if (!contenedor) {
         return;
     }
 
+    leerConfiguracionInterfaz();
 
-    /* -----------------------------------------------------
-       GARANTIZAR ESTRUCTURA
-    ----------------------------------------------------- */
-
-    if (
-        !plantillaActual ||
-        typeof plantillaActual !== "object"
-    ) {
-
-        plantillaActual =
-            crearPlantillaDefault();
-
-    }
-
-
-    plantillaActual =
-        normalizarPlantilla(
-            plantillaActual
-        );
-
-
-    const interfaz =
-        plantillaActual.interfaz;
-
-    const elementos =
-        plantillaActual.elementos;
-
-    const apariencia =
-        plantillaActual.apariencia;
-
-    const campos =
-        plantillaActual.estructura.campos;
-
-
-    /* -----------------------------------------------------
-       LIMPIAR
-    ----------------------------------------------------- */
+    const plantilla = normalizarPlantilla(plantillaActual);
+    const interfaz = plantilla.interfaz;
+    const apariencia = plantilla.apariencia;
+    const campos = plantilla.estructura.campos;
 
     contenedor.innerHTML = "";
 
+    const preview = document.createElement("div");
+    preview.className = "preview-interfaz";
 
-    /* -----------------------------------------------------
-       CONTENEDOR PRINCIPAL
-    ----------------------------------------------------- */
-
-    const interfazPreview =
-        document.createElement("div");
-
-    interfazPreview.className =
-        "preview-interfaz";
-
-
-    /* -----------------------------------------------------
-       VARIABLES CSS
-    ----------------------------------------------------- */
-
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-color-principal",
         apariencia.colorPrincipal
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-color-secundario",
         apariencia.colorSecundario
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-color-fondo",
         apariencia.colorFondo
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-color-texto",
         apariencia.colorTexto
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-fuente-titulo",
-        `"${apariencia.fuenteTitulo}", sans-serif`
+        apariencia.fuenteTitulo
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-fuente-texto",
-        `"${apariencia.fuenteTexto}", sans-serif`
+        apariencia.fuenteTexto
     );
 
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-radio",
         `${apariencia.radioBorde}px`
     );
 
-    interfazPreview.style.setProperty(
-        "--preview-separacion",
-        `${interfaz.separacion}px`
-    );
-
-    interfazPreview.style.setProperty(
+    preview.style.setProperty(
         "--preview-columnas",
-        interfaz.columnas
+        String(interfaz.columnas || 1)
     );
 
+    preview.style.backgroundColor = apariencia.colorFondo;
+    preview.style.color = apariencia.colorTexto;
+    preview.style.fontFamily = apariencia.fuenteTexto;
 
-    /* -----------------------------------------------------
-       FONDO
-    ----------------------------------------------------- */
+    // Encabezado de ejemplo.
+    const encabezado = document.createElement("div");
+    encabezado.className = "preview-encabezado";
 
-    interfazPreview.style.background =
-        apariencia.colorFondo;
+    const titulo = document.createElement("h3");
+    titulo.textContent = "Ejemplo de menú";
+    titulo.style.color = apariencia.colorPrincipal;
+    titulo.style.fontFamily = apariencia.fuenteTitulo;
 
-    interfazPreview.style.color =
-        apariencia.colorTexto;
+    encabezado.appendChild(titulo);
 
-    interfazPreview.style.fontFamily =
-        `"${apariencia.fuenteTexto}", sans-serif`;
-
-
-    /* -----------------------------------------------------
-       CABECERA
-    ----------------------------------------------------- */
-
-    const cabecera =
-        document.createElement("div");
-
-    cabecera.className =
-        "preview-cabecera";
-
-
-    const titulo =
-        document.createElement("h2");
-
-    titulo.textContent =
-        "Ejemplo de menÃƒÂº";
-
-    titulo.style.color =
-        apariencia.colorPrincipal;
-
-    titulo.style.fontFamily =
-        `"${apariencia.fuenteTitulo}", sans-serif`;
-
-
-    cabecera.appendChild(titulo);
-
-
-    /* -----------------------------------------------------
-       BUSCADOR
-    ----------------------------------------------------- */
-
-    if (elementos.mostrarBuscador) {
-
-        const buscador =
-            document.createElement("div");
-
-        buscador.className =
-            "preview-buscador";
-
-        buscador.innerHTML = `
-            <span>Ã°Å¸â€Å½</span>
-            <span>Buscar...</span>
-        `;
-
-        cabecera.appendChild(
-            buscador
-        );
-
+    if (interfaz.mostrarBuscador) {
+        const buscador = document.createElement("div");
+        buscador.className = "preview-buscador";
+        buscador.textContent = "⌕  Buscar fichas...";
+        encabezado.appendChild(buscador);
     }
 
+    preview.appendChild(encabezado);
 
-    interfazPreview.appendChild(
-        cabecera
-    );
-
-
-    /* -----------------------------------------------------
-       ÃƒÂNDICE
-    ----------------------------------------------------- */
-
-    if (elementos.mostrarIndice) {
-
-        const indice =
-            document.createElement("div");
-
-        indice.className =
-            "preview-indice";
-
-        indice.innerHTML = `
-            <strong>ÃƒÂndice</strong>
-            <span>A</span>
-            <span>B</span>
-            <span>C</span>
-            <span>D</span>
-            <span>E</span>
-        `;
-
-        interfazPreview.appendChild(
-            indice
-        );
-
+    if (interfaz.mostrarIndice) {
+        const indice = document.createElement("div");
+        indice.className = "preview-indice";
+        indice.textContent = "ÍNDICE DE FICHAS";
+        preview.appendChild(indice);
     }
 
+    // Contenedor de tarjetas.
+    const tarjetas = document.createElement("div");
+    tarjetas.className = "preview-tarjetas";
 
-    /* -----------------------------------------------------
-       CONTENEDOR DE FICHAS
-    ----------------------------------------------------- */
+    tarjetas.style.display =
+        interfaz.vista === "lista" ? "flex" : "grid";
 
-    const contenedorFichas =
-        document.createElement("div");
-
-    contenedorFichas.className =
-        "preview-fichas";
-
-
-    /* -----------------------------------------------------
-       TIPO DE VISTA
-    ----------------------------------------------------- */
-
-    if (interfaz.vista === "grid") {
-
-        contenedorFichas.style.display =
-            "grid";
-
-        contenedorFichas.style.gridTemplateColumns =
-            `repeat(${interfaz.columnas}, minmax(0, 1fr))`;
-
-    }
-    else {
-
-        contenedorFichas.style.display =
-            "flex";
-
-        contenedorFichas.style.flexDirection =
-            "column";
-
+    if (interfaz.vista === "lista") {
+        tarjetas.style.flexDirection = "column";
+    } else {
+        tarjetas.style.gridTemplateColumns =
+            `repeat(${Math.max(1, Number(interfaz.columnas) || 1)}, minmax(0, 1fr))`;
     }
 
-
-    contenedorFichas.style.gap =
-        `${interfaz.separacion}px`;
-
-
-    /* -----------------------------------------------------
-       CANTIDAD DE FICHAS
-    ----------------------------------------------------- */
-
-    const cantidadFichas =
-        interfaz.vista === "grid"
-            ? Math.max(interfaz.columnas * 2, 4)
-            : 4;
-
-
-    /* -----------------------------------------------------
-       CREAR FICHAS
-    ----------------------------------------------------- */
-
-    for (
-        let i = 0;
-        i < cantidadFichas;
-        i++
-    ) {
-
-        const ficha =
-            document.createElement("article");
-
-        ficha.className =
-            "preview-ficha";
-
-
-        /* -------------------------------------------------
-           FORMA
-        ------------------------------------------------- */
-
-        switch (interfaz.formaFicha) {
-
-            case "cuadrada":
-
-                ficha.style.aspectRatio =
-                    "1 / 1";
-
-                break;
-
-
-            case "circular":
-
-                ficha.style.aspectRatio =
-                    "1 / 1";
-
-                ficha.style.borderRadius =
-                    "50%";
-
-                break;
-
-
-            case "redondeada":
-
-                ficha.style.borderRadius =
-                    `${Math.max(
-                        apariencia.radioBorde,
-                        20
-                    )}px`;
-
-                break;
-
-
-            default:
-
-                ficha.style.borderRadius =
-                    `${apariencia.radioBorde}px`;
-
-        }
-
-
-        /* -------------------------------------------------
-           TAMAÃƒâ€˜O
-        ------------------------------------------------- */
-
-        switch (interfaz.tamanoFicha) {
-
-            case "pequeno":
-
-                ficha.style.minHeight =
-                    "150px";
-
-                break;
-
-
-            case "grande":
-
-                ficha.style.minHeight =
-                    "280px";
-
-                break;
-
-
-            default:
-
-                ficha.style.minHeight =
-                    "210px";
-
-        }
-
-
-        /* -------------------------------------------------
-           COLORES
-        ------------------------------------------------- */
-
-        ficha.style.border =
-            `2px solid ${apariencia.colorPrincipal}`;
-
-        ficha.style.background =
-            "#ffffff";
-
-        ficha.style.color =
-            apariencia.colorTexto;
-
-
-        /* -------------------------------------------------
-           IMAGEN
-        ------------------------------------------------- */
-
-        if (elementos.mostrarImagen) {
-
-            const imagen =
-                document.createElement("div");
-
-            imagen.className =
-                "preview-ficha-imagen";
-
-            imagen.innerHTML = `
-                <span>FOTOGRAFÃƒÂA</span>
-            `;
-
-            imagen.style.background =
-                apariencia.colorPrincipal;
-
-            imagen.style.color =
-                "#ffffff";
-
-            ficha.appendChild(
-                imagen
-            );
-
-        }
-
-
-        /* -------------------------------------------------
-           CONTENIDO
-        ------------------------------------------------- */
-
-        const contenido =
-            document.createElement("div");
-
-        contenido.className =
-            "preview-ficha-contenido";
-
-
-        /* TÃƒÂTULO */
-
-        const tituloFicha =
-            document.createElement("h3");
-
-        tituloFicha.textContent =
-            `Ficha de ejemplo ${i + 1}`;
-
-        tituloFicha.style.color =
-            apariencia.colorPrincipal;
-
-        tituloFicha.style.fontFamily =
-            `"${apariencia.fuenteTitulo}", sans-serif`;
-
-        contenido.appendChild(
-            tituloFicha
-        );
-
-
-        /* RESUMEN */
-
-        if (elementos.mostrarResumen) {
-
-            const resumen =
-                document.createElement("p");
-
-            resumen.textContent =
-                "Este es un resumen de ejemplo de la ficha.";
-
-            contenido.appendChild(
-                resumen
-            );
-
-        }
-
-
-        /* ETIQUETAS */
-
-        if (elementos.mostrarEtiquetas) {
-
-            const etiquetas =
-                document.createElement("div");
-
-            etiquetas.className =
-                "preview-etiquetas";
-
-            etiquetas.innerHTML = `
-                <span>Historia</span>
-                <span>Archivo</span>
-            `;
-
-            contenido.appendChild(
-                etiquetas
-            );
-
-        }
-
-
-        /* CAMPOS */
-
-        campos
-            .filter(
-                campo =>
-                    campo.mostrarTarjeta
-            )
-            .forEach(campo => {
-
-                const campoElemento =
-                    document.createElement("div");
-
-                campoElemento.className =
-                    "preview-campo";
-
-                campoElemento.innerHTML = `
-
-                    <strong>
-                        ${campo.etiqueta}
-                    </strong>
-
-                    <span>
-                        Ejemplo
-                    </span>
-
-                `;
-
-                contenido.appendChild(
-                    campoElemento
-                );
-
-            });
-
-
-        ficha.appendChild(
-            contenido
-        );
-
-
-        contenedorFichas.appendChild(
-            ficha
-        );
-
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "preview-tarjeta";
+
+    tarjeta.style.borderRadius =
+        interfaz.formaFicha === "circular"
+            ? "50%"
+            : interfaz.formaFicha === "redondeada"
+                ? "14px"
+                : "0";
+
+    tarjeta.style.borderColor = apariencia.colorSecundario;
+
+    if (interfaz.mostrarImagen) {
+        const imagen = document.createElement("div");
+        imagen.className = "preview-imagen";
+
+        const img = document.createElement("img");
+        img.src = "/imagenes/default.png";
+        img.alt = "Imagen de ejemplo";
+        img.onerror = function () {
+            this.style.display = "none";
+        };
+
+        imagen.appendChild(img);
+        tarjeta.appendChild(imagen);
     }
 
+    const tituloFicha = document.createElement("h4");
+    tituloFicha.textContent = "Título de ejemplo";
+    tituloFicha.style.color = apariencia.colorPrincipal;
+    tituloFicha.style.fontFamily = apariencia.fuenteTitulo;
 
-    interfazPreview.appendChild(
-        contenedorFichas
-    );
+    tarjeta.appendChild(tituloFicha);
 
+    if (interfaz.mostrarResumen) {
+        const resumen = document.createElement("p");
+        resumen.textContent = "Aquí se mostrará el resumen de la ficha.";
+        tarjeta.appendChild(resumen);
+    }
 
-    /* -----------------------------------------------------
-       INFORMACIÃƒâ€œN TÃƒâ€°CNICA
-    ----------------------------------------------------- */
+    if (interfaz.mostrarEtiquetas) {
+        const etiquetas = document.createElement("div");
+        etiquetas.className = "preview-etiquetas";
+        etiquetas.textContent = "Etiqueta de ejemplo";
+        tarjeta.appendChild(etiquetas);
+    }
 
-    const informacion =
-        document.createElement("div");
+    campos
+        .filter(campo => campo.mostrarTarjeta ?? true)
+        .forEach(campo => {
+            const campoPreview = document.createElement("div");
+            campoPreview.className = "preview-campo";
 
-    informacion.className =
-        "preview-configuracion";
+            const etiqueta = document.createElement("label");
+            etiqueta.textContent = campo.etiqueta || campo.nombre || "Campo";
 
-    informacion.innerHTML = `
+            campoPreview.appendChild(etiqueta);
 
-        <strong>
-            ConfiguraciÃƒÂ³n actual
-        </strong>
+            if (campo.tipo === "textarea") {
+                const control = document.createElement("textarea");
+                control.disabled = true;
+                control.placeholder = campo.etiqueta || "";
+                campoPreview.appendChild(control);
+            } else {
+                const control = document.createElement("input");
+                control.type = [
+                    "text", "date", "number", "email", "url"
+                ].includes(campo.tipo)
+                    ? campo.tipo
+                    : "text";
 
-        <span>
-            ${interfaz.vista}
-        </span>
+                control.disabled = true;
+                control.placeholder = campo.etiqueta || "";
 
-        <span>
-            ${interfaz.columnas} columnas
-        </span>
+                campoPreview.appendChild(control);
+            }
 
-        <span>
-            ${interfaz.formaFicha}
-        </span>
+            tarjeta.appendChild(campoPreview);
+        });
 
-        <span>
-            ${interfaz.tamanoFicha}
-        </span>
+    tarjetas.appendChild(tarjeta);
+    preview.appendChild(tarjetas);
 
-    `;
+    const configuracion = document.createElement("small");
+    configuracion.className = "preview-configuracion";
+    configuracion.textContent =
+        `Vista: ${interfaz.vista} | Columnas: ${interfaz.columnas}`;
 
-
-    interfazPreview.appendChild(
-        informacion
-    );
-
-
-    /* -----------------------------------------------------
-       MOSTRAR
-    ----------------------------------------------------- */
-
-    contenedor.appendChild(
-        interfazPreview
-    );
-
+    preview.appendChild(configuracion);
+    contenedor.appendChild(preview);
 }
 
 
-/* =========================================================
-   GUARDAR PLANTILLA
-========================================================= */
+// =======================================================
+// GUARDAR PLANTILLA
+// =======================================================
 
 async function guardarPlantilla() {
-
-    console.log(
-        "BOTÃƒâ€œN GUARDAR PLANTILLA DETECTADO"
-    );
-
-
     leerConfiguracionInterfaz();
 
-
     const nombre =
-        document
-            .getElementById("nombrePlantilla")
-            ?.value
-            .trim() || "";
-
+        document.getElementById("nombrePlantilla")?.value.trim() ?? "";
 
     const descripcion =
-        document
-            .getElementById("descripcionPlantilla")
-            ?.value
-            .trim() || "";
-
-
-    if (!nombre) {
-
-        mostrarMensajePlantilla(
-            "Debes completar el nombre de la plantilla antes de guardar."
-        );
-
-        return;
-
-    }
-
+        document.getElementById("descripcionPlantilla")?.value.trim() ?? "";
 
     const activo =
-        document.getElementById(
-            "activoPlantilla"
-        );
+        document.getElementById("activoPlantilla")?.checked ?? true;
 
+    if (!nombre) {
+        mostrarMensajePlantilla(
+            "Debés completar el nombre de la plantilla antes de guardar."
+        );
+        return;
+    }
+
+    const claveBorrador = obtenerClaveBorradorPlantilla();
+    const estabaEditando = Boolean(plantillaEditando);
 
     const datos = {
-
         nombre,
-
         descripcion,
-
-        activo:
-            activo?.checked
-                ? 1
-                : 0,
-
-        plantilla_json:
-            JSON.stringify(
-                plantillaActual
-            )
-
+        activo: activo ? 1 : 0,
+        plantilla_json: JSON.stringify(
+            normalizarPlantilla(plantillaActual)
+        )
     };
 
-
-try {
-
-    // Conservar la clave antes de cerrar el modal.
-    const claveBorrador = obtenerClaveBorradorPlantilla();
-
-    const url =
-        plantillaEditando
+    try {
+        const url = plantillaEditando
             ? `/api/plantillas/${plantillaEditando}`
             : "/api/plantillas";
 
+        const metodo = plantillaEditando ? "PUT" : "POST";
 
-        const metodo =
-            plantillaEditando
-                ? "PUT"
-                : "POST";
+        const respuesta = await window.fetchProtegido(url, {
+            method: metodo,
 
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-        const respuesta =
-            await window.fetchProtegido(
-                url,
-                {
-                    method: metodo,
+            body: JSON.stringify(datos)
+        });
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(datos)
-                }
-            );
-
-
-        const resultado =
-            await respuesta.json();
-
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
             mostrarMensajePlantilla(
-                resultado.error ||
-                "No se pudo guardar la plantilla."
+                resultado.error || "No se pudo guardar la plantilla."
             );
-
             return;
-
         }
 
+        // El borrador solo se elimina después de guardar correctamente.
+        if (claveBorrador && window.Borradores) {
+            window.Borradores.eliminar("plantillas", claveBorrador);
+        }
 
-mostrarMensajePlantilla(
-    plantillaEditando
-        ? "Plantilla actualizada correctamente."
-        : "Plantilla creada correctamente."
-);
-
-// Eliminar el borrador solo despuÃƒÂ©s de confirmar el ÃƒÂ©xito.
-if (window.Borradores && claveBorrador) {
-    window.Borradores.eliminar("plantillas", claveBorrador);
-}
-
-cerrarModalPlantilla();
-
-cargarPlantillas();
-
-
-    }
-    catch (error) {
-
-        console.error(
-            "Error guardando plantilla:",
-            error
-        );
+        cerrarModalPlantilla();
 
         mostrarMensajePlantilla(
-            "OcurriÃƒÂ³ un error al guardar la plantilla."
+            estabaEditando
+                ? "Plantilla actualizada correctamente."
+                : "Plantilla creada correctamente."
         );
 
-    }
+        await cargarPlantillas();
+    } catch (error) {
+        console.error("Error guardando plantilla:", error);
 
+        mostrarMensajePlantilla(
+            "Ocurrió un error al guardar la plantilla. El borrador se conserva."
+        );
+    }
 }
 
 
-/* =========================================================
-   CARGAR PLANTILLAS
-========================================================= */
+// =======================================================
+// CARGAR PLANTILLAS GUARDADAS
+// =======================================================
 
 async function cargarPlantillas() {
-
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                "/api/plantillas"
-            );
-
+        const respuesta = await window.fetchProtegido("/api/plantillas");
 
         if (!respuesta.ok) {
-
-            throw new Error(
-                `HTTP ${respuesta.status}`
-            );
-
+            throw new Error("No se pudieron cargar las plantillas.");
         }
 
-
-        const plantillas =
-            await respuesta.json();
-
-
-        const contenedor =
-            document.getElementById(
-                "gridPlantillas"
-            );
-
+        const plantillas = await respuesta.json();
+        const contenedor = document.getElementById("gridPlantillas");
 
         if (!contenedor) {
             return;
         }
-
 
         contenedor.innerHTML = "";
 
-
         plantillas.forEach(plantilla => {
-
             let datos = {};
 
             try {
-
-                datos =
-                    typeof plantilla.plantilla_json === "string"
-                        ? JSON.parse(
-                            plantilla.plantilla_json
-                        )
-                        : plantilla.plantilla_json || {};
-
-            }
-            catch (error) {
-
+                datos = typeof plantilla.plantilla_json === "string"
+                    ? JSON.parse(plantilla.plantilla_json)
+                    : plantilla.plantilla_json || {};
+            } catch (error) {
                 console.error(
-                    "Error parseando plantilla:",
-                    plantilla.id_plantilla,
+                    "Error leyendo la configuración de una plantilla:",
                     error
                 );
-
             }
 
+            const campos = datos.estructura?.campos || [];
+            const tarjeta = document.createElement("article");
 
-            const cantidadCampos =
-                datos.estructura?.campos?.length || 0;
+            const plantillaActiva =
+                plantilla.activo === 1 ||
+                plantilla.activo === true ||
+                plantilla.activo === "1";
 
+            tarjeta.className = plantillaActiva
+                ? "tarjeta-plantilla"
+                : "tarjeta-plantilla plantilla-inactiva";
 
-            contenedor.insertAdjacentHTML(
-                "beforeend",
-                `
+            const informacion = document.createElement("div");
+            informacion.className = "info-plantilla";
 
-                <article class="tarjeta-plantilla">
+            const titulo = document.createElement("h3");
+            titulo.textContent = plantilla.nombre || "Plantilla sin nombre";
 
-                    <div class="info-plantilla">
+            const descripcion = document.createElement("p");
+            descripcion.textContent = plantilla.descripcion || "-";
 
-                        <h3>
-                            ${plantilla.nombre}
-                        </h3>
+            const cantidadCampos = document.createElement("small");
+            cantidadCampos.textContent =
+                `${campos.length} campo${campos.length !== 1 ? "s" : ""}`;
 
-                        <p>
-                            ${plantilla.descripcion || "-"}
-                        </p>
+            const salto = document.createElement("br");
 
-                        <small>
+            const estado = document.createElement("small");
+            estado.textContent = plantillaActiva ? "Activa" : "Inactiva";
 
-                            ${cantidadCampos}
-                            campo${cantidadCampos !== 1 ? "s" : ""}
+            const acciones = document.createElement("div");
+            acciones.className = "acciones-plantilla";
 
-                        </small>
+            const botonVista = document.createElement("button");
+            botonVista.type = "button";
+            botonVista.className = "btn-vista-plantilla";
+            botonVista.textContent = "Vista previa";
+            botonVista.addEventListener("click", () => {
+                vistaPreviaPlantilla(plantilla.id_plantilla);
+            });
 
-                        <br>
+            const botonEditar = document.createElement("button");
+            botonEditar.type = "button";
+            botonEditar.className = "btn-editar-plantilla";
+            botonEditar.textContent = "Editar";
+            botonEditar.addEventListener("click", () => {
+                editarPlantilla(plantilla.id_plantilla);
+            });
 
-                        <small>
+            const botonEliminar = document.createElement("button");
+            botonEliminar.type = "button";
+            botonEliminar.className = "btn-eliminar-plantilla";
+            botonEliminar.textContent = "Eliminar";
+            botonEliminar.addEventListener("click", () => {
+                abrirEliminarPlantilla(plantilla.id_plantilla);
+            });
 
-                            ${
-                                Number(plantilla.activo) === 1
-                                    ? "Activa"
-                                    : "Inactiva"
-                            }
+            acciones.append(botonVista, botonEditar, botonEliminar);
 
-                        </small>
-
-
-                        <div class="acciones-plantilla">
-
-                            <button
-                                type="button"
-                                class="btn-vista-plantilla"
-                                onclick="vistaPreviaPlantilla(${plantilla.id_plantilla})">
-
-                                Vista previa
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn-editar-plantilla"
-                                onclick="editarPlantilla(${plantilla.id_plantilla})">
-
-                                Editar
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn-eliminar-plantilla"
-                                onclick="abrirEliminarPlantilla(${plantilla.id_plantilla})">
-
-                                Eliminar
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-                `
+            informacion.append(
+                titulo,
+                descripcion,
+                cantidadCampos,
+                salto,
+                estado,
+                acciones
             );
 
+            tarjeta.appendChild(informacion);
+            contenedor.appendChild(tarjeta);
         });
-
+    } catch (error) {
+        console.error("Error cargando plantillas:", error);
+        mostrarMensajePlantilla("No se pudieron cargar las plantillas.");
     }
-    catch (error) {
-
-        console.error(
-            "Error cargando plantillas:",
-            error
-        );
-
-    }
-
 }
 
 
-/* =========================================================
-   VISTA PREVIA DE PLANTILLA GUARDADA
-========================================================= */
+// =======================================================
+// VISTA PREVIA DE UNA PLANTILLA GUARDADA
+// Se conserva esta función para el botón "Vista previa".
+// =======================================================
 
 async function vistaPreviaPlantilla(id) {
-
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/plantillas/${id}`
-            );
-
+        const respuesta = await window.fetchProtegido(
+            `/api/plantillas/${id}`
+        );
 
         if (!respuesta.ok) {
-
-            throw new Error(
-                `HTTP ${respuesta.status}`
-            );
-
+            throw new Error("No se pudo obtener la plantilla.");
         }
 
+        const plantilla = await respuesta.json();
 
-        const plantilla =
-            await respuesta.json();
-
-
-        const datos =
-            normalizarPlantilla(
-                typeof plantilla.plantilla_json === "string"
-                    ? JSON.parse(
-                        plantilla.plantilla_json
-                    )
-                    : plantilla.plantilla_json || {}
-            );
-
+        const datos = normalizarPlantilla(
+            typeof plantilla.plantilla_json === "string"
+                ? JSON.parse(plantilla.plantilla_json)
+                : plantilla.plantilla_json || {}
+        );
 
         const contenedor =
-            document.getElementById(
-                "contenidoVistaPlantilla"
-            );
-
+            document.getElementById("contenidoVistaPlantilla");
 
         if (!contenedor) {
             return;
         }
 
+        contenedor.innerHTML = "";
 
-        contenedor.innerHTML = `
+        const titulo = document.createElement("h3");
+        titulo.textContent = plantilla.nombre || "Plantilla";
 
-            <h3>
-                ${plantilla.nombre}
-            </h3>
+        const descripcion = document.createElement("p");
+        descripcion.textContent = plantilla.descripcion || "";
 
-            <p>
-                ${plantilla.descripcion || ""}
-            </p>
+        contenedor.append(titulo, descripcion);
 
-            <hr>
+        const separador = document.createElement("hr");
+        contenedor.appendChild(separador);
 
-        `;
+        const interfaz = datos.interfaz;
+        const campos = datos.estructura.campos;
 
+        if (interfaz.mostrarImagen) {
+            const imagenContenedor = document.createElement("div");
+            imagenContenedor.className = "preview-imagen";
 
-        const interfaz =
-            datos.interfaz;
+            const imagen = document.createElement("img");
+            imagen.src = "/imagenes/default.png";
+            imagen.alt = "Imagen de ejemplo";
+            imagen.width = 150;
+            imagen.onerror = function () {
+                this.style.display = "none";
+            };
 
-        const elementos =
-            datos.elementos;
-
-        const campos =
-            datos.estructura.campos;
-
-
-        /* -----------------------------------------------------
-           IMAGEN
-        ----------------------------------------------------- */
-
-        if (elementos.mostrarImagen) {
-
-            contenedor.insertAdjacentHTML(
-                "beforeend",
-                `
-
-                <div class="preview-imagen">
-
-                    <img
-                        src="/imagenes/default.png"
-                        width="150">
-
-                </div>
-
-                `
-            );
-
+            imagenContenedor.appendChild(imagen);
+            contenedor.appendChild(imagenContenedor);
         }
 
+        const tituloFicha = document.createElement("h2");
+        tituloFicha.textContent = "Título de ejemplo";
+        contenedor.appendChild(tituloFicha);
 
-        /* -----------------------------------------------------
-           TÃƒÂTULO
-        ----------------------------------------------------- */
+        if (interfaz.mostrarResumen) {
+            const resumen = document.createElement("p");
+            resumen.textContent =
+                "Este es un resumen de ejemplo de la ficha.";
 
-        contenedor.insertAdjacentHTML(
-            "beforeend",
-            `
-
-            <h2 class="titulo-preview-plantilla">
-                TÃƒÂ­tulo de ejemplo
-            </h2>
-
-            `
-        );
-
-
-        /* -----------------------------------------------------
-           RESUMEN
-        ----------------------------------------------------- */
-
-        if (elementos.mostrarResumen) {
-
-            contenedor.insertAdjacentHTML(
-                "beforeend",
-                `
-
-                <p>
-                    Este es un resumen de ejemplo de la ficha.
-                </p>
-
-                `
-            );
-
+            contenedor.appendChild(resumen);
         }
 
+        if (interfaz.mostrarEtiquetas) {
+            const etiquetas = document.createElement("p");
+            etiquetas.className = "preview-etiquetas";
+            etiquetas.textContent = "Etiqueta de ejemplo";
+            contenedor.appendChild(etiquetas);
+        }
 
-        /* -----------------------------------------------------
-           CAMPOS
-        ----------------------------------------------------- */
+        campos
+            .filter(campo => campo.mostrarHistoria ?? true)
+            .forEach(campo => {
+                const bloque = document.createElement("div");
+                bloque.className = "campo-preview";
 
-        campos.forEach(campo => {
+                const etiqueta = document.createElement("label");
+                etiqueta.textContent = campo.etiqueta || campo.nombre || "Campo";
 
-            contenedor.insertAdjacentHTML(
-                "beforeend",
-                `
+                bloque.appendChild(etiqueta);
 
-                <div class="campo-preview">
+                const valor = document.createElement("p");
+                valor.textContent = "Contenido de ejemplo";
+                bloque.appendChild(valor);
 
-                    <label>
-                        ${campo.etiqueta}
-                    </label>
+                contenedor.appendChild(bloque);
+            });
 
-                    <input
-                        type="${campo.tipo || "text"}"
-                        placeholder="${campo.etiqueta}"
-                        disabled>
+        const informacionTecnica = document.createElement("small");
+        informacionTecnica.textContent =
+            `Vista: ${interfaz.vista} | Columnas: ${interfaz.columnas}`;
 
-                </div>
+        contenedor.appendChild(informacionTecnica);
 
-                `
-            );
-
-        });
-
-
-        /* -----------------------------------------------------
-           INFORMACIÃƒâ€œN
-        ----------------------------------------------------- */
-
-        contenedor.insertAdjacentHTML(
-            "beforeend",
-            `
-
-            <hr>
-
-            <small>
-
-                Vista:
-                ${interfaz.vista}
-
-                |
-
-                Columnas:
-                ${interfaz.columnas}
-
-            </small>
-
-            `
-        );
-
-
-        const modal =
-            document.getElementById(
-                "modalVistaPlantilla"
-            );
-
+        const modal = document.getElementById("modalVistaPlantilla");
 
         if (modal) {
-
             modal.style.display = "flex";
-
         }
-
-    }
-    catch (error) {
-
-        console.error(
-            "Error vista previa plantilla:",
-            error
-        );
+    } catch (error) {
+        console.error("Error mostrando vista previa:", error);
 
         mostrarMensajePlantilla(
-            "No se pudo cargar la vista previa de la plantilla."
+            "No se pudo mostrar la vista previa de la plantilla."
         );
-
     }
-
 }
 
 
 function cerrarPreviewPlantilla() {
-
-    const modal =
-        document.getElementById(
-            "modalVistaPlantilla"
-        );
+    const modal = document.getElementById("modalVistaPlantilla");
 
     if (modal) {
-
         modal.style.display = "none";
-
     }
-
 }
 
 
-/* =========================================================
-   EDITAR PLANTILLA
-========================================================= */
+// =======================================================
+// EDITAR PLANTILLA
+// =======================================================
 
 async function editarPlantilla(id) {
-
-    console.log(
-        "Editando plantilla:",
-        id
-    );
-
-
     try {
-
-        /* -----------------------------------------------------
-           OBTENER PLANTILLA
-        ----------------------------------------------------- */
-
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/plantillas/${id}`
-            );
-
+        const respuesta = await window.fetchProtegido(
+            `/api/plantillas/${id}`
+        );
 
         if (!respuesta.ok) {
-
-            const error =
-                await respuesta
-                    .json()
-                    .catch(() => ({}));
-
-
-            mostrarMensajePlantilla(
-                error.error ||
-                "No se pudo cargar la plantilla."
-            );
-
-            return;
-
+            throw new Error("No se pudo obtener la plantilla.");
         }
 
+        const plantilla = await respuesta.json();
 
-        const plantilla =
-            await respuesta.json();
+        plantillaEditando = id;
 
-
-        console.log(
-            "Plantilla recibida:",
-            plantilla
+        plantillaActual = normalizarPlantilla(
+            typeof plantilla.plantilla_json === "string"
+                ? JSON.parse(plantilla.plantilla_json)
+                : plantilla.plantilla_json || {}
         );
 
+        const titulo = document.getElementById("tituloModalPlantilla");
+        const nombre = document.getElementById("nombrePlantilla");
+        const descripcion = document.getElementById("descripcionPlantilla");
+        const activo = document.getElementById("activoPlantilla");
 
-        /* -----------------------------------------------------
-           MARCAR EDICIÃƒâ€œN
-        ----------------------------------------------------- */
-
-        plantillaEditando =
-            id;
-
-        indiceCampoEditando =
-            null;
-
-
-        /* -----------------------------------------------------
-           PARSEAR JSON
-        ----------------------------------------------------- */
-
-        let datos = {};
-
-
-        try {
-
-            datos =
-                typeof plantilla.plantilla_json === "string"
-                    ? JSON.parse(
-                        plantilla.plantilla_json
-                    )
-                    : plantilla.plantilla_json || {};
-
-        }
-        catch (error) {
-
-            console.error(
-                "Error parseando plantilla_json:",
-                error
-            );
-
-        }
-
-
-        /* -----------------------------------------------------
-           NORMALIZAR
-        ----------------------------------------------------- */
-
-        plantillaActual =
-            normalizarPlantilla(
-                datos
-            );
-
-
-        console.log(
-            "Plantilla normalizada:",
-            plantillaActual
-        );
-
-
-        /* -----------------------------------------------------
-           DATOS GENERALES
-        ----------------------------------------------------- */
-
-        const titulo =
-            document.getElementById(
-                "tituloModalPlantilla"
-            );
-
-        const nombre =
-            document.getElementById(
-                "nombrePlantilla"
-            );
-
-        const descripcion =
-            document.getElementById(
-                "descripcionPlantilla"
-            );
-
-        const activo =
-            document.getElementById(
-                "activoPlantilla"
-            );
-
-
-        if (titulo) {
-
-            titulo.textContent =
-                "Editar plantilla";
-
-        }
-
-
-        if (nombre) {
-
-            nombre.value =
-                plantilla.nombre || "";
-
-        }
-
-
-        if (descripcion) {
-
-            descripcion.value =
-                plantilla.descripcion || "";
-
-        }
-
+        if (titulo) titulo.textContent = "Editar plantilla";
+        if (nombre) nombre.value = plantilla.nombre || "";
+        if (descripcion) descripcion.value = plantilla.descripcion || "";
 
         if (activo) {
-
-            activo.checked =
-                Number(plantilla.activo) === 1;
-
+            activo.checked = plantilla.activo == 1;
         }
 
-
-        /* -----------------------------------------------------
-           CARGAR CONFIGURACIÃƒâ€œN
-        ----------------------------------------------------- */
-
         cargarConfiguracionEnFormulario();
-
-
-        /* -----------------------------------------------------
-           CAMPOS
-        ----------------------------------------------------- */
-
         mostrarCamposPlantilla();
-
-
-        /* -----------------------------------------------------
-           VISTA PREVIA
-        ----------------------------------------------------- */
-
         actualizarVistaPreviaPlantilla();
 
-/* -----------------------------------------------------
-   ABRIR MODAL Y RECUPERAR BORRADOR
------------------------------------------------------ */
+        const modal = document.getElementById("modalPlantilla");
 
-const modal = document.getElementById("modalPlantilla");
+        if (modal) {
+            modal.style.display = "flex";
+        }
 
-if (modal) {
-    modal.style.display = "flex";
-    recuperarBorradorPlantilla();
+        // Si existe un borrador de esta plantilla, recuperarlo.
+        recuperarBorradorPlantilla();
+    } catch (error) {
+        console.error("Error editando plantilla:", error);
+
+        mostrarMensajePlantilla("No se pudo abrir la plantilla para editar.");
+    }
 }
 
 
-    }
-    catch (error) {
-
-        console.error(
-            "Error editando plantilla:",
-            error
-        );
-
-        mostrarMensajePlantilla(
-            "OcurriÃƒÂ³ un error al cargar la plantilla."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ELIMINAR PLANTILLA
-========================================================= */
+// =======================================================
+// ELIMINAR PLANTILLA
+// =======================================================
 
 function abrirEliminarPlantilla(id) {
+    plantillaEliminar = id;
 
-    plantillaEliminar =
-        id;
-
-
-    const modal =
-        document.getElementById(
-            "modalEliminarPlantilla"
-        );
-
+    const modal = document.getElementById("modalEliminarPlantilla");
 
     if (modal) {
-
-        modal.style.display =
-            "flex";
-
+        modal.style.display = "flex";
     }
-
 }
 
 
 function cerrarEliminarPlantilla() {
+    plantillaEliminar = null;
 
-    plantillaEliminar =
-        null;
-
-
-    const modal =
-        document.getElementById(
-            "modalEliminarPlantilla"
-        );
-
+    const modal = document.getElementById("modalEliminarPlantilla");
 
     if (modal) {
-
-        modal.style.display =
-            "none";
-
+        modal.style.display = "none";
     }
-
 }
 
 
 async function confirmarEliminarPlantilla() {
-
-    console.log(
-        "confirmarEliminarPlantilla()",
-        plantillaEliminar
-    );
-
-
-    if (!plantillaEliminar) {
+    if (plantillaEliminar === null) {
         return;
     }
 
-
     try {
+        const respuesta = await window.fetchProtegido(
+            `/api/plantillas/${plantillaEliminar}`,
+            {
+                method: "DELETE"
+            }
+        );
 
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/plantillas/${plantillaEliminar}`,
-                {
-                    method: "DELETE"
-                }
-            );
-
-
-        const datos =
-            await respuesta
-                .json()
-                .catch(() => ({}));
-
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
             mostrarMensajePlantilla(
-                datos.error ||
-                "No se pudo eliminar la plantilla."
+                resultado.error || "No se pudo eliminar la plantilla."
             );
-
             return;
-
         }
 
-
         cerrarEliminarPlantilla();
+        await cargarPlantillas();
 
-        cargarPlantillas();
-
-    }
-    catch (error) {
-
-        console.error(
-            "Error eliminando plantilla:",
-            error
-        );
+        mostrarMensajePlantilla("Plantilla eliminada correctamente.");
+    } catch (error) {
+        console.error("Error eliminando plantilla:", error);
 
         mostrarMensajePlantilla(
-            "OcurriÃƒÂ³ un error al eliminar la plantilla."
+            "Ocurrió un error al eliminar la plantilla."
         );
-
     }
-
 }
 
 
-/* =========================================================
-   MODAL DE MENSAJES
-========================================================= */
+// =======================================================
+// MENSAJES
+// =======================================================
 
 function mostrarMensajePlantilla(mensaje) {
+    const texto = document.getElementById("textoMensajePlantilla");
+    const modal = document.getElementById("modalMensajePlantilla");
 
-    const modal =
-        document.getElementById(
-            "modalMensajePlantilla"
-        );
-
-    const texto =
-        document.getElementById(
-            "textoMensajePlantilla"
-        );
-
-
-    if (!modal || !texto) {
-
-        console.error(
-            "No existe el modal de mensaje de plantillas"
-        );
-
-        return;
-
+    if (texto) {
+        texto.textContent = mensaje;
     }
 
-
-    texto.textContent =
-        mensaje;
-
-
-    modal.style.display =
-        "flex";
-
+    if (modal) {
+        modal.style.display = "flex";
+    }
 }
 
 
 function cerrarMensajePlantilla() {
-
-    const modal =
-        document.getElementById(
-            "modalMensajePlantilla"
-        );
-
+    const modal = document.getElementById("modalMensajePlantilla");
 
     if (modal) {
-
-        modal.style.display =
-            "none";
-
+        modal.style.display = "none";
     }
 
-
-    plantillaEliminar =
-        null;
-
+    plantillaEliminar = null;
 }
 
 
-/* =========================================================
-   CERRAR MODALES AL HACER CLICK AFUERA
-========================================================= */
+// =======================================================
+// EVENTOS DE BOTONES
+// =======================================================
 
-document.addEventListener(
-    "click",
-    event => {
+document.addEventListener("click", function (event) {
+    const boton = event.target.closest("button");
 
-        const modales =
-            document.querySelectorAll(
-                "#moduloPlantillas .modal-plantilla"
-            );
-
-
-        modales.forEach(modal => {
-
-            if (
-                modal.style.display !== "none" &&
-                event.target === modal
-            ) {
-
-                modal.style.display =
-                    "none";
-
-            }
-
-        });
-
+    if (!boton) {
+        return;
     }
-);
+
+    switch (boton.id) {
+        case "btnGuardarPlantilla":
+            guardarPlantilla();
+            break;
+
+        case "btnNuevoCampo":
+            abrirNuevoCampo();
+            break;
+
+        case "btnGuardarCampo":
+            guardarCampo();
+            break;
+    }
+});
+
+
+// =======================================================
+// CERRAR MODALES AL HACER CLIC EN EL FONDO
+// =======================================================
+
+document.addEventListener("click", function (event) {
+    const modal = event.target;
+
+    if (
+        modal instanceof HTMLElement &&
+        modal.classList.contains("modal-plantilla")
+    ) {
+        modal.style.display = "none";
+    }
+});

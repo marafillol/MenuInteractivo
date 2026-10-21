@@ -1,7 +1,209 @@
 console.log("Modulo fichas cargado");
 
-function obtenerRutaImagenFicha(ruta) {
+/* =========================================================
+   NOTA SOBRE LA CARGA DEL SCRIPT
+   panel.js puede cargar este archivo más de una vez, por eso:
+   - el estado usa "var" (no "let"/"const") y
+   - los helpers son "function" con prefijo "fc"
+   así no hay errores de "Identifier already declared".
+========================================================= */
 
+
+/* =========================================================
+   CACHÉ Y HELPERS DE RED
+========================================================= */
+
+var FC_TTL = 60000; // 1 minuto
+
+// La caché sobrevive aunque el script se vuelva a cargar.
+var fcCache = window.__fcCache || (window.__fcCache = new Map());
+
+// Guarda la PROMESA: dos llamadas simultáneas comparten un solo fetch.
+function fcCargar(clave, cargador, ttl) {
+    ttl = ttl || FC_TTL;
+
+    var item = fcCache.get(clave);
+
+    if (item && Date.now() - item.hora < ttl) {
+        return item.promesa;
+    }
+
+    var promesa = cargador().catch(function (error) {
+        fcCache.delete(clave);
+        throw error;
+    });
+
+    fcCache.set(clave, { promesa: promesa, hora: Date.now() });
+
+    return promesa;
+}
+
+function fcInvalidar(prefijo) {
+    prefijo = prefijo || "";
+
+    Array.from(fcCache.keys()).forEach(function (clave) {
+        if (clave.startsWith(prefijo)) {
+            fcCache.delete(clave);
+        }
+    });
+}
+
+async function fcJson(url) {
+    var respuesta = await window.fetchProtegido(url);
+
+    if (!respuesta.ok) {
+        throw new Error("HTTP " + respuesta.status + " en " + url);
+    }
+
+    return respuesta.json();
+}
+
+function fcMenus() {
+    return fcCargar("menus", function () {
+        return fcJson("/api/menus");
+    });
+}
+
+function fcEtiquetas() {
+    return fcCargar("etiquetas", function () {
+        return fcJson("/api/etiquetas");
+    });
+}
+
+// Lista de fichas: TTL corto porque cambia más seguido.
+function fcFichas() {
+    return fcCargar("fichas", function () {
+        return fcJson("/api/fichas");
+    }, 15000);
+}
+
+function fcPlantilla(idMenu) {
+    return fcCargar("plantilla:" + idMenu, function () {
+        return fcJson("/api/plantillas/menu/" + idMenu);
+    });
+}
+
+// id_ficha -> ficha (título, imagen, visible).
+// Reemplaza N fetches individuales por una sola lista cacheada.
+async function fcMapaFichas() {
+    var fichas = await fcFichas();
+
+    return new Map(
+        fichas.map(function (f) {
+            return [String(f.id_ficha), f];
+        })
+    );
+}
+
+function fcEscapar(valor) {
+    return String(valor == null ? "" : valor).replace(
+        /[&<>"']/g,
+        function (c) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[c];
+        }
+    );
+}
+
+function fcSeguro(promesa) {
+    return promesa.catch(function (error) {
+        console.error(error);
+        return null;
+    });
+}
+
+
+/* =========================================================
+   FECHAS E IMÁGENES
+========================================================= */
+
+function obtenerFechaFicha(ficha) {
+    const creado = ficha.creado;
+    const actualizado = ficha.actualizado;
+
+    if (!actualizado) {
+        return {
+            etiqueta: "Creada",
+            fecha: formatearFechaFicha(creado)
+        };
+    }
+
+    const fechaCreacion = new Date(creado).getTime();
+    const fechaActualizacion = new Date(actualizado).getTime();
+
+    if (
+        Number.isFinite(fechaCreacion) &&
+        fechaCreacion === fechaActualizacion
+    ) {
+        return {
+            etiqueta: "Creada",
+            fecha: formatearFechaFicha(creado)
+        };
+    }
+
+    return {
+        etiqueta: "Última modificación",
+        fecha: formatearFechaFicha(actualizado)
+    };
+}
+
+function formatearFechaFicha(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
+
+function mostrarFechaArgentina(fecha) {
+    if (
+        fecha === null ||
+        fecha === undefined ||
+        fecha === "" ||
+        fecha === "undefined" ||
+        fecha === "null"
+    ) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    const fechaFormateada = valor.toLocaleDateString("es-AR");
+
+    const horaFormateada = valor.toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+
+    return `${fechaFormateada} — ${horaFormateada}`;
+}
+
+function obtenerRutaImagenFicha(ruta) {
     if (!ruta) {
         return "/imagenes/default.png";
     }
@@ -11,22 +213,24 @@ function obtenerRutaImagenFicha(ruta) {
     }
 
     const rutaLimpia = ruta.replace("public/", "");
+
     return rutaLimpia.startsWith("/") ? rutaLimpia : `/${rutaLimpia}`;
 }
 
-let fichaEliminar = null;
-let fichaEditando = null;
 
-// =========================================================
-// RELACIONES PENDIENTES
-// =========================================================
+/* =========================================================
+   ESTADO
+========================================================= */
+
+var fichaEliminar = null;
+var fichaEditando = null;
 
 // Relaciones que quedarán guardadas al actualizar.
-let relacionesPendientes = [];
+var relacionesPendientes = [];
 
 // Relaciones existentes que el usuario quitó con la X.
 // Se eliminan realmente de la BD recién al guardar.
-let relacionesEliminadasPendientes = [];
+var relacionesEliminadasPendientes = [];
 
 
 /* =========================================================
@@ -34,65 +238,32 @@ let relacionesEliminadasPendientes = [];
 ========================================================= */
 
 function actualizarCabeceraFichas() {
-
-    const titulo =
-        document.getElementById("tituloFichas");
-
-    const subtitulo =
-        document.getElementById("subtituloFichas");
-
-    const volver =
-        document.getElementById("barraVolver");
+    const titulo = document.getElementById("tituloFichas");
+    const subtitulo = document.getElementById("subtituloFichas");
+    const volver = document.getElementById("barraVolver");
 
     if (!titulo || !subtitulo) {
         return;
     }
 
-    /*
-     * =====================================================
-     * FICHAS DE UN MENÚ
-     * =====================================================
-     */
-
     if (menuSeleccionado && nombreMenuSeleccionado) {
-
-        titulo.textContent =
-            "Fichas del menú";
-
-        subtitulo.innerHTML = `
-            <strong>${nombreMenuSeleccionado}</strong>
-        `;
-
-        subtitulo.style.display =
-            "block";
-
-        if (volver) {
-            volver.style.display =
-                "inline-flex";
-        }
-
-    }
-
-    /*
-     * =====================================================
-     * TODAS LAS FICHAS
-     * =====================================================
-     */
-
-    else {
-
-        titulo.textContent =
-            "Gestión de Fichas";
+        titulo.textContent = "Fichas del menú";
 
         subtitulo.innerHTML =
-            "";
+            `<strong>${fcEscapar(nombreMenuSeleccionado)}</strong>`;
 
-        subtitulo.style.display =
-            "none";
+        subtitulo.style.display = "block";
 
         if (volver) {
-            volver.style.display =
-                "none";
+            volver.style.display = "inline-flex";
+        }
+    } else {
+        titulo.textContent = "Gestión de Fichas";
+        subtitulo.innerHTML = "";
+        subtitulo.style.display = "none";
+
+        if (volver) {
+            volver.style.display = "none";
         }
     }
 }
@@ -107,162 +278,127 @@ async function cargarFichas() {
     actualizarCabeceraFichas();
 
     try {
+        const botonNuevaFicha = document.getElementById("nuevaFicha");
+        const barraVolver = document.getElementById("barraVolver");
 
-        const botonNuevaFicha =
-            document.getElementById("nuevaFicha");
-
-        const barraVolver =
-            document.getElementById("barraVolver");
-
-        let url =
-            "/api/fichas";
-
-        /*
-         * Si hay un menú seleccionado,
-         * mostramos solamente sus fichas.
-         */
+        let url = "/api/fichas";
 
         if (menuSeleccionado) {
-
-            url =
-                `/api/fichas/menu/${menuSeleccionado}`;
-
-            if (botonNuevaFicha) {
-                botonNuevaFicha.style.display =
-                    "inline-flex";
-            }
+            url = `/api/fichas/menu/${menuSeleccionado}`;
 
             if (barraVolver) {
-                barraVolver.style.display =
-                    "inline-flex";
+                barraVolver.style.display = "inline-flex";
             }
-
-        } else {
-
-            /*
-             * Gestión general:
-             * mostramos todas las fichas.
-             */
-
-            if (botonNuevaFicha) {
-                botonNuevaFicha.style.display =
-                    "inline-flex";
-            }
-
-            if (barraVolver) {
-                barraVolver.style.display =
-                    "none";
-            }
+        } else if (barraVolver) {
+            barraVolver.style.display = "none";
         }
 
+        if (botonNuevaFicha) {
+            botonNuevaFicha.style.display = "inline-flex";
+        }
 
-        const respuesta =
-            await window.fetchProtegido(url);
+        const respuesta = await window.fetchProtegido(url);
 
         if (!respuesta.ok) {
-
-            console.error(
-                "Error obteniendo fichas:",
-                respuesta.status
-            );
-
+            console.error("Error obteniendo fichas:", respuesta.status);
             return;
         }
 
+        const fichas = await respuesta.json();
 
-        const fichas =
-            await respuesta.json();
+        // Si es la lista completa, aprovecharla como caché
+        // (la usan el select y las mini-fichas de relaciones).
+        if (url === "/api/fichas") {
+            fcCache.set("fichas", {
+                promesa: Promise.resolve(fichas),
+                hora: Date.now()
+            });
+        }
 
+        const esConsulta = window.usuarioActual?.rol === "consulta";
 
-        const esConsulta =
-            window.usuarioActual?.rol === "consulta";
-
-
-        const contenedor =
-            document.getElementById("listaFichas");
-
+        const contenedor = document.getElementById("listaFichas");
 
         if (!contenedor) {
+            console.error("No existe listaFichas");
+            return;
+        }
 
-            console.error(
-                "No existe listaFichas"
-            );
+        if (fichas.length === 0) {
+            contenedor.innerHTML = menuSeleccionado
+                ? `
+                    <div class="mensaje-sin-fichas">
+                        <p>Este menú todavía no tiene fichas asociadas.</p>
+                    </div>
+                  `
+                : `
+                    <div class="mensaje-sin-fichas">
+                        <p>No hay fichas para mostrar.</p>
+                    </div>
+                  `;
 
             return;
         }
 
+        contenedor.innerHTML = fichas.map(ficha => {
 
-        contenedor.innerHTML =
-            "";
+            const fechaFicha = obtenerFechaFicha(ficha);
 
+            const textoMenu = ficha.menu
+                ? `${ficha.menu} - #${ficha.id_menu}`
+                : (ficha.id_menu
+                    ? `Menú #${ficha.id_menu}`
+                    : "Sin asignar");
 
-        fichas.forEach(ficha => {
-
-            console.log(ficha);
-
-            contenedor.innerHTML += `
-
+            return `
                 <article class="ficha-tarjeta ${
-                    ficha.visible == 0
-                        ? "ficha-desactivada"
-                        : ""
+                    ficha.visible == 0 ? "ficha-desactivada" : ""
                 }">
 
                     <div class="ficha-imagen">
-
                         <img
                             src="${obtenerRutaImagenFicha(ficha.imagen)}"
-
-                            onerror="
-                                this.onerror=null;
-                                this.src='/img/no-image.png'
-                            "
+                            loading="lazy"
+                            decoding="async"
+                            onerror="this.onerror=null;this.src='/img/no-image.png'"
                         />
-
                     </div>
-
 
                     <div class="ficha-info">
 
-                        <span class="campo-titulo-ficha">
-                            TÍTULO
-                        </span>
+                        <span class="campo-titulo-ficha">TÍTULO</span>
 
-
-                        <h3>
-                            ${
-                                ficha.titulo ||
-                                "Sin título"
-                            }
-                        </h3>
-
+                        <h3>${fcEscapar(ficha.titulo || "Sin título")}</h3>
 
                         <p>
-                            ${
-                                (
-                                    ficha.resumen ||
-                                    "Sin descripción"
-                                ).replace(
-                                    /\n/g,
-                                    " "
-                                )
-                            }
+                            ${fcEscapar(
+                                (ficha.resumen || "Sin descripción")
+                                    .replace(/\n/g, " ")
+                            )}
                         </p>
 
+                        <div class="datos-menu">
+
+                            <small>
+                                <i data-lucide="layers" aria-hidden="true"></i>
+                                Menú: ${fcEscapar(textoMenu)}
+                            </small>
+
+                            <small>
+                                <i data-lucide="calendar" aria-hidden="true"></i>
+                                ${fechaFicha.etiqueta}: ${fechaFicha.fecha}
+                            </small>
+
+                        </div>
 
                         <div class="ficha-acciones">
 
                             <button
                                 class="ficha-btn-vista"
-                                onclick="
-                                    vistaPreviaFicha(
-                                        ${ficha.id_ficha}
-                                    )
-                                "
+                                onclick="vistaPreviaFicha(${ficha.id_ficha})"
                             >
                                 Vista previa
                             </button>
-
 
                             <button
                                 class="ficha-btn-ver"
@@ -271,34 +407,22 @@ async function cargarFichas() {
                                 Ver multimedia
                             </button>
 
-
                             ${
                                 !esConsulta
                                     ? `
-
                                     <button
                                         class="ficha-btn-editar"
-                                        onclick="
-                                            editarFicha(
-                                                ${ficha.id_ficha}
-                                            )
-                                        "
+                                        onclick="editarFicha(${ficha.id_ficha})"
                                     >
                                         Editar
                                     </button>
 
-
                                     <button
                                         class="ficha-btn-eliminar"
-                                        onclick="
-                                            abrirEliminarFicha(
-                                                ${ficha.id_ficha}
-                                            )
-                                        "
+                                        onclick="abrirEliminarFicha(${ficha.id_ficha})"
                                     >
                                         Eliminar
                                     </button>
-
                                     `
                                     : ""
                             }
@@ -309,1007 +433,480 @@ async function cargarFichas() {
 
                 </article>
             `;
-        });
+        }).join("");
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
 
     } catch (error) {
-
-        console.error(
-            "Error cargando fichas:",
-            error
-        );
+        console.error("Error cargando fichas:", error);
     }
 }
 
 
 /* =========================================================
    VISTA PREVIA FICHA
+   - Todo se pide en paralelo.
+   - El modal se abre apenas llega la ficha.
+   - Sin fetch por cada ficha relacionada.
 ========================================================= */
 
 async function vistaPreviaFicha(id_ficha) {
 
+    const token = (window.cargaVistaFicha || 0) + 1;
+    window.cargaVistaFicha = token;
+
+    const setTexto = (id, valor) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = valor;
+    };
+
     try {
 
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/fichas/${id_ficha}`
-            );
+        // Estas peticiones solo necesitan id_ficha: arrancan YA.
+        const promesaEtiquetas =
+            fcSeguro(fcJson(`/api/fichas/${id_ficha}/etiquetas`));
 
+        const promesaRelaciones =
+            fcSeguro(fcJson(`/api/relacion-ficha/${id_ficha}`));
 
-        if (!respuesta.ok) {
+        const promesaMenus = fcSeguro(fcMenus());
+        const promesaMapa = fcSeguro(fcMapaFichas());
 
-            console.error(
-                "No se pudo obtener la ficha."
-            );
+        const ficha = await fcJson(`/api/fichas/${id_ficha}`);
 
-            return;
-        }
+        // La plantilla necesita id_menu.
+        const promesaPlantilla = fcSeguro(fcPlantilla(ficha.id_menu));
 
+        // ---- Datos básicos ----
+        setTexto("vpFichaId", ficha.id_ficha);
+        setTexto("vpFichaMenu", `Menú #${ficha.id_menu}`);
+        setTexto("vpFichaTitulo", ficha.titulo);
+        setTexto("vpFichaResumen", ficha.resumen || "-");
+        setTexto("vpFichaTexto", ficha.texto || "-");
+        setTexto("vpFichaVisible", ficha.visible == 1 ? "Sí" : "No");
+        setTexto("vpFichaUsuario", ficha.id_usuario || "-");
+        setTexto("vpFichaCreado", mostrarFechaArgentina(ficha.creado));
+        setTexto(
+            "vpFichaActualizado",
+            mostrarFechaArgentina(ficha.actualizado)
+        );
 
-        const ficha =
-            await respuesta.json();
+        const imagen = document.getElementById("vpFichaImagen");
 
-
-        /*
-         * DATOS GENERALES
-         */
-
-        document.getElementById(
-            "vpFichaId"
-        ).textContent =
-            ficha.id_ficha;
-
-
-        document.getElementById(
-            "vpFichaMenu"
-        ).textContent =
-            ficha.id_menu;
-
-
-        document.getElementById(
-            "vpFichaTitulo"
-        ).textContent =
-            ficha.titulo;
-
-
-        document.getElementById(
-            "vpFichaResumen"
-        ).textContent =
-            ficha.resumen || "-";
-
-
-        document.getElementById(
-            "vpFichaTexto"
-        ).textContent =
-            ficha.texto || "-";
-
-
-        document.getElementById(
-            "vpFichaVisible"
-        ).textContent =
-            ficha.visible == 1
-                ? "Sí"
-                : "No";
-
-
-        document.getElementById(
-            "vpFichaUsuario"
-        ).textContent =
-            ficha.id_usuario || "-";
-
-
-        document.getElementById(
-            "vpFichaCreado"
-        ).textContent =
-            mostrarFechaArgentina(
-                ficha.creado
-            );
-
-
-        document.getElementById(
-            "vpFichaActualizado"
-        ).textContent =
-            mostrarFechaArgentina(
-                ficha.actualizado
-            );
-
-
-        /*
-         * IMAGEN
-         */
-
-        const imagen =
-            document.getElementById(
-                "vpFichaImagen"
-            );
-
-
-        if (ficha.imagen) {
-
+        if (imagen) {
             imagen.src = obtenerRutaImagenFicha(ficha.imagen);
-
-        } else {
-
-            imagen.src =
-                "/imagenes/default.png";
         }
-
-
-        /*
-         * DATOS DINÁMICOS
-         */
 
         const contenedor =
-            document.getElementById(
-                "vpCamposDinamicos"
-            );
+            document.getElementById("vpCamposDinamicos");
+        const contenedorEtiquetas =
+            document.getElementById("vistaEtiquetasFicha");
+        const contenedorRelaciones =
+            document.getElementById("vistaRelacionesFicha");
 
+        if (contenedor) contenedor.innerHTML = "<p>Cargando...</p>";
+        if (contenedorEtiquetas) contenedorEtiquetas.innerHTML = "";
+        if (contenedorRelaciones) contenedorRelaciones.innerHTML = "";
 
-        contenedor.innerHTML =
-            "";
+        // Abrir el modal ya: el resto se completa después.
+        document.getElementById("modalVistaFicha").style.display = "flex";
 
+        const [menus, plantilla, etiquetas, relaciones, mapa] =
+            await Promise.all([
+                promesaMenus,
+                promesaPlantilla,
+                promesaEtiquetas,
+                promesaRelaciones,
+                promesaMapa
+            ]);
 
-        const respuestaPlantilla =
-            await window.fetchProtegido(
-                `/api/plantillas/menu/${ficha.id_menu}`
-            );
+        // Si se abrió otra vista previa mientras tanto, abortar.
+        if (token !== window.cargaVistaFicha) return;
 
+        // Nombre del menú
+        const menu = Array.isArray(menus)
+            ? menus.find(m => String(m.id_menu) === String(ficha.id_menu))
+            : null;
 
-        if (respuestaPlantilla.ok) {
-
-            const plantilla =
-                await respuestaPlantilla.json();
-
-
-            let datos = {};
-
-
-            try {
-
-                datos =
-                    ficha.datos_json
-                        ? window.interpretarDatosJson(ficha.datos_json)
-                        : {};
-
-            } catch (error) {
-
-                console.warn(
-                    "Error leyendo datos_json:",
-                    error
-                );
-            }
-
-
-            const campos =
-                plantilla
-                    .plantilla_json
-                    ?.estructura
-                    ?.campos || [];
-
-
-            campos.forEach(campo => {
-
-                contenedor.innerHTML += `
-
-                    <div class="campo-preview">
-
-                        <span class="titulo-preview">
-                            ${campo.etiqueta}
-                        </span>
-
-                        <span class="valor-preview">
-                            ${
-                                datos[campo.nombre] ||
-                                "-"
-                            }
-                        </span>
-
-                    </div>
-
-                `;
-            });
-
-        } else {
-
-            contenedor.innerHTML =
-                "<p>No fue posible cargar la plantilla.</p>";
+        if (menu?.nombre) {
+            setTexto("vpFichaMenu", `#${ficha.id_menu} — ${menu.nombre}`);
         }
 
+        // Campos dinámicos
+        if (contenedor) {
+            if (plantilla) {
+                let datos = {};
 
-        /*
-         * ETIQUETAS
-         */
+                try {
+                    datos = ficha.datos_json
+                        ? window.interpretarDatosJson(ficha.datos_json)
+                        : {};
+                } catch (error) {
+                    console.warn("Error leyendo datos_json:", error);
+                }
 
-        const respuestaEtiquetas =
-            await window.fetchProtegido(
-                `/api/fichas/${id_ficha}/etiquetas`
-            );
+                const campos =
+                    plantilla.plantilla_json?.estructura?.campos || [];
 
+                contenedor.innerHTML = campos.map(campo => `
+                    <div class="campo-preview">
+                        <span class="titulo-preview">
+                            ${fcEscapar(campo.etiqueta)}
+                        </span>
+                        <span class="valor-preview">
+                            ${fcEscapar(datos[campo.nombre] || "-")}
+                        </span>
+                    </div>
+                `).join("");
+            } else {
+                contenedor.innerHTML =
+                    "<p>No fue posible cargar la plantilla.</p>";
+            }
+        }
 
-        const etiquetas =
-            await respuestaEtiquetas.json();
-
-
-        const contenedorEtiquetas =
-            document.getElementById(
-                "vistaEtiquetasFicha"
-            );
-
-
-        contenedorEtiquetas.innerHTML =
-            "";
-
-
-        if (etiquetas.length === 0) {
-
-            contenedorEtiquetas.innerHTML =
-                "<span class='sin-etiquetas'>Sin etiquetas</span>";
-
-        } else {
-
-            etiquetas.forEach(etiqueta => {
-
-                contenedorEtiquetas.innerHTML += `
-
+        // Etiquetas
+        if (contenedorEtiquetas) {
+            if (!etiquetas) {
+                contenedorEtiquetas.innerHTML =
+                    "<span class='sin-etiquetas'>No fue posible cargar las etiquetas.</span>";
+            } else if (!Array.isArray(etiquetas) || etiquetas.length === 0) {
+                contenedorEtiquetas.innerHTML =
+                    "<span class='sin-etiquetas'>Sin etiquetas</span>";
+            } else {
+                contenedorEtiquetas.innerHTML = etiquetas.map(etiqueta => `
                     <span class="etiqueta-vista ${
-                        etiqueta.activo
+                        etiquetaEstaActiva(etiqueta)
                             ? ""
                             : "etiqueta-vista-desactivada"
                     }">
-                        ${etiqueta.nombre}
+                        ${fcEscapar(etiqueta.nombre)}
                     </span>
-
-                `;
-
-            });
-        }
-
-
-        /*
-         * =====================================================
-         * FICHAS RELACIONADAS
-         * =====================================================
-         */
-
-        const respuestaRelaciones =
-            await window.fetchProtegido(
-                `/api/relacion-ficha/${id_ficha}`
-            );
-
-
-        const contenedorRelaciones =
-            document.getElementById(
-                "vistaRelacionesFicha"
-            );
-
-
-        if (
-            respuestaRelaciones.ok &&
-            contenedorRelaciones
-        ) {
-
-            const relaciones =
-                await respuestaRelaciones.json();
-
-
-            contenedorRelaciones.innerHTML =
-                "";
-
-
-            if (relaciones.length === 0) {
-
-                contenedorRelaciones.innerHTML =
-                    `
-                    <span class="sin-relaciones">
-                        Sin fichas relacionadas
-                    </span>
-                    `;
-
-            } else {
-
-                /*
-                 * Obtenemos los datos completos de cada
-                 * ficha relacionada para conseguir también
-                 * su imagen.
-                 */
-
-                const fichasRelacionadas =
-                    await Promise.all(
-
-                        relaciones.map(
-                            async relacion => {
-
-                                try {
-
-                                    const respuestaFicha =
-                                        await window.fetchProtegido(
-                                            `/api/fichas/${relacion.id_ficha_destino}`
-                                        );
-
-
-                                    if (respuestaFicha.ok) {
-
-                                        const fichaRelacionada =
-                                            await respuestaFicha.json();
-
-
-                                        return {
-                                            ...relacion,
-
-                                            titulo:
-                                                fichaRelacionada.titulo ||
-                                                relacion.titulo ||
-                                                "Sin título",
-
-                                            imagen:
-                                                fichaRelacionada.imagen ||
-                                                null,
-
-                                            visible:
-                                                fichaRelacionada.visible
-                                        };
-                                    }
-
-                                } catch (error) {
-
-                                    console.error(
-                                        "Error obteniendo ficha relacionada:",
-                                        error
-                                    );
-                                }
-
-
-                                return relacion;
-                            }
-                        )
-                    );
-
-
-                /*
-                 * MOSTRAR MINI FICHAS
-                 */
-
-                fichasRelacionadas.forEach(
-                    relacion => {
-
-                        const imagen =
-                            relacion.imagen
-                                ? "/" +
-                                  relacion.imagen.replace(
-                                      "public/",
-                                      ""
-                                  )
-                                : "/imagenes/default.png";
-
-
-                        contenedorRelaciones.innerHTML += `
-
-                            <article class="relacion-vista ${
-                                relacion.visible == 0
-                                    ? "relacion-vista-desactivada"
-                                    : ""
-                            }">
-
-                                <div class="relacion-vista-imagen">
-
-                                    <img
-                                        src="${imagen}"
-
-                                        alt="${
-                                            relacion.titulo ||
-                                            "Ficha"
-                                        }"
-
-                                        onerror="
-                                            this.onerror=null;
-                                            this.src='/imagenes/default.png';
-                                        "
-                                    >
-
-                                </div>
-
-
-                                <div class="relacion-vista-contenido">
-
-                                    <span class="relacion-vista-id">
-                                        FICHA #${
-                                            relacion.id_ficha_destino
-                                        }
-                                    </span>
-
-
-                                    <strong>
-                                        ${
-                                            relacion.titulo ||
-                                            "Sin título"
-                                        }
-                                    </strong>
-
-
-                                    <span class="relacion-vista-tipo">
-                                        ${
-                                            relacion.tipo_relacion ||
-                                            "Sin relación"
-                                        }
-                                    </span>
-
-                                </div>
-
-                            </article>
-
-                        `;
-                    }
-                );
+                `).join("");
             }
         }
 
+        // Fichas relacionadas (datos desde el mapa cacheado)
+        if (contenedorRelaciones && relaciones) {
+            if (!Array.isArray(relaciones) || relaciones.length === 0) {
+                contenedorRelaciones.innerHTML =
+                    "<span class='sin-relaciones'>Sin fichas relacionadas</span>";
+            } else {
+                contenedorRelaciones.innerHTML = relaciones.map(relacion => {
 
-        /*
-         * MOSTRAR MODAL
-         */
+                    const f = mapa?.get(String(relacion.id_ficha_destino));
 
-        document.getElementById(
-            "modalVistaFicha"
-        ).style.display =
-            "flex";
+                    const titulo =
+                        f?.titulo ||
+                        relacion.titulo ||
+                        relacion.ficha_relacionada ||
+                        "Sin título";
 
+                    const visible = f ? f.visible : 1;
+
+                    return `
+                        <article class="relacion-vista ${
+                            visible == 0 ? "relacion-vista-desactivada" : ""
+                        }">
+                            <div class="relacion-vista-imagen">
+                                <img
+                                    src="${obtenerRutaImagenFicha(f?.imagen)}"
+                                    alt="${fcEscapar(titulo)}"
+                                    loading="lazy"
+                                    onerror="this.onerror=null;this.src='/imagenes/default.png';"
+                                >
+                            </div>
+
+                            <div class="relacion-vista-contenido">
+                                <span class="relacion-vista-id">
+                                    FICHA #${relacion.id_ficha_destino}
+                                </span>
+
+                                <strong>${fcEscapar(titulo)}</strong>
+
+                                <span class="relacion-vista-tipo">
+                                    ${fcEscapar(
+                                        relacion.tipo_relacion ||
+                                        "Sin relación"
+                                    )}
+                                </span>
+                            </div>
+                        </article>
+                    `;
+                }).join("");
+            }
+        }
 
     } catch (error) {
+        console.error("Error vista previa:", error);
+    }
+}
 
-        console.error(
-            "Error vista previa:",
-            error
+
+/* =========================================================
+   APLICAR EL MENÚ ELEGIDO AL FORMULARIO
+========================================================= */
+
+function aplicarMenuEnFormulario(idMenu) {
+
+    const tipoFicha = document.getElementById("tipoFicha");
+
+    if (!tipoFicha) return;
+
+    tipoFicha.value = String(idMenu);
+
+    if (tipoFicha.value !== String(idMenu)) {
+        console.warn(
+            "El menú de la ficha no aparece en el selector:",
+            idMenu
         );
+    }
+
+    const opcion = tipoFicha.options[tipoFicha.selectedIndex];
+
+    const nombre =
+        opcion && tipoFicha.value
+            ? opcion.textContent.trim()
+            : (nombreMenuSeleccionado || `Menú ${idMenu}`);
+
+    const nombreTipo = document.getElementById("nombreTipoFicha");
+
+    if (nombreTipo) {
+        nombreTipo.textContent = nombre;
+    }
+
+    const tituloDatos = document.getElementById("tituloDatosEspecificos");
+
+    if (tituloDatos) {
+        tituloDatos.textContent = `Datos específicos de ${nombre}`;
     }
 }
 
 
 /* =========================================================
    EDITAR FICHA
+   Todo arranca en paralelo y se espera una sola vez.
 ========================================================= */
 
 async function editarFicha(id_ficha) {
 
-    console.log(
-        "Editando ficha:",
-        id_ficha
-    );
+    const cargaActual = (window.cargaEditarFicha || 0) + 1;
+    window.cargaEditarFicha = cargaActual;
 
+    const obsoleta = () => cargaActual !== window.cargaEditarFicha;
+
+    const modal = document.getElementById("modalFicha");
+
+    if (!modal) {
+        console.error("No existe modalFicha.");
+        return;
+    }
+
+    // ---- Reset del formulario ----
+    modal.style.display = "none";
+    modal.dataset.idFicha = "";
+    modal.dataset.idMenu = "";
+
+    document.getElementById("tituloFicha").value = "";
+    document.getElementById("resumenFicha").value = "";
+    document.getElementById("textoFicha").value = "";
+    document.getElementById("visibleFicha").checked = false;
+    document.getElementById("imagenFicha").value = "";
+
+    const imagenActual = document.getElementById("imagenActualFicha");
+    const contenedorImagenActual =
+        document.getElementById("contenedorImagenActual");
+
+    if (imagenActual) {
+        imagenActual.src = "";
+        imagenActual.style.display = "none";
+    }
+
+    if (contenedorImagenActual) {
+        contenedorImagenActual.style.display = "none";
+    }
+
+    relacionesPendientes = [];
+    relacionesEliminadasPendientes = [];
+
+    const botonGuardar = document.getElementById("btnGuardarFicha");
+
+    if (botonGuardar) {
+        botonGuardar.textContent = "Cargando ficha...";
+    }
 
     try {
+        fichaEditando = id_ficha;
 
-        fichaEditando =
-            id_ficha;
+        // ---- TODO EN PARALELO ----
+        const promesaFicha = fcJson(`/api/fichas/${id_ficha}`);
 
+        // La plantilla depende de id_menu: arranca apenas llega la ficha.
+        const promesaPlantilla = promesaFicha
+            .then(f => fcPlantilla(f.id_menu))
+            .catch(() => null);
 
-        /*
-         * OBTENER FICHA
-         */
+        const promesaMenus = cargarTiposFicha();
 
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/fichas/${id_ficha}`
-            );
+        const promesaEtiquetasFicha =
+            fcSeguro(obtenerEtiquetasFicha(id_ficha));
 
+        const promesaRelaciones =
+            fcSeguro(fcJson(`/api/relacion-ficha/${id_ficha}`));
 
-        if (!respuesta.ok) {
+        // Precalentar cachés que usan los renders de más abajo.
+        fcSeguro(fcEtiquetas());
+        fcSeguro(fcFichas());
 
-            console.error(
-                "No se pudo obtener la ficha:",
-                respuesta.status
-            );
+        const [
+            ficha,
+            ,
+            etiquetasSeleccionadas,
+            relaciones,
+            plantilla
+        ] = await Promise.all([
+            promesaFicha,
+            promesaMenus,
+            promesaEtiquetasFicha,
+            promesaRelaciones,
+            promesaPlantilla
+        ]);
 
-            return;
-        }
+        if (obsoleta()) return;
 
+        modal.dataset.idFicha = String(id_ficha);
+        modal.dataset.idMenu = String(ficha.id_menu);
 
-        const ficha =
-            await respuesta.json();
+        // Borrador de esta ficha (tiene prioridad sobre la BD).
+        const borrador = window.Borradores?.leer(
+            "fichas",
+            String(id_ficha)
+        )?.datos;
 
+        // ---- Menú ----
+        aplicarMenuEnFormulario(ficha.id_menu);
 
-        console.log(
-            "Ficha recibida:",
-            ficha
-        );
+        // ---- Datos básicos ----
+        document.getElementById("tituloFicha").value =
+            borrador?.titulo ?? ficha.titulo ?? "";
 
+        document.getElementById("resumenFicha").value =
+            borrador?.resumen ?? ficha.resumen ?? "";
 
-        const modal =
-            document.getElementById(
-                "modalFicha"
-            );
+        document.getElementById("textoFicha").value =
+            borrador?.texto ?? ficha.texto ?? "";
 
+        document.getElementById("visibleFicha").checked =
+            borrador?.visible ?? (ficha.visible == 1);
 
-        if (!modal) {
+        // ---- Imagen ----
+        if (ficha.imagen && imagenActual) {
+            imagenActual.src = obtenerRutaImagenFicha(ficha.imagen);
+            imagenActual.style.display = "block";
 
-            console.error(
-                "No existe modalFicha."
-            );
-
-            return;
-        }
-
-
-        /*
-         * =====================================================
-         * GUARDAMOS EL MENÚ REAL DE LA FICHA
-         * =====================================================
-         *
-         * Este dato es MUY IMPORTANTE.
-         *
-         * No usamos menuSeleccionado porque podemos
-         * estar entrando desde "Gestión general".
-         */
-
-        modal.dataset.idFicha =
-            String(id_ficha);
-
-        modal.dataset.idMenu =
-            String(ficha.id_menu);
-
-
-        console.log(
-            "Menú de la ficha:",
-            ficha.id_menu
-        );
-
-
-        /*
-         * CARGAR MENÚES EN SELECT
-         */
-
-        await cargarTiposFicha();
-
-
-        const tipoFicha =
-            document.getElementById(
-                "tipoFicha"
-            );
-
-
-        if (tipoFicha) {
-
-            /*
-             * Seleccionamos el menú de la ficha.
-             *
-             * IMPORTANTE:
-             * NO hacemos dispatchEvent("change").
-             *
-             * El change está pensado para NUEVA FICHA
-             * y abriría/resetea el formulario.
-             */
-
-            tipoFicha.value =
-                String(ficha.id_menu);
-
-
-            /*
-             * Si por algún motivo el option no existe,
-             * lo agregamos.
-             */
-
-            if (
-                tipoFicha.value !==
-                String(ficha.id_menu)
-            ) {
-
-                console.warn(
-                    "El menú de la ficha no aparece en el selector:",
-                    ficha.id_menu
-                );
-
-            } else {
-
-                const opcion =
-                    tipoFicha.options[
-                        tipoFicha.selectedIndex
-                    ];
-
-
-                const nombreMenu =
-                    opcion
-                        ? opcion.textContent.trim()
-                        : `Menú ${ficha.id_menu}`;
-
-
-                const nombreTipo =
-                    document.getElementById(
-                        "nombreTipoFicha"
-                    );
-
-
-                if (nombreTipo) {
-
-                    nombreTipo.textContent =
-                        nombreMenu;
-                }
-
-
-                const tituloDatos =
-                    document.getElementById(
-                        "tituloDatosEspecificos"
-                    );
-
-
-                if (tituloDatos) {
-
-                    tituloDatos.textContent =
-                        `Datos específicos de ${nombreMenu}`;
-                }
+            if (contenedorImagenActual) {
+                contenedorImagenActual.style.display = "block";
             }
         }
 
+        const labelImagen = document.getElementById("labelImagenFicha");
 
-        /*
-         * ABRIR MODAL
-         */
-
-        modal.style.display =
-            "flex";
-
-
-        /*
-         * DATOS BÁSICOS
-         */
-
-        document.getElementById(
-            "tituloFicha"
-        ).value =
-            ficha.titulo || "";
-
-
-        document.getElementById(
-            "resumenFicha"
-        ).value =
-            ficha.resumen || "";
-
-
-        document.getElementById(
-            "textoFicha"
-        ).value =
-            ficha.texto || "";
-
-
-        document.getElementById(
-            "visibleFicha"
-        ).checked =
-            ficha.visible == 1;
-
-
-        /*
-         * IMAGEN ACTUAL
-         */
-
-        const imagenActual =
-            document.getElementById(
-                "imagenActualFicha"
-            );
-
-
-        const contenedorImagenActual =
-            document.getElementById(
-                "contenedorImagenActual"
-            );
-
-
-        if (ficha.imagen) {
-
-            imagenActual.src = obtenerRutaImagenFicha(ficha.imagen);
-
-
-            imagenActual.style.display =
-                "block";
-
-
-            contenedorImagenActual.style.display =
-                "block";
-
-        } else {
-
-            imagenActual.src =
-                "";
-
-
-            imagenActual.style.display =
-                "none";
-
-
-            contenedorImagenActual.style.display =
-                "none";
+        if (labelImagen) {
+            labelImagen.textContent = "Cambiar imagen";
         }
 
+        const tituloModal = document.getElementById("tituloModalFicha");
 
-        document.getElementById(
-            "labelImagenFicha"
-        ).textContent =
-            "Cambiar imagen";
-
-
-        document.getElementById(
-            "imagenFicha"
-        ).value =
-            "";
-
-
-
-        /*
-         * TÍTULO MODAL
-         */
-
-        document.getElementById(
-            "tituloModalFicha"
-        ).textContent =
-            "Editar ficha";
-
-
-        /*
-         * ETIQUETAS
-         */
-
-        const etiquetasSeleccionadas =
-            await obtenerEtiquetasFicha(
-                id_ficha
-            );
-
-
-        await cargarEtiquetasFicha(
-            etiquetasSeleccionadas
-        );
-
-
-        /*
-         * RELACIONES
-         */
-
-        const selectRelacion =
-            document.getElementById(
-                "fichaRelacion"
-            );
-
-
-        const tipoRelacion =
-            document.getElementById(
-                "tipoRelacion"
-            );
-
-
-        if (selectRelacion) {
-
-            selectRelacion.disabled =
-                false;
-
-
-            await cargarFichasDisponibles(
-                id_ficha
-            );
+        if (tituloModal) {
+            tituloModal.textContent = "Editar ficha";
         }
 
+        // ---- Etiquetas y fichas disponibles (desde caché) ----
+        const selectRelacion = document.getElementById("fichaRelacion");
+        const tipoRelacion = document.getElementById("tipoRelacion");
 
-        if (tipoRelacion) {
+        await Promise.all([
+            cargarEtiquetasFicha(etiquetasSeleccionadas || []),
+            selectRelacion
+                ? cargarFichasDisponibles(id_ficha)
+                : Promise.resolve()
+        ]);
 
-            tipoRelacion.disabled =
-                false;
-        }
+        if (obsoleta()) return;
 
+        if (selectRelacion) selectRelacion.disabled = false;
+        if (tipoRelacion) tipoRelacion.disabled = false;
 
-        /*
-         * RELACIONES EXISTENTES
-         */
+        // ---- Relaciones existentes ----
+        const vistos = new Set();
 
-        const respuestaRelaciones =
-            await window.fetchProtegido(
-                `/api/relacion-ficha/${id_ficha}`
-            );
+        (relaciones || []).forEach(relacion => {
+            const idDestino = Number(relacion.id_ficha_destino);
 
+            if (!idDestino || vistos.has(idDestino)) return;
 
-        if (!respuestaRelaciones.ok) {
+            vistos.add(idDestino);
 
-            console.error(
-                "No se pudieron cargar las relaciones"
-            );
-
-
-            relacionesPendientes =
-                [];
-
-        } else {
-
-            const relaciones =
-                await respuestaRelaciones.json();
-
-
-            /* =====================================================
-               REINICIAR RELACIONES PENDIENTES
-            ===================================================== */
-
-            relacionesPendientes = [];
-
-            relacionesEliminadasPendientes = [];
-
-
-            /* =====================================================
-               ELIMINAR DUPLICADOS
-
-               Una ficha destino solamente puede aparecer una vez.
-            ===================================================== */
-
-            const fichasYaRelacionadas =
-                new Set();
-
-
-            relaciones.forEach(relacion => {
-
-                const idDestino =
-                    Number(
-                        relacion.id_ficha_destino
-                    );
-
-
-                if (!idDestino) {
-                    return;
-                }
-
-
-                /*
-                 * Si ya tenemos esta ficha,
-                 * ignoramos la relación duplicada.
-                 */
-
-                if (
-                    fichasYaRelacionadas.has(
-                        idDestino
-                    )
-                ) {
-
-                    return;
-                }
-
-
-                fichasYaRelacionadas.add(
-                    idDestino
-                );
-
-
-                relacionesPendientes.push({
-
-                    id_relacion:
-                        relacion.id_relacion,
-
-                    id_ficha_destino:
-                        idDestino,
-
-                    tipo_relacion:
-                        relacion.tipo_relacion,
-
-                    titulo:
-                        relacion.titulo ||
-                        relacion.ficha_relacionada ||
-                        `Ficha ${idDestino}`
-
-                });
-
+            relacionesPendientes.push({
+                id_relacion: relacion.id_relacion,
+                id_ficha_destino: idDestino,
+                tipo_relacion: relacion.tipo_relacion,
+                titulo:
+                    relacion.titulo ||
+                    relacion.ficha_relacionada ||
+                    `Ficha ${idDestino}`
             });
+        });
 
+        await mostrarRelacionesPendientes();
 
-            /* =====================================================
-               MOSTRAR UNA SOLA VEZ
-            ===================================================== */
+        if (obsoleta()) return;
 
-            await mostrarRelacionesPendientes();
+        // ---- Plantilla y campos dinámicos ----
+        window.plantillaActual = plantilla;
 
-        }
-
-
-        /*
-         * PLANTILLA DINÁMICA
-         *
-         * Usamos ficha.id_menu.
-         * NO menuSeleccionado.
-         */
-
-        const plantillaRespuesta =
-            await window.fetchProtegido(
-                `/api/plantillas/menu/${ficha.id_menu}`
-            );
-
-
-        if (!plantillaRespuesta.ok) {
-
-            console.error(
-                "No se pudo cargar la plantilla del menú:",
-                ficha.id_menu
-            );
-
-            generarCampos([]);
-
-        } else {
-
-            const plantilla =
-                await plantillaRespuesta.json();
-
-
-            window.plantillaActual =
-                plantilla;
-
-
-            const campos =
-                plantilla
-                    .plantilla_json
-                    ?.estructura
-                    ?.campos || [];
-
-
-            generarCampos(
-                campos
-            );
-        }
-
-
-        /*
-         * DATOS DINÁMICOS
-         */
+        generarCampos(plantilla?.plantilla_json?.estructura?.campos || []);
 
         let datos = {};
 
-
         try {
-
-            datos =
-                ficha.datos_json
-                    ? window.interpretarDatosJson(ficha.datos_json)
-                    : {};
-
+            datos = ficha.datos_json
+                ? window.interpretarDatosJson(ficha.datos_json)
+                : {};
         } catch (error) {
-
-            console.warn(
-                "Error leyendo datos_json:",
-                error
-            );
+            console.warn("Error leyendo datos_json:", error);
         }
 
+        // BD primero, borrador por encima.
+        const valores = {
+            ...datos,
+            ...(borrador?.camposDinamicos || {})
+        };
 
-        document
-            .querySelectorAll(
-                ".campo-dinamico"
-            )
-            .forEach(input => {
+        document.querySelectorAll(".campo-dinamico").forEach(input => {
+            const nombre = input.dataset.campo;
 
-                const nombre =
-                    input.dataset.campo;
+            if (nombre && valores[nombre] !== undefined) {
+                input.value = valores[nombre];
+            }
+        });
 
+        // ---- Mostrar ----
+        if (botonGuardar) {
+            botonGuardar.textContent = "Actualizar ficha";
+        }
 
-                if (
-                    datos[nombre] !==
-                    undefined
-                ) {
-
-                    input.value =
-                        datos[nombre];
-                }
-            });
-
-
-        /*
-         * BOTÓN ACTUALIZAR
-         */
-
-        document.getElementById(
-            "btnGuardarFicha"
-        ).textContent =
-            "Actualizar ficha";
-
-        // Recuperar los cambios guardados localmente para esta ficha.
-const borradorRecuperado = recuperarBorradorFicha();
-
-if (borradorRecuperado) {
-    console.log("Borrador de ficha recuperado al editar.");
-}
-
+        modal.style.display = "flex";
 
     } catch (error) {
+        if (obsoleta()) return;
 
-        console.error(
-            "Error cargando ficha para editar:",
-            error
-        );
+        console.error("Error cargando ficha para editar:", error);
+
+        if (botonGuardar) {
+            botonGuardar.textContent = "Editar ficha";
+        }
     }
 }
 
@@ -1319,11 +916,7 @@ if (borradorRecuperado) {
 ========================================================= */
 
 function cerrarVistaFicha() {
-
-    document.getElementById(
-        "modalVistaFicha"
-    ).style.display =
-        "none";
+    document.getElementById("modalVistaFicha").style.display = "none";
 }
 
 
@@ -1333,10 +926,7 @@ function cerrarVistaFicha() {
 
 function verMultimediaFicha(id_ficha, titulo) {
 
-    console.log("VER MULTIMEDIA FICHA:", {
-        id_ficha,
-        titulo
-    });
+    console.log("VER MULTIMEDIA FICHA:", { id_ficha, titulo });
 
     fichaSeleccionada = id_ficha;
     nombreFichaSeleccionada = titulo || "";
@@ -1344,6 +934,14 @@ function verMultimediaFicha(id_ficha, titulo) {
     cargarVentana("multimedia", true);
 }
 
+function cerrarMultimedia() {
+    document.getElementById("modalMultimedia").style.display = "none";
+}
+
+
+/* =========================================================
+   BORRADORES
+========================================================= */
 
 function obtenerClaveBorradorFicha() {
     const modal = document.getElementById("modalFicha");
@@ -1448,23 +1046,103 @@ function recuperarBorradorFicha() {
     return true;
 }
 
-
+// Autoguardado con debounce (antes escribía en cada tecla).
 if (!window.__autoguardadoFichasInicializado) {
     window.__autoguardadoFichasInicializado = true;
 
-    document.addEventListener("input", (e) => {
-        if (e.target.closest("#modalFicha")) {
-            guardarBorradorFicha();
-        }
-    });
+    let temporizadorBorrador = null;
 
-    document.addEventListener("change", (e) => {
-        if (e.target.closest("#modalFicha")) {
-            guardarBorradorFicha();
-        }
-    });
+    const guardarDiferido = (e) => {
+        if (!e.target.closest("#modalFicha")) return;
+
+        clearTimeout(temporizadorBorrador);
+        temporizadorBorrador = setTimeout(guardarBorradorFicha, 400);
+    };
+
+    document.addEventListener("input", guardarDiferido);
+    document.addEventListener("change", guardarDiferido);
 }
 
+
+/* =========================================================
+   PREPARAR FORMULARIO DE NUEVA FICHA
+   (lo usan abrirNuevaFicha y cambioTipoFicha)
+========================================================= */
+
+async function prepararFormularioNuevaFicha(idMenu) {
+
+    const modalFicha = document.getElementById("modalFicha");
+
+    if (!modalFicha) return;
+
+    idMenu = String(idMenu);
+
+    // Todo lo necesario en paralelo.
+    const [plantilla] = await Promise.all([
+        fcPlantilla(idMenu),
+        cargarTiposFicha(),
+        cargarEtiquetasFicha(),
+        cargarFichasDisponibles()
+    ]);
+
+    window.plantillaActual = plantilla;
+
+    generarCampos(plantilla.plantilla_json?.estructura?.campos || []);
+
+    modalFicha.dataset.idFicha = "";
+    modalFicha.dataset.idMenu = idMenu;
+
+    aplicarMenuEnFormulario(idMenu);
+
+    fichaEditando = null;
+    relacionesPendientes = [];
+    relacionesEliminadasPendientes = [];
+
+    document.getElementById("btnGuardarFicha").textContent =
+        "Guardar ficha";
+
+    document.getElementById("tituloModalFicha").textContent =
+        "Nueva ficha";
+
+    document.getElementById("tituloFicha").value = "";
+    document.getElementById("resumenFicha").value = "";
+    document.getElementById("textoFicha").value = "";
+    document.getElementById("imagenFicha").value = "";
+
+    document.getElementById("labelImagenFicha").textContent =
+        "Seleccionar imagen";
+
+    document.getElementById("visibleFicha").checked = true;
+
+    const imagenActual = document.getElementById("imagenActualFicha");
+
+    if (imagenActual) {
+        imagenActual.src = "";
+        imagenActual.style.display = "none";
+    }
+
+    const contenedorImagenActual =
+        document.getElementById("contenedorImagenActual");
+
+    if (contenedorImagenActual) {
+        contenedorImagenActual.style.display = "none";
+    }
+
+    const selectRelacion = document.getElementById("fichaRelacion");
+    if (selectRelacion) selectRelacion.disabled = false;
+
+    const tipoRelacion = document.getElementById("tipoRelacion");
+    if (tipoRelacion) tipoRelacion.disabled = false;
+
+    await mostrarRelacionesPendientes();
+
+    modalFicha.style.display = "flex";
+
+    // Recuperar el borrador guardado para este menú.
+    if (recuperarBorradorFicha()) {
+        console.log("Borrador de ficha recuperado.");
+    }
+}
 
 
 /* =========================================================
@@ -1473,331 +1151,39 @@ if (!window.__autoguardadoFichasInicializado) {
 
 async function abrirNuevaFicha() {
 
-    console.log(
-        "Nueva ficha. Menú seleccionado:",
-        menuSeleccionado
-    );
+    console.log("Nueva ficha. Menú seleccionado:", menuSeleccionado);
 
+    // Recuperar el menú del borrador más reciente.
+    if (!menuSeleccionado && window.Borradores) {
+        const borradorNuevo = window.Borradores
+            .obtenerTodos("fichas")
+            .find(b =>
+                String(b.idRegistro ?? "").startsWith("nuevo-menu-")
+            );
 
-    /*
-     * =====================================================
-     * SI ESTAMOS DENTRO DE UN MENÚ
-     * =====================================================
-     */
+        if (borradorNuevo) {
+            menuSeleccionado = String(borradorNuevo.idRegistro)
+                .substring("nuevo-menu-".length);
 
+            const modalFicha = document.getElementById("modalFicha");
+
+            if (modalFicha) {
+                modalFicha.dataset.origenBorrador = "general";
+            }
+
+            console.log(
+                "Reabriendo borrador de ficha del menú:",
+                menuSeleccionado
+            );
+        }
+    }
+
+    // Dentro de un menú: abrir directamente el formulario.
     if (menuSeleccionado) {
-
         try {
-
-            const idMenu =
-                String(
-                    menuSeleccionado
-                );
-
-
-            const respuesta =
-                await window.fetchProtegido(
-                    `/api/plantillas/menu/${idMenu}`
-                );
-
-
-            if (!respuesta.ok) {
-
-                console.error(
-                    "No se pudo cargar la plantilla del menú."
-                );
-
-
-                mostrarMensaje(
-                    "Error",
-                    "No se pudo cargar la plantilla de este menú."
-                );
-
-
-                return;
-            }
-
-
-            const plantilla =
-                await respuesta.json();
-
-
-            window.plantillaActual =
-                plantilla;
-
-
-            const campos =
-                plantilla
-                    .plantilla_json
-                    ?.estructura
-                    ?.campos || [];
-
-
-            generarCampos(
-                campos
-            );
-
-
-            const modalFicha =
-                document.getElementById(
-                    "modalFicha"
-                );
-
-
-            if (!modalFicha) {
-                return;
-            }
-
-
-            /*
-             * MENÚ ASOCIADO
-             */
-
-            modalFicha.dataset.idFicha =
-                "";
-
-            modalFicha.dataset.idMenu =
-                idMenu;
-
-
-            /*
-             * SELECT
-             */
-
-            const tipoFicha =
-                document.getElementById(
-                    "tipoFicha"
-                );
-
-
-            if (tipoFicha) {
-
-                await cargarTiposFicha();
-
-                tipoFicha.value =
-                    idMenu;
-
-
-                const opcion =
-                    tipoFicha.options[
-                        tipoFicha.selectedIndex
-                    ];
-
-
-                const nombre =
-                    opcion
-                        ? opcion.textContent.trim()
-                        : nombreMenuSeleccionado;
-
-
-                const nombreTipo =
-                    document.getElementById(
-                        "nombreTipoFicha"
-                    );
-
-
-                if (nombreTipo) {
-
-                    nombreTipo.textContent =
-                        nombre;
-                }
-
-
-                const tituloDatos =
-                    document.getElementById(
-                        "tituloDatosEspecificos"
-                    );
-
-
-                if (tituloDatos) {
-
-                    tituloDatos.textContent =
-                        `Datos específicos de ${nombre}`;
-                }
-            }
-
-
-            /*
-             * ESTADO
-             */
-
-            fichaEditando =
-                null;
-
-            relacionesPendientes = [];
-
-            relacionesEliminadasPendientes = [];
-
-
-            document.getElementById(
-                "btnGuardarFicha"
-            ).textContent =
-                "Guardar ficha";
-
-
-            document.getElementById(
-                "tituloModalFicha"
-            ).textContent =
-                "Nueva ficha";
-
-
-            /*
-             * LIMPIAR DATOS
-             */
-
-            document.getElementById(
-                "tituloFicha"
-            ).value =
-                "";
-
-
-            document.getElementById(
-                "resumenFicha"
-            ).value =
-                "";
-
-
-            document.getElementById(
-                "textoFicha"
-            ).value =
-                "";
-
-
-            document.getElementById(
-                "imagenFicha"
-            ).value =
-                "";
-
-
-            document.getElementById(
-                "labelImagenFicha"
-            ).textContent =
-                "Seleccionar imagen";
-
-
-            /*
-             * IMAGEN ACTUAL
-             */
-
-            const imagenActual =
-                document.getElementById(
-                    "imagenActualFicha"
-                );
-
-
-            if (imagenActual) {
-
-                imagenActual.src =
-                    "";
-
-                imagenActual.style.display =
-                    "none";
-            }
-
-
-            const contenedorImagenActual =
-                document.getElementById(
-                    "contenedorImagenActual"
-                );
-
-
-            if (contenedorImagenActual) {
-
-                contenedorImagenActual.style.display =
-                    "none";
-            }
-
-
-            /*
-             * VISIBLE
-             */
-
-            document.getElementById(
-                "visibleFicha"
-            ).checked =
-                true;
-
-
-            /*
-             * CAMPOS DINÁMICOS
-             */
-
-            document
-                .querySelectorAll(
-                    ".campo-dinamico"
-                )
-                .forEach(campo => {
-
-                    campo.value =
-                        "";
-                });
-
-
-            /*
-             * ETIQUETAS
-             */
-
-            await cargarEtiquetasFicha();
-
-
-            /*
-             * RELACIONES
-             */
-
-            const selectRelacion =
-                document.getElementById(
-                    "fichaRelacion"
-                );
-
-
-            const tipoRelacion =
-                document.getElementById(
-                    "tipoRelacion"
-                );
-
-
-            if (selectRelacion) {
-
-                selectRelacion.disabled =
-                    false;
-
-
-                await cargarFichasDisponibles();
-            }
-
-
-            if (tipoRelacion) {
-
-                tipoRelacion.disabled =
-                    false;
-            }
-
-
-            mostrarRelacionesPendientes();
-
-
-            /*
-             * ABRIR MODAL
-             */
-
-            modalFicha.style.display =
-                "flex";
-
-            // Recuperar el borrador guardado para este menú.
-const borradorRecuperado = recuperarBorradorFicha();
-
-if (borradorRecuperado) {
-    console.log("Borrador de ficha recuperado.");
-}
-
-
+            await prepararFormularioNuevaFicha(menuSeleccionado);
         } catch (error) {
-
-            console.error(
-                "Error abriendo nueva ficha:",
-                error
-            );
-
+            console.error("Error abriendo nueva ficha:", error);
 
             mostrarMensaje(
                 "Error",
@@ -1805,75 +1191,33 @@ if (borradorRecuperado) {
             );
         }
 
-
         return;
     }
 
-
-    /*
-     * =====================================================
-     * GESTIÓN GENERAL DE FICHAS
-     * =====================================================
-     */
-
-    console.log(
-        "Abriendo selector de tipo"
-    );
-
-
-    const modal =
-        document.getElementById(
-            "modalTipoFicha"
-        );
-
+    // Gestión general: selector de tipo.
+    const modal = document.getElementById("modalTipoFicha");
 
     if (modal) {
-
-        modal.style.display =
-            "flex";
-
-
+        modal.style.display = "flex";
         await cargarTiposFicha();
     }
 }
 
-
-/*
- * =========================================================
- * EVENTO NUEVA FICHA
- *
- * Se protege para que no se registre varias veces
- * cuando panel.js vuelve a cargar fichas.js.
- * =========================================================
- */
-
+// Se registra una sola vez aunque panel.js recargue este archivo.
 if (!window.__fichasEventoNuevaRegistrado) {
 
-    document.addEventListener(
-        "click",
-        async function(e) {
+    document.addEventListener("click", async function (e) {
 
-            const boton =
-                e.target.closest(
-                    "#nuevaFicha"
-                );
+        const boton = e.target.closest("#nuevaFicha");
 
+        if (!boton) return;
 
-            if (!boton) {
-                return;
-            }
+        e.preventDefault();
 
+        await abrirNuevaFicha();
+    });
 
-            e.preventDefault();
-
-
-            await abrirNuevaFicha();
-        }
-    );
-
-
-    window.__fichasEventoNuevaRegistrado =
-        true;
+    window.__fichasEventoNuevaRegistrado = true;
 }
 
 
@@ -1882,18 +1226,26 @@ if (!window.__fichasEventoNuevaRegistrado) {
 ========================================================= */
 
 function cerrarFicha() {
+    const modal = document.getElementById("modalFicha");
 
-    const modal =
-        document.getElementById(
-            "modalFicha"
-        );
+    if (!modal) return;
 
+    const clave = obtenerClaveBorradorFicha();
 
-    if (modal) {
-
-        modal.style.display =
-            "none";
+    if (window.Borradores && clave) {
+        window.Borradores.eliminar("fichas", clave);
     }
+
+    modal.style.display = "none";
+
+    // Si se estaba creando una ficha desde Gestión general,
+    // limpiar el menú recuperado del borrador.
+    if (modal.dataset.origenBorrador === "general") {
+        menuSeleccionado = null;
+        nombreMenuSeleccionado = "";
+    }
+
+    delete modal.dataset.origenBorrador;
 }
 
 
@@ -1903,556 +1255,249 @@ function cerrarFicha() {
 
 async function guardarFicha() {
 
-    const modalFicha =
-        document.getElementById(
-            "modalFicha"
-        );
-
-
-    if (!modalFicha) {
-
-        console.error(
-            "No existe modalFicha."
-        );
-
+    if (window.guardandoFicha) {
         return;
     }
 
+    window.guardandoFicha = true;
 
-    const id_ficha =
-        modalFicha.dataset.idFicha || "";
+    const modalFicha = document.getElementById("modalFicha");
+
+    if (!modalFicha) {
+        console.error("No existe modalFicha.");
+        window.guardandoFicha = false;
+        return;
+    }
+
+    const id_ficha = modalFicha.dataset.idFicha || "";
 
     const claveBorradorFicha = obtenerClaveBorradorFicha();
 
-
     const titulo =
-        document.getElementById(
-            "tituloFicha"
-        ).value.trim();
-
+        document.getElementById("tituloFicha").value.trim();
 
     if (titulo === "") {
-
         mostrarMensaje(
             "Campos obligatorios",
             "Debe ingresar un título para la ficha."
         );
 
+        document.getElementById("tituloFicha").focus();
 
-        document.getElementById(
-            "tituloFicha"
-        ).focus();
-
-
+        window.guardandoFicha = false;
         return;
     }
 
+    const formulario = new FormData();
 
-    const formulario =
-        new FormData();
-
-
-    /*
-     * =====================================================
-     * DATOS DINÁMICOS
-     * =====================================================
-     */
-
+    // ---- Datos dinámicos ----
     const datos = {};
 
+    document.querySelectorAll(".campo-dinamico").forEach(campo => {
+        datos[campo.dataset.campo] = campo.value;
+    });
 
-    document
-        .querySelectorAll(
-            ".campo-dinamico"
-        )
-        .forEach(campo => {
-
-            datos[
-                campo.dataset.campo
-            ] =
-                campo.value;
-        });
-
-
-    /*
-     * =====================================================
-     * MENÚ DE LA FICHA
-     * =====================================================
-     *
-     * ORDEN DE PRIORIDAD:
-     *
-     * 1. dataset.idMenu del modal
-     * 2. menú seleccionado
-     * 3. select tipoFicha
-     *
-     * El dataset es el más importante porque identifica
-     * el menú al que realmente pertenece la ficha.
-     */
-
+    // ---- Menú de la ficha ----
+    // Prioridad: dataset.idMenu del modal > menú seleccionado > select.
     let id_menu = "";
 
-
     if (modalFicha.dataset.idMenu) {
-
-        id_menu =
-            modalFicha.dataset.idMenu;
-
+        id_menu = modalFicha.dataset.idMenu;
     } else if (menuSeleccionado) {
-
-        id_menu =
-            String(
-                menuSeleccionado
-            );
-
+        id_menu = String(menuSeleccionado);
     } else {
-
-        id_menu =
-            document.getElementById(
-                "tipoFicha"
-            )?.value || "";
+        id_menu = document.getElementById("tipoFicha")?.value || "";
     }
 
-
-    console.log(
-        "========== GUARDANDO FICHA =========="
-    );
-
-
-    console.log(
-        "menuSeleccionado:",
-        menuSeleccionado
-    );
-
-
-    console.log(
-        "dataset.idMenu:",
-        modalFicha.dataset.idMenu
-    );
-
-
-    console.log(
-        "tipoFicha:",
-        document.getElementById(
-            "tipoFicha"
-        )?.value
-    );
-
-
-    console.log(
-        "id_menu FINAL:",
-        id_menu
-    );
-
-
-    /*
-     * VALIDAR MENÚ
-     */
-
     if (!id_menu) {
-
         mostrarMensaje(
             "Menú requerido",
             "Debe seleccionar un menú para la ficha."
         );
 
-
+        window.guardandoFicha = false;
         return;
     }
 
-
-    /*
-     * DATOS GENERALES
-     */
-
-    formulario.append(
-        "id_menu",
-        String(id_menu)
-    );
-
-
-    formulario.append(
-        "titulo",
-        titulo
-    );
-
-
+    formulario.append("id_menu", String(id_menu));
+    formulario.append("titulo", titulo);
     formulario.append(
         "resumen",
-        document.getElementById(
-            "resumenFicha"
-        ).value
+        document.getElementById("resumenFicha").value
     );
-
-
     formulario.append(
         "texto",
-        document.getElementById(
-            "textoFicha"
-        ).value
+        document.getElementById("textoFicha").value
     );
-
-
     formulario.append(
         "visible",
-        document.getElementById(
-            "visibleFicha"
-        ).checked
-            ? 1
-            : 0
+        document.getElementById("visibleFicha").checked ? 1 : 0
     );
+    formulario.append("datos_json", JSON.stringify(datos));
 
-
-    formulario.append(
-        "datos_json",
-        JSON.stringify(datos)
-    );
-
-
-    /*
-     * =====================================================
-     * IMAGEN
-     * =====================================================
-     *
-     * Se utiliza directamente la imagen seleccionada.
-     * No se realiza ningún recorte ni ajuste.
-     */
-
-    const imagen =
-        document.getElementById(
-            "imagenFicha"
-        ).files[0];
+    // ---- Imagen ----
+    const imagen = document.getElementById("imagenFicha").files[0];
 
     if (imagen) {
-
-        formulario.append(
-            "imagen",
-            imagen
-        );
+        formulario.append("imagen", imagen);
     }
-
 
     try {
 
-        let url =
-            "/api/fichas";
-
-        let metodo =
-            "POST";
-
-
-        /*
-         * EDITAR
-         */
+        let url = "/api/fichas";
+        let metodo = "POST";
 
         if (id_ficha) {
-
-            url =
-                `/api/fichas/${id_ficha}`;
-
-            metodo =
-                "PUT";
+            url = `/api/fichas/${id_ficha}`;
+            metodo = "PUT";
         }
 
+        const respuesta = await window.fetchProtegido(url, {
+            method: metodo,
+            body: formulario
+        });
 
-        const respuesta =
-            await window.fetchProtegido(
-                url,
-                {
-                    method: metodo,
-                    body: formulario
-                }
-            );
-
-
-        const resultado =
-            await respuesta.json();
-
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
             mostrarMensaje(
                 "No se pudo guardar",
                 resultado.error ||
                 "Ocurrió un error al guardar la ficha."
             );
 
-
             return;
         }
 
+        const idGuardado = id_ficha || resultado.id_ficha;
 
-        const idGuardado =
-            id_ficha ||
-            resultado.id_ficha;
+        fichaEditando = idGuardado;
 
+        // ---- Etiquetas ----
+        await guardarEtiquetasFicha(idGuardado);
 
-        fichaEditando =
-            idGuardado;
+        // ---- Relaciones: 1) eliminar las quitadas ----
+        for (const idRelacion of relacionesEliminadasPendientes) {
 
+            const respuestaEliminar = await window.fetchProtegido(
+                `/api/relacion-ficha/${idRelacion}`,
+                { method: "DELETE" }
+            );
 
-        /*
-         * =====================================================
-         * ETIQUETAS
-         * =====================================================
-         */
-
-        await guardarEtiquetasFicha(
-            idGuardado
-        );
-
-
-        /* =====================================================
-           RELACIONES
-        ===================================================== */
-
-        /*
-         * Primero eliminamos de la BD las relaciones
-         * que el usuario quitó con la X.
-         */
-
-        /* =====================================================
-           RELACIONES
-        ===================================================== */
-
-
-        /*
-         * =====================================================
-         * 1. ELIMINAR RELACIONES QUITADAS
-         * =====================================================
-         */
-
-        for (
-            const idRelacion
-            of relacionesEliminadasPendientes
-        ) {
-
-            try {
-
-                const respuestaEliminar =
-                    await window.fetchProtegido(
-
-                        `/api/relacion-ficha/${idRelacion}`,
-
-                        {
-                            method: "DELETE"
-                        }
-                    );
-
-
-                if (!respuestaEliminar.ok) {
-    throw new Error(
-        `No se pudo eliminar la relación ${idRelacion}.`
-    );
-}
-
-            } catch (error) {
-    throw error;
-}
+            if (!respuestaEliminar.ok) {
+                throw new Error(
+                    `No se pudo eliminar la relación ${idRelacion}.`
+                );
+            }
         }
 
+        // ---- Relaciones: 2) solo las nuevas (sin id_relacion) ----
+        const relacionesNuevas = relacionesPendientes
+            .filter(relacion => !relacion.id_relacion)
+            .map(relacion => ({
+                id_ficha_destino: relacion.id_ficha_destino,
+                tipo_relacion: relacion.tipo_relacion
+            }));
 
-        /*
-         * =====================================================
-         * 2. SOLO RELACIONES NUEVAS
-         * =====================================================
-         *
-         * Las que tienen id_relacion ya existían en BD.
-         *
-         * Las que tienen id_relacion === null son nuevas.
-         */
+        // ---- Relaciones: 3) guardar las nuevas ----
+        if (relacionesNuevas.length > 0) {
 
-        const relacionesNuevas =
-            relacionesPendientes
-                .filter(
-                    relacion =>
-                        !relacion.id_relacion
-                )
-                .map(
-                    relacion => ({
-
-                        id_ficha_destino:
-                            relacion.id_ficha_destino,
-
-                        tipo_relacion:
-                            relacion.tipo_relacion
-
+            const respuestaRelaciones = await window.fetchProtegido(
+                `/api/relacion-ficha/${idGuardado}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        relaciones: relacionesNuevas
                     })
-                );
-
-
-        /*
-         * =====================================================
-         * 3. GUARDAR NUEVAS RELACIONES
-         * =====================================================
-         */
-
-        if (
-            relacionesNuevas.length > 0
-        ) {
-
-            const respuestaRelaciones =
-                await window.fetchProtegido(
-
-                    `/api/relacion-ficha/${idGuardado}`,
-
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            relaciones:
-                                relacionesNuevas
-
-                        })
-                    }
-                );
-
+                }
+            );
 
             if (!respuestaRelaciones.ok) {
-    throw new Error(
-        "No se pudieron guardar las relaciones de la ficha."
-    );
-}
+                throw new Error(
+                    "No se pudieron guardar las relaciones de la ficha."
+                );
+            }
         }
 
-
-
-        /*
-         * =====================================================
-         * LIMPIAR
-         * =====================================================
-         */
-
+        // ---- Limpiar ----
         relacionesPendientes = [];
-
         relacionesEliminadasPendientes = [];
-
         fichaEditando = null;
 
-        // Eliminar el borrador después de guardar la ficha.
-if (window.Borradores && claveBorradorFicha) {
-    window.Borradores.eliminar(
-        "fichas",
-        claveBorradorFicha
-    );
-}
-
+        if (window.Borradores && claveBorradorFicha) {
+            window.Borradores.eliminar("fichas", claveBorradorFicha);
+        }
 
         cerrarFicha();
 
+        modalFicha.dataset.idFicha = "";
+        modalFicha.dataset.idMenu = "";
 
-        modalFicha.dataset.idFicha =
-            "";
-
-
-        modalFicha.dataset.idMenu =
-            "";
-
-
-        document.getElementById(
-            "btnGuardarFicha"
-        ).textContent =
+        document.getElementById("btnGuardarFicha").textContent =
             "Guardar ficha";
 
+        // La lista de fichas cambió: invalidar la caché.
+        fcInvalidar("fichas");
 
-        /*
-         * IMPORTANTE:
-         *
-         * Después de guardar mantenemos la vista actual.
-         * Si estamos dentro de un menú, se muestran solamente
-         * las fichas de ese menú.
-         */
-
+        // Se mantiene la vista actual (menú o gestión general).
         await cargarFichas();
-
 
     } catch (error) {
 
-        console.error(
-            "Error guardando ficha:",
-            error
-        );
-
+        console.error("Error guardando ficha:", error);
 
         mostrarMensaje(
             "Error",
             "Ocurrió un error al guardar la ficha."
         );
+
+    } finally {
+        window.guardandoFicha = false;
     }
 }
 
 
 /* =========================================================
-   ELIMINAR FICHA
+   ELIMINAR FICHA (versión con confirm del navegador)
 ========================================================= */
 
 async function eliminarFicha(id_ficha) {
 
-    console.log(
-        "BOTON ELIMINAR PRESIONADO:",
-        id_ficha
-    );
-
-
-    const confirmar =
-        confirm(
-            "¿Eliminar esta ficha?"
-        );
-
+    const confirmar = confirm("¿Eliminar esta ficha?");
 
     if (!confirmar) {
         return;
     }
 
-
     try {
 
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/fichas/${id_ficha}`,
-                {
-                    method: "DELETE"
-                }
-            );
+        const respuesta = await window.fetchProtegido(
+            `/api/fichas/${id_ficha}`,
+            { method: "DELETE" }
+        );
 
-
-        const resultado =
-            await respuesta.json();
-
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
-            alert(
-                resultado.error
-            );
-
-
+            alert(resultado.error);
             return;
         }
 
+        alert(resultado.mensaje);
 
-        alert(
-            resultado.mensaje
-        );
-
+        fcInvalidar("fichas");
 
         cargarFichas();
 
-
     } catch (error) {
 
-        console.error(
-            "Error eliminando ficha:",
-            error
-        );
+        console.error("Error eliminando ficha:", error);
 
-
-        alert(
+        mostrarMensaje(
+            "Error",
             "Ocurrió un error al eliminar la ficha."
         );
     }
@@ -2460,435 +1505,75 @@ async function eliminarFicha(id_ficha) {
 
 
 /* =========================================================
-   CERRAR MULTIMEDIA
-========================================================= */
-
-function cerrarMultimedia() {
-
-    document.getElementById(
-        "modalMultimedia"
-    ).style.display =
-        "none";
-}
-
-
-/* =========================================================
    CAMBIO DE TIPO DE FICHA
 ========================================================= */
 
-async function cambioTipoFicha(
-    e
-) {
+async function cambioTipoFicha(e) {
 
-    if (
-        !e ||
-        !e.target ||
-        e.target.id !== "tipoFicha"
-    ) {
+    if (!e || !e.target || e.target.id !== "tipoFicha") {
         return;
     }
 
+    const id_menu = e.target.value;
 
-    const id_menu =
-        e.target.value;
+    // Si el formulario ya está abierto, no reiniciarlo.
+    const modalFicha = document.getElementById("modalFicha");
 
-
-    const opcion =
-        e.target.options[
-            e.target.selectedIndex
-        ];
-
-
-    const nombre =
-        opcion
-            ? opcion.textContent.trim()
-            : "";
-
-
-    const nombreTipo =
-        document.getElementById(
-            "nombreTipoFicha"
-        );
-
-
-    if (nombreTipo) {
-
-        nombreTipo.textContent =
-            nombre;
+    if (modalFicha && modalFicha.style.display === "flex") {
+        return;
     }
-
-
-    const tituloDatos =
-        document.getElementById(
-            "tituloDatosEspecificos"
-        );
-
-
-    if (tituloDatos) {
-
-        tituloDatos.textContent =
-            `Datos específicos de ${nombre}`;
-    }
-
 
     if (!id_menu) {
+        const campos = document.getElementById("camposDinamicos");
 
-        document.getElementById(
-            "camposDinamicos"
-        ).innerHTML =
-            "";
-
+        if (campos) campos.innerHTML = "";
 
         return;
     }
 
-
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                `/api/plantillas/menu/${id_menu}`
-            );
-
-
-        if (!respuesta.ok) {
-
-            console.error(
-                "No se pudo cargar la plantilla."
-            );
-
-
-            return;
-        }
-
-
-        const plantilla =
-            await respuesta.json();
-
-
-        window.plantillaActual =
-            plantilla;
-
-
-        const campos =
-            plantilla
-                .plantilla_json
-                ?.estructura
-                ?.campos || [];
-
-
-        generarCampos(
-            campos
-        );
-
-
-        /*
-         * =====================================================
-         * ABRIR FORMULARIO PARA NUEVA FICHA
-         * =====================================================
-         */
-
         cerrarTipoFicha();
 
+        await prepararFormularioNuevaFicha(id_menu);
 
-        const modalFicha =
-            document.getElementById(
-                "modalFicha"
-            );
-
-
-        modalFicha.style.display =
-            "flex";
-
-
-        /*
-         * El menú elegido queda guardado en el modal.
-         */
-
-        modalFicha.dataset.idFicha =
-            "";
-
-
-        modalFicha.dataset.idMenu =
-            String(id_menu);
-
-
-        fichaEditando =
-            null;
-
-
-        relacionesPendientes = [];
-
-        relacionesEliminadasPendientes = [];
-
-
-        document.getElementById(
-            "btnGuardarFicha"
-        ).textContent =
-            "Guardar ficha";
-
-
-        document.getElementById(
-            "tituloModalFicha"
-        ).textContent =
-            "Nueva ficha";
-
-
-        /*
-         * LIMPIAR FORMULARIO
-         */
-
-        document.getElementById(
-            "tituloFicha"
-        ).value =
-            "";
-
-
-        document.getElementById(
-            "resumenFicha"
-        ).value =
-            "";
-
-
-        document.getElementById(
-            "textoFicha"
-        ).value =
-            "";
-
-
-        document.getElementById(
-            "imagenFicha"
-        ).value =
-            "";
-
-
-        document.getElementById(
-            "labelImagenFicha"
-        ).textContent =
-            "Seleccionar imagen";
-
-
-        /*
-         * IMAGEN ACTUAL
-         */
-
-        const imagenActual =
-            document.getElementById(
-                "imagenActualFicha"
-            );
-
-
-        if (imagenActual) {
-
-            imagenActual.src =
-                "";
-
-
-            imagenActual.style.display =
-                "none";
-        }
-
-
-        const contenedorImagenActual =
-            document.getElementById(
-                "contenedorImagenActual"
-            );
-
-
-        if (contenedorImagenActual) {
-
-            contenedorImagenActual.style.display =
-                "none";
-        }
-
-
-        /*
-         * VISIBLE
-         */
-
-        document.getElementById(
-            "visibleFicha"
-        ).checked =
-            true;
-
-
-        /*
-         * CAMPOS DINÁMICOS
-         */
-
-        document
-            .querySelectorAll(
-                ".campo-dinamico"
-            )
-            .forEach(campo => {
-
-                campo.value =
-                    "";
-            });
-
-
-        /*
-         * ETIQUETAS
-         */
-
-        await cargarEtiquetasFicha();
-
-
-        /*
-         * RELACIONES
-         */
-
-        const selectRelacion =
-            document.getElementById(
-                "fichaRelacion"
-            );
-
-
-        const tipoRelacion =
-            document.getElementById(
-                "tipoRelacion"
-            );
-
-
-        if (selectRelacion) {
-
-            selectRelacion.disabled =
-                false;
-
-
-            await cargarFichasDisponibles();
-        }
-
-
-        if (tipoRelacion) {
-
-            tipoRelacion.disabled =
-                false;
-        }
-
-
-        mostrarRelacionesPendientes();
-
-// Recuperar el borrador correspondiente al menú elegido.
-const borradorRecuperado = recuperarBorradorFicha();
-
-if (borradorRecuperado) {
-    console.log("Borrador de ficha recuperado.");
-}
-
-} catch (error) {
-
-        console.error(
-            "Error cargando plantilla:",
-            error
-        );
+    } catch (error) {
+        console.error("Error cargando plantilla:", error);
     }
 }
 
-
-/*
- * =========================================================
- * EVENTO CHANGE
- *
- * Se registra una sola vez.
- * =========================================================
- */
-
+// Se registra una sola vez.
 if (!window.__fichasEventoTipoRegistrado) {
-
-    document.addEventListener(
-        "change",
-        cambioTipoFicha
-    );
-
-
-    window.__fichasEventoTipoRegistrado =
-        true;
+    document.addEventListener("change", cambioTipoFicha);
+    window.__fichasEventoTipoRegistrado = true;
 }
 
 
 /* =========================================================
-   CARGAR TIPOS DE FICHA / MENÚES
+   CARGAR TIPOS DE FICHA / MENÚES (con caché)
 ========================================================= */
 
 async function cargarTiposFicha() {
 
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                "/api/menus"
-            );
-
-
-        if (!respuesta.ok) {
-
-            console.error(
-                "Error obteniendo menús:",
-                respuesta.status
-            );
-
-
-            return;
-        }
-
-
-        const menus =
-            await respuesta.json();
-
-
-        const select =
-            document.getElementById(
-                "tipoFicha"
-            );
-
+        const select = document.getElementById("tipoFicha");
 
         if (!select) {
-
-            console.error(
-                "No existe tipoFicha"
-            );
-
-
+            console.error("No existe tipoFicha");
             return;
         }
 
+        const menus = await fcMenus();
 
-        select.innerHTML = `
-            <option value="">
-                Seleccionar...
-            </option>
-        `;
-
-
-        menus.forEach(menu => {
-
-            const opcion =
-                document.createElement(
-                    "option"
-                );
-
-
-            opcion.value =
-                menu.id_menu;
-
-
-            opcion.textContent =
-                menu.nombre;
-
-
-            select.appendChild(
-                opcion
-            );
-        });
-
+        select.innerHTML =
+            `<option value="">Seleccionar...</option>` +
+            menus.map(menu => `
+                <option value="${menu.id_menu}">
+                    ${fcEscapar(menu.nombre)}
+                </option>
+            `).join("");
 
     } catch (error) {
-
-        console.error(
-            "Error cargando tipos:",
-            error
-        );
+        console.error("Error cargando tipos:", error);
     }
 }
 
@@ -2899,64 +1584,30 @@ async function cargarTiposFicha() {
 
 function generarCampos(campos) {
 
-    const contenedor =
-        document.getElementById(
-            "camposDinamicos"
-        );
-
+    const contenedor = document.getElementById("camposDinamicos");
 
     if (!contenedor) {
-
-        console.error(
-            "No existe camposDinamicos."
-        );
-
-
+        console.error("No existe camposDinamicos.");
         return;
     }
 
-
-    contenedor.innerHTML =
-        "";
-
-
-    if (
-        !campos ||
-        campos.length === 0
-    ) {
-
+    if (!campos || campos.length === 0) {
         contenedor.innerHTML =
             "<p>No hay atributos definidos para este tipo</p>";
-
-
         return;
     }
 
+    contenedor.innerHTML = campos.map(campo => `
+        <div class="campo-dinamico-item">
+            <label>${fcEscapar(campo.etiqueta || campo.nombre)}</label>
 
-    campos.forEach(campo => {
-
-        contenedor.innerHTML += `
-
-            <div class="campo-dinamico-item">
-
-                <label>
-                    ${
-                        campo.etiqueta ||
-                        campo.nombre
-                    }
-                </label>
-
-
-                <input
-                    type="${campo.tipo || "text"}"
-                    class="campo-dinamico"
-                    data-campo="${campo.nombre}"
-                >
-
-            </div>
-
-        `;
-    });
+            <input
+                type="${fcEscapar(campo.tipo || "text")}"
+                class="campo-dinamico"
+                data-campo="${fcEscapar(campo.nombre)}"
+            >
+        </div>
+    `).join("");
 }
 
 
@@ -2965,17 +1616,10 @@ function generarCampos(campos) {
 ========================================================= */
 
 function cerrarTipoFicha() {
-
-    const modal =
-        document.getElementById(
-            "modalTipoFicha"
-        );
-
+    const modal = document.getElementById("modalTipoFicha");
 
     if (modal) {
-
-        modal.style.display =
-            "none";
+        modal.style.display = "none";
     }
 }
 
@@ -2985,18 +1629,10 @@ function cerrarTipoFicha() {
 ========================================================= */
 
 function volverMenus() {
+    menuSeleccionado = null;
+    nombreMenuSeleccionado = "";
 
-    menuSeleccionado =
-        null;
-
-
-    nombreMenuSeleccionado =
-        "";
-
-
-    cargarVentana(
-        "menus"
-    );
+    cargarVentana("menus");
 }
 
 
@@ -3005,30 +1641,16 @@ function volverMenus() {
 ========================================================= */
 
 function abrirEliminarFicha(id) {
+    fichaEliminar = id;
 
-    fichaEliminar =
-        id;
-
-
-    document.getElementById(
-        "modalEliminarFicha"
-    ).style.display =
-        "flex";
+    document.getElementById("modalEliminarFicha").style.display = "flex";
 }
-
 
 function cerrarEliminarFicha() {
+    fichaEliminar = null;
 
-    fichaEliminar =
-        null;
-
-
-    document.getElementById(
-        "modalEliminarFicha"
-    ).style.display =
-        "none";
+    document.getElementById("modalEliminarFicha").style.display = "none";
 }
-
 
 async function confirmarEliminarFicha() {
 
@@ -3036,53 +1658,33 @@ async function confirmarEliminarFicha() {
         return;
     }
 
-
     try {
 
-        const respuesta =
-            await window.fetchProtegido(
+        const respuesta = await window.fetchProtegido(
+            `/api/fichas/${fichaEliminar}`,
+            { method: "DELETE" }
+        );
 
-                `/api/fichas/${fichaEliminar}`,
-
-                {
-                    method: "DELETE"
-                }
-            );
-
-
-        const resultado =
-            await respuesta.json();
-
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
             cerrarEliminarFicha();
 
-
-            mostrarMensaje(
-                "Error",
-                resultado.error
-            );
-
+            mostrarMensaje("Error", resultado.error);
 
             return;
         }
 
-
         cerrarEliminarFicha();
 
+        fcInvalidar("fichas");
 
         await cargarFichas();
 
-
     } catch (error) {
-
-        console.error(
-            error
-        );
+        console.error(error);
     }
 }
-
 
 
 /* =========================================================
@@ -3090,18 +1692,24 @@ async function confirmarEliminarFicha() {
 ========================================================= */
 
 function cerrarMensajeFicha() {
-
-    const modal =
-        document.getElementById(
-            "modalMensajeFicha"
-        );
-
+    const modal = document.getElementById("modalMensajeFicha");
 
     if (modal) {
-
-        modal.style.display =
-            "none";
+        modal.style.display = "none";
     }
+}
+
+
+function etiquetaEstaActiva(etiqueta) {
+    const valor = etiqueta?.activo;
+
+    return (
+        valor === true ||
+        valor === 1 ||
+        ["true", "1", "t"].includes(
+            String(valor).trim().toLowerCase()
+        )
+    );
 }
 
 
@@ -3109,351 +1717,187 @@ function cerrarMensajeFicha() {
    ETIQUETAS
 ========================================================= */
 
-async function cargarEtiquetasFicha(
-    seleccionadas = []
-) {
+async function cargarEtiquetasFicha(seleccionadas = []) {
 
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                "/api/etiquetas"
-            );
-
-
-        if (!respuesta.ok) {
-
-            console.error(
-                "No se pudieron cargar las etiquetas."
-            );
-
-
-            return;
-        }
-
-
-        const etiquetas =
-            await respuesta.json();
-
-
         const contenedor =
-            document.getElementById(
-                "listaEtiquetasFicha"
-            );
-
+            document.getElementById("listaEtiquetasFicha");
 
         if (!contenedor) {
             return;
         }
 
+        const etiquetas = await fcEtiquetas();
 
-        contenedor.innerHTML =
-            "";
-
-
-        etiquetas.forEach(etiqueta => {
-
-            contenedor.innerHTML += `
-
-                <label
-                    class="item-etiqueta ${
-                        etiqueta.activo
-                            ? ""
-                            : "etiqueta-desactivada"
-                    }"
+        contenedor.innerHTML = etiquetas.map(etiqueta => `
+            <label class="item-etiqueta ${
+                etiquetaEstaActiva(etiqueta)
+                    ? ""
+                    : "etiqueta-desactivada"
+            }">
+                <input
+                    type="checkbox"
+                    class="checkbox-etiqueta"
+                    value="${etiqueta.id_etiqueta}"
+                    ${
+                        seleccionadas.includes(etiqueta.id_etiqueta)
+                            ? "checked"
+                            : ""
+                    }
                 >
-
-                    <input
-                        type="checkbox"
-                        class="checkbox-etiqueta"
-                        value="${etiqueta.id_etiqueta}"
-
-                        ${
-                            seleccionadas.includes(
-                                etiqueta.id_etiqueta
-                            )
-                                ? "checked"
-                                : ""
-                        }
-                    >
-
-                    ${etiqueta.nombre}
-
-                </label>
-
-            `;
-        });
-
+                ${fcEscapar(etiqueta.nombre)}
+            </label>
+        `).join("");
 
     } catch (error) {
-
-        console.error(
-            "Error cargando etiquetas:",
-            error
-        );
+        console.error("Error cargando etiquetas:", error);
     }
 }
 
+async function obtenerEtiquetasFicha(idFicha) {
 
-async function obtenerEtiquetasFicha(
-    idFicha
-) {
-
-    const respuesta =
-        await window.fetchProtegido(
-            `/api/fichas/${idFicha}/etiquetas`
-        );
-
+    const respuesta = await window.fetchProtegido(
+        `/api/fichas/${idFicha}/etiquetas`
+    );
 
     if (!respuesta.ok) {
         return [];
     }
 
+    const etiquetas = await respuesta.json();
 
-    const etiquetas =
-        await respuesta.json();
-
-
-    return etiquetas.map(
-        etiqueta =>
-            etiqueta.id_etiqueta
-    );
+    return etiquetas.map(etiqueta => etiqueta.id_etiqueta);
 }
-
 
 function obtenerEtiquetasSeleccionadas() {
-
     return Array.from(
-        document.querySelectorAll(
-            ".checkbox-etiqueta:checked"
-        )
-    ).map(
-        checkbox =>
-            Number(
-                checkbox.value
-            )
-    );
+        document.querySelectorAll(".checkbox-etiqueta:checked")
+    ).map(checkbox => Number(checkbox.value));
 }
 
+async function guardarEtiquetasFicha(idFicha) {
 
-async function guardarEtiquetasFicha(
-    idFicha
-) {
+    const etiquetas = obtenerEtiquetasSeleccionadas();
 
-    const etiquetas =
-        obtenerEtiquetasSeleccionadas();
-
-
-    const respuesta =
-        await window.fetchProtegido(
-
-            `/api/fichas/${idFicha}/etiquetas`,
-
-            {
-                method: "PUT",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    etiquetas:
-                        etiquetas
-                })
-            }
-        );
-
+    const respuesta = await window.fetchProtegido(
+        `/api/fichas/${idFicha}/etiquetas`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ etiquetas })
+        }
+    );
 
     if (!respuesta.ok) {
-
-        console.error(
-            "No se pudieron guardar las etiquetas."
-        );
+        console.error("No se pudieron guardar las etiquetas.");
     }
 }
 
 
 /* =========================================================
-   FICHAS DISPONIBLES PARA RELACIONAR
+   FICHAS DISPONIBLES PARA RELACIONAR (con caché)
 ========================================================= */
 
-async function cargarFichasDisponibles(
-    idActual
-) {
+async function cargarFichasDisponibles(idActual) {
 
     try {
-
-        const respuesta =
-            await window.fetchProtegido(
-                "/api/fichas"
-            );
-
-
-        if (!respuesta.ok) {
-            return;
-        }
-
-
-        const fichas =
-            await respuesta.json();
-
-
-        const select =
-            document.getElementById(
-                "fichaRelacion"
-            );
-
+        const select = document.getElementById("fichaRelacion");
 
         if (!select) {
             return;
         }
 
+        const fichas = await fcFichas();
 
-        select.innerHTML = `
-            <option value="">
-                Seleccionar ficha...
-            </option>
-        `;
-
-
-        fichas.forEach(ficha => {
-
-            if (
-                ficha.id_ficha !=
-                idActual
-            ) {
-
-                select.innerHTML += `
-
-                    <option
-                        value="${ficha.id_ficha}"
-                    >
-                        ${ficha.titulo}
+        select.innerHTML =
+            `<option value="">Seleccionar ficha...</option>` +
+            fichas
+                .filter(f => f.id_ficha != idActual)
+                .map(f => `
+                    <option value="${f.id_ficha}">
+                        ${fcEscapar(f.titulo)}
                     </option>
-
-                `;
-            }
-        });
-
+                `)
+                .join("");
 
     } catch (error) {
-
-        console.error(
-            "Error cargando fichas disponibles:",
-            error
-        );
+        console.error("Error cargando fichas disponibles:", error);
     }
 }
 
 
 /* =========================================================
-   CARGAR RELACIONES
+   CARGAR RELACIONES (lista simple, uso heredado)
 ========================================================= */
 
-async function cargarRelacionesFicha(
-    id_ficha
-) {
+async function cargarRelacionesFicha(id_ficha) {
 
-    const respuesta =
-        await window.fetchProtegido(
-            `/api/relacion-ficha/${id_ficha}`
-        );
-
+    const respuesta = await window.fetchProtegido(
+        `/api/relacion-ficha/${id_ficha}`
+    );
 
     if (!respuesta.ok) {
         return;
     }
 
-
-    const relaciones =
-        await respuesta.json();
-
+    const relaciones = await respuesta.json();
 
     const contenedor =
-        document.getElementById(
-            "listaRelacionesFicha"
-        );
-
+        document.getElementById("listaRelacionesFicha");
 
     if (!contenedor) {
         return;
     }
 
-
-    contenedor.innerHTML =
-        "";
-
-
     if (relaciones.length === 0) {
-
-        contenedor.innerHTML = `
-            <p>
-                No hay fichas relacionadas
-            </p>
-        `;
-
-
+        contenedor.innerHTML = "<p>No hay fichas relacionadas</p>";
         return;
     }
 
+    contenedor.innerHTML = relaciones.map(relacion => `
+        <div class="item-relacion-ficha">
 
-    relaciones.forEach(relacion => {
+            <span>
+                ${fcEscapar(
+                    relacion.ficha_relacionada ||
+                    relacion.titulo ||
+                    `Ficha ${relacion.id_ficha_destino}`
+                )}
+            </span>
 
-        contenedor.innerHTML += `
+            <small>${fcEscapar(relacion.tipo_relacion)}</small>
 
-            <div class="item-relacion-ficha">
+            <button
+                class="btn-eliminar"
+                onclick="eliminarRelacionFicha(${relacion.id_relacion})"
+            >
+                ✖
+            </button>
 
-                <span>
-                    ${
-                        relacion.ficha_relacionada ||
-                        relacion.titulo ||
-                        `Ficha ${relacion.id_ficha_destino}`
-                    }
-                </span>
-
-
-                <small>
-                    ${relacion.tipo_relacion}
-                </small>
-
-
-                <button
-                    class="btn-eliminar"
-
-                    onclick="
-                        eliminarRelacionFicha(
-                            ${relacion.id_relacion}
-                        )
-                    "
-                >
-                    ✖
-                </button>
-
-            </div>
-
-        `;
-    });
+        </div>
+    `).join("");
 }
+
+
+/* =========================================================
+   AGREGAR RELACIÓN
+========================================================= */
 
 async function agregarRelacionFicha() {
 
-    const select =
-        document.getElementById("fichaRelacion");
+    const select = document.getElementById("fichaRelacion");
 
     if (!select) {
         return;
     }
 
-    const destino =
-        Number(select.value);
+    const destino = Number(select.value);
 
-    const tipo =
-        document.getElementById("tipoRelacion")?.value;
-
+    const tipo = document.getElementById("tipoRelacion")?.value;
 
     if (!destino) {
-
         mostrarMensaje(
             "Ficha requerida",
             "Debe seleccionar una ficha para crear la relación."
@@ -3462,9 +1906,7 @@ async function agregarRelacionFicha() {
         return;
     }
 
-
     if (!tipo) {
-
         mostrarMensaje(
             "Tipo de relación requerido",
             "Debe seleccionar qué relación existe entre las fichas antes de agregarla."
@@ -3473,22 +1915,11 @@ async function agregarRelacionFicha() {
         return;
     }
 
-
-    /*
-     * =====================================================
-     * ¿YA EXISTE ACTUALMENTE?
-     * =====================================================
-     */
-
-    const yaExiste =
-        relacionesPendientes.some(
-            relacion =>
-                Number(relacion.id_ficha_destino) === destino
-        );
-
+    const yaExiste = relacionesPendientes.some(
+        relacion => Number(relacion.id_ficha_destino) === destino
+    );
 
     if (yaExiste) {
-
         mostrarMensaje(
             "Ficha ya relacionada",
             "Esta ficha ya está relacionada. No puede relacionarse con la misma ficha más de una vez."
@@ -3499,436 +1930,151 @@ async function agregarRelacionFicha() {
         return;
     }
 
+    const opcion = select.options[select.selectedIndex];
 
-    /*
-     * =====================================================
-     * SI EXISTÍA EN BD Y FUE ELIMINADA
-     *
-     * Quitamos su ID de la lista de eliminaciones.
-     *
-     * De esta forma, si el usuario elimina una relación
-     * y después se arrepiente antes de guardar, no se
-     * elimina de la BD.
-     * =====================================================
-     */
+    const titulo = opcion
+        ? opcion.textContent.trim()
+        : `Ficha ${destino}`;
 
-    const relacionesEliminadasFiltradas =
-        [];
-
-    for (
-        const idRelacion
-        of relacionesEliminadasPendientes
-    ) {
-
-        /*
-         * No podemos saber el destino solamente con el ID
-         * de relación, por eso buscamos primero la relación
-         * original si todavía existe en memoria.
-         */
-
-        relacionesEliminadasFiltradas.push(
-            idRelacion
-        );
-    }
-
-
-    /*
-     * =====================================================
-     * OBTENER TÍTULO
-     * =====================================================
-     */
-
-    const opcion =
-        select.options[
-            select.selectedIndex
-        ];
-
-    const titulo =
-        opcion
-            ? opcion.textContent.trim()
-            : `Ficha ${destino}`;
-
-
-    /*
-     * =====================================================
-     * AGREGAR RELACIÓN NUEVA
-     * =====================================================
-     */
-
+    // Relación nueva: id_relacion null (todavía no está en la BD).
     relacionesPendientes.push({
-
         id_relacion: null,
-
-        id_ficha_destino:
-            destino,
-
-        tipo_relacion:
-            tipo,
-
-        titulo:
-            titulo
-
+        id_ficha_destino: destino,
+        tipo_relacion: tipo,
+        titulo: titulo
     });
-
 
     await mostrarRelacionesPendientes();
 
-
     select.value = "";
 
-
-    const tipoRelacion =
-        document.getElementById(
-            "tipoRelacion"
-        );
+    const tipoRelacion = document.getElementById("tipoRelacion");
 
     if (tipoRelacion) {
         tipoRelacion.value = "";
     }
 }
 
+
 /* =========================================================
-   MOSTRAR RELACIONES PENDIENTES
-   MINI FICHAS
+   MOSTRAR RELACIONES PENDIENTES (MINI FICHAS)
+   0 fetches extra: usa la lista cacheada de fichas.
 ========================================================= */
 
 async function mostrarRelacionesPendientes() {
 
-    const contenedor =
-        document.getElementById(
-            "listaRelacionesFicha"
-        );
+    const contenedor = document.getElementById("listaRelacionesFicha");
 
+    if (!contenedor) return;
 
-    if (!contenedor) {
-        return;
-    }
-
-
-    contenedor.innerHTML = "";
-
-
-    if (
-        !relacionesPendientes ||
-        relacionesPendientes.length === 0
-    ) {
-
+    if (!relacionesPendientes || relacionesPendientes.length === 0) {
         contenedor.innerHTML =
             "<span class='sin-relaciones'>No hay relaciones agregadas</span>";
 
         return;
     }
 
-
-    /*
-     * =====================================================
-     * ELIMINAR DUPLICADOS ANTES DE MOSTRAR
-     * =====================================================
-     *
-     * Una ficha destino solamente puede aparecer una vez.
-     */
-
-    const unicas = [];
-
+    // Evitar relaciones duplicadas (síncrono, antes de cualquier await).
     const idsUsados = new Set();
 
+    relacionesPendientes = relacionesPendientes.filter(relacion => {
+        const idDestino = Number(relacion.id_ficha_destino);
 
-    relacionesPendientes.forEach(
-        relacion => {
+        if (!idDestino || idsUsados.has(idDestino)) return false;
 
-            const idDestino =
-                Number(
-                    relacion.id_ficha_destino
-                );
+        idsUsados.add(idDestino);
 
+        return true;
+    });
 
-            if (!idDestino) {
-                return;
-            }
+    let mapa = new Map();
 
+    try {
+        mapa = await fcMapaFichas();
+    } catch (error) {
+        console.error("Error obteniendo fichas relacionadas:", error);
+    }
 
-            if (
-                idsUsados.has(
-                    idDestino
-                )
-            ) {
+    // Se lee relacionesPendientes DESPUÉS del await: siempre actual.
+    contenedor.innerHTML = relacionesPendientes.map((relacion, index) => {
 
-                return;
-            }
+        const f = mapa.get(String(relacion.id_ficha_destino));
 
+        const titulo = f?.titulo || relacion.titulo || "Sin título";
 
-            idsUsados.add(
-                idDestino
-            );
+        const visible = f ? f.visible : 1;
 
-
-            unicas.push(
-                relacion
-            );
-        }
-    );
-
-
-    /*
-     * Actualizamos el array para que
-     * tampoco queden duplicados internamente.
-     */
-
-    relacionesPendientes =
-        unicas;
-
-
-    /*
-     * =====================================================
-     * OBTENER DATOS COMPLETOS
-     * =====================================================
-     */
-
-    const fichasCompletas =
-        await Promise.all(
-
-            relacionesPendientes.map(
-                async relacion => {
-
-                    try {
-
-                        const respuesta =
-                            await window.fetchProtegido(
-
-                                `/api/fichas/${relacion.id_ficha_destino}`
-
-                            );
-
-
-                        if (
-                            respuesta.ok
-                        ) {
-
-                            const ficha =
-                                await respuesta.json();
-
-
-                            return {
-
-                                ...relacion,
-
-                                titulo:
-                                    ficha.titulo ||
-                                    relacion.titulo ||
-                                    "Sin título",
-
-                                imagen:
-                                    ficha.imagen ||
-                                    null,
-
-                                visible:
-                                    ficha.visible
-
-                            };
-                        }
-
-                    } catch (error) {
-
-                        console.error(
-                            "Error obteniendo ficha relacionada:",
-                            error
-                        );
-                    }
-
-
-                    return relacion;
-
-                }
-            )
-        );
-
-
-    /*
-     * =====================================================
-     * MOSTRAR MINI FICHAS
-     * =====================================================
-     */
-
-    fichasCompletas.forEach(
-        (relacion, index) => {
-
-            const imagen =
-                relacion.imagen
-
-                    ? "/" +
-                      relacion.imagen.replace(
-                          "public/",
-                          ""
-                      )
-
-                    : "/imagenes/default.png";
-
-
-            contenedor.innerHTML += `
-
-                <article class="mini-ficha-relacion ${
-                    relacion.visible == 0
-                        ? "mini-ficha-desactivada"
-                        : ""
-                }">
-
-                    <div class="mini-ficha-imagen">
-
-                        <img
-                            src="${imagen}"
-
-                            alt="${
-                                relacion.titulo ||
-                                "Ficha"
-                            }"
-
-                            onerror="
-                                this.onerror=null;
-                                this.src='/imagenes/default.png';
-                            "
-                        >
-
-                    </div>
-
-
-                    <div class="mini-ficha-contenido">
-
-                        <span class="mini-ficha-id">
-                            FICHA #${
-                                relacion.id_ficha_destino
-                            }
-                        </span>
-
-
-                        <h4>
-                            ${
-                                relacion.titulo ||
-                                "Sin título"
-                            }
-                        </h4>
-
-
-                        <span class="mini-ficha-tipo">
-                            ${
-                                relacion.tipo_relacion ||
-                                "Sin relación"
-                            }
-                        </span>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="mini-ficha-eliminar"
-
-                        onclick="
-                            eliminarRelacionFichaEditar(
-                                ${index}
-                            )
-                        "
-
-                        title="Eliminar relación"
+        return `
+            <article class="mini-ficha-relacion ${
+                visible == 0 ? "mini-ficha-desactivada" : ""
+            }">
+                <div class="mini-ficha-imagen">
+                    <img
+                        src="${obtenerRutaImagenFicha(f?.imagen)}"
+                        alt="${fcEscapar(titulo)}"
+                        loading="lazy"
+                        onerror="this.onerror=null;this.src='/imagenes/default.png';"
                     >
-                        ×
-                    </button>
+                </div>
 
-                </article>
+                <div class="mini-ficha-contenido">
+                    <span class="mini-ficha-id">
+                        FICHA #${relacion.id_ficha_destino}
+                    </span>
 
-            `;
-        }
-    );
+                    <h4>${fcEscapar(titulo)}</h4>
+
+                    <span class="mini-ficha-tipo">
+                        ${fcEscapar(relacion.tipo_relacion || "Sin relación")}
+                    </span>
+                </div>
+
+                <button
+                    type="button"
+                    class="mini-ficha-eliminar"
+                    onclick="eliminarRelacionFichaEditar(${index})"
+                    title="Eliminar relación"
+                >
+                    ×
+                </button>
+            </article>
+        `;
+    }).join("");
 }
+
+
 /* =========================================================
    ELIMINAR RELACIÓN DE LA VISTA
    NO ELIMINA DE LA BD TODAVÍA
 ========================================================= */
 
-async function eliminarRelacionFichaEditar(
-    index
-) {
+async function eliminarRelacionFichaEditar(index) {
 
-    const relacion =
-        relacionesPendientes[index];
-
+    const relacion = relacionesPendientes[index];
 
     if (!relacion) {
         return;
     }
 
-
-    /*
-     * Si existe en BD, guardamos su ID
-     * para eliminarla cuando se actualice.
-     */
-
+    // Si existe en la BD, guardar su ID para eliminarla al actualizar.
     if (
         relacion.id_relacion &&
-        !relacionesEliminadasPendientes.includes(
-            relacion.id_relacion
-        )
+        !relacionesEliminadasPendientes.includes(relacion.id_relacion)
     ) {
-
-        relacionesEliminadasPendientes.push(
-            relacion.id_relacion
-        );
+        relacionesEliminadasPendientes.push(relacion.id_relacion);
     }
 
-
-    /*
-     * La quitamos solamente de la memoria.
-     */
-
-    relacionesPendientes.splice(
-        index,
-        1
-    );
-
-
-    /*
-     * Actualizamos visualmente.
-     */
+    // Se quita solamente de la memoria.
+    relacionesPendientes.splice(index, 1);
 
     await mostrarRelacionesPendientes();
 }
 
+function eliminarRelacionPendiente(index) {
 
-/* =========================================================
-   ELIMINAR RELACIÓN PENDIENTE
-========================================================= */
-
-function eliminarRelacionPendiente(
-    index
-) {
-
-    relacionesPendientes.splice(
-        index,
-        1
-    );
-
+    relacionesPendientes.splice(index, 1);
 
     mostrarRelacionesPendientes();
-}
-
-
-/* =========================================================
-   FECHA ARGENTINA
-========================================================= */
-
-function mostrarFechaArgentina(
-    fecha
-) {
-
-    if (!fecha) {
-        return "-";
-    }
-
-
-    const partes =
-        fecha.split(" ");
-
-
-    return `${partes[0]} ${partes[1]}`;
 }
 
 
@@ -3936,40 +2082,17 @@ function mostrarFechaArgentina(
    MENSAJE
 ========================================================= */
 
-function mostrarMensaje(
-    titulo,
-    mensaje
-) {
+function mostrarMensaje(titulo, mensaje) {
 
-    const modal =
-        document.getElementById(
-            "modalMensajeFicha"
-        );
-
+    const modal = document.getElementById("modalMensajeFicha");
 
     if (!modal) {
-
-        alert(
-            `${titulo}\n\n${mensaje}`
-        );
-
-
+        alert(`${titulo}\n\n${mensaje}`);
         return;
     }
 
+    document.getElementById("tituloMensaje").textContent = titulo;
+    document.getElementById("textoMensaje").textContent = mensaje;
 
-    document.getElementById(
-        "tituloMensaje"
-    ).textContent =
-        titulo;
-
-
-    document.getElementById(
-        "textoMensaje"
-    ).textContent =
-        mensaje;
-
-
-    modal.style.display =
-        "flex";
+    modal.style.display = "flex";
 }

@@ -37,7 +37,9 @@ async function cargarEtiquetas() {
 
             contenedor.innerHTML += `
 
-                <div class="tarjeta-etiqueta ${etiqueta.activo ? "" : "etiqueta-inactiva"}">
+                <div class="tarjeta-etiqueta ${
+                    Number(etiqueta.activo) === 0 ? "etiqueta-inactiva" : ""
+                }">
 
                     <div class="info-etiqueta">
 

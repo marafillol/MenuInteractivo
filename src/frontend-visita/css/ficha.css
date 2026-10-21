@@ -3060,3 +3060,1138 @@
         grayscale(1)
         opacity(.8);
 }
+
+
+/* ==========================================
+   PLANTILLA ASIGNADA A CADA MENÚ
+   Columnas uniformes, formas y tipografía.
+========================================== */
+
+#contenedorFichas.con-plantilla {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-columns: repeat(
+        var(--plantilla-columnas, 4),
+        minmax(0, 1fr)
+    );
+
+    align-items: stretch;
+    align-content: start;
+    gap: var(--plantilla-separacion, 22px);
+
+    padding: 28px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background: rgba(0, 0, 0, 0.48);
+}
+
+/* Todas las tarjetas respetan exactamente su columna */
+#contenedorFichas.con-plantilla .tarjetaFicha {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 0.76;
+    box-sizing: border-box;
+}
+
+/* Fondo de la tarjeta */
+#contenedorFichas.con-plantilla .fondoFicha {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+
+    background: linear-gradient(
+        145deg,
+        color-mix(
+            in srgb,
+            var(--plantilla-color-principal, #163a61) 35%,
+            #071923
+        ),
+        #02080c
+    );
+
+    border: 1px solid var(--plantilla-color-principal, #163a61);
+    border-radius: var(--plantilla-radio-borde, 8px);
+}
+
+
+
+/* Información y campos */
+#contenedorFichas.con-plantilla .camposTarjeta {
+    min-width: 0;
+    font-family: var(--plantilla-fuente-texto, Arial), sans-serif;
+}
+
+
+#contenedorFichas.con-plantilla .etiquetaCampo {
+    flex: 1 1 42%;
+    min-width: 0;
+
+    color: var(--plantilla-color-secundario, #c1b797);
+    overflow-wrap: anywhere;
+}
+
+#contenedorFichas.con-plantilla .valorCampo {
+    flex: 1 1 58%;
+    min-width: 0;
+    max-width: 58%;
+
+    color: var(--plantilla-color-texto, #eee9dc);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* Resumen */
+#contenedorFichas.con-plantilla .resumenFicha {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+
+/* Imágenes proporcionadas */
+#contenedorFichas.con-plantilla .imagenFicha img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Tamaños: cambia la proporción sin desalinear las columnas */
+#contenedorFichas.con-plantilla[data-tamano-ficha="pequeno"] .tarjetaFicha {
+    width: 100%;
+}
+
+#contenedorFichas.con-plantilla[data-tamano-ficha="mediano"] .tarjetaFicha {
+    width: 100%;
+}
+
+#contenedorFichas.con-plantilla[data-tamano-ficha="grande"] .tarjetaFicha {
+    width: 100%;
+}
+
+/* Forma rectangular */
+#contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .tarjetaFicha {
+    aspect-ratio: 0.76;
+    min-height: 0;
+    height: auto;
+    border-radius: 0;
+    overflow: visible;
+}
+
+/* Forma cuadrada */
+#contenedorFichas.con-plantilla[data-forma-ficha="cuadrada"] .tarjetaFicha {
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    height: auto;
+    overflow: hidden;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="cuadrada"] .fondoFicha {
+    border-radius: var(--plantilla-radio-borde, 8px);
+}
+
+/* Forma redondeada */
+#contenedorFichas.con-plantilla[data-forma-ficha="redondeada"] .tarjetaFicha,
+#contenedorFichas.con-plantilla[data-forma-ficha="redondeada"] .fondoFicha {
+    border-radius: max(var(--plantilla-radio-borde, 8px), 20px);
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="redondeada"] .tarjetaFicha {
+    overflow: hidden;
+}
+
+/* Forma circular */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha {
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    height: auto;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .fondoFicha {
+    border-radius: 50%;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .cabeceraFicha,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .pieFicha {
+    left: 12%;
+    right: 12%;
+}
+
+/* Ocultar imagen cuando la plantilla lo indique */
+#contenedorFichas.con-plantilla[data-mostrar-imagen="false"] .imagenFicha {
+    display: none;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+/* Escritorio y monitores grandes */
+@media (min-width: 1100px) {
+    #contenedorFichas.con-plantilla {
+        grid-template-columns: repeat(
+            var(--plantilla-columnas, 4),
+            minmax(0, 1fr)
+        );
+    }
+}
+
+/* Tablet */
+@media (min-width: 521px) and (max-width: 1099px) {
+    #contenedorFichas.con-plantilla {
+        grid-template-columns: repeat(
+            min(var(--plantilla-columnas, 3), 3),
+            minmax(0, 1fr)
+        );
+
+        gap: 18px;
+        padding: 20px;
+    }
+}
+
+/* Teléfonos */
+@media (max-width: 520px) {
+    #contenedorFichas.con-plantilla {
+        grid-template-columns: repeat(
+            min(var(--plantilla-columnas, 2), 2),
+            minmax(0, 1fr)
+        );
+
+        gap: 12px;
+        padding: 12px;
+    }
+
+    #contenedorFichas.con-plantilla .infoFicha h3 {
+        font-size: 11px;
+    }
+}
+
+/* Evitar que el contenido desborde horizontalmente */
+#contenedorFichas.con-plantilla > * {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================
+   FICHAS COMPACTAS PARA 5 Y 6 COLUMNAS
+   ========================================== */
+
+@media (min-width: 901px) {
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"],
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] {
+        gap: 16px;
+        padding: 18px;
+        align-items: start;
+    }
+
+    /* Mantener una altura proporcional a la tarjeta */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .tarjetaFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .tarjetaFicha {
+        aspect-ratio: 0.76;
+        height: auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    /* Reducir la fotografía para dejar espacio al texto */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .imagenFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .imagenFicha {
+        top: 38px;
+        left: 12px;
+        right: 12px;
+        height: 34%;
+    }
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .imagenFicha img,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .imagenFicha img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+
+    /* Ubicar la información debajo de la fotografía */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .infoFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .infoFicha {
+        top: calc(38px + 34% + 9px);
+        left: 12px;
+        right: 12px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    /* Título */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .infoFicha h3,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .infoFicha h3 {
+        font-size: 11px;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+        -webkit-line-clamp: 2;
+    }
+
+    /* Campos: etiqueta y valor en líneas separadas */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .camposTarjeta,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .camposTarjeta {
+        margin-top: 6px;
+        gap: 4px;
+    }
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .campoFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .campoFicha {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        padding-bottom: 3px;
+        min-width: 0;
+    }
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .etiquetaCampo,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .etiquetaCampo {
+        flex: none;
+        font-size: 6px;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+        overflow-wrap: anywhere;
+    }
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .valorCampo,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .valorCampo {
+        flex: none;
+        max-width: 100%;
+        font-size: 8px;
+        line-height: 1.25;
+        white-space: normal;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        text-overflow: clip;
+    }
+
+    /* Pie dentro de los límites de la tarjeta */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="5"] .pieFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="6"] .pieFicha {
+        left: 10px;
+        right: 10px;
+        bottom: 8px;
+        padding-top: 5px;
+        font-size: 6px;
+        letter-spacing: 0.5px;
+    }
+}
+
+
+/* ==========================================
+   FICHAS GRANDES PARA 1 Y 2 COLUMNAS
+   ========================================== */
+
+@media (min-width: 901px) {
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"],
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] {
+        gap: 28px;
+        padding: 24px;
+        align-items: start;
+    }
+
+    /* Más espacio para el contenido de cada ficha */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .infoFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .infoFicha {
+        left: 20px;
+        right: 20px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    /* Título más legible */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .infoFicha h3,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .infoFicha h3 {
+        font-size: 18px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    /* Separación entre los campos */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .camposTarjeta,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .camposTarjeta {
+        margin-top: 12px;
+        gap: 10px;
+    }
+
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .campoFicha,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .campoFicha {
+        gap: 6px;
+        padding-bottom: 7px;
+        min-width: 0;
+    }
+
+    /* Etiquetas */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .etiquetaCampo,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .etiquetaCampo {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    /* Información de la ficha */
+    #contenedorFichas.con-plantilla[data-columnas-ficha="1"] .valorCampo,
+    #contenedorFichas.con-plantilla[data-columnas-ficha="2"] .valorCampo {
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+
+/* =========================================================
+   AJUSTE FINAL · FICHAS DEL EXPLORADOR
+   Mantiene el diseño original de expediente azul.
+   Fichas verticales, compactas y proporcionadas.
+========================================================= */
+
+/* UNA O DOS COLUMNAS · SOLO ESCRITORIO */
+@media (min-width: 901px) {
+
+    /* Proporción y tamaño de la ficha */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"][data-columnas-ficha="1"] .tarjetaFicha,
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"][data-columnas-ficha="2"] .tarjetaFicha {
+        position: relative;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        aspect-ratio: 0.76;
+        justify-self: center;
+        align-self: start;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* Una columna: centrada, sin ocupar todo el ancho */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"][data-columnas-ficha="1"] .tarjetaFicha {
+        max-width: 330px;
+    }
+
+    /* Dos columnas: fichas más compactas */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"][data-columnas-ficha="2"] .tarjetaFicha {
+        max-width: 310px;
+    }
+
+    /* La hoja conserva su fondo y su marco */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .fondoFicha {
+        position: absolute;
+        inset: 0;
+        border-radius: 0;
+    }
+
+    /* Fotografía: tamaño proporcional a la ficha */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .imagenFicha {
+        position: absolute;
+        top: 45px;
+        left: 17px;
+        right: 17px;
+        width: auto;
+        height: 40%;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .imagenFicha img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    /* Título, datos y resumen: juntos y debajo de la foto */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .infoFicha {
+        position: absolute;
+        top: calc(45px + 40% + 10px);
+        right: 18px;
+        bottom: 35px;
+        left: 18px;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .infoFicha::before {
+        margin-bottom: 8px;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .infoFicha h3 {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.2;
+        -webkit-line-clamp: 2;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .camposTarjeta {
+        margin-top: 8px;
+        gap: 4px;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .campoFicha {
+        gap: 6px;
+        padding-bottom: 3px;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .etiquetaCampo {
+        font-size: 7px;
+        line-height: 1.2;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .valorCampo {
+        font-size: 8px;
+        line-height: 1.25;
+    }
+
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .resumenFicha {
+        margin-top: 7px;
+        font-size: 9px;
+        line-height: 1.3;
+        -webkit-line-clamp: 2;
+    }
+
+    /* Pie dentro de la ficha, cerca del contenido */
+    #contenedorFichas.con-plantilla[data-forma-ficha="rectangular"] .pieFicha {
+        position: absolute;
+        right: 18px;
+        bottom: 10px;
+        left: 18px;
+        margin: 0;
+        padding-top: 6px;
+        font-size: 7px;
+        text-align: center;
+    }
+}
+
+
+/* =========================================================
+   EXPLORADOR · FICHAS CIRCULARES
+   Adapta el contenido al espacio interior del círculo.
+   Solo afecta a las fichas circulares.
+========================================================= */
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+/* Fondo circular */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .fondoFicha {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Imagen centrada y con margen respecto del borde */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    position: absolute;
+    top: 14%;
+    left: 24%;
+    right: 24%;
+    width: auto;
+    height: 27%;
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Información dentro de la zona más ancha del círculo */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha {
+    position: absolute;
+    top: 44%;
+    right: 18%;
+    bottom: 17%;
+    left: 18%;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    text-align: center;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha::before {
+    margin: 0 auto 6px;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha h3 {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.2;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* Datos más compactos */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .camposTarjeta {
+    margin-top: 6px;
+    gap: 3px;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .campoFicha {
+    justify-content: center;
+    gap: 4px;
+    padding-bottom: 2px;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .etiquetaCampo {
+    font-size: 6px;
+    line-height: 1.2;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .valorCampo {
+    font-size: 7px;
+    line-height: 1.2;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .resumenFicha {
+    margin-top: 5px;
+    font-size: 8px;
+    line-height: 1.2;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* Pie dentro del círculo, lejos del borde */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .pieFicha {
+    position: absolute;
+    right: 22%;
+    bottom: 9%;
+    left: 22%;
+    margin: 0;
+    padding-top: 4px;
+    font-size: 6px;
+    text-align: center;
+}
+
+
+/* =========================================================
+   EXPLORADOR · MARCO Y DECORACIÓN CIRCULAR
+   Solo afecta a las fichas circulares.
+========================================================= */
+
+/* La ficha recorta todo siguiendo el círculo */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    clip-path: circle(50% at 50% 50%);
+}
+
+/* Fondo y textura circular */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .fondoFicha {
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Marco interior: antes era un rectángulo */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha::before {
+    inset: 7%;
+    border: 1px solid rgba(180, 165, 125, .35);
+    border-radius: 50%;
+}
+
+/* La textura también respeta el borde circular */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .fondoFicha::after {
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+
+/* IMAGEN: más grande y centrada */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    top: 13%;
+    left: 30%;
+    right: 30%;
+    width: auto;
+    height: 27%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+}
+
+/* CABECERA: mantener los textos dentro del círculo */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .cabeceraFicha {
+    top: 7%;
+    left: 17%;
+    right: 17%;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
+    font-size: clamp(6px, 0.8vw, 10px);
+    line-height: 1.2;
+}
+
+/* Evitar que el número de expediente se salga */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .cabeceraFicha * {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+
+
+/* Información en la zona central más ancha */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha {
+    top: 42%;
+    left: 16%;
+    right: 16%;
+    bottom: 16%;
+    height: auto;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Línea divisoria adaptada al centro */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha::before {
+    width: 75%;
+    margin: 0 auto 7px;
+}
+
+/* Título compacto */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha h3 {
+    font-size: clamp(9px, 1vw, 13px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: 2;
+}
+
+/* Datos centrados para que no lleguen a los bordes */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .campoFicha {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 3px 5px;
+    padding-bottom: 3px;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .etiquetaCampo {
+    flex: 0 1 auto;
+    font-size: 6px;
+    letter-spacing: .4px;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .valorCampo {
+    flex: 0 1 auto;
+    max-width: 100%;
+    font-size: 7px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Resumen */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .resumenFicha {
+    font-size: 8px;
+    line-height: 1.25;
+    -webkit-line-clamp: 2;
+}
+
+/* Pie curvado hacia el centro, lejos del borde exterior */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .pieFicha {
+    left: 22%;
+    right: 22%;
+    bottom: 9%;
+    padding-top: 5px;
+    font-size: 6px;
+    letter-spacing: .4px;
+    text-align: center;
+}
+
+
+/* EXPLORADOR · IMAGEN CIRCULAR MÁS GRANDE */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    top: 16%;
+    left: 21%;
+    right: 21%;
+    width: auto;
+    height: 36%;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+}
+
+/* =========================================================
+   INSIGNIA CIRCULAR · AJUSTE FINAL
+========================================================= */
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    clip-path: circle(50% at 50% 50%);
+}
+
+/* Ocultar los textos rectos anteriores */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .cabeceraFicha,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .pieFicha {
+    display: none !important;
+}
+
+
+/* Foto perfectamente circular, no ovalada */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    position: absolute;
+    top: 22%;
+    left: 32%;
+    width: 36%;
+    height: 36%;
+    right: auto;
+    margin: 0;
+    padding: 0;
+    border: 2px solid #c5a46d;
+    border-radius: 50%;
+    box-sizing: border-box;
+    overflow: hidden;
+    z-index: 2;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+}
+
+/* Título debajo de la foto */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha {
+    position: absolute;
+    top: 60%;
+    left: 18%;
+    right: 18%;
+    bottom: 19%;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    text-align: center;
+    z-index: 3;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha h3 {
+    margin: 0;
+    color: #f5edda;
+    font-family: "Cinzel", serif;
+    font-size: clamp(9px, 1.1vw, 13px);
+    line-height: 1.25;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+/* =========================================================
+   FICHA CIRCULAR · RESPETA LOS COLORES DE PLANTILLA
+   ========================================================= */
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .tarjetaFicha {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    isolation: isolate;
+}
+
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    z-index: 2;
+}
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha {
+    z-index: 3;
+}
+
+
+/* =========================================================
+   FICHA CIRCULAR · TEXTOS CURVOS
+   ========================================================= */
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .textoCurvoFicha {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
+}
+/* COLOR SECUNDARIO: EXP. Nº y CONSULTAR EXPEDIENTE */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--superior text,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--superior textPath,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--inferior text,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--inferior textPath {
+    fill: var(--plantilla-color-secundario, #eee9dc) !important;
+    font-family: var(--plantilla-fuente-titulo, serif) !important;
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .textoCurvoFicha path {
+    fill: none !important;
+    stroke: none !important;
+}
+
+/* =========================================================
+   INSIGNIA CIRCULAR · MEJORA VISUAL
+   Solo afecta a las fichas circulares del explorador.
+========================================================= */
+
+/* Fotografía más grande y centrada */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha {
+    top: 17%;
+    left: 25%;
+    right: auto;
+    width: 50%;
+    height: 50%;
+    border: 2px solid #c5a46d;
+    border-radius: 50%;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 10;
+    background: var(--plantilla-color-fondo, #f5edda);
+}
+
+/* La fotografía ocupa todo el espacio disponible */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .imagenFicha img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+}
+
+/* Título debajo de la fotografía */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha {
+    top: 63%;
+    left: 17%;
+    right: 17%;
+    bottom: 17%;
+    text-align: center;
+}
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"] .infoFicha::before {
+    display: none !important;
+}
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--titulo text {
+    fill: var(--plantilla-color-secundario, #eee9dc) !important;
+    font-family: var(--plantilla-fuente-titulo, serif) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+
+
+/* =========================================================
+   PLANTILLA · COLORES DE FICHAS CIRCULARES Y RECTANGULARES
+   ========================================================= */
+
+/* COLOR SECUNDARIO: EXPEDIENTE Y CONSULTA */
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior textPath,
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior textPath {
+    fill: var(--plantilla-color-secundario, #c5a46d) !important;
+}
+
+#contenedorFichas.con-plantilla .numeroFicha,
+#contenedorFichas.con-plantilla .pieFicha {
+    color: var(--plantilla-color-secundario, #c5a46d) !important;
+}
+
+/* COLOR DE FONDO: TÍTULO DE LA FICHA */
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo textPath,
+#contenedorFichas.con-plantilla .infoFicha h3 {
+    fill: var(--plantilla-color-fondo, #f5edda) !important;
+    color: var(--plantilla-color-fondo, #f5edda) !important;
+}
+
+/* COLOR DE TEXTO: LÍNEAS Y BORDES */
+#contenedorFichas.con-plantilla .infoFicha::before {
+    background-color: var(--plantilla-color-texto, #eee9dc) !important;
+}
+
+#contenedorFichas.con-plantilla .campoFicha {
+    border-color: var(--plantilla-color-texto, #eee9dc) !important;
+}
+
+#contenedorFichas.con-plantilla .pieFicha {
+    border-color: var(--plantilla-color-texto, #eee9dc) !important;
+}
+
+#contenedorFichas.con-plantilla .tarjetaFicha::before,
+#contenedorFichas.con-plantilla .fondoFicha {
+    border-color: var(--plantilla-color-texto, #eee9dc) !important;
+}
+
+
+/* EXP. Nº: color secundario */
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior textPath {
+    fill: var(--plantilla-color-secundario, #c5a46d) !important;
+}
+
+/* CONSULTAR EXPEDIENTE: color secundario */
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior textPath {
+    fill: var(--plantilla-color-secundario, #c5a46d) !important;
+}
+
+/* TÍTULO DE LA FICHA: color de fondo */
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo textPath {
+    fill: var(--plantilla-color-fondo, #f5edda) !important;
+}
+
+
+/* EXP. Nº: fuente de texto */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--superior text,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--superior textPath {
+    font-family: var(--plantilla-fuente-texto, Arial) !important;
+}
+
+/* CONSULTAR EXPEDIENTE: fuente de texto */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--inferior text,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--inferior textPath {
+    font-family: var(--plantilla-fuente-texto, Arial) !important;
+}
+
+/* TÍTULO CURVO: fuente de título */
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--titulo text,
+#contenedorFichas.con-plantilla[data-forma-ficha="circular"]
+.textoCurvoFicha--titulo textPath {
+    font-family: var(--plantilla-fuente-titulo, Georgia) !important;
+}
+
+
+
+/* =========================================================
+   PLANTILLA · FUENTES DINÁMICAS PARA TODAS LAS FORMAS
+   ========================================================= */
+
+/* TÍTULOS: rectangular, cuadrada y redondeada */
+#contenedorFichas.con-plantilla .infoFicha h3 {
+    font-family: var(--plantilla-fuente-titulo, Georgia), serif !important;
+}
+
+/* NÚMERO DE EXPEDIENTE Y PIE */
+#contenedorFichas.con-plantilla .numeroFicha,
+#contenedorFichas.con-plantilla .pieFicha {
+    font-family: var(--plantilla-fuente-texto, Arial), sans-serif !important;
+}
+
+/* ETIQUETAS Y VALORES DE LOS CAMPOS */
+#contenedorFichas.con-plantilla .etiquetaCampo,
+#contenedorFichas.con-plantilla .valorCampo,
+#contenedorFichas.con-plantilla .camposTarjeta {
+    font-family: var(--plantilla-fuente-texto, Arial), sans-serif !important;
+}
+
+/* RESUMEN */
+#contenedorFichas.con-plantilla .resumenFicha {
+    font-family: var(--plantilla-fuente-texto, Arial), sans-serif !important;
+}
+
+/* TEXTOS CURVOS: EXPEDIENTE Y CONSULTA */
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--superior textPath,
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--inferior textPath {
+    font-family: var(--plantilla-fuente-texto, Arial), sans-serif !important;
+}
+
+/* TÍTULO CURVO */
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo text,
+#contenedorFichas.con-plantilla .textoCurvoFicha--titulo textPath {
+    font-family: var(--plantilla-fuente-titulo, Georgia), serif !important;
+}

@@ -1935,45 +1935,25 @@ select {
 }
 
 
-/* Evitar doble ficha */
+/* Evitar que los estilos generales de la vista previa
+   interfieran con las tarjetas reales. */
 
-#moduloPlantillas .preview-plantilla > div {
-
-    margin: 0 !important;
-
-    background: transparent !important;
-
-    border: none !important;
-
-    border-radius: 0 !important;
-
-    box-shadow: none !important;
-
+#moduloPlantillas .preview-plantilla > div:not(.preview-interfaz):not(.preview-fichas) {
+    box-shadow: none;
 }
 
-
-#moduloPlantillas .preview-plantilla
-.ficha-preview,
-#moduloPlantillas .preview-plantilla
-.vista-previa-ficha,
-#moduloPlantillas .preview-plantilla
-.preview-ficha,
-#moduloPlantillas .preview-plantilla
-.tarjeta-preview {
-
-    margin: 0 !important;
-
-    padding: 0 !important;
-
-    background: transparent !important;
-
-    border: none !important;
-
-    border-radius: 0 !important;
-
-    box-shadow: none !important;
-
+#moduloPlantillas .preview-ficha,
+#moduloPlantillas .ficha-preview,
+#moduloPlantillas .vista-previa-ficha,
+#moduloPlantillas .tarjeta-preview {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
+
 
 
 /* =========================================================
@@ -2240,156 +2220,71 @@ select {
 
 
 /* =========================================================
-   63. FICHA PREVIEW DE INTERFAZ
+   TARJETAS REALES DENTRO DE LA VISTA PREVIA
 ========================================================= */
 
-#moduloPlantillas .preview-ficha {
-
-    overflow: hidden;
-
+#moduloPlantillas .preview-fichas .tarjetaFicha {
+    position: relative;
+    width: 100%;
+    min-width: 0;
     box-sizing: border-box;
+    margin: 0;
+    color: var(--plantilla-color-texto, #222222);
+    font-family: var(--plantilla-fuente-texto, Arial, sans-serif);
+}
 
-    box-shadow:
-        0 3px 8px rgba(0, 0, 0, .15);
+/* Aplicar colores y tipografías configurados */
 
-    transition:
-        transform .2s ease;
+#moduloPlantillas .preview-fichas .tarjetaFicha .infoFicha h3 {
+    color: var(--plantilla-color-principal, #163A61);
+    font-family: var(--plantilla-fuente-titulo, "Courier New", monospace);
+}
 
+#moduloPlantillas .preview-fichas .tarjetaFicha .numeroFicha {
+    color: var(--plantilla-color-principal, #163A61);
 }
 
 
-#moduloPlantillas .preview-ficha:hover {
+#moduloPlantillas .preview-fichas .tarjetaFicha .etiquetaCampo {
+    color: var(--plantilla-color-principal, #163A61);
+}
 
-    transform: translateY(-2px);
+#moduloPlantillas .preview-fichas .tarjetaFicha .valorCampo {
+    color: var(--plantilla-color-texto, #222222);
+}
 
+#moduloPlantillas .preview-fichas .tarjetaFicha .pieFicha {
+    color: var(--plantilla-color-secundario, #C7A85B);
 }
 
 
-/* =========================================================
-   64. IMAGEN FICHA PREVIEW
-========================================================= */
-
-#moduloPlantillas .preview-ficha-imagen {
-
-    min-height: 90px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    font-size: .65rem;
-
-    letter-spacing: 1px;
-
+#moduloPlantillas .preview-fichas .tarjetaFicha[data-forma-ficha="circular"] {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
-
-/* =========================================================
-   65. CONTENIDO FICHA PREVIEW
-========================================================= */
-
-#moduloPlantillas .preview-ficha-contenido {
-
-    padding: 14px;
-
-    font-family:
-        var(--preview-fuente-texto);
-
+#moduloPlantillas .preview-fichas .tarjetaFicha[data-forma-ficha="redondeada"] {
+    border-radius: var(--plantilla-radio-borde, 20px);
+    overflow: hidden;
 }
 
+/* Mantener las imágenes dentro de la tarjeta */
 
-#moduloPlantillas .preview-ficha-contenido h3 {
-
-    margin: 0 0 8px;
-
-    font-size: 1rem;
-
+#moduloPlantillas .preview-fichas .tarjetaFicha .imagenFicha img {
+    max-width: 100%;
 }
 
+/* Evitar que el contenedor de la vista previa se desborde */
 
-#moduloPlantillas .preview-ficha-contenido p {
-
-    margin: 0 0 10px;
-
-    font-size: .8rem;
-
-    line-height: 1.4;
-
+#moduloPlantillas .preview-fichas {
+    min-width: 0;
 }
 
-
-/* =========================================================
-   66. ETIQUETAS PREVIEW
-========================================================= */
-
-#moduloPlantillas .preview-etiquetas {
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 5px;
-
-    margin-bottom: 10px;
-
+#moduloPlantillas .preview-fichas .tarjetaFicha * {
+    box-sizing: border-box;
 }
 
-
-#moduloPlantillas .preview-etiquetas span {
-
-    padding: 3px 7px;
-
-    background:
-        var(--preview-color-secundario);
-
-    color: #ffffff;
-
-    border-radius: 20px;
-
-    font-size: .65rem;
-
-}
-
-
-/* =========================================================
-   67. CAMPOS PREVIEW DE INTERFAZ
-========================================================= */
-
-#moduloPlantillas .preview-ficha-contenido
-.preview-campo {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 2px;
-
-    margin-top: 8px;
-
-    padding-top: 6px;
-
-    border-top: 1px solid #ddd;
-
-}
-
-
-#moduloPlantillas .preview-ficha-contenido
-.preview-campo strong {
-
-    color: var(--preview-color-principal);
-
-    font-size: .7rem;
-
-}
-
-
-#moduloPlantillas .preview-ficha-contenido
-.preview-campo span {
-
-    font-size: .75rem;
-
-}
 
 
 /* =========================================================
@@ -2846,4 +2741,46 @@ select {
 
     }
 
+}
+
+
+/* Apariencia: una opción por fila */
+#moduloPlantillas .grupo-plantilla label[for="colorPrincipalPlantilla"],
+#moduloPlantillas .grupo-plantilla label[for="colorSecundarioPlantilla"],
+#moduloPlantillas .grupo-plantilla label[for="colorFondoPlantilla"],
+#moduloPlantillas .grupo-plantilla label[for="colorTextoPlantilla"],
+#moduloPlantillas .grupo-plantilla label[for="fuenteTituloPlantilla"],
+#moduloPlantillas .grupo-plantilla label[for="fuenteTextoPlantilla"] {
+    display: block;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+#moduloPlantillas #colorPrincipalPlantilla,
+#moduloPlantillas #colorSecundarioPlantilla,
+#moduloPlantillas #colorFondoPlantilla,
+#moduloPlantillas #colorTextoPlantilla,
+#moduloPlantillas #fuenteTituloPlantilla,
+#moduloPlantillas #fuenteTextoPlantilla {
+    display: block;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+
+/* Plantillas desactivadas: apariencia opaca y en blanco y negro */
+.tarjeta-plantilla.plantilla-inactiva {
+    filter: grayscale(100%);
+    opacity: 0.55;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+/* Al pasar el cursor, se distingue mejor sin perder el efecto */
+.tarjeta-plantilla.plantilla-inactiva:hover {
+    opacity: 0.75;
+}
+
+/* Mantener los botones utilizables */
+.tarjeta-plantilla.plantilla-inactiva button {
+    pointer-events: auto;
 }

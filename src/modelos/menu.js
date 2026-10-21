@@ -44,18 +44,21 @@ const obtenerMenus = () => {
     return new Promise((resolve, reject) => {
 
         db.all(
-            "SELECT * FROM menu",
+            `
+            SELECT
+                menu.*,
+                plantilla.nombre AS nombre_plantilla
+            FROM menu
+            LEFT JOIN plantilla
+                ON menu.id_plantilla = plantilla.id_plantilla
+            `,
             [],
             (error, filas) => {
 
                 if (error) {
-
                     reject(error);
-
                 } else {
-
                     resolve(filas);
-
                 }
 
             }
@@ -64,8 +67,6 @@ const obtenerMenus = () => {
     });
 
 };
-
-
 
 
 
@@ -337,9 +338,20 @@ const obtenerPorId = (id) => {
         db.get(
 
             `
-            SELECT *
+
+            SELECT
+                menu.*,
+                plantilla.nombre AS nombre_plantilla,
+                (
+                    SELECT COUNT(*)
+                    FROM ficha
+                    WHERE ficha.id_menu = menu.id_menu
+                ) AS cantidad_fichas
             FROM menu
-            WHERE id_menu = ?
+            LEFT JOIN plantilla
+                ON menu.id_plantilla = plantilla.id_plantilla
+            WHERE menu.id_menu = ?
+
             `,
 
             [id],

@@ -1,18 +1,18 @@
-// =======================================================
+﻿// =======================================================
 // FICHAS
-// Museo Malvinas · Archivo Histórico
+// Museo Malvinas Â· Archivo HistÃ³rico
 //
 // RESPONSABILIDADES:
-// • Cargar fichas
-// • Filtrar fichas
-// • Construir tarjetas
-// • Mostrar fotografías
-// • Mostrar campos de la plantilla
-// • Activar interacción
+// â€¢ Cargar fichas
+// â€¢ Filtrar fichas
+// â€¢ Construir tarjetas
+// â€¢ Mostrar fotografÃ­as
+// â€¢ Mostrar campos de la plantilla
+// â€¢ Activar interacciÃ³n
 //
 // IMPORTANTE:
-// Todavía NO se conecta directamente con el Explorador.
-// Tampoco se modifica la lógica de la base de datos.
+// TodavÃ­a NO se conecta directamente con el Explorador.
+// Tampoco se modifica la lÃ³gica de la base de datos.
 // =======================================================
 
 
@@ -26,7 +26,7 @@ let fichasVisibles = [];
 
 
 // =======================================================
-// CONFIGURACIÓN
+// CONFIGURACIÃ“N
 // =======================================================
 
 const CONFIG_FICHAS = {
@@ -45,13 +45,19 @@ const CONFIG_FICHAS = {
 
 
 // =======================================================
-// INICIALIZACIÓN
+// INICIALIZACIÃ“N
 // =======================================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    iniciarFichas
-);
+
+if (document.readyState === "loading") {
+    document.addEventListener(
+        "DOMContentLoaded",
+        iniciarFichas,
+        { once: true }
+    );
+} else {
+    iniciarFichas();
+}
 
 
 async function iniciarFichas() {
@@ -69,7 +75,7 @@ async function iniciarFichas() {
     /*
        Por ahora cargamos todas las fichas.
 
-       Más adelante el Explorador podrá
+       MÃ¡s adelante el Explorador podrÃ¡
        llamar directamente a:
 
        cargarFichas(idMenu)
@@ -79,7 +85,7 @@ async function iniciarFichas() {
 
 
     console.log(
-        "[FICHAS] Inicialización completa."
+        "[FICHAS] InicializaciÃ³n completa."
     );
 
 }
@@ -185,7 +191,7 @@ async function cargarFichas(
 
 
     // Solo mostramos "CONSULTANDO ARCHIVO..." si la respuesta tarda
-    // más de 300 ms. Si llega rápido, nunca aparece (evita el destello).
+    // mÃ¡s de 300 ms. Si llega rÃ¡pido, nunca aparece (evita el destello).
     let temporizadorCarga = null;
 
     try {
@@ -203,7 +209,7 @@ async function cargarFichas(
 
         /*
            Si posteriormente el Explorador
-           selecciona un menú, se utilizará:
+           selecciona un menÃº, se utilizarÃ¡:
 
            /api/public/fichas/menu/ID
         */
@@ -252,7 +258,7 @@ async function cargarFichas(
         if (!Array.isArray(datos)) {
 
             throw new Error(
-                "La API no devolvió un array de fichas."
+                "La API no devolviÃ³ un array de fichas."
             );
 
         }
@@ -379,7 +385,7 @@ function fichaCoincide(
 
 
     /*
-       Buscamos principalmente por título.
+       Buscamos principalmente por tÃ­tulo.
     */
 
     const titulo =
@@ -398,7 +404,7 @@ function fichaCoincide(
 
 
     /*
-       También buscamos dentro
+       TambiÃ©n buscamos dentro
        de los datos de la ficha.
     */
 
@@ -455,7 +461,7 @@ function normalizarTexto(
 
 
 // =======================================================
-// LIMPIAR BÚSQUEDA
+// LIMPIAR BÃšSQUEDA
 // =======================================================
 
 function limpiarBusqueda() {
@@ -539,8 +545,8 @@ async function pintarFichas(
 
     /*
        Las tarjetas se arman en un fragmento fuera de pantalla
-       y se reemplazan de una sola vez: así el contenedor
-       nunca queda vacío entre una pintada y otra.
+       y se reemplazan de una sola vez: asÃ­ el contenedor
+       nunca queda vacÃ­o entre una pintada y otra.
     */
 
     const fragmento =
@@ -719,18 +725,20 @@ function crearTarjetaFicha(
         );
 
 
-    cabecera.appendChild(
-        numero
+    cabecera.appendChild(numero);
+    tarjeta.appendChild(cabecera);
+
+    const textoSuperior = crearTextoCurvo(
+        obtenerNumeroExpediente(ficha),
+        `expediente-${ficha.id_ficha}`,
+        "superior"
     );
 
-
-    tarjeta.appendChild(
-        cabecera
-    );
+    tarjeta.appendChild(textoSuperior);
 
 
     // ===================================================
-    // FOTOGRAFÍA
+    // FOTOGRAFÃA
     // ===================================================
 
     const contenedorImagen =
@@ -757,7 +765,7 @@ function crearTarjetaFicha(
 
     imagen.alt =
         ficha.titulo ||
-        "Fotografía del veterano";
+        "FotografÃ­a del veterano";
 
 
     imagen.loading =
@@ -779,7 +787,7 @@ function crearTarjetaFicha(
 
 
     // ===================================================
-    // INFORMACIÓN
+    // INFORMACIÃ“N
     // ===================================================
 
     const informacion =
@@ -809,36 +817,6 @@ function crearTarjetaFicha(
 
 
     // ===================================================
-    // CAMPOS
-    // ===================================================
-
-    const campos =
-        document.createElement(
-            "div"
-        );
-
-
-    campos.className =
-        "camposTarjeta";
-
-
-    construirCampos(
-        ficha,
-        campos
-    );
-
-
-    informacion.appendChild(
-        campos
-    );
-
-
-    tarjeta.appendChild(
-        informacion
-    );
-
-
-    // ===================================================
     // PIE
     // ===================================================
 
@@ -848,17 +826,19 @@ function crearTarjetaFicha(
         );
 
 
-    pie.className =
-        "pieFicha";
+    pie.className = "pieFicha";
+    pie.textContent = "CONSULTAR EXPEDIENTE";
 
+    tarjeta.appendChild(pie);
 
-    pie.textContent =
-        "CONSULTAR EXPEDIENTE";
-
-
-    tarjeta.appendChild(
-        pie
+    // Texto curvo inferior
+    const textoInferior = crearTextoCurvo(
+        "CONSULTAR EXPEDIENTE",
+        `consulta-${ficha.id_ficha}`,
+        "inferior"
     );
+
+    tarjeta.appendChild(textoInferior);
 
 
     return tarjeta;
@@ -866,8 +846,63 @@ function crearTarjetaFicha(
 }
 
 
+function crearTextoCurvo(texto, identificador, posicion) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+
+    svg.setAttribute(
+        "class",
+        `textoCurvoFicha textoCurvoFicha--${posicion}`
+    );
+    svg.setAttribute("viewBox", "0 0 300 300");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("aria-hidden", "true");
+
+    const id = `arco-${String(identificador).replace(
+        /[^a-zA-Z0-9_-]/g,
+        "-"
+    )}`;
+
+    const camino = document.createElementNS(ns, "path");
+    camino.setAttribute("id", id);
+
+    // Ambos recorridos quedan dentro del SVG.
+
+
+    const recorrido =
+        posicion === "superior"
+            ? "M 18 85 Q 150 -52 282 85"
+            : posicion === "inferior"
+                ? "M 18 215 Q 150 370 282 215"
+                : "M 35 180 Q 150 340 265 180";
+
+    camino.setAttribute("d", recorrido);
+    camino.setAttribute("fill", "none");
+    svg.appendChild(camino);
+
+    const textoSvg = document.createElementNS(ns, "text");
+    textoSvg.setAttribute("text-anchor", "middle");
+
+    const ruta = document.createElementNS(ns, "textPath");
+    ruta.setAttribute("href", `#${id}`);
+    ruta.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "xlink:href",
+        `#${id}`
+    );
+    ruta.setAttribute("startOffset", "50%");
+    ruta.textContent = texto;
+
+    textoSvg.appendChild(ruta);
+    svg.appendChild(textoSvg);
+
+    return svg;
+}
+
+
+
 // =======================================================
-// OBTENER NÚMERO DE EXPEDIENTE
+// OBTENER NÃšMERO DE EXPEDIENTE
 // =======================================================
 
 function obtenerNumeroExpediente(
@@ -879,12 +914,12 @@ function obtenerNumeroExpediente(
         ficha.id_ficha !== null
     ) {
 
-        return `EXP. Nº ${ficha.id_ficha}`;
+        return `EXP. NÂº ${ficha.id_ficha}`;
 
     }
 
 
-    return "EXP. Nº ----";
+    return "EXP. NÂº ----";
 
 }
 
@@ -946,12 +981,12 @@ function construirCampos(
 ) {
 
     /*
-       La información de los campos
+       La informaciÃ³n de los campos
        viene de la plantilla asociada
        a la ficha.
 
-       Si todavía no existe plantilla,
-       simplemente dejamos la zona vacía.
+       Si todavÃ­a no existe plantilla,
+       simplemente dejamos la zona vacÃ­a.
     */
 
     const camposPlantilla =
@@ -1014,9 +1049,6 @@ function construirCampos(
                 );
 
 
-            elemento.className =
-                "campoFicha";
-
 
             const etiqueta =
                 document.createElement(
@@ -1039,9 +1071,6 @@ function construirCampos(
                     "span"
                 );
 
-
-            contenido.className =
-                "valorCampo";
 
 
             contenido.textContent =
@@ -1183,10 +1212,10 @@ function abrirFicha(
 
 
     /*
-       Esta función todavía puede ser
+       Esta funciÃ³n todavÃ­a puede ser
        implementada por el visor de ficha.
 
-       NO rompemos nada si todavía
+       NO rompemos nada si todavÃ­a
        no existe.
     */
 
@@ -1205,13 +1234,13 @@ function abrirFicha(
 
 
     /*
-       Por ahora, si el visor todavía
+       Por ahora, si el visor todavÃ­a
        no existe, simplemente dejamos
        registrado el ID.
     */
 
     console.log(
-        "[FICHAS] Visor todavía no conectado."
+        "[FICHAS] Visor todavÃ­a no conectado."
     );
 
 }
@@ -1240,7 +1269,7 @@ function mostrarEstadoCarga() {
 
         <div class="estadoFichas estado-cargando">
 
-            <span class="estado-icono">◌</span>
+            <span class="estado-icono">â—Œ</span>
 
             <span>
                 CONSULTANDO ARCHIVO...
@@ -1254,7 +1283,7 @@ function mostrarEstadoCarga() {
 
 
 // =======================================================
-// ESTADO VACÍO
+// ESTADO VACÃO
 // =======================================================
 
 function mostrarEstadoVacio(
@@ -1278,7 +1307,7 @@ function mostrarEstadoVacio(
 
         <div class="estadoFichas estado-vacio">
 
-            <span class="estado-icono">—</span>
+            <span class="estado-icono">â€”</span>
 
             <span>
                 ${mensaje}
@@ -1321,7 +1350,7 @@ function obtenerFichas() {
 //
 // Esto nos va a servir cuando conectemos:
 //
-// Explorador → Índice → Fichas
+// Explorador â†’ Ãndice â†’ Fichas
 //
 // Por ahora no hace falta utilizarlo.
 // =======================================================
@@ -1347,5 +1376,5 @@ window.pintarFichasPublicas =
 
 
 console.log(
-    "[FICHAS] fichas.js cargado correctamente."
+    "[PRUEBA] SE ESTÃ EJECUTANDO ESTE fichas.js"
 );

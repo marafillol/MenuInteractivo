@@ -2,6 +2,7 @@ console.log("Modulo menus cargado");
 
 
 const BORRADOR_MENU_NUEVO = "nuevo";
+let guardandoMenu = false;
 
 function obtenerDatosBorradorMenu() {
     return {
@@ -42,6 +43,59 @@ function recuperarBorradorMenu(id = BORRADOR_MENU_NUEVO) {
     return true;
 }
 
+function obtenerFechaMenu(menu) {
+    const creado = menu.creado;
+    const actualizado = menu.actualizado;
+
+    // Si no hay fecha de actualización, usar la de creación.
+    if (!actualizado) {
+        return {
+            etiqueta: "Creado",
+            fecha: formatearFechaMenu(creado)
+        };
+    }
+
+    // Si las dos fechas son iguales, todavía no hubo cambios.
+    const fechaCreacion = new Date(creado).getTime();
+    const fechaActualizacion = new Date(actualizado).getTime();
+
+    if (
+        Number.isFinite(fechaCreacion) &&
+        fechaCreacion === fechaActualizacion
+    ) {
+        return {
+            etiqueta: "Creado",
+            fecha: formatearFechaMenu(creado)
+        };
+    }
+
+    return {
+        etiqueta: "Última modificación",
+        fecha: formatearFechaMenu(actualizado)
+    };
+}
+
+function formatearFechaMenu(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
 
 function obtenerRutaImagenMenu(ruta) {
 
@@ -86,6 +140,8 @@ async function cargarMenus(){
 
         menus.forEach(menu=>{
 
+            const fechaMenu = obtenerFechaMenu(menu);
+
 
             console.log(menu);
 
@@ -111,7 +167,7 @@ async function cargarMenus(){
                 <div class="menu-info">
 
                     <span class="campo-titulo-menu">
-                        TÃTULO
+                        TÍTULO
                     </span>
                     <h3>
                         ${menu.nombre}
@@ -120,9 +176,23 @@ async function cargarMenus(){
 
 
                     <p>
-                        ${(menu.descripcion || "Sin descripciÃ³n").replace(/\n/g," ")}
+                        ${(menu.descripcion || "Sin descripcion").replace(/\n/g," ")}
                     </p>
 
+                    <div class="datos-menu">
+
+                        <small>
+                            <i data-lucide="layers" aria-hidden="true"></i>
+                            Plantilla: ${menu.nombre_plantilla || "Sin nombre"}
+                            - #${menu.id_plantilla ?? "Sin asignar"}
+                        </small>
+
+                        <small>
+                            <i data-lucide="calendar" aria-hidden="true"></i>
+                            ${fechaMenu.etiqueta}: ${fechaMenu.fecha}
+                        </small>
+
+                    </div>
 
 
                     <div class="menu-acciones">
@@ -169,6 +239,9 @@ async function cargarMenus(){
 
         });
 
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
 
     }catch(error){
 
@@ -221,7 +294,7 @@ async function crearMenu(datos){
         const resultado = await respuesta.json();
 
 
-        console.log("MenÃº creado:", resultado);
+        console.log("Menú creado:", resultado);
 
 
         cargarMenus();
@@ -230,7 +303,7 @@ async function crearMenu(datos){
     }catch(error){
 
         console.error(
-            "Error creando menÃº:",
+            "Error creando menú:",
             error
         );
 
@@ -262,7 +335,7 @@ async function guardarNuevoMenu(){
 
         mostrarMensaje(
             "Campos obligatorios",
-            "Debe ingresar un nombre para el menÃº."
+            "Debe ingresar un nombre para el menú."
         );
 
         document.getElementById("nuevoNombre").focus();
@@ -313,7 +386,13 @@ async function guardarNuevoMenu(){
 
     }
 
-    try{
+    if (guardandoMenu) {
+        return;
+    }
+
+    guardandoMenu = true;
+
+    try {
 
         const url = id_menu
             ? `/api/menus/${id_menu}`
@@ -337,40 +416,44 @@ async function guardarNuevoMenu(){
 
             mostrarMensaje(
                 "No se pudo guardar",
-                resultado.error || "OcurriÃ³ un error al guardar el menÃº."
+                resultado.error || "Ocurrió un error al guardar el menú."
             );
 
             return;
 
         }
 
-        console.log("MenÃº guardado:", resultado);
+        console.log("Menú guardado:", resultado);
 
-const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
+        const idBorrador = id_menu || BORRADOR_MENU_NUEVO;
 
-if (window.Borradores) {
-    window.Borradores.eliminar("menus", idBorrador);
-}
+        if (window.Borradores) {
+            window.Borradores.eliminar("menus", idBorrador);
+        }
 
-document.getElementById("ventanaEmergente").style.display = "none";
+        document.getElementById("ventanaEmergente").style.display = "none";
 
-cargarMenus();
+        cargarMenus();
 
-    }catch(error){
+    } catch(error){
 
-        console.error("Error guardando menÃº:", error);
+        console.error("Error guardando menú:", error);
 
         mostrarMensaje(
             "Error",
-            "OcurriÃ³ un error al guardar el menÃº."
+            "Ocurrió un error al guardar el menú."
         );
+
+    } finally {
+
+        guardandoMenu = false;
 
     }
 
 }
 
 // ==========================================================
-// EVENTOS DE MENÃšS
+// EVENTOS DE MENú
 // ==========================================================
 
 if (!window.__eventosMenusInicializados) {
@@ -400,7 +483,7 @@ if (!window.__eventosMenusInicializados) {
                 modal.querySelector(".modal-contenido h3");
 
             if (titulo) {
-                titulo.textContent = "Crear nuevo menÃº";
+                titulo.textContent = "Crear nuevo menú";
             }
 
             const bloqueImagen =
@@ -414,12 +497,16 @@ if (!window.__eventosMenusInicializados) {
             document.getElementById("nuevoNombre").value = "";
             document.getElementById("nuevaDescripcion").value = "";
 
+
             const plantilla =
                 document.getElementById("plantillaMenu");
 
             if (plantilla) {
+                plantilla.disabled = false;
+                plantilla.title = "";
                 plantilla.selectedIndex = 0;
             }
+
 
             const visible =
                 document.getElementById("nuevoVisible");
@@ -449,6 +536,12 @@ return;
             e.target.closest("#cancelarMenu")
         ) {
 
+            const idMenu = document.getElementById("id_menu").value;
+            const idBorrador = idMenu || BORRADOR_MENU_NUEVO;
+
+            if (window.Borradores) {
+                window.Borradores.eliminar("menus", idBorrador);
+            }
             const modal =
                 document.getElementById("ventanaEmergente");
 
@@ -470,41 +563,69 @@ return;
 
 }
 
-async function cargarSelectPlantillas(){
-
-    try{
-
+async function cargarSelectPlantillas(idPlantillaActual = null) {
+    try {
         const respuesta = await window.fetchProtegido("/api/plantillas");
-        const plantillas = await respuesta.json();
 
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las plantillas.");
+        }
+
+        const plantillas = await respuesta.json();
         const select = document.getElementById("plantillaMenu");
 
-        if(!select){
+        if (!select) {
             return;
         }
 
+        const seleccionActual = select.value;
+        const idActual = idPlantillaActual == null
+            ? ""
+            : String(idPlantillaActual);
+
         select.innerHTML = `
-            <option value="">
-                Seleccione una plantilla
-            </option>
+            <option value="">Seleccione una plantilla</option>
         `;
 
-        plantillas.forEach(plantilla=>{
+        plantillas.forEach(plantilla => {
+            const activa =
+                plantilla.activo === 1 ||
+                plantilla.activo === true ||
+                plantilla.activo === "1";
 
-            select.innerHTML += `
-                <option value="${plantilla.id_plantilla}">
-                    ${plantilla.nombre}
-                </option>
-            `;
+            const perteneceAlMenuActual =
+                idActual !== "" &&
+                String(plantilla.id_plantilla) === idActual;
 
+            // Mostrar activas siempre e inactivas únicamente
+            // si ya están asignadas al menú que se está editando.
+            if (!activa && !perteneceAlMenuActual) {
+                return;
+            }
+
+            const opcion = document.createElement("option");
+            opcion.value = plantilla.id_plantilla;
+            opcion.textContent = activa
+                ? plantilla.nombre
+                : `${plantilla.nombre} (Inactiva)`;
+
+            select.appendChild(opcion);
         });
 
-    }catch(error){
+        const valorASeleccionar = idActual || seleccionActual;
 
-        console.error(error);
+        if (
+            valorASeleccionar &&
+            [...select.options].some(
+                opcion => opcion.value === String(valorASeleccionar)
+            )
+        ) {
+            select.value = String(valorASeleccionar);
+        }
 
+    } catch (error) {
+        console.error("Error cargando plantillas para el menú:", error);
     }
-
 }
 
 console.log("Eventos de menu preparados");
@@ -555,7 +676,18 @@ async function editarMenu(id_menu){
 
         document.getElementById("nuevaDescripcion").value = menu.descripcion || "";
 
-        document.getElementById("plantillaMenu").value = menu.id_plantilla;
+
+
+        await cargarSelectPlantillas(menu.id_plantilla);
+
+        const selectorPlantilla = document.getElementById("plantillaMenu");
+        selectorPlantilla.value = String(menu.id_plantilla);
+        selectorPlantilla.disabled = false;
+        selectorPlantilla.title = "";
+
+
+
+
 
         document.getElementById("nuevoVisible").checked = menu.visible == 1;
 
@@ -564,7 +696,7 @@ async function editarMenu(id_menu){
         document.querySelector(
         "#ventanaEmergente .modal-contenido h3"
         ).textContent =
-            "Editar menÃº";
+            "Editar menú";
 
         document.getElementById("bloqueImagenActual").style.display = "block";
 
@@ -588,7 +720,7 @@ async function editarMenu(id_menu){
 
     }catch(error){
 
-        console.error("Error cargando menÃº:", error);
+        console.error("Error cargando menú:", error);
 
     }
 
@@ -642,15 +774,28 @@ async function confirmarEliminarMenu(){
 }
 
 
-function mostrarMensaje(titulo, texto){
 
-    document.getElementById("tituloMensaje").textContent = titulo;
 
-    document.getElementById("textoMensaje").textContent = texto;
 
-    document.getElementById("modalMensaje").style.display = "flex";
+function mostrarMensaje(titulo, texto) {
+    const modal =
+        document.getElementById("modalMensaje") ||
+        document.getElementById("modalMensajeFicha");
 
+    const tituloElemento = modal?.querySelector("#tituloMensaje");
+    const textoElemento = modal?.querySelector("#textoMensaje");
+
+    if (!modal || !tituloElemento || !textoElemento) {
+        console.error(`${titulo}: ${texto}`);
+        return;
+    }
+
+    tituloElemento.textContent = titulo;
+    textoElemento.textContent = texto;
+    modal.style.display = "flex";
 }
+
+
 
 function cerrarMensaje(){
 
@@ -687,16 +832,55 @@ async function vistaPreviaMenu(id_menu){
             menu.descripcion || "-";
 
         document.getElementById("previewPlantilla").textContent =
-            menu.id_plantilla;
+            `N.º ${menu.id_plantilla ?? "Sin asignar"} — ${menu.nombre_plantilla || "Sin nombre"}`;
 
         document.getElementById("previewVisible").textContent =
-            menu.visible == 1 ? "SÃ­" : "No";
+            menu.visible == 1 ? "SÍ" : "No";
 
-        document.getElementById("previewCreado").textContent =
-            menu.creado || "-";
 
-        document.getElementById("previewActualizado").textContent =
-            menu.actualizado || "-";
+        function separarFechaHora(valor) {
+            if (
+                valor === null ||
+                valor === undefined ||
+                valor === "" ||
+                valor === "undefined" ||
+                valor === "null"
+            ) {
+                return { fecha: "-", hora: "-" };
+            }
+
+            const fecha = new Date(valor);
+
+            if (Number.isNaN(fecha.getTime())) {
+                return { fecha: "-", hora: "-" };
+            }
+
+            return {
+                fecha: fecha.toLocaleDateString("es-AR"),
+                hora: fecha.toLocaleTimeString("es-AR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false
+                })
+            };
+        }
+
+        const creado = separarFechaHora(menu.creado);
+
+        document.getElementById("previewCreadoFecha").textContent =
+            creado.fecha;
+
+        document.getElementById("previewCreadoHora").textContent =
+            creado.hora;
+
+        const actualizado = separarFechaHora(menu.actualizado);
+
+        document.getElementById("previewActualizadoFecha").textContent =
+            actualizado.fecha;
+
+        document.getElementById("previewActualizadoHora").textContent =
+            actualizado.hora;
 
         const imagen = document.getElementById("previewMenuImagen");
 

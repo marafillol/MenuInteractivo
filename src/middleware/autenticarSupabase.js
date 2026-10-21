@@ -25,7 +25,10 @@ const autenticarSupabase = async (req, res, next) => {
         // Validar tokens de usuario con la clave pública; reservar la clave secreta
         // para operaciones administrativas de Auth.
         const cliente = obtenerClienteSupabaseVerificacion();
+
+        const inicioAuth = Date.now();
         const { data, error } = await cliente.auth.getUser(coincidencia[1]);
+        console.log(`[TIEMPO] auth.getUser(): ${Date.now() - inicioAuth} ms`);
 
         if (error || !data?.user) {
             return res.status(401).json({
@@ -33,7 +36,9 @@ const autenticarSupabase = async (req, res, next) => {
             });
         }
 
+        const inicioUsuario = Date.now();
         const usuario = await Usuario.obtenerPorSupabaseUID(data.user.id);
+        console.log(`[TIEMPO] obtenerPorSupabaseUID(): ${Date.now() - inicioUsuario} ms`);
 
         if (!usuario) {
             return res.status(403).json({

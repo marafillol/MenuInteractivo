@@ -6,13 +6,32 @@ async function esperarTokenSupabase() {
     throw new Error("No se pudo inicializar la autenticación de Supabase.");
 }
 
+
 async function fetchProtegido(url, opciones = {}) {
+    const inicio = performance.now();
+
     await esperarTokenSupabase();
+    const despuesDeEsperar = performance.now();
+
     const token = await window.obtenerTokenSupabase();
+    const despuesDelToken = performance.now();
+
     const headers = new Headers(opciones.headers || {});
     headers.set("Authorization", "Bearer " + token);
 
-    return fetch(url, { ...opciones, headers });
+    const respuesta = await fetch(url, { ...opciones, headers });
+    const fin = performance.now();
+
+    console.log("[fetchProtegido]", url, {
+        esperaInicializacionMs: Math.round(despuesDeEsperar - inicio),
+        obtenerTokenMs: Math.round(despuesDelToken - despuesDeEsperar),
+        respuestaServidorMs: Math.round(fin - despuesDelToken),
+        totalMs: Math.round(fin - inicio),
+        status: respuesta.status
+    });
+
+    return respuesta;
 }
+
 
 window.fetchProtegido = fetchProtegido;

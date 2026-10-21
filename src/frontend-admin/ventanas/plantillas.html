@@ -111,21 +111,6 @@
                 </legend>
 
 
-                <label for="vistaPlantilla">
-                    Vista
-                </label>
-
-                <select id="vistaPlantilla">
-
-                    <option value="grid">
-                        Grilla
-                    </option>
-
-                    <option value="lista">
-                        Lista
-                    </option>
-
-                </select>
 
 
                 <label for="columnasPlantilla">
@@ -151,10 +136,6 @@
                         Rectangular
                     </option>
 
-                    <option value="cuadrada">
-                        Cuadrada
-                    </option>
-
                     <option value="redondeada">
                         Redondeada
                     </option>
@@ -166,133 +147,10 @@
                 </select>
 
 
-                <label for="tamanoFichaPlantilla">
-                    Tamaño de la ficha
-                </label>
-
-                <select id="tamanoFichaPlantilla">
-
-                    <option value="pequeno">
-                        Pequeño
-                    </option>
-
-                    <option
-                            value="mediano"
-                            selected>
-                        Mediano
-                    </option>
-
-                    <option value="grande">
-                        Grande
-                    </option>
-
-                </select>
-
-
-                <label for="separacionPlantilla">
-                    Separación entre fichas
-                </label>
-
-                <div class="campo-numero-plantilla">
-
-                    <input
-                            type="number"
-                            id="separacionPlantilla"
-                            min="0"
-                            max="100"
-                            step="1"
-                            value="20">
-
-                    <span>
-                        px
-                    </span>
-
-                </div>
 
             </fieldset>
 
 
-            <!-- =================================================
-                 ELEMENTOS VISIBLES
-            ================================================== -->
-
-            <fieldset class="grupo-plantilla">
-
-                <legend>
-                    Elementos visibles
-                </legend>
-
-
-                <label class="checkbox-plantilla">
-
-                    <input
-                            type="checkbox"
-                            id="mostrarImagenPlantilla"
-                            checked>
-
-                    <span>
-                        Mostrar imagen
-                    </span>
-
-                </label>
-
-
-                <label class="checkbox-plantilla">
-
-                    <input
-                            type="checkbox"
-                            id="mostrarResumenPlantilla"
-                            checked>
-
-                    <span>
-                        Mostrar resumen
-                    </span>
-
-                </label>
-
-
-                <label class="checkbox-plantilla">
-
-                    <input
-                            type="checkbox"
-                            id="mostrarEtiquetasPlantilla"
-                            checked>
-
-                    <span>
-                        Mostrar etiquetas
-                    </span>
-
-                </label>
-
-
-                <label class="checkbox-plantilla">
-
-                    <input
-                            type="checkbox"
-                            id="mostrarBuscadorPlantilla"
-                            checked>
-
-                    <span>
-                        Mostrar buscador
-                    </span>
-
-                </label>
-
-
-                <label class="checkbox-plantilla">
-
-                    <input
-                            type="checkbox"
-                            id="mostrarIndicePlantilla"
-                            checked>
-
-                    <span>
-                        Mostrar índice
-                    </span>
-
-                </label>
-
-            </fieldset>
 
 
             <!-- =================================================
@@ -327,7 +185,7 @@
 
 
                 <label for="colorFondoPlantilla">
-                    Color de fondo
+                    Color del titulo
                 </label>
 
                 <input
@@ -337,7 +195,7 @@
 
 
                 <label for="colorTextoPlantilla">
-                    Color del texto
+                    Color de lineas
                 </label>
 
                 <input
@@ -396,26 +254,23 @@
                 </select>
 
 
-                <label for="radioBordePlantilla">
-                    Redondeado de las fichas
+            </fieldset>
+
+            <!-- ORDEN DE LAS FICHAS ASOCIADAS -->
+            <fieldset class="grupo-plantilla">
+                <legend>Orden de las fichas asociadas</legend>
+
+                <label for="ordenFichasPlantilla">
+                    Orden de visualización
                 </label>
 
-                <div class="campo-numero-plantilla">
-
-                    <input
-                            type="number"
-                            id="radioBordePlantilla"
-                            min="0"
-                            max="50"
-                            step="1"
-                            value="8">
-
-                    <span>
-                        px
-                    </span>
-
-                </div>
-
+                <select id="ordenFichasPlantilla">
+                    <option value="titulo_asc">Título de la ficha (A → Z)</option>
+                    <option value="titulo_desc">Título de la ficha (Z → A)</option>
+                    <option value="recientes">Más recientes primero</option>
+                    <option value="antiguas">Más antiguas primero</option>
+                    <option value="aleatorio">Aleatorio al recargar</option>
+                </select>
             </fieldset>
 
 
@@ -445,24 +300,6 @@
 
             </fieldset>
 
-
-            <!-- =================================================
-                 VISTA PREVIA EN TIEMPO REAL
-            ================================================== -->
-
-            <fieldset class="grupo-plantilla">
-
-                <legend>
-                    Vista previa
-                </legend>
-
-
-                <div
-                        id="vistaPreviaPlantilla"
-                        class="preview-plantilla">
-                </div>
-
-            </fieldset>
 
 
             <!-- =================================================
@@ -547,42 +384,8 @@
                     Número
                 </option>
 
-                <option value="checkbox">
-                    Checkbox
-                </option>
-
             </select>
 
-
-            <label class="checkbox-plantilla">
-
-                <input
-                        type="checkbox"
-                        id="mostrarTarjetaCampo"
-                        checked>
-
-                <span>
-                    Mostrar en tarjeta
-                </span>
-
-            </label>
-
-
-
-
-
-            <label class="checkbox-plantilla">
-
-                <input
-                        type="checkbox"
-                        id="mostrarHistoriaCampo"
-                        checked>
-
-                <span>
-                    Mostrar en historia completa
-                </span>
-
-            </label>
 
 
             <div class="acciones-modal-plantilla">

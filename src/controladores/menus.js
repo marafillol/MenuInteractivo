@@ -103,6 +103,27 @@ const actualizarMenu = async(req,res)=>{
         const nombre = req.body.nombre?.trim();
         const id_plantilla = req.body.id_plantilla;
 
+
+        const menuActual = await Menu.obtenerPorId(req.params.id);
+
+        if (!menuActual) {
+            return res.status(404).json({
+                error: "No se encontró el menú."
+            });
+        }
+
+        const cantidadFichas = await Menu.contarFichas(req.params.id);
+
+        if (
+            cantidadFichas > 0 &&
+            Number(id_plantilla) !== Number(menuActual.id_plantilla)
+        ) {
+            return res.status(400).json({
+                error: "No se puede cambiar la plantilla porque este menú ya tiene fichas asociadas."
+            });
+        }
+
+
         if(!nombre){
             return res.status(400).json({ error:"Debe ingresar un nombre para el menú." });
         }
@@ -118,10 +139,6 @@ const actualizarMenu = async(req,res)=>{
         };
 
         if(req.file){
-            const menuActual = await Menu.obtenerPorId(req.params.id);
-            if(!menuActual){
-                return res.status(404).json({ error:"No se encontró el menú." });
-            }
             imagenNueva = await subirArchivo(req.file, "menus");
             datos.imagen = imagenNueva;
         }
@@ -138,44 +155,41 @@ const actualizarMenu = async(req,res)=>{
     }
 };
 
-const eliminarMenu = async(req,res)=>{
-
-    try{
-
+const eliminarMenu = async (req, res) => {
+    try {
         const id_menu = req.params.id;
 
-        const cantidad =
-        await Menu.contarFichas(id_menu);
+        const menu = await Menu.obtenerPorId(id_menu);
 
-        if(cantidad > 0){
-
-            return res.status(409).json({
-
-                error:"No se puede eliminar el menú porque tiene fichas asociadas."
-
+        if (!menu) {
+            return res.status(404).json({
+                error: "No se encontró el menú que intenta eliminar."
             });
+        }
 
+        const cantidad = await Menu.contarFichas(id_menu);
+
+        if (cantidad > 0) {
+            return res.status(400).json({
+                error: `No se puede eliminar este menú porque tiene ${cantidad} ficha(s) asociada(s). Primero debe desvincular las fichas para poder eliminarlo.`
+            });
         }
 
         await Menu.eliminar(id_menu);
 
-        res.json({
-
-            mensaje:"Menú eliminado correctamente"
-
+        return res.json({
+            mensaje: "Menú eliminado correctamente."
         });
 
-    }catch(error){
+    } catch (error) {
+        console.error("Error eliminando menú:", error);
 
-        res.status(500).json({
-
-            error:error.message
-
+        return res.status(500).json({
+            error: "Ocurrió un error al intentar eliminar el menú."
         });
-
     }
-
 };
+
 
 module.exports = {
 
