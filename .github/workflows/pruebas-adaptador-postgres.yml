@@ -25,8 +25,14 @@ jobs:
         run: npm ci
       - name: Ejecutar pruebas automatizadas
         run: npm test
+      - name: Ejecutar regresiones del índice de visita
+        if: always()
+        run: node --test test/indiceVisita.test.js
       - name: Comprobar sintaxis
+        if: always()
         run: |
+          node --check src/frontend-visita/js/explorador.js
+          node --check test/indiceVisita.test.js
           node --check src/app.js
           node --check scripts/migrar-supabase.js
           node --check scripts/verificar-adaptador-postgres-lectura.js
