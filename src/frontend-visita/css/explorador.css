@@ -1301,6 +1301,18 @@ body {
     color: #ffffff;
 }
 
+.columna-indice .item-indice.seleccionado,
+.item-indice.seleccionado {
+    background: rgba(219, 176, 96, 0.22);
+    color: #ffffff;
+    border-left: 3px solid #DBB060;
+    padding-left: 21px;
+}
+
+.columna-menus .boton-todos.seleccionado {
+    color: #ffffff;
+}
+
 .columna-menus .boton-todos {
     margin-bottom: 6px;
 
