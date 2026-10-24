@@ -1,592 +1,557 @@
-<section class="ventana ventana-fichas">
+console.log("Modulo fichas cargado");
 
-    <!-- =========================================================
-         CABECERA
-    ========================================================== -->
-
-    <div class="cabecera-fichas">
-
-        <div class="titulo-fichas">
-
-            <h2 id="tituloFichas">
-                Gestión de Fichas
-            </h2>
-
-            <p id="subtituloFichas"></p>
-
-        </div>
-
-        <button
-                class="btn-nuevo"
-                id="nuevaFicha"
-        >
-            + Nueva ficha
-        </button>
-
-        <button
-                id="barraVolver"
-                class="btn-ver btn-volver"
-                onclick="volverMenus()"
-                style="display: none;"
-        >
-            ← Volver al menú
-        </button>
-
-    </div>
+/* =========================================================
+   NOTA SOBRE LA CARGA DEL SCRIPT
+   panel.js puede cargar este archivo más de una vez, por eso:
+   - el estado usa "var" (no "let"/"const") y
+   - los helpers son "function" con prefijo "fc"
+   así no hay errores de "Identifier already declared".
+========================================================= */
 
 
-    <!-- =========================================================
-         MODAL - SELECCIONAR TIPO DE FICHA
-    ========================================================== -->
+/* =========================================================
+   CACHÉ Y HELPERS DE RED
+========================================================= */
 
-    <div
-            id="modalTipoFicha"
-            class="modal"
-    >
+var FC_TTL = 60000; // 1 minuto
 
-        <div class="modal-contenido">
+// La caché sobrevive aunque el script se vuelva a cargar.
+var fcCache = window.__fcCache || (window.__fcCache = new Map());
 
-            <button
-                    class="cerrar"
-                    onclick="cerrarTipoFicha()"
-            >
-                ✖
-            </button>
+// Guarda la PROMESA: dos llamadas simultáneas comparten un solo fetch.
+function fcCargar(clave, cargador, ttl) {
+    ttl = ttl || FC_TTL;
 
-            <h3>
-                Seleccionar tipo de ficha
-            </h3>
+    var item = fcCache.get(clave);
 
-            <label for="tipoFicha">
-                Tipo de contenido
-            </label>
+    if (item && Date.now() - item.hora < ttl) {
+        return item.promesa;
+    }
 
-            <select id="tipoFicha">
+    var promesa = cargador().catch(function (error) {
+        fcCache.delete(clave);
+        throw error;
+    });
 
-                <option value="">
-                    Seleccionar...
-                </option>
+    fcCache.set(clave, { promesa: promesa, hora: Date.now() });
 
-            </select>
+    return promesa;
+}
 
-        </div>
+function fcInvalidar(prefijo) {
+    prefijo = prefijo || "";
 
-    </div>
+    Array.from(fcCache.keys()).forEach(function (clave) {
+        if (clave.startsWith(prefijo)) {
+            fcCache.delete(clave);
+        }
+    });
+}
+
+async function fcJson(url) {
+    var respuesta = await window.fetchProtegido(url);
+
+    if (!respuesta.ok) {
+        throw new Error("HTTP " + respuesta.status + " en " + url);
+    }
+
+    return respuesta.json();
+}
+
+function fcMenus() {
+    return fcCargar("menus", function () {
+        return fcJson("/api/menus");
+    });
+}
+
+function fcEtiquetas() {
+    return fcCargar("etiquetas", function () {
+        return fcJson("/api/etiquetas");
+    });
+}
+
+// Lista de fichas: TTL corto porque cambia más seguido.
+function fcFichas() {
+    return fcCargar("fichas", function () {
+        return fcJson("/api/fichas");
+    }, 15000);
+}
+
+function fcPlantilla(idMenu) {
+    return fcCargar("plantilla:" + idMenu, function () {
+        return fcJson("/api/plantillas/menu/" + idMenu);
+    });
+}
+
+// id_ficha -> ficha (título, imagen, visible).
+// Reemplaza N fetches individuales por una sola lista cacheada.
+async function fcMapaFichas() {
+    var fichas = await fcFichas();
+
+    return new Map(
+        fichas.map(function (f) {
+            return [String(f.id_ficha), f];
+        })
+    );
+}
+
+function fcEscapar(valor) {
+    return String(valor == null ? "" : valor).replace(
+        /[&<>"']/g,
+        function (c) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[c];
+        }
+    );
+}
+
+function fcSeguro(promesa) {
+    return promesa.catch(function (error) {
+        console.error(error);
+        return null;
+    });
+}
 
 
-    <!-- =========================================================
-         MODAL - CREAR / EDITAR FICHA
-    ========================================================== -->
+/* =========================================================
+   FECHAS E IMÁGENES
+========================================================= */
 
-    <div
-            id="modalFicha"
-            class="modal"
-    >
+function obtenerFechaFicha(ficha) {
+    const creado = ficha.creado;
+    const actualizado = ficha.actualizado;
 
-        <div class="modal-ficha-contenido">
+    if (!actualizado) {
+        return {
+            etiqueta: "Creada",
+            fecha: formatearFechaFicha(creado)
+        };
+    }
 
-            <button
-                    class="cerrar"
-                    onclick="cerrarFicha()"
-            >
-                ✖
-            </button>
+    const fechaCreacion = new Date(creado).getTime();
+    const fechaActualizacion = new Date(actualizado).getTime();
 
-            <h3 id="tituloModalFicha">
-                Nueva ficha
-            </h3>
+    if (
+        Number.isFinite(fechaCreacion) &&
+        fechaCreacion === fechaActualizacion
+    ) {
+        return {
+            etiqueta: "Creada",
+            fecha: formatearFechaFicha(creado)
+        };
+    }
+
+    return {
+        etiqueta: "Última modificación",
+        fecha: formatearFechaFicha(actualizado)
+    };
+}
+
+function formatearFechaFicha(fecha) {
+    if (!fecha) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone: "America/Argentina/Buenos_Aires"
+    }).format(valor);
+}
+
+function mostrarFechaArgentina(fecha) {
+    if (
+        fecha === null ||
+        fecha === undefined ||
+        fecha === "" ||
+        fecha === "undefined" ||
+        fecha === "null"
+    ) {
+        return "-";
+    }
+
+    const valor = new Date(fecha);
+
+    if (Number.isNaN(valor.getTime())) {
+        return "-";
+    }
+
+    const fechaFormateada = valor.toLocaleDateString("es-AR");
+
+    const horaFormateada = valor.toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+
+    return `${fechaFormateada} — ${horaFormateada}`;
+}
+
+function obtenerRutaImagenFicha(ruta) {
+    if (!ruta) {
+        return "/imagenes/default.png";
+    }
+
+    if (/^(https?:|data:)/i.test(ruta)) {
+        return ruta;
+    }
+
+    const rutaLimpia = ruta.replace("public/", "");
+
+    return rutaLimpia.startsWith("/") ? rutaLimpia : `/${rutaLimpia}`;
+}
 
 
-            <!-- TIPO DE FICHA -->
+/* =========================================================
+   ESTADO
+========================================================= */
 
-            <div class="tipo-ficha">
+var fichaEliminar = null;
+var fichaEditando = null;
 
-                <strong>
-                    Tipo:
-                </strong>
+// Relaciones que quedarán guardadas al actualizar.
+var relacionesPendientes = [];
 
-                <span id="nombreTipoFicha"></span>
+// Relaciones existentes que el usuario quitó con la X.
+// Se eliminan realmente de la BD recién al guardar.
+var relacionesEliminadasPendientes = [];
 
+
+/* =========================================================
+   CABECERA DE FICHAS
+========================================================= */
+
+function actualizarCabeceraFichas() {
+    const titulo = document.getElementById("tituloFichas");
+    const subtitulo = document.getElementById("subtituloFichas");
+    const volver = document.getElementById("barraVolver");
+ 
+    if (!titulo || !subtitulo) {
+        return;
+    }
+ 
+    if (menuSeleccionado && nombreMenuSeleccionado) {
+        titulo.textContent = "Fichas del menú";
+ 
+        subtitulo.innerHTML =
+            `<strong>${fcEscapar(nombreMenuSeleccionado)}</strong>`;
+ 
+        subtitulo.style.display = "block";
+ 
+        if (volver) {
+            volver.style.display = "inline-flex";
+        }
+    } else {
+        titulo.textContent = "Gestión de Fichas";
+        subtitulo.innerHTML = "";
+        subtitulo.style.display = "none";
+ 
+        if (volver) {
+            volver.style.display = "none";
+        }
+    }
+}
+ 
+ 
+// Fichas de la lista actual (sin filtrar) y menú elegido en el filtro.
+var fcFichasLista = [];
+var fcFiltroMenu = "";
+ 
+// "" = todos | "__sin__" = fichas sin menú | "<id_menu>" = un menú
+function fcFichasFiltradas() {
+ 
+    // Dentro de un menú la lista ya viene filtrada desde la API.
+    if (menuSeleccionado || !fcFiltroMenu) {
+        return fcFichasLista;
+    }
+ 
+    if (fcFiltroMenu === "__sin__") {
+        return fcFichasLista.filter(function (f) {
+            return !f.id_menu;
+        });
+    }
+ 
+    return fcFichasLista.filter(function (f) {
+        return String(f.id_menu) === fcFiltroMenu;
+    });
+}
+ 
+// Llena el desplegable de menús y lo conecta con la lista.
+// La barra solo se muestra en la gestión general (sin menú elegido).
+function fcPrepararFiltroMenu(menus) {
+ 
+    const barra = document.getElementById("filtrosFichas");
+    const select = document.getElementById("filtroMenuFichas");
+ 
+    if (!barra || !select) {
+        return;
+    }
+ 
+    if (menuSeleccionado) {
+        barra.style.display = "none";
+        return;
+    }
+ 
+    barra.style.display = "flex";
+ 
+    const lista = Array.isArray(menus)
+        ? menus.slice().sort(function (a, b) {
+            return String(a.nombre).localeCompare(String(b.nombre), "es");
+        })
+        : [];
+ 
+    select.innerHTML = "";
+ 
+    const agregar = function (valor, texto) {
+        const opcion = document.createElement("option");
+        opcion.value = valor;
+        opcion.textContent = texto;
+        select.appendChild(opcion);
+    };
+ 
+    agregar("", "Todos los menús");
+ 
+    lista.forEach(function (menu) {
+        agregar(String(menu.id_menu), menu.nombre);
+    });
+ 
+    if (fcFichasLista.some(function (f) { return !f.id_menu; })) {
+        agregar("__sin__", "Sin asignar");
+    }
+ 
+    // Conserva el menú elegido si todavía existe (p. ej. después de guardar).
+    select.value = fcFiltroMenu;
+ 
+    if (select.value !== fcFiltroMenu) {
+        select.value = "";
+    }
+ 
+    fcFiltroMenu = select.value;
+ 
+    select.onchange = function () {
+        fcFiltroMenu = select.value;
+        fcPintarFichas();
+    };
+}
+ 
+function fcTarjetaFichaHTML(ficha, esConsulta) {
+ 
+    const fechaFicha = obtenerFechaFicha(ficha);
+ 
+    const textoMenu = ficha.menu
+        ? `${ficha.menu} - #${ficha.id_menu}`
+        : (ficha.id_menu
+            ? `Menú #${ficha.id_menu}`
+            : "Sin asignar");
+ 
+    return `
+        <article class="ficha-tarjeta ${
+            ficha.visible == 0 ? "ficha-desactivada" : ""
+        }">
+ 
+            <div class="ficha-imagen">
+                <img
+                    src="${obtenerRutaImagenFicha(ficha.imagen)}"
+                    loading="lazy"
+                    decoding="async"
+                    onerror="this.onerror=null;this.src='/img/no-image.png'"
+                />
             </div>
-
-
-            <!-- =================================================
-                 DATOS DINÁMICOS
-            ================================================== -->
-
-            <h4
-                    id="tituloDatosEspecificos"
-                    class="titulo-subseccion"
-            >
-                Datos específicos
-            </h4>
-
-            <div id="camposDinamicos"></div>
-
-
-            <!-- =================================================
-                 INFORMACIÓN GENERAL
-            ================================================== -->
-
-            <h4 class="titulo-subseccion">
-                Información general
-            </h4>
-
-            <label for="tituloFicha">
-                Título
-            </label>
-
-            <input
-                    type="text"
-                    id="tituloFicha"
-                    placeholder="Nombre de la ficha"
-            >
-
-
-            <!-- ETIQUETAS (entre el título y el resumen) -->
-
-            <label>
-                Etiquetas
-            </label>
-
-            <div
-                    id="listaEtiquetasFicha"
-                    class="lista-etiquetas-ficha"
-            ></div>
-
-
-            <label for="resumenFicha">
-                Resumen
-            </label>
-
-            <textarea
-                    id="resumenFicha"
-                    placeholder="Descripción breve"
-            ></textarea>
-
-
-            <label for="textoFicha">
-                Texto completo
-            </label>
-
-            <textarea
-                    id="textoFicha"
-                    placeholder="Contenido completo"
-            ></textarea>
-
-
-            <!-- =================================================
-                 IMAGEN
-            ================================================== -->
-
-            <h4 class="titulo-subseccion">
-                Imagen
-            </h4>
-
-            <div id="contenedorImagenActual">
-
-                <label>
-                    Imagen actual
-                </label>
-
-                <div class="imagen-actual-ficha">
-
-                    <img
-                            id="imagenActualFicha"
-                            src=""
-                            style="display: none;"
-                    >
-
+ 
+            <div class="ficha-info">
+ 
+                <span class="campo-titulo-ficha">TÍTULO</span>
+ 
+                <h3>${fcEscapar(ficha.titulo || "Sin título")}</h3>
+ 
+                <p>
+                    ${fcEscapar(
+                        (ficha.resumen || "Sin descripción")
+                            .replace(/\n/g, " ")
+                    )}
+                </p>
+ 
+                <div class="datos-menu">
+ 
+                    <small>
+                        <i data-lucide="layers" aria-hidden="true"></i>
+                        Menú: ${fcEscapar(textoMenu)}
+                    </small>
+ 
+                    <small>
+                        <i data-lucide="calendar" aria-hidden="true"></i>
+                        ${fechaFicha.etiqueta}: ${fechaFicha.fecha}
+                    </small>
+ 
                 </div>
-
-            </div>
-
-            <label id="labelImagenFicha">
-                Seleccionar imagen
-            </label>
-
-            <input
-                    type="file"
-                    id="imagenFicha"
-                    accept="image/*"
-            >
-
-
-            <!-- VISIBILIDAD -->
-
-            <label class="check-visible">
-
-                <input
-                        type="checkbox"
-                        id="visibleFicha"
-                        checked
-                >
-
-                Visible
-
-            </label>
-
-
-            <!-- =================================================
-                 FICHAS RELACIONADAS
-            ================================================== -->
-
-            <h4 class="titulo-subseccion relaciones-titulo">
-                Fichas relacionadas
-            </h4>
-
-            <div class="relaciones-panel">
-
-                <!-- AGREGAR RELACIÓN -->
-
-                <div class="relacion-nueva">
-
-                    <div class="campo-relacion">
-
-                        <label for="fichaRelacion">
-                            Ficha relacionada
-                        </label>
-
-                        <select id="fichaRelacion">
-
-                            <option value="">
-                                Seleccionar ficha...
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="campo-relacion">
-
-                        <label for="tipoRelacion">
-                            Tipo de relación
-                        </label>
-
-                        <select id="tipoRelacion">
-
-                            <option value="">
-                                Seleccionar tipo...
-                            </option>
-
-                            <option value="Relacionado">
-                                Relacionado
-                            </option>
-
-                            <option value="Parte de">
-                                Parte de
-                            </option>
-
-                            <option value="Participó en">
-                                Participó en
-                            </option>
-
-                            <option value="Mismo evento">
-                                Mismo evento
-                            </option>
-
-                            <option value="Otro">
-                                Otro
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
+ 
+                <div class="ficha-acciones">
+ 
                     <button
-                            type="button"
-                            class="btn-agregar-relacion"
-                            onclick="agregarRelacionFicha()"
+                        class="ficha-btn-vista"
+                        onclick="vistaPreviaFicha(${ficha.id_ficha})"
                     >
-                        + Agregar relación
+                        Vista previa
                     </button>
-
-                </div>
-
-
-                <!-- RELACIONES REGISTRADAS -->
-
-                <div class="relaciones-registradas">
-
-                    <div class="titulo-relaciones-registradas"></div>
-
-                    <div
-                            id="listaRelacionesFicha"
-                            class="lista-relaciones-ficha"
-                    ></div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 ACCIONES DEL MODAL
-            ================================================== -->
-
-            <div class="acciones-modal">
-
-                <button
-                        id="btnGuardarFicha"
-                        class="btn-guardar-ficha"
-                        onclick="guardarFicha()"
-                ></button>
-
-                <button
-                        type="button"
-                        onclick="cerrarFicha()"
-                >
-                    Cancelar
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         LISTADO DE FICHAS
-    ========================================================== -->
-
-    <div
-            id="listaFichas"
-            class="grid-fichas"
-    ></div>
-
-
-    <!-- =========================================================
-         MODAL - VISTA PREVIA
-    ========================================================== -->
-
-    <div
-            id="modalVistaFicha"
-            class="modal"
-    >
-
-        <div class="modal-contenido">
-
-            <button
-                    class="cerrar"
-                    onclick="cerrarVistaFicha()"
-            >
-                ✖
-            </button>
-
-            <h3>
-                Expediente de ficha
-            </h3>
-
-
-            <div class="preview-ficha">
-
-                <!-- IMAGEN -->
-
-                <div class="preview-imagen-ficha">
-
-                    <img
-                            id="vpFichaImagen"
-                            src=""
+ 
+                    <button
+                        class="ficha-btn-ver"
+                        onclick="verMultimediaFicha(${ficha.id_ficha})"
                     >
-
+                        Ver multimedia
+                    </button>
+ 
+                    ${
+                        !esConsulta
+                            ? `
+                            <button
+                                class="ficha-btn-editar"
+                                onclick="editarFicha(${ficha.id_ficha})"
+                            >
+                                Editar
+                            </button>
+ 
+                            <button
+                                class="ficha-btn-eliminar"
+                                onclick="abrirEliminarFicha(${ficha.id_ficha})"
+                            >
+                                Eliminar
+                            </button>
+                            `
+                            : ""
+                    }
+ 
                 </div>
-
-
-                <!-- TÍTULO -->
-
-                <h2 id="vpFichaTitulo"></h2>
-
-
-                <!-- RESUMEN -->
-
-                <p
-                        id="vpFichaResumen"
-                        class="preview-resumen"
-                ></p>
-
-
-                <!-- DATOS ESPECÍFICOS -->
-
-                <h4>
-                    Datos específicos
-                </h4>
-
-                <div id="vpCamposDinamicos"></div>
-
-
-                <!-- HISTORIA -->
-
-                <h4>
-                    Historia
-                </h4>
-
-                <div class="preview-texto">
-
-                    <p id="vpFichaTexto"></p>
-
-                </div>
-
-
-                <!-- INFORMACIÓN ADMINISTRATIVA -->
-
-                <h4>
-                    Información administrativa
-                </h4>
-
-                <div class="preview-info">
-
-                    <p>
-                        <strong>ID:</strong>
-                        <span id="vpFichaId"></span>
-                    </p>
-
-                    <p>
-                        <strong>Menú:</strong>
-                        <span id="vpFichaMenu"></span>
-                    </p>
-
-                    <p>
-                        <strong>Visible:</strong>
-                        <span id="vpFichaVisible"></span>
-                    </p>
-
-                    <p>
-                        <strong>Usuario:</strong>
-                        <span id="vpFichaUsuario"></span>
-                    </p>
-
-                    <p>
-                        <strong>Creado:</strong>
-                        <span id="vpFichaCreado"></span>
-                    </p>
-
-                    <p>
-                        <strong>Actualizado:</strong>
-                        <span id="vpFichaActualizado"></span>
-                    </p>
-
-                </div>
-
-
-                <!-- ETIQUETAS -->
-
-                <h4>
-                    Etiquetas
-                </h4>
-
-                <div
-                        id="vistaEtiquetasFicha"
-                        class="contenedor-etiquetas-vista"
-                ></div>
-
-
-                <!-- FICHAS RELACIONADAS -->
-
-                <h4>
-                    Fichas relacionadas
-                </h4>
-
-                <div
-                        id="vistaRelacionesFicha"
-                        class="lista-relaciones-ficha"
-                ></div>
-
+ 
             </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         MODAL - ELIMINAR FICHA
-    ========================================================== -->
-
-    <div
-            id="modalEliminarFicha"
-            class="modal"
-    >
-
-        <div class="modal-contenido">
-
-            <button
-                    class="cerrar"
-                    onclick="cerrarEliminarFicha()"
-            >
-                ✖
-            </button>
-
-            <h3>
-                Eliminar ficha
-            </h3>
-
-            <p id="mensajeEliminarFicha">
-                ¿Desea eliminar esta ficha?
-            </p>
-
-            <div class="acciones-modal">
-
-                <button
-                        class="btn-eliminar"
-                        onclick="confirmarEliminarFicha()"
-                >
-                    Eliminar
-                </button>
-
-                <button
-                        type="button"
-                        class="btn-ver"
-                        onclick="cerrarEliminarFicha()"
-                >
-                    Cancelar
-                </button>
-
+ 
+        </article>
+    `;
+}
+ 
+// Dibuja la grilla según el filtro elegido (todo de una sola vez).
+function fcPintarFichas() {
+ 
+    const contenedor = document.getElementById("listaFichas");
+ 
+    if (!contenedor) {
+        console.error("No existe listaFichas");
+        return;
+    }
+ 
+    const fichas = fcFichasFiltradas();
+    const total = fcFichasLista.length;
+ 
+    const contador = document.getElementById("contadorFichas");
+ 
+    if (contador) {
+        contador.textContent =
+            fichas.length === total
+                ? `${total} ficha${total === 1 ? "" : "s"}`
+                : `${fichas.length} de ${total} fichas`;
+    }
+ 
+    if (fichas.length === 0) {
+        const mensaje =
+            (menuSeleccionado || total > 0)
+                ? "Este menú todavía no tiene fichas asociadas."
+                : "No hay fichas para mostrar.";
+ 
+        contenedor.innerHTML = `
+            <div class="mensaje-sin-fichas">
+                <p>${mensaje}</p>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         MODAL - MENSAJES
-    ========================================================== -->
-
-    <div
-            id="modalMensajeFicha"
-            class="modal"
-    >
-
-        <div class="modal-contenido">
-
-            <button
-                    class="cerrar"
-                    onclick="cerrarMensajeFicha()"
-            >
-                ✖
-            </button>
-
-            <h3 id="tituloMensaje"></h3>
-
-            <p id="textoMensaje"></p>
-
-            <div class="acciones-modal">
-
-                <button
-                        type="button"
-                        class="btn-ver"
-                        onclick="cerrarMensajeFicha()"
-                >
-                    Aceptar
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
+        `;
+ 
+        return;
+    }
+ 
+    const esConsulta = window.usuarioActual?.rol === "consulta";
+ 
+    contenedor.innerHTML = fichas
+        .map(function (ficha) {
+            return fcTarjetaFichaHTML(ficha, esConsulta);
+        })
+        .join("");
+ 
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+ 
+async function cargarFichas() {
+ 
+    actualizarCabeceraFichas();
+ 
+    try {
+        const botonNuevaFicha = document.getElementById("nuevaFicha");
+        const barraVolver = document.getElementById("barraVolver");
+ 
+        let url = "/api/fichas";
+ 
+        if (menuSeleccionado) {
+            url = `/api/fichas/menu/${menuSeleccionado}`;
+ 
+            if (barraVolver) {
+                barraVolver.style.display = "inline-flex";
+            }
+        } else if (barraVolver) {
+            barraVolver.style.display = "none";
+        }
+ 
+        if (botonNuevaFicha) {
+            botonNuevaFicha.style.display = "inline-flex";
+        }
+ 
+        // Los menús del filtro se piden en paralelo con las fichas
+        // (solo en la gestión general).
+        const promesaMenus =
+            menuSeleccionado ? null : fcSeguro(fcMenus());
+ 
+        const respuesta = await window.fetchProtegido(url);
+ 
+        if (!respuesta.ok) {
+            console.error("Error obteniendo fichas:", respuesta.status);
+            return;
+        }
+ 
+        const fichas = await respuesta.json();
+ 
+        // Si es la lista completa, aprovecharla como caché
+        // (la usan el select y las mini-fichas de relaciones).
+        if (url === "/api/fichas") {
+            fcCache.set("fichas", {
+                promesa: Promise.resolve(fichas),
+                hora: Date.now()
+            });
+        }
+ 
+        fcFichasLista = Array.isArray(fichas) ? fichas : [];
+ 
+        fcPrepararFiltroMenu(
+            promesaMenus ? await promesaMenus : null
+        );
+ 
+        fcPintarFichas();
+ 
+    } catch (error) {
+        console.error("Error cargando fichas:", error);
+    }
+}
+ 

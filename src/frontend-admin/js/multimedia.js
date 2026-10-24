@@ -164,6 +164,321 @@ function obtenerRutaMultimedia(ruta) {
 
 
 /* =========================================================
+   TARJETAS DE MULTIMEDIA
+========================================================= */
+function crearTarjetaMultimediaHTML(item, esConsulta) {
+    const vista =
+        generarVistaMiniatura(item);
+    const icono =
+        obtenerIconoMultimedia(
+            item.tipo_multi
+        );
+    const tipo =
+        item.tipo_multi
+            ? item.tipo_multi.charAt(0).toUpperCase()
+                + item.tipo_multi.slice(1)
+            : "Archivo";
+    const descripcion =
+        item.descripcion ||
+        "Sin descripción";
+
+    return `
+        <article class="tarjeta-multimedia ${item.activo == 0 ? "multimedia-desactivada" : ""}">
+            <div class="multimedia-preview">
+                ${vista}
+            </div>
+            <div class="info-multimedia">
+                <div class="encabezado-multimedia">
+                    <span class="icono-multimedia">
+                        <i
+                            data-lucide="${icono}"
+                            aria-hidden="true">
+                        </i>
+                    </span>
+                    <div>
+                        <h3 class="titulo-multimedia">
+                            ${tipo}
+                        </h3>
+                        <small class="descripcion-tipo">
+                            ${descripcion}
+                        </small>
+                    </div>
+                </div>
+                <div class="datos-multimedia">
+                    <small>
+                        <i data-lucide="file-text" aria-hidden="true"></i>
+                        ${item.ficha || "Ficha sin nombre"} - #${item.id_ficha}
+                    </small>
+                    <small>
+                        <i data-lucide="folder" aria-hidden="true"></i>
+                        Menu: ${item.menu || "Sin menu"}
+                    </small>
+                    <small>
+                        <i data-lucide="calendar" aria-hidden="true"></i>
+                        ${formatearFechaMultimedia(item.creado)}
+                    </small>
+                </div>
+                <div class="acciones-multimedia">
+                    <button
+                        type="button"
+                        class="btn-vista"
+                        onclick="vistaPreviaMultimedia(${item.id_multi})">
+                        Vista previa
+                    </button>
+                    ${
+                        !esConsulta
+                            ? `
+                                <button
+                                    type="button"
+                                    class="btn-editar"
+                                    onclick="editarMultimedia(${item.id_multi})">
+                                    Editar
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn-eliminar"
+                                    onclick="eliminarMultimedia(${item.id_multi})">
+                                    Eliminar
+                                </button>
+                            `
+                            : ""
+                    }
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+// Dibuja todas las tarjetas de una sola vez (antes se iban
+// agregando de a una con innerHTML +=, lo que repintaba la grilla
+// una y otra vez).
+function renderizarTarjetasMultimedia(
+    contenedor,
+    lista,
+    esConsulta,
+    mensajeVacio
+) {
+    if (!Array.isArray(lista) || lista.length === 0) {
+        contenedor.innerHTML = `
+            <div class="sin-multimedia">
+                <span class="sin-multimedia-icono">
+                    <i
+                        data-lucide="images"
+                        aria-hidden="true">
+                    </i>
+                </span>
+                <div>
+                    <strong>
+                        No hay multimedia para mostrar
+                    </strong>
+                    <p>
+                        ${mensajeVacio}
+                    </p>
+                </div>
+            </div>
+        `;
+        actualizarIconosLucide();
+        return;
+    }
+
+    contenedor.innerHTML =
+        lista
+            .map(item => crearTarjetaMultimediaHTML(item, esConsulta))
+            .join("");
+
+    actualizarIconosLucide();
+}
+
+
+/* =========================================================
+   FILTROS DE LA VISTA GENERAL (por menú y por ficha)
+========================================================= */
+let multimediaGeneralCache = [];
+
+const filtroMultimedia = {
+    menu: "",
+    ficha: ""
+};
+
+function textoMenuMultimedia(item) {
+    return item.menu || "Sin menu";
+}
+
+function etiquetaFichaMultimedia(item) {
+    return `${item.ficha || "Ficha sin nombre"} - #${item.id_ficha}`;
+}
+
+// Llena un <select> y devuelve el valor que quedó seleccionado
+// (se conserva el anterior si todavía existe).
+function rellenarSelectFiltroMultimedia(
+    select,
+    opciones,
+    textoTodos,
+    valorActual
+) {
+    select.innerHTML = "";
+
+    const todos =
+        document.createElement("option");
+    todos.value = "";
+    todos.textContent = textoTodos;
+    select.appendChild(todos);
+
+    opciones.forEach(({ valor, texto }) => {
+        const opcion =
+            document.createElement("option");
+        opcion.value = valor;
+        opcion.textContent = texto;
+        select.appendChild(opcion);
+    });
+
+    select.value =
+        opciones.some(o => o.valor === valorActual)
+            ? valorActual
+            : "";
+
+    return select.value;
+}
+
+// Las fichas disponibles dependen del menú elegido.
+function actualizarOpcionesFichaMultimedia() {
+    const selectFicha =
+        document.getElementById("filtroFichaMultimedia");
+
+    if (!selectFicha) {
+        return;
+    }
+
+    const fichas = new Map();
+
+    multimediaGeneralCache.forEach(item => {
+        if (
+            filtroMultimedia.menu &&
+            textoMenuMultimedia(item) !== filtroMultimedia.menu
+        ) {
+            return;
+        }
+
+        const id = String(item.id_ficha);
+
+        if (!fichas.has(id)) {
+            fichas.set(id, etiquetaFichaMultimedia(item));
+        }
+    });
+
+    const opciones =
+        [...fichas]
+            .map(([valor, texto]) => ({ valor, texto }))
+            .sort((a, b) => a.texto.localeCompare(b.texto, "es"));
+
+    filtroMultimedia.ficha =
+        rellenarSelectFiltroMultimedia(
+            selectFicha,
+            opciones,
+            "Todas las fichas",
+            filtroMultimedia.ficha
+        );
+}
+
+function filtrarMultimediaGeneral() {
+    return multimediaGeneralCache.filter(item =>
+        (
+            !filtroMultimedia.menu ||
+            textoMenuMultimedia(item) === filtroMultimedia.menu
+        ) &&
+        (
+            !filtroMultimedia.ficha ||
+            String(item.id_ficha) === filtroMultimedia.ficha
+        )
+    );
+}
+
+function pintarMultimediaGeneral() {
+    const contenedor =
+        document.getElementById("listaMultimediaGeneral");
+
+    if (!contenedor) {
+        return;
+    }
+
+    const lista =
+        filtrarMultimediaGeneral();
+
+    const total =
+        multimediaGeneralCache.length;
+
+    const contador =
+        document.getElementById("contadorMultimedia");
+
+    if (contador) {
+        contador.textContent =
+            lista.length === total
+                ? `${total} archivo${total === 1 ? "" : "s"}`
+                : `${lista.length} de ${total} archivos`;
+    }
+
+    renderizarTarjetasMultimedia(
+        contenedor,
+        lista,
+        window.usuarioActual?.rol === "consulta",
+        total === 0
+            ? "Todavía no hay archivos multimedia cargados."
+            : "Ningún archivo coincide con el filtro elegido."
+    );
+}
+
+function prepararFiltrosMultimedia() {
+    const selectMenu =
+        document.getElementById("filtroMenuMultimedia");
+    const selectFicha =
+        document.getElementById("filtroFichaMultimedia");
+    const botonLimpiar =
+        document.getElementById("limpiarFiltrosMultimedia");
+
+    if (!selectMenu || !selectFicha) {
+        return;
+    }
+
+    const menus =
+        [...new Set(multimediaGeneralCache.map(textoMenuMultimedia))]
+            .sort((a, b) => a.localeCompare(b, "es"));
+
+    filtroMultimedia.menu =
+        rellenarSelectFiltroMultimedia(
+            selectMenu,
+            menus.map(m => ({ valor: m, texto: m })),
+            "Todos los menús",
+            filtroMultimedia.menu
+        );
+
+    actualizarOpcionesFichaMultimedia();
+
+    selectMenu.onchange = () => {
+        filtroMultimedia.menu = selectMenu.value;
+        // al cambiar de menú, la ficha elegida deja de valer
+        filtroMultimedia.ficha = "";
+        actualizarOpcionesFichaMultimedia();
+        pintarMultimediaGeneral();
+    };
+
+    selectFicha.onchange = () => {
+        filtroMultimedia.ficha = selectFicha.value;
+        pintarMultimediaGeneral();
+    };
+
+    if (botonLimpiar) {
+        botonLimpiar.onclick = () => {
+            filtroMultimedia.menu = "";
+            filtroMultimedia.ficha = "";
+            selectMenu.value = "";
+            actualizarOpcionesFichaMultimedia();
+            pintarMultimediaGeneral();
+        };
+    }
+}
+
+
+/* =========================================================
    CARGAR MULTIMEDIA
 ========================================================= */
 
@@ -400,219 +715,28 @@ async function cargarMultimedia() {
         }
 
 
-        contenedor.innerHTML = "";
-
-
         /* =================================================
-           SIN MULTIMEDIA
+           VISTA GENERAL: con filtros por menú y por ficha
         ================================================= */
-
-        if (
-            !Array.isArray(multimedia) ||
-            multimedia.length === 0
-        ) {
-
-            contenedor.innerHTML = `
-
-                <div class="sin-multimedia">
-
-                    <span class="sin-multimedia-icono">
-
-                        <i
-                            data-lucide="images"
-                            aria-hidden="true">
-                        </i>
-
-                    </span>
-
-                    <div>
-
-                        <strong>
-                            No hay multimedia asociada
-                        </strong>
-
-                        <p>
-                            Esta ficha todavía no tiene
-                            archivos multimedia asociados.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            actualizarIconosLucide();
-
+        if (!fichaSeleccionada) {
+            multimediaGeneralCache =
+                Array.isArray(multimedia)
+                    ? multimedia
+                    : [];
+            prepararFiltrosMultimedia();
+            pintarMultimediaGeneral();
             return;
-
         }
 
-
         /* =================================================
-           CREAR TARJETAS
+           MULTIMEDIA DE UNA FICHA (sin filtros)
         ================================================= */
-
-        multimedia.forEach(item => {
-
-            const vista =
-                generarVistaMiniatura(item);
-
-
-            const icono =
-                obtenerIconoMultimedia(
-                    item.tipo_multi
-                );
-
-
-            const tipo =
-                item.tipo_multi
-                    ? item.tipo_multi.charAt(0).toUpperCase()
-                        + item.tipo_multi.slice(1)
-                    : "Archivo";
-
-
-            const descripcion =
-                item.descripcion ||
-                "Sin descripción";
-
-
-            contenedor.innerHTML += `
-
-                <article class="tarjeta-multimedia ${item.activo == 0 ? "multimedia-desactivada" : ""}">
-
-
-                    <div class="multimedia-preview">
-
-                        ${vista}
-
-                    </div>
-
-
-                    <div class="info-multimedia">
-
-
-                        <div class="encabezado-multimedia">
-
-
-                            <span class="icono-multimedia">
-
-                                <i
-                                    data-lucide="${icono}"
-                                    aria-hidden="true">
-                                </i>
-
-                            </span>
-
-
-                            <div>
-
-                                <h3 class="titulo-multimedia">
-
-                                    ${tipo}
-
-                                </h3>
-
-
-                                <small class="descripcion-tipo">
-
-                                    ${descripcion}
-
-                                </small>
-
-                            </div>
-
-
-                        </div>
-
-
-<div class="datos-multimedia">
-    <small>
-        <i data-lucide="file-text" aria-hidden="true"></i>
-        ${item.ficha || "Ficha sin nombre"} - #${item.id_ficha}
-    </small>
-
-    <small>
-        <i data-lucide="folder" aria-hidden="true"></i>
-        Menu: ${item.menu || "Sin menu"}
-    </small>
-
-    <small>
-        <i data-lucide="calendar" aria-hidden="true"></i>
-        ${formatearFechaMultimedia(item.creado)}
-    </small>
-</div>
-
-
-
-                        <div class="acciones-multimedia">
-
-
-                            <button
-                                type="button"
-                                class="btn-vista"
-                                onclick="
-                                    vistaPreviaMultimedia(
-                                        ${item.id_multi}
-                                    )
-                                ">
-
-                                Vista previa
-
-                            </button>
-
-
-                            ${
-                                !esConsulta
-                                    ? `
-
-                                        <button
-                                            type="button"
-                                            class="btn-editar"
-                                            onclick="
-                                                editarMultimedia(
-                                                    ${item.id_multi}
-                                                )
-                                            ">
-
-                                            Editar
-
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            class="btn-eliminar"
-                                            onclick="
-                                                eliminarMultimedia(
-                                                    ${item.id_multi}
-                                                )
-                                            ">
-
-                                            Eliminar
-
-                                        </button>
-
-                                    `
-                                    : ""
-                            }
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </article>
-
-            `;
-
-        });
-
-
-        actualizarIconosLucide();
+        renderizarTarjetasMultimedia(
+            contenedor,
+            multimedia,
+            esConsulta,
+            "Esta ficha todavía no tiene archivos multimedia asociados."
+        );
 
 
     } catch (error) {
