@@ -476,6 +476,67 @@ async function iniciarPanel(){
 
 }
 
+
+/* =========================================================
+   EVITAR CIERRE DE MODALES AL SELECCIONAR TEXTO
+========================================================= */
+
+let seleccionTextoDesdeCampo = false;
+let soltoSobreFondoModal = false;
+
+document.addEventListener("mousedown", function (evento) {
+    const objetivo = evento.target;
+
+    seleccionTextoDesdeCampo =
+        objetivo instanceof Element &&
+        objetivo.matches(
+            'input:not([type="button"]):not([type="submit"]), textarea, [contenteditable="true"]'
+        );
+
+    soltoSobreFondoModal = false;
+}, true);
+
+document.addEventListener("mouseup", function (evento) {
+    if (!seleccionTextoDesdeCampo) {
+        return;
+    }
+
+    const objetivo = evento.target;
+
+    if (
+        objetivo instanceof Element &&
+        objetivo.matches(
+            '.modal, .modal-plantilla, .modal-multimedia, [id^="modal"], #ventanaEmergente'
+        )
+    ) {
+        soltoSobreFondoModal = true;
+    }
+}, true);
+
+document.addEventListener("click", function (evento) {
+    if (!soltoSobreFondoModal) {
+        seleccionTextoDesdeCampo = false;
+        return;
+    }
+
+    const objetivo = evento.target;
+
+    if (
+        objetivo instanceof Element &&
+        objetivo.matches(
+            '.modal, .modal-plantilla, .modal-multimedia, [id^="modal"], #ventanaEmergente'
+        )
+    ) {
+        evento.preventDefault();
+        evento.stopPropagation();
+        evento.stopImmediatePropagation();
+    }
+
+    seleccionTextoDesdeCampo = false;
+    soltoSobreFondoModal = false;
+}, true);
+
+
 window.addEventListener("click", function(e){
 
     if(!e.target.classList.contains("modal")){
