@@ -1,5 +1,5 @@
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
-
+const cachePublico = require("../middleware/cachePublico");
 
 
 
@@ -49,6 +49,7 @@ class FichaEtiquetaControlador{
                 idFicha,
                 etiquetas
             );
+            cachePublico.invalidar();
 
             res.json({
                 mensaje:"Etiquetas actualizadas correctamente."

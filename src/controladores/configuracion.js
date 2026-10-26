@@ -20,6 +20,8 @@ const estiloAdminPredeterminado = {
 };
 
 const colorValido = (color)=>/^#[0-9a-fA-F]{6}$/.test(color || "");
+let estiloVisitanteEnCache = null;
+let promesaCargaEstiloVisitante = null;
 
 const obtenerConfiguracion = async(clave, valoresPredeterminados)=>{
     const valor = await Configuracion.obtener(clave);
@@ -33,11 +35,36 @@ const obtenerConfiguracion = async(clave, valoresPredeterminados)=>{
     }
 };
 
-const obtenerEstiloVisitante = async(req,res)=>{
-    try{
-        res.json(await obtenerConfiguracion("estilo_visitante", estiloPredeterminado));
-    }catch(error){
-        res.status(500).json({ error:"No se pudo obtener la configuracion." });
+const obtenerEstiloVisitante = async (req, res) => {
+    try {
+        if (estiloVisitanteEnCache !== null) {
+            return res.json(estiloVisitanteEnCache);
+        }
+
+        // Evita varias consultas simultáneas durante la primera carga.
+        if (!promesaCargaEstiloVisitante) {
+            promesaCargaEstiloVisitante = obtenerConfiguracion(
+                "estilo_visitante",
+                estiloPredeterminado
+            );
+        }
+
+        const estilo = await promesaCargaEstiloVisitante;
+
+        estiloVisitanteEnCache = estilo;
+
+        return res.json(estilo);
+    } catch (error) {
+        console.error(
+            "Error al obtener el estilo del visitante:",
+            error.message
+        );
+
+        return res.status(500).json({
+            error: "No se pudo obtener la configuracion."
+        });
+    } finally {
+        promesaCargaEstiloVisitante = null;
     }
 };
 
@@ -89,11 +116,25 @@ const guardarEstiloVisitante = async(req,res)=>{
         tiempoInactividad: tiempoInactividadFinal
     };
 
-    try{
-        await Configuracion.guardar("estilo_visitante", JSON.stringify(estilo));
-        res.json(estilo);
-    }catch(error){
-        res.status(500).json({ error:"No se pudo guardar la configuracion." });
+    try {
+        await Configuracion.guardar(
+            "estilo_visitante",
+            JSON.stringify(estilo)
+        );
+
+        // Mantiene la caché sincronizada con el panel.
+        estiloVisitanteEnCache = estilo;
+
+        return res.json(estilo);
+    } catch (error) {
+        console.error(
+            "Error al guardar el estilo del visitante:",
+            error.message
+        );
+
+        return res.status(500).json({
+            error: "No se pudo guardar la configuracion."
+        });
     }
 };
 

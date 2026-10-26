@@ -1,6 +1,6 @@
 const Menu = require("../modelos/menu");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
-
+const cachePublico = require("../middleware/cachePublico");
 const limpiarArchivoSubido = async (ruta) => {
     if (!ruta) return;
     try {
@@ -60,6 +60,7 @@ const crearMenu = async(req,res)=>{
         };
 
         const id = await Menu.crear(datosMenu);
+        cachePublico.invalidar();
         imagenSubida = null;
 
         return res.json({ mensaje:"Menú creado correctamente", id_menu:id });
@@ -144,6 +145,7 @@ const actualizarMenu = async(req,res)=>{
         }
 
         await Menu.actualizar(req.params.id, datos);
+        cachePublico.invalidar();
         // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
         imagenNueva = null;
         return res.json({ mensaje:"Menú actualizado" });
@@ -176,6 +178,7 @@ const eliminarMenu = async (req, res) => {
         }
 
         await Menu.eliminar(id_menu);
+        cachePublico.invalidar();
 
         return res.json({
             mensaje: "Menú eliminado correctamente."

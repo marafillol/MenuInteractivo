@@ -1,6 +1,7 @@
 const Etiqueta =
 require("../modelos/etiquetaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
+const cachePublico = require("../middleware/cachePublico");
 
 
 exports.obtenerEtiquetas = async(req,res)=>{
@@ -79,6 +80,8 @@ exports.editarEtiqueta = async(req,res)=>{
             req.body
         );
 
+        cachePublico.invalidar();
+
 
         res.json(etiqueta);
 
@@ -101,8 +104,11 @@ exports.eliminarEtiqueta = async (req, res) => {
         const id = req.params.id;
 
         await FichaEtiqueta.eliminarEtiquetasRelacionadas(id);
+        cachePublico.invalidar();
 
         const resultado = await Etiqueta.eliminar(id);
+
+        cachePublico.invalidar();
 
         res.json(resultado);
 

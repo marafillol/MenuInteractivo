@@ -297,17 +297,43 @@ app.get("/api/estado-admin",(req,res)=>{
 // INICIO DEL SERVIDOR
 // =======================================================
 
-const PORT =
-process.env.PORT || 3000;
 
-app.listen(
-    PORT,
-    "0.0.0.0",
-    ()=>{
+const PORT = process.env.PORT || 3000;
 
-        console.log(
-            `Servidor iniciado en puerto ${PORT}`
+
+async function iniciarServidor() {
+    const db = require("./database");
+
+    try {
+        if (typeof db.preparar === "function") {
+            await db.preparar();
+
+            console.log(
+                "Conexión inicial con la base de datos preparada"
+            );
+        }
+
+        const cachePublica = require("./servicios/cachePublica");
+
+        // Preparar los datos antes de aceptar peticiones.
+        await cachePublica.actualizarCachePublica();
+
+        // Renovar los datos en segundo plano.
+        cachePublica.iniciarActualizacionPeriodica();
+    } catch (error) {
+        console.error(
+            "No se pudo preparar la caché pública:",
+            error.code || error.message
         );
 
+        // No iniciar con la caché vacía: evita respuestas públicas incompletas.
+        process.exitCode = 1;
+        return;
     }
-);
+
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Servidor iniciado en puerto ${PORT}`);
+    });
+}
+
+iniciarServidor();

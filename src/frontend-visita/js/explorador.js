@@ -14,12 +14,139 @@
 let fichasExplorador = [];
 let menusExplorador = [];
 let etiquetasExplorador = [];
+let menuActivoExplorador = null;
+let solicitudIndice = 0;
 
 // Cuántas tarjetas entran en la primera pantalla. Sus fotos se cargan
 // al instante (eager) y la vista espera a que estén listas; el resto
 // queda en "lazy" para no bajar cientos de imágenes de golpe.
 const FICHAS_PRIMERA_PANTALLA = 12;
 
+
+
+// =======================================================
+// PRECARGA DE EXPEDIENTES COMPLETOS
+// =======================================================
+
+const PRIMERAS_FICHAS_A_PRECARGAR = 2;
+const MAX_PRECARGAS_SIMULTANEAS = 2;
+
+let observadorPrecargaFichas = null;
+
+const fichasEnColaPrecarga = [];
+const fichasSolicitadasPrecarga = new Set();
+
+let precargasActivas = 0;
+
+function solicitarPrecargaFicha(idFicha) {
+    if (
+        idFicha === undefined ||
+        idFicha === null ||
+        idFicha === ""
+    ) {
+        return;
+    }
+
+    const id = String(idFicha);
+
+    if (
+        fichasSolicitadasPrecarga.has(id) ||
+        typeof window.historiaCompleta?.precargar !== "function"
+    ) {
+        return;
+    }
+
+    fichasSolicitadasPrecarga.add(id);
+    fichasEnColaPrecarga.push(id);
+
+    procesarColaPrecargaFichas();
+}
+
+function procesarColaPrecargaFichas() {
+    while (
+        precargasActivas < MAX_PRECARGAS_SIMULTANEAS &&
+        fichasEnColaPrecarga.length > 0
+    ) {
+        const id = fichasEnColaPrecarga.shift();
+
+        precargasActivas++;
+
+        console.log(
+            "[PRECARGA] Preparando expediente:",
+            id
+        );
+
+        Promise.resolve()
+            .then(() => window.historiaCompleta.precargar(id))
+            .catch(error => {
+                console.warn(
+                    "[PRECARGA] Error preparando expediente:",
+                    id,
+                    error
+                );
+
+                fichasSolicitadasPrecarga.delete(id);
+            })
+            .finally(() => {
+                precargasActivas--;
+                fichasSolicitadasPrecarga.delete(id);
+                procesarColaPrecargaFichas();
+            });
+    }
+}
+
+function prepararPrecargaDeTarjetas(contenedor) {
+    if (observadorPrecargaFichas) {
+        observadorPrecargaFichas.disconnect();
+        observadorPrecargaFichas = null;
+    }
+
+    const tarjetas = [
+        ...contenedor.querySelectorAll(".tarjetaFicha")
+    ];
+
+    if (!tarjetas.length) {
+        return;
+    }
+
+    // Preparar primero las cuatro primeras fichas.
+    tarjetas
+        .slice(0, PRIMERAS_FICHAS_A_PRECARGAR)
+        .forEach(tarjeta => {
+            solicitarPrecargaFicha(tarjeta.dataset.id);
+        });
+
+    // Preparar las siguientes cuando se acerquen a la pantalla.
+    if (!("IntersectionObserver" in window)) {
+        return;
+    }
+
+    observadorPrecargaFichas = new IntersectionObserver(
+        entradas => {
+            entradas.forEach(entrada => {
+                if (!entrada.isIntersecting) {
+                    return;
+                }
+
+                const tarjeta = entrada.target;
+
+                observadorPrecargaFichas.unobserve(tarjeta);
+
+                solicitarPrecargaFicha(tarjeta.dataset.id);
+            });
+        },
+        {
+            rootMargin: "300px 0px",
+            threshold: 0
+        }
+    );
+
+    tarjetas
+        .slice(PRIMERAS_FICHAS_A_PRECARGAR)
+        .forEach(tarjeta => {
+            observadorPrecargaFichas.observe(tarjeta);
+        });
+}
 // =======================================================
 // MOSTRAR EXPLORADOR
 // =======================================================
@@ -78,7 +205,7 @@ window.mostrarExplorador = mostrarExplorador;
 
 async function inicializarExplorador() {
 
-    console.log("[explorador] Inicializando...");
+
 
     await cargarFichasExplorador();
 
@@ -321,9 +448,7 @@ async function inicializarExplorador() {
 
     renderizarIndice();
 
-    console.log(
-        "[explorador] Inicialización completa."
-    );
+
 
 }
 
@@ -333,10 +458,9 @@ async function inicializarExplorador() {
 
 async function cargarFichasExplorador() {
 
-    console.log(
-        "[explorador] Consultando APIs públicas..."
-    );
+    const inicioCarga = performance.now();
 
+    console.log("[RENDIMIENTO] Comienza cargarFichasExplorador");
     const contenedor =
         document.getElementById(
             "contenedorFichas"
@@ -346,6 +470,8 @@ async function cargarFichasExplorador() {
 
         // Las tres consultas se hacen EN PARALELO. Antes iban una
         // detrás de otra y los tiempos del servidor se sumaban.
+        const inicioConsultas = performance.now();
+
         const [
             respuestaFichas,
             respuestaMenus,
@@ -355,6 +481,12 @@ async function cargarFichasExplorador() {
             fetch("/api/public/menus"),
             fetch("/api/public/etiquetas")
         ]);
+
+        console.log(
+            `[RENDIMIENTO] Respuestas HTTP recibidas: ${
+                Math.round(performance.now() - inicioConsultas)
+            } ms`
+        );
 
         if (!respuestaFichas.ok) {
             throw new Error(
@@ -384,11 +516,19 @@ async function cargarFichasExplorador() {
             respuestaEtiquetas.json()
         ]);
 
+        console.log(
+            `[RENDIMIENTO] JSON procesado: ${
+                Math.round(performance.now() - inicioConsultas)
+            } ms desde el comienzo de las consultas`
+        );
+
         if (!Array.isArray(datosFichas)) {
-            throw new Error(
-                "La API no devolvió un array de fichas."
-            );
+            throw new Error("La API no devolvió un array de fichas.");
         }
+
+        console.log(
+            `[RENDIMIENTO] Cantidad de fichas: ${datosFichas.length}`
+        );
 
         if (!Array.isArray(datosMenus)) {
             throw new Error(
@@ -432,7 +572,11 @@ async function cargarFichasExplorador() {
         });
 
         etiquetasExplorador = datosEtiquetas;
-
+        console.log(
+            `[RENDIMIENTO] Datos normalizados: ${
+                Math.round(performance.now() - inicioCarga)
+            } ms desde el comienzo de la carga`
+        );
 
         mostrarTodasLasFichas();
         renderizarIndice();
@@ -499,44 +643,124 @@ function normalizarFicha(ficha) {
     };
 
 }
-
 // =======================================================
-// MOSTRAR TODAS LAS FICHAS
+// FICHAS DEL CONTEXTO ACTUAL
 // =======================================================
 
-function mostrarTodasLasFichas() {
+function obtenerFichasDelMenuActivo() {
+    if (menuActivoExplorador === null) {
+        return fichasExplorador;
+    }
 
-    renderizarResultados(
-        fichasExplorador
+    return fichasExplorador.filter(
+        ficha =>
+            Number(ficha.id_menu) ===
+            Number(menuActivoExplorador)
     );
-
 }
 
 // =======================================================
-// FILTRAR FICHAS
+// MOSTRAR FICHAS DEL CONTEXTO ACTUAL
+// =======================================================
+
+function mostrarTodasLasFichas() {
+    const fichas = obtenerFichasDelMenuActivo();
+
+    const menu = menusExplorador.find(
+        elemento =>
+            Number(elemento.id_menu) ===
+            Number(menuActivoExplorador)
+    );
+
+    const fichasOrdenadas = menuActivoExplorador === null
+        ? fichas
+        : ordenarFichasPorPlantilla(
+            fichas,
+            menu?.plantilla || null,
+            menuActivoExplorador
+        );
+
+    renderizarResultados(fichasOrdenadas, {
+        plantilla: menu?.plantilla || null
+    });
+}
+
+// =======================================================
+// FILTRAR FICHAS POR TEXTO
 // =======================================================
 
 function filtrarFichasExplorador(texto) {
+    const termino = normalizarTexto(texto);
+    const fichasBase = obtenerFichasDelMenuActivo();
 
-    const termino =
-        normalizarTexto(texto);
+    const menu = menusExplorador.find(
+        elemento =>
+            Number(elemento.id_menu) ===
+            Number(menuActivoExplorador)
+    );
 
     if (!termino) {
         mostrarTodasLasFichas();
+        volverAlInicioDeFichas();
         return;
     }
 
-    const resultados =
-        fichasExplorador.filter(
-            ficha =>
-                fichaCoincideBusqueda(
-                    ficha,
-                    termino
-                )
-        );
+    const resultados = fichasBase.filter(
+        ficha => fichaCoincideBusqueda(ficha, termino)
+    );
 
-    renderizarResultados(resultados);
+    renderizarResultados(resultados, {
+        plantilla: menu?.plantilla || null
+    });
 
+    volverAlInicioDeFichas();
+}
+
+// =======================================================
+// ETIQUETAS DEL CONTEXTO ACTUAL
+// =======================================================
+async function obtenerEtiquetasDelMenuActivo() {
+    if (menuActivoExplorador === null) {
+        return etiquetasExplorador;
+    }
+
+    const idMenu = Number(menuActivoExplorador);
+
+    const resultados = await Promise.all(
+        etiquetasExplorador.map(async etiqueta => {
+            try {
+                const respuesta = await fetch(
+                    `/api/public/fichas/etiqueta/${etiqueta.id_etiqueta}`
+                );
+
+                if (!respuesta.ok) {
+                    return null;
+                }
+
+                const fichas = await respuesta.json();
+
+                if (!Array.isArray(fichas)) {
+                    return null;
+                }
+
+                const perteneceAlMenu = fichas.some(
+                    ficha => Number(ficha.id_menu) === idMenu
+                );
+
+                return perteneceAlMenu ? etiqueta : null;
+            } catch (error) {
+                console.error(
+                    "[explorador] Error comprobando etiqueta:",
+                    etiqueta.nombre,
+                    error
+                );
+
+                return null;
+            }
+        })
+    );
+
+    return resultados.filter(Boolean);
 }
 
 // =======================================================
@@ -620,6 +844,8 @@ function normalizarTexto(texto) {
 
 function renderizarResultados(resultados, opciones = {}) {
 
+    const inicioRenderizado = performance.now();
+
     const contenedor =
         document.getElementById(
             "contenedorFichas"
@@ -674,6 +900,13 @@ function renderizarResultados(resultados, opciones = {}) {
     });
 
     contenedor.replaceChildren(fragmento);
+    prepararPrecargaDeTarjetas(contenedor);
+
+    console.log(
+        `[RENDIMIENTO] Renderizadas ${resultados.length} fichas en ${
+            Math.round(performance.now() - inicioRenderizado)
+        } ms`
+    );
 
 }
 
@@ -757,20 +990,24 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
     const imagen =
         document.createElement("img");
 
-    imagen.src =
-        obtenerImagenExplorador(ficha);
+    const esPrimeraPantalla =
+        indice < FICHAS_PRIMERA_PANTALLA;
 
-    console.log("Ficha:", ficha.id_ficha);
-    console.log("Imagen:", imagen.src);
+    imagen.loading = esPrimeraPantalla
+        ? "eager"
+        : "lazy";
+
+    imagen.decoding = "async";
+
+    if (esPrimeraPantalla) {
+        imagen.fetchPriority = "high";
+    }
 
     imagen.alt =
         obtenerNombreFicha(ficha);
 
-    imagen.loading =
-        indice < FICHAS_PRIMERA_PANTALLA
-            ? "eager"
-            : "lazy";
-    imagen.decoding = "async";
+    imagen.src =
+        obtenerImagenExplorador(ficha);
 
     imagen.onerror = function () {
 
@@ -965,7 +1202,9 @@ function obtenerNombreFicha(ficha) {
 // ÍNDICE
 // =======================================================
 
-function renderizarIndice() {
+async function renderizarIndice() {
+
+    const solicitudActual = ++solicitudIndice;
 
     const contenedor =
         document.querySelector(
@@ -973,6 +1212,20 @@ function renderizarIndice() {
         );
 
     if (!contenedor) {
+        return;
+    }
+
+    const menuConsultado = menuActivoExplorador;
+
+    const etiquetasVisibles =
+        await obtenerEtiquetasDelMenuActivo();
+
+    // Si se seleccionó otro menú mientras esperábamos
+    // la respuesta, descartamos este índice desactualizado.
+    if (
+        solicitudActual !== solicitudIndice ||
+        menuConsultado !== menuActivoExplorador
+    ) {
         return;
     }
 
@@ -1002,6 +1255,35 @@ function renderizarIndice() {
         "MENÚS";
 
     columnaMenus.appendChild(tituloMenus);
+    // Botón para volver a mostrar todas las fichas
+    const botonTodos = document.createElement("button");
+
+    botonTodos.type = "button";
+    botonTodos.className = "item-indice";
+    botonTodos.textContent = "TODOS";
+
+    if (menuActivoExplorador === null) {
+        botonTodos.classList.add("menu-activo");
+        botonTodos.setAttribute("aria-current", "true");
+    }
+
+    botonTodos.addEventListener("click", evento => {
+        evento.stopPropagation();
+
+        menuActivoExplorador = null;
+
+        const buscador = document.getElementById("buscador");
+        if (buscador) {
+            buscador.value = "";
+        }
+
+        mostrarTodasLasFichas();
+        renderizarIndice();
+        cerrarPaneles();
+        actualizarMensajeCentral();
+    });
+
+    columnaMenus.appendChild(botonTodos);
 
     const tituloEtiquetas =
         document.createElement("h3");
@@ -1016,32 +1298,7 @@ function renderizarIndice() {
         tituloEtiquetas
     );
 
-    // Todos
-    const botonTodos =
-        document.createElement("button");
 
-    botonTodos.type = "button";
-
-    botonTodos.className =
-        "item-indice boton-todos";
-
-    botonTodos.textContent =
-        "TODOS";
-
-    botonTodos.addEventListener(
-        "click",
-        evento => {
-
-            evento.stopPropagation();
-
-            mostrarTodasLasFichas();
-            cerrarPaneles();
-            actualizarMensajeCentral();
-
-        }
-    );
-
-    columnaMenus.appendChild(botonTodos);
 
     // Menús
     if (menusExplorador.length) {
@@ -1055,15 +1312,23 @@ function renderizarIndice() {
             boton.className = "item-indice";
             boton.textContent = menu.nombre;
 
+            if (
+                Number(menu.id_menu) === Number(menuActivoExplorador)
+            ) {
+                boton.classList.add("menu-activo");
+                boton.setAttribute("aria-current", "true");
+            }
+
             boton.addEventListener(
                 "click",
                 evento => {
 
                     evento.stopPropagation();
 
-                    mostrarFichasPorMenu(
-                        menu.id_menu
-                    );
+                    menuActivoExplorador = menu.id_menu;
+
+                    mostrarFichasPorMenu(menu.id_menu);
+                    renderizarIndice();
 
                 }
             );
@@ -1088,10 +1353,11 @@ function renderizarIndice() {
 
     }
 
-    // Etiquetas
-    if (etiquetasExplorador.length) {
 
-        etiquetasExplorador.forEach(etiqueta => {
+
+    if (etiquetasVisibles.length) {
+
+        etiquetasVisibles.forEach(etiqueta => {
 
             const boton =
                 document.createElement("button");
@@ -1230,10 +1496,8 @@ function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
 
 
 function mostrarFichasPorMenu(idMenu) {
-    console.log(
-        "[explorador] Filtrando por menú:",
-        idMenu
-    );
+
+    menuActivoExplorador = idMenu;
 
     const menuSeleccionado = menusExplorador.find(
         menu => Number(menu.id_menu) === Number(idMenu)
@@ -1245,10 +1509,7 @@ function mostrarFichasPorMenu(idMenu) {
 
     const plantilla = menuSeleccionado?.plantilla || null;
 
-    console.log(
-        "[explorador] Orden configurado:",
-        plantilla?.interfaz?.ordenFichas || "titulo_asc"
-    );
+
 
     const fichasOrdenadas = ordenarFichasPorPlantilla(
         fichasFiltradas,
@@ -1256,20 +1517,11 @@ function mostrarFichasPorMenu(idMenu) {
         idMenu
     );
 
-    console.log("[PRUEBA] Orden recibido:", plantilla?.interfaz?.ordenFichas);
-
-    console.table(fichasFiltradas.map(f => ({
-        id: f.id_ficha,
-        titulo: f.titulo,
-        creadoOriginal: f.creado,
-        fechaInterpretada: Date.parse(f.creado || ""),
-        fechaValida: Number.isFinite(Date.parse(f.creado || ""))
-    })));
-
     renderizarResultados(fichasOrdenadas, {
         plantilla: plantilla
     });
 
+    volverAlInicioDeFichas();
     cerrarPaneles();
     actualizarMensajeCentral();
 }
@@ -1278,56 +1530,57 @@ function mostrarFichasPorMenu(idMenu) {
 // =======================================================
 // FILTRAR POR ETIQUETA
 // =======================================================
-
 async function mostrarFichasPorEtiqueta(idEtiqueta) {
 
-    console.log(
-        "[explorador] Filtrando por etiqueta:",
-        idEtiqueta
-    );
 
     try {
-
-        const respuesta =
-            await fetch(
-                `/api/public/fichas/etiqueta/${idEtiqueta}`
-            );
+        const respuesta = await fetch(
+            `/api/public/fichas/etiqueta/${idEtiqueta}`
+        );
 
         if (!respuesta.ok) {
-            throw new Error(
-                `HTTP ${respuesta.status}`
-            );
+            throw new Error(`HTTP ${respuesta.status}`);
         }
 
-        const fichas =
-            await respuesta.json();
+        const datos = await respuesta.json();
 
-        if (!Array.isArray(fichas)) {
+        if (!Array.isArray(datos)) {
             throw new Error(
                 "La API no devolvió un array de fichas."
             );
         }
 
-        const fichasFiltradas =
-            fichas.map(normalizarFicha);
+        let fichasFiltradas = datos.map(normalizarFicha);
 
-        renderizarResultados(
-            fichasFiltradas
+        // Si hay un menú activo, excluir las fichas de otros menús.
+        if (menuActivoExplorador !== null) {
+            fichasFiltradas = fichasFiltradas.filter(
+                ficha =>
+                    Number(ficha.id_menu) ===
+                    Number(menuActivoExplorador)
+            );
+        }
+
+        const menu = menusExplorador.find(
+            elemento =>
+                Number(elemento.id_menu) ===
+                Number(menuActivoExplorador)
         );
 
+        renderizarResultados(fichasFiltradas, {
+            plantilla: menu?.plantilla || null
+        });
+
+        volverAlInicioDeFichas();
         cerrarPaneles();
         actualizarMensajeCentral();
 
-    }
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "[explorador] Error filtrando por etiqueta:",
             error
         );
-
     }
-
 }
 
 // =======================================================
@@ -1443,6 +1696,26 @@ function cerrarPaneles() {
         document.getElementById(
             "panelBusqueda"
         );
+
+    const btnIndice =
+        document.getElementById(
+            "btnIndice"
+        );
+
+    const btnBuscar =
+        document.getElementById(
+            "btnBuscar"
+        );
+
+    // Si el foco está dentro de un panel que vamos a ocultar,
+    // devolverlo al botón que permite volver a abrirlo.
+    const elementoActivo = document.activeElement;
+
+    if (indice?.contains(elementoActivo)) {
+        btnIndice?.focus();
+    } else if (busqueda?.contains(elementoActivo)) {
+        btnBuscar?.focus();
+    }
 
     indice?.classList.remove("activo");
     busqueda?.classList.remove("activo");
@@ -1703,10 +1976,35 @@ function aplicarPlantillaAlContenedor(contenedor, plantilla) {
     contenedor.classList.add("con-plantilla");
 }
 
-// =======================================================
-// DEBUG
-// =======================================================
 
-console.log(
-    "[explorador] explorador.js cargado correctamente."
-);
+
+
+function volverAlInicioDeFichas() {
+    requestAnimationFrame(() => {
+        const pantalla = document.querySelector(
+            ".pantalla-veteranos"
+        );
+
+        const contenedor = document.getElementById(
+            "contenedorFichas"
+        );
+
+        if (!pantalla || !contenedor) {
+            console.warn(
+                "[explorador] No se encontró la pantalla o el contenedor de fichas."
+            );
+            return;
+        }
+
+        const posicion =
+            contenedor.getBoundingClientRect().top -
+            pantalla.getBoundingClientRect().top +
+            pantalla.scrollTop;
+
+        pantalla.scrollTo({
+            top: Math.max(0, posicion - 150),
+            behavior: "auto"
+        });
+    });
+}
+

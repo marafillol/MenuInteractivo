@@ -10,7 +10,6 @@
    • Detalles de archivo militar
 ========================================================= */
 
-
 /* =========================================================
    VARIABLES
 ========================================================= */
@@ -59,7 +58,6 @@
     --hist-rojo-sello: #8c3f38;
 }
 
-
 /* =========================================================
    CONTENEDOR GENERAL
 ========================================================= */
@@ -87,7 +85,6 @@
     pointer-events: auto;
 }
 
-
 /* =========================================================
    FONDO
 ========================================================= */
@@ -101,7 +98,6 @@
         rgba(4, 9, 14, 0.78);
 }
 
-
 /* =========================================================
    VENTANA DEL EXPEDIENTE
 ========================================================= */
@@ -111,7 +107,7 @@
     position: absolute;
 
     width: min(900px, calc(100vw - 40px));
-    height: min(85vh, calc(100vh - 40px));
+    height: calc(100vh - 20px);
 
     min-width: 0;
     min-height: 0;
@@ -119,28 +115,15 @@
     top: 50%;
     left: 50%;
 
-    transform:
-        translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 
     display: flex;
     flex-direction: column;
 
     overflow: hidden;
-
     pointer-events: auto;
 
-    transform:
-        translate(-50%, -50%);
-
-    display: flex;
-    flex-direction: column;
-
-    overflow: hidden;
-
-    pointer-events: auto;
-
-    color:
-        var(--hist-tinta);
+    color: var(--hist-tinta);
 
     background:
         radial-gradient(
@@ -148,13 +131,11 @@
             rgba(255, 255, 255, .22),
             transparent 40%
         ),
-
         radial-gradient(
             ellipse at 80% 80%,
             rgba(74, 54, 35, .15),
             transparent 45%
         ),
-
         linear-gradient(
             135deg,
             #d4c3a0,
@@ -162,18 +143,15 @@
             #b39b73
         );
 
-    border:
-        1px solid rgba(72, 53, 35, .65);
+    border: 1px solid rgba(72, 53, 35, .65);
 
     box-shadow:
         0 20px 50px rgba(0, 0, 0, .45),
         0 5px 15px rgba(0, 0, 0, .25),
         inset 0 0 0 1px rgba(255, 255, 255, .18);
 
-    animation:
-        aparecerHistoria .25s ease-out;
+    animation: aparecerHistoria .25s ease-out;
 }
-
 
 /* =========================================================
    EFECTO PAPEL / DESGASTE
@@ -211,7 +189,6 @@
         inset 0 0 25px rgba(80, 60, 40, .15);
 }
 
-
 /* =========================================================
    CABECERA
 ========================================================= */
@@ -241,7 +218,6 @@
         0 4px 10px rgba(0, 0, 0, .35);
 }
 
-
 /* =========================================================
    IDENTIFICADOR
 ========================================================= */
@@ -264,7 +240,6 @@
 
     text-transform: uppercase;
 }
-
 
 /* =========================================================
    TÍTULO
@@ -289,7 +264,6 @@
     text-shadow:
         0 1px 3px rgba(0, 0, 0, .7);
 }
-
 
 /* =========================================================
    NÚMERO DE EXPEDIENTE
@@ -317,7 +291,6 @@
     background:
         rgba(7, 25, 35, .9);
 }
-
 
 /* =========================================================
    BOTÓN CERRAR
@@ -361,25 +334,23 @@
         scale(1.05);
 }
 
-
 /* =========================================================
    CONTENIDO
 ========================================================= */
 
 .historia-contenido,
 .cuerpoHistoria {
-    height:
-        calc(100% - 132px);
+    flex: 1 1 auto;
+
+    min-height: 0;
+    height: auto;
 
     overflow-y: auto;
 
     padding: 20px;
 
-    background:
-        rgba(223, 211, 180, .85);
+    background: rgba(223, 211, 180, .85);
 }
-
-
 /* =========================================================
    CUERPO PRINCIPAL
 ========================================================= */
@@ -419,7 +390,6 @@
         aparecerNuevaFicha .28s ease forwards;
 }
 
-
 /* =========================================================
    IDENTIFICACIÓN
 ========================================================= */
@@ -436,7 +406,6 @@
 
     margin-bottom: 18px;
 }
-
 
 /* =========================================================
    FOTOGRAFÍA PRINCIPAL
@@ -509,7 +478,6 @@
     text-align: center;
 }
 
-
 /* =========================================================
    DATOS PRINCIPALES
 ========================================================= */
@@ -517,7 +485,6 @@
 .datosPrincipalesHistoria {
     min-width: 0;
 }
-
 
 /* =========================================================
    TÍTULOS DE SECCIÓN
@@ -559,7 +526,6 @@
         rgba(158, 127, 60, .4);
 }
 
-
 /* =========================================================
    RESUMEN
 ========================================================= */
@@ -590,7 +556,6 @@
     box-shadow:
         inset 0 0 12px rgba(100, 80, 50, .1);
 }
-
 
 /* =========================================================
    CAMPOS
@@ -651,7 +616,6 @@
     word-break: break-word;
 }
 
-
 /* =========================================================
    TEXTO HISTÓRICO
 ========================================================= */
@@ -674,7 +638,6 @@
     text-align: justify;
 }
 
-
 /* =========================================================
    SEPARADOR
 ========================================================= */
@@ -688,7 +651,6 @@
     background:
         rgba(158, 127, 60, .4);
 }
-
 
 /* =========================================================
    ETIQUETAS
@@ -724,7 +686,6 @@
     border:
         1px solid rgba(158, 127, 60, .5);
 }
-
 
 /* =========================================================
    TÍTULO MULTIMEDIA
@@ -769,23 +730,24 @@
         rgba(158, 127, 60, .3);
 }
 
-
 /* =========================================================
    GALERÍA MULTIMEDIA
 ========================================================= */
-
-.multimediaHistoria,
-.historia-galeria {
+/* MULTIMEDIA: miniaturas en horizontal */
+#historiaCompleta .multimediaHistoria,
+#historiaCompleta .historia-galeria {
     display: flex;
-
+    flex-direction: row;
     flex-wrap: wrap;
-
-    gap: 10px;
-
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
     margin-top: 12px;
 }
 
-
+#historiaCompleta #multimediaHistoria .historia-media {
+    flex: 0 0 145px;
+}
 /* =========================================================
    MULTIMEDIA
 ========================================================= */
@@ -843,24 +805,7 @@
         box-shadow .15s ease;
 }
 
-.historia-media:hover > img,
-.historia-media:hover > video {
-    box-shadow:
-        0 4px 10px rgba(0, 0, 0, .25);
-}
 
-.historia-media > img {
-    filter:
-        sepia(.25)
-        saturate(.80)
-        contrast(.95);
-}
-
-.historia-media > video {
-    pointer-events: none;
-
-    opacity: .90;
-}
 
 
 /* =========================================================
@@ -894,7 +839,6 @@
         var(--hist-tinta-suave);
 }
 
-
 /* =========================================================
    DOCUMENTO MINIATURA
 ========================================================= */
@@ -927,7 +871,6 @@
         var(--hist-tinta);
 }
 
-
 /* =========================================================
    OCULTAR INFORMACIÓN DE MINIATURAS
 ========================================================= */
@@ -937,7 +880,6 @@
 .historia-media-descripcion {
     display: none !important;
 }
-
 
 /* =========================================================
    ICONO PLAY
@@ -976,7 +918,6 @@
     pointer-events: none;
 }
 
-
 /* =========================================================
    SIN MULTIMEDIA
 ========================================================= */
@@ -1002,19 +943,21 @@
     text-align: center;
 }
 
-
 /* =========================================================
    PIE
 ========================================================= */
 
 .historia-pie {
-    position: absolute;
-
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
 
     height: 50px;
+    min-height: 50px;
+    flex: 0 0 50px;
+    box-sizing: border-box;
+    z-index: 2;
 
     display: flex;
 
@@ -1036,7 +979,53 @@
     color:
         var(--hist-dorado-claro);
 }
+/* =========================================================
+   PIE DEL EXPEDIENTE NUEVO
+========================================================= */
 
+.pieHistoria {
+    position: relative;
+    flex: 0 0 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+    padding: 0 18px;
+
+    background: linear-gradient(
+        135deg,
+        #071923,
+        #0d1e2b
+    );
+
+    border-top: 2px solid var(--hist-dorado);
+
+    color: var(--hist-dorado-claro);
+}
+
+.codigoArchivoHistoria,
+.leyendaArchivoHistoria {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 500px) {
+    .pieHistoria {
+        flex-basis: 44px;
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .codigoArchivoHistoria,
+    .leyendaArchivoHistoria {
+        font-size: 8px;
+        letter-spacing: .5px;
+    }
+}
 .historia-pie-texto {
     font-family:
         "Courier New",
@@ -1082,7 +1071,6 @@
         var(--hist-dorado);
 }
 
-
 /* =========================================================
    ESTADOS Y UTILIDADES
 ========================================================= */
@@ -1104,7 +1092,6 @@
 .oculto {
     display: none !important;
 }
-
 
 /* =========================================================
    SCROLLBARS
@@ -1134,7 +1121,6 @@
     background:
         rgba(158, 127, 60, .85);
 }
-
 
 /* =========================================================
    ANIMACIONES
@@ -1180,576 +1166,6 @@
 
 
 /* =========================================================
-   CARRUSEL MULTIMEDIA
-========================================================= */
-
-.carruselMultimedia {
-    position: fixed;
-    inset: 0;
-
-    z-index: 10000;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    opacity: 0;
-}
-
-.carruselMultimedia.activo {
-    display: flex;
-
-    opacity: 1;
-
-    animation:
-        aparecerCarrusel .20s ease-out;
-}
-
-.carrusel-fondo {
-    position: absolute;
-    inset: 0;
-
-    background:
-        rgba(4, 9, 14, .85);
-
-    backdrop-filter:
-        blur(3px);
-}
-
-.carrusel-ventana {
-    position: relative;
-
-    z-index: 2;
-
-    width:
-        min(1000px, 92vw);
-
-    height:
-        min(720px, 88vh);
-
-    display: flex;
-    flex-direction: column;
-
-    overflow: hidden;
-
-    background:
-        #141715;
-
-    border:
-        1px solid var(--hist-dorado);
-
-    box-shadow:
-        0 25px 70px rgba(0, 0, 0, .7),
-        0 5px 20px rgba(0, 0, 0, .5);
-}
-
-
-/* =========================================================
-   CABECERA DEL CARRUSEL
-========================================================= */
-
-.carrusel-cabecera {
-    position: relative;
-
-    z-index: 3;
-
-    display: flex;
-
-    align-items: center;
-
-    min-height: 52px;
-
-    padding:
-        0 58px 0 18px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #071923,
-            #0d1e2b
-        );
-
-    border-bottom:
-        2px solid var(--hist-dorado);
-}
-
-.carrusel-etiqueta {
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 1.8px;
-
-    text-transform: uppercase;
-
-    color:
-        var(--hist-dorado-claro);
-}
-
-.carrusel-contador {
-    margin-left: auto;
-
-    padding: 4px 8px;
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size: 10px;
-    letter-spacing: 1px;
-
-    color:
-        var(--hist-dorado-claro);
-
-    border:
-        1px solid rgba(197, 160, 89, .4);
-
-    background:
-        rgba(7, 25, 35, .9);
-}
-
-
-/* =========================================================
-   CERRAR CARRUSEL
-========================================================= */
-
-.carrusel-cerrar {
-    position: absolute;
-
-    top: 9px;
-    right: 12px;
-
-    z-index: 5;
-
-    width: 30px;
-    height: 30px;
-
-    padding: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border:
-        1px solid rgba(197, 160, 89, .4);
-
-    background:
-        rgba(7, 25, 35, .9);
-
-    color:
-        var(--hist-dorado-claro);
-
-    font-family:
-        Arial,
-        sans-serif;
-
-    font-size: 21px;
-    line-height: 1;
-
-    cursor: pointer;
-
-    transition:
-        background .15s ease,
-        border-color .15s ease,
-        transform .15s ease;
-}
-
-.carrusel-cerrar:hover {
-    background:
-        rgba(140, 63, 56, .85);
-
-    border-color:
-        var(--hist-dorado);
-
-    transform:
-        scale(1.05);
-}
-
-
-/* =========================================================
-   CONTENIDO DEL CARRUSEL
-========================================================= */
-
-.carrusel-contenido {
-    position: relative;
-
-    flex: 1;
-
-    min-height: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding:
-        30px 82px;
-
-    background:
-        radial-gradient(
-            ellipse at center,
-            #1b262c 0%,
-            #0f171d 55%,
-            #070d12 100%
-        );
-
-    overflow: hidden;
-}
-
-.carrusel-contenido::before {
-    content: "";
-
-    position: absolute;
-
-    top: 12px;
-    left: 82px;
-    right: 82px;
-
-    height: 1px;
-
-    background:
-        rgba(197, 160, 89, .25);
-
-    pointer-events: none;
-}
-
-.carrusel-media {
-    position: relative;
-
-    z-index: 1;
-
-    width: 100%;
-    height: 100%;
-
-    min-width: 0;
-    min-height: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-}
-
-
-/* =========================================================
-   IMAGEN / VIDEO
-========================================================= */
-
-.carrusel-imagen,
-.carrusel-video {
-    display: block;
-
-    max-width: 100%;
-    max-height: 100%;
-
-    width: auto;
-    height: auto;
-
-    object-fit: contain;
-
-    border:
-        1px solid var(--hist-dorado);
-
-    box-shadow:
-        0 15px 35px rgba(0, 0, 0, .6);
-
-    animation:
-        aparecerMedia .18s ease-out;
-}
-
-.carrusel-video {
-    background:
-        #070d12;
-}
-
-
-/* =========================================================
-   AUDIO
-========================================================= */
-
-.carrusel-audio {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 24px;
-
-    width:
-        min(560px, 85%);
-
-    min-height: 210px;
-
-    padding: 35px;
-
-    border:
-        1px solid var(--hist-dorado);
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--hist-papel),
-            var(--hist-papel-medio)
-        );
-
-    box-shadow:
-        0 15px 35px rgba(0, 0, 0, .4);
-}
-
-.carrusel-audio-icono {
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size: 65px;
-
-    color:
-        var(--hist-tinta-suave);
-}
-
-.carrusel-audio audio {
-    width: 100%;
-}
-
-
-/* =========================================================
-   DOCUMENTO
-========================================================= */
-
-.carrusel-documento {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 18px;
-
-    width:
-        min(430px, 80%);
-
-    min-height: 260px;
-
-    padding: 30px;
-
-    background:
-        var(--hist-papel);
-
-    border:
-        1px solid var(--hist-dorado);
-
-    box-shadow:
-        0 15px 35px rgba(0, 0, 0, .45);
-
-    text-align: center;
-}
-
-.carrusel-documento-icono {
-    padding:
-        25px 35px;
-
-    border:
-        1px solid rgba(158, 127, 60, .5);
-
-    background:
-        var(--hist-papel-claro);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size: 28px;
-    font-weight: bold;
-    letter-spacing: 2px;
-
-    color:
-        var(--hist-tinta);
-}
-
-.carrusel-documento a {
-    padding:
-        9px 16px;
-
-    border:
-        1px solid var(--hist-dorado);
-
-    background:
-        rgba(197, 160, 89, .15);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 1px;
-
-    text-decoration: none;
-
-    color:
-        var(--hist-tinta);
-
-    transition:
-        background .15s ease,
-        color .15s ease;
-}
-
-.carrusel-documento a:hover {
-    background:
-        var(--hist-dorado);
-
-    color:
-        #071923;
-}
-
-
-/* =========================================================
-   FLECHAS
-========================================================= */
-
-.carrusel-flecha {
-    position: absolute;
-
-    top: 50%;
-
-    z-index: 5;
-
-    transform:
-        translateY(-50%);
-
-    width: 46px;
-    height: 72px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    border:
-        1px solid var(--hist-dorado);
-
-    background:
-        rgba(7, 25, 35, .85);
-
-    color:
-        var(--hist-dorado-claro);
-
-    font-family:
-        Georgia,
-        serif;
-
-    font-size: 42px;
-    font-weight: normal;
-    line-height: 1;
-
-    cursor: pointer;
-
-    transition:
-        background .15s ease,
-        border-color .15s ease,
-        transform .15s ease;
-}
-
-.carrusel-flecha:hover {
-    background:
-        rgba(13, 30, 43, .95);
-
-    border-color:
-        var(--hist-dorado-claro);
-
-    transform:
-        translateY(-50%)
-        scale(1.03);
-}
-
-.carrusel-anterior {
-    left: 18px;
-}
-
-.carrusel-siguiente {
-    right: 18px;
-}
-
-.carrusel-flecha.oculto {
-    display: none;
-}
-
-
-/* =========================================================
-   DESCRIPCIÓN
-========================================================= */
-
-.carrusel-descripcion {
-    flex: 0 0 auto;
-    padding: 14px 82px 16px;
-    border-top: 1px solid rgba(197, 160, 89, .35);
-    background: #141715;
-    color: var(--hist-papel-claro);
-    font-size: 1.05rem;
-    line-height: 1.45;
-    text-align: center;
-}
-
-/* Sin descripción cargada: no se reserva espacio */
-.carrusel-descripcion:empty {
-    display: none;
-}
-
-@media (max-width: 720px) {
-    .carrusel-descripcion {
-        padding: 12px 20px 14px;
-        font-size: .95rem;
-    }
-}
-
-body.carrusel-abierto {
-    overflow: hidden;
-}
-
-
-/* =========================================================
-   ANIMACIONES CARRUSEL
-========================================================= */
-
-@keyframes aparecerCarrusel {
-
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes aparecerMedia {
-
-    from {
-        opacity: 0;
-
-        transform:
-            scale(.985);
-    }
-
-    to {
-        opacity: 1;
-
-        transform:
-            scale(1);
-    }
-}
-
-
-/* =========================================================
    RELACIÓN ENTRE FICHAS
 ========================================================= */
 
@@ -1779,7 +1195,6 @@ body.carrusel-abierto {
     text-overflow: ellipsis;
 }
 
-
 /* =========================================================
    LISTA DE FICHAS RELACIONADAS
 ========================================================= */
@@ -1795,7 +1210,6 @@ body.carrusel-abierto {
 
     width: 100%;
 }
-
 
 /* =========================================================
    FICHA RELACIONADA
@@ -1844,7 +1258,6 @@ body.carrusel-abierto {
         inset 0 0 0 1px rgba(255, 255, 255, .25);
 }
 
-
 /* =========================================================
    IMAGEN FICHA RELACIONADA
 ========================================================= */
@@ -1865,7 +1278,6 @@ body.carrusel-abierto {
     border: none;
 }
 
-
 /* =========================================================
    DIVISOR
 ========================================================= */
@@ -1879,7 +1291,6 @@ body.carrusel-abierto {
     background:
         rgba(48, 58, 52, .60);
 }
-
 
 /* =========================================================
    CONTENIDO FICHA RELACIONADA
@@ -1988,7 +1399,6 @@ body.carrusel-abierto {
         #e4d8bc;
 }
 
-
 /* =========================================================
    TAMAÑO GENERAL DE TEXTO
 ========================================================= */
@@ -1999,25 +1409,21 @@ body.carrusel-abierto {
     line-height: 1.15;
 }
 
-
 /* Subtítulo */
 #historiaCompleta .subtituloHistoria {
     font-size: 13px;
     letter-spacing: 2px;
 }
 
-
 /* EXP. Nº */
 #historiaCompleta .numeroHistoria {
     font-size: 14px;
 }
 
-
 /* Botón cerrar */
 #historiaCompleta .cerrarHistoria {
     font-size: 28px;
 }
-
 
 /* Títulos de sección */
 #historiaCompleta .rotuloSeccionHistoria {
@@ -2026,13 +1432,11 @@ body.carrusel-abierto {
     font-weight: bold;
 }
 
-
 /* Resumen */
 #historiaCompleta .resumenHistoria {
     font-size: 17px;
     line-height: 1.7;
 }
-
 
 /* Etiquetas de datos */
 #historiaCompleta .historia-campo-etiqueta {
@@ -2041,56 +1445,27 @@ body.carrusel-abierto {
     color: #284047;
 }
 
-
-/* Valores de datos */
-#historiaCompleta .historia-campo-valor {
-    font-size: 16px;
-    line-height: 1.45;
-}
-
-
 /* Historia */
 #historiaCompleta .textoHistoria {
     font-size: 17px;
     line-height: 1.8;
 }
 
-
 /* Etiquetas / clasificación */
 #historiaCompleta .historia-etiqueta {
-    padding: 8px 13px;
 
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 1px;
-
-    color:
-        #f0e6cb;
-
-    background:
-        #284047;
-
-    border:
-        1px solid #b7a475;
 }
 
 #historiaCompleta .historia-etiqueta:hover {
-    color:
-        #ffffff;
-
-    background:
-        #162c31;
 
     border-color:
         #e2c27c;
 }
 
-
 /* Sin multimedia */
 #historiaCompleta .historia-sin-multimedia {
     font-size: 12px;
 }
-
 
 /* Pie de fotografía */
 #historiaCompleta .pieFotografiaHistoria {
@@ -2098,32 +1473,26 @@ body.carrusel-abierto {
     letter-spacing: 1.2px;
 }
 
-
 /* Título multimedia */
 #historiaCompleta .titulo-multimedia {
     font-size: 16px;
 }
-
 
 /* Nombre ficha relacionada */
 #historiaCompleta .historia-relacionada-nombre {
     font-size: 15px;
 }
 
-
 /* Dato ficha relacionada */
 #historiaCompleta .historia-relacionada-dato {
     font-size: 13px;
 }
 
-
 /* Código y leyenda */
 #historiaCompleta .codigoArchivoHistoria,
 #historiaCompleta .leyendaArchivoHistoria {
-    font-size: 11px;
-    letter-spacing: 1.3px;
-}
 
+}
 
 /* =========================================================
    RESPONSIVE
@@ -2131,23 +1500,10 @@ body.carrusel-abierto {
 
 @media (max-width: 900px) {
 
-    .historia-ventana,
-    .expedienteHistoria {
-        width: 88vw;
-
-        min-width: 0;
-
-        height: 76vh;
-    }
 
     .historia-galeria,
     .multimediaHistoria {
         justify-content: flex-start;
-    }
-
-    .carrusel-ventana {
-        width: 94vw;
-        height: 88vh;
     }
 
     .historia-lista-relacionadas,
@@ -2157,7 +1513,6 @@ body.carrusel-abierto {
     }
 }
 
-
 @media (max-width: 700px) {
 
     .imagenHistoria img {
@@ -2166,7 +1521,6 @@ body.carrusel-abierto {
         object-fit: contain;
     }
 
-    .historia-cuerpo,
     .identificacionHistoria,
     .historia-datos,
     .camposHistoria {
@@ -2185,14 +1539,6 @@ body.carrusel-abierto {
         font-size: 17px;
     }
 
-    .historia-media,
-    .historia-media > img,
-    .historia-media > video,
-    .historia-media-audio,
-    .historia-media-documento {
-        width: 130px;
-        height: 82px;
-    }
 
     .historia-lista-relacionadas,
     .relacionadasHistoria {
@@ -2219,42 +1565,8 @@ body.carrusel-abierto {
         font-size: 9px;
     }
 
-    .carrusel-ventana {
-        width: 96vw;
-        height: 86vh;
-    }
 
-    .carrusel-contenido {
-        padding:
-            25px 48px;
-    }
-
-    .carrusel-contenido::before {
-        left: 48px;
-        right: 48px;
-    }
-
-    .carrusel-flecha {
-        width: 36px;
-        height: 58px;
-
-        font-size: 32px;
-    }
-
-    .carrusel-anterior {
-        left: 7px;
-    }
-
-    .carrusel-siguiente {
-        right: 7px;
-    }
-
-    .carrusel-audio {
-        width: 90%;
-        padding: 25px;
-    }
 }
-
 
 @media (max-width: 500px) {
 
@@ -2268,18 +1580,10 @@ body.carrusel-abierto {
         line-height: 1.7;
     }
 
-    .historia-ventana,
-    .expedienteHistoria {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 20px);
-
-        max-width: none;
-        max-height: none;
-    }
 
     .historia-contenido,
     .cuerpoHistoria {
-        padding: 14px;
+
     }
 
     .historia-contenido,
@@ -2349,42 +1653,8 @@ body.carrusel-abierto {
         font-size: 7px;
     }
 
-    .carrusel-cabecera {
-        min-height: 46px;
 
-        padding-left: 12px;
-    }
-
-    .carrusel-etiqueta {
-        font-size: 9px;
-        letter-spacing: 1px;
-    }
-
-    .carrusel-contenido {
-        padding:
-            20px 42px;
-    }
-
-    .carrusel-contenido::before {
-        left: 42px;
-        right: 42px;
-    }
-
-    .carrusel-flecha {
-        width: 32px;
-        height: 52px;
-
-        font-size: 28px;
-    }
-
-    .carrusel-cerrar {
-        width: 30px;
-        height: 30px;
-
-        font-size: 20px;
-    }
 }
-
 
 /* =========================================================
    REDUCIR MOVIMIENTO
@@ -2393,11 +1663,1312 @@ body.carrusel-abierto {
 @media (prefers-reduced-motion: reduce) {
 
     .historia-media,
-    .historia-relacionada,
-    .carruselMultimedia,
-    .carrusel-imagen,
-    .carrusel-video {
+    .historia-relacionada {
         animation: none;
         transition: none;
     }
+}
+
+/* =========================================================
+   HISTORIA COMPLETA · FOTO ESTABLE + INFORMACIÓN DESPLAZABLE
+========================================================= */
+
+/* Mantener el tamaño original de la ventana */
+#historiaCompleta .historia-ventana {
+    width: min(1050px, calc(100vw - 40px));
+    height: calc(100vh - 20px);
+    height: calc(100dvh - 20px);
+    max-height: calc(100dvh - 20px);
+
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Cabecera y pie permanecen en su lugar */
+#historiaCompleta .historia-cabecera,
+#historiaCompleta .historia-pie {
+    flex: 0 0 auto;
+}
+
+/* El área central no se desplaza como una única columna */
+#historiaCompleta .historia-contenido {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Dos columnas que ocupan toda la altura disponible */
+#historiaCompleta .historia-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(260px, 40%) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 20px;
+
+    height: 100%;
+    min-height: 0;
+}
+
+/* Columna izquierda: fija, sin recuadro decorativo */
+#historiaCompleta .imagenHistoria {
+    position: relative;
+    align-self: stretch;
+
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+/* Mostrar la fotografía completa, sea horizontal o vertical */
+#historiaCompleta .imagenHistoria img {
+
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+
+}
+
+/* ÚNICA columna que tiene desplazamiento */
+#historiaCompleta .historia-informacion {
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 0 8px 16px 0;
+    box-sizing: border-box;
+}
+
+/* Datos */
+#historiaCompleta .historia-datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+/* Evitar desbordamientos de texto */
+#historiaCompleta .historia-informacion p {
+    overflow-wrap: anywhere;
+}
+
+/* Pantallas medianas */
+@media (max-width: 760px) {
+    #historiaCompleta .historia-contenido {
+        padding: 12px;
+    }
+
+    #historiaCompleta .historia-cuerpo {
+        grid-template-columns: minmax(200px, 38%) minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    #historiaCompleta .historia-datos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Celulares: imagen arriba e información debajo */
+@media (max-width: 520px) {
+    #historiaCompleta .historia-contenido {
+        overflow-y: auto;
+    }
+
+    #historiaCompleta .historia-cuerpo {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+        gap: 18px;
+    }
+
+    #historiaCompleta .imagenHistoria {
+        position: relative;
+        width: min(100%, 340px);
+        height: 280px;
+        min-height: 0;
+        flex: 0 0 auto;
+        margin: 0 auto;
+    }
+
+    #historiaCompleta .imagenHistoria img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    #historiaCompleta .historia-informacion {
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        padding: 0 0 12px;
+    }
+
+    #historiaCompleta .historia-datos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* =========================================================
+   HISTORIA COMPLETA · AJUSTE FINAL DE IMAGEN Y SCROLL
+========================================================= */
+
+/* Eliminar fondos, bordes y recuadros de la fotografía */
+#historiaCompleta .imagenHistoria {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+/* Adaptar la foto sin recortarla ni deformarla */
+#historiaCompleta .imagenHistoria img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Ocultar la barra de desplazamiento de la información,
+   pero permitir seguir desplazándose */
+#historiaCompleta .historia-informacion {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#historiaCompleta .historia-informacion::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Ocultar también la barra exterior en celulares */
+@media (max-width: 520px) {
+    #historiaCompleta .historia-contenido {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    #historiaCompleta .historia-contenido::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+}
+
+/* =========================================================
+   HISTORIA COMPLETA · AJUSTE FINO DE TIPOGRAFÍA
+========================================================= */
+
+/* Texto general */
+#historiaCompleta .historia-contenido {
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+/* Atributos: valores un poco más grandes */
+#historiaCompleta .historia-datos {
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+/* Títulos de los atributos: más definidos */
+#historiaCompleta .historia-datos strong,
+#historiaCompleta .historia-datos b,
+#historiaCompleta .historia-datos label {
+    font-weight: 600;
+}
+
+/* Etiquetas */
+#historiaCompleta .historia-etiquetas {
+    font-size: 14px;
+}
+
+/* Resumen */
+#historiaCompleta .historia-resumen {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+/* Texto de la historia */
+#historiaCompleta .historia-texto-contenido {
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+/* Títulos: un poquito más pequeños */
+#historiaCompleta .historia-seccion-titulo {
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+/* Fichas relacionadas */
+#historiaCompleta .historia-lista-relacionadas {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* =======================================================
+   HISTORIA COMPLETA · TIPOGRAFÍA DE LOS ATRIBUTOS
+======================================================= */
+
+/* Nombre del atributo: más grueso y definido */
+#historiaCompleta .historia-campo-etiqueta {
+    font-weight: 700 !important;
+}
+
+/* Valor del atributo: conservar una lectura clara */
+#historiaCompleta .historia-campo-valor {
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+/* =======================================================
+   HISTORIA COMPLETA · ETIQUETAS DE ARCHIVO
+======================================================= */
+
+#historiaCompleta .historia-etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+#historiaCompleta .historia-etiqueta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    padding: 8px 13px 8px 29px;
+    margin-left: 8px;
+
+    background: #163A46;
+    color: #E8E0CF;
+
+    border: 1px solid #C7A85B;
+    border-left: none;
+    border-radius: 0 2px 2px 0;
+
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    line-height: 1.4;
+    text-transform: uppercase;
+
+    box-shadow: none;
+
+    clip-path: polygon(
+        0 50%,
+        17px 0,
+        100% 0,
+        100% 100%,
+        17px 100%
+    );
+}
+
+/* Agujero de la etiqueta */
+#historiaCompleta .historia-etiqueta::before {
+    content: "";
+    position: absolute;
+
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+    background: #D8CCAF;
+    border: 1px solid #A99A78;
+    box-shadow: none;
+}
+
+/* Cambio sutil al pasar el cursor */
+#historiaCompleta .historia-etiqueta:hover {
+    background: #244F5A;
+    color: #FFFFFF;
+}
+
+@media (min-width: 761px) {
+    #historiaCompleta .historia-datos:has(> .historia-campo:last-child:nth-child(odd))::after {
+        content: "";
+        grid-column: 2;
+        grid-row: auto;
+        align-self: end;
+        height: 0;
+        border-bottom: 1px solid rgba(158, 127, 60, 0.3);
+        pointer-events: none;
+    }
+}
+
+/* =======================================================
+   HISTORIA COMPLETA · TEXTOS DE LOS MÁRGENES
+======================================================= */
+
+/* Número de expediente */
+#historiaCompleta .numeroHistoria,
+#historiaCompleta .historia-expediente {
+    font-size: 16px !important;
+    letter-spacing: 1.5px;
+}
+
+/* Texto del pie del expediente */
+#historiaCompleta .historia-pie-texto {
+    font-size: 13px !important;
+    letter-spacing: 1.5px;
+}
+
+/* Botón CERRAR EXPEDIENTE */
+#historiaCompleta .historia-btn-cerrar {
+    font-size: 14px !important;
+    letter-spacing: 1.2px;
+    padding: 9px 14px;
+}
+
+/* Código y leyenda del pie */
+#historiaCompleta .codigoArchivoHistoria,
+#historiaCompleta .leyendaArchivoHistoria {
+    font-size: 13px !important;
+    letter-spacing: 1.5px;
+}
+/* =======================================================
+   HISTORIA COMPLETA · TÍTULO Y SUBTÍTULO SUPERIOR
+======================================================= */
+
+/* Título principal de la ficha */
+#historiaCompleta .historia-titulo {
+
+}
+/*subtitulo*/
+#historiaCompleta .historia-organismo {
+    font-size: 13px !important;
+    letter-spacing: 2px;
+}
+
+/* Adaptación para pantallas pequeñas */
+@media (max-width: 500px) {
+    #historiaCompleta .historia-titulo {
+        font-size: 23px !important;
+    }
+
+    #historiaCompleta .historia-organismo {
+        font-size: 11px !important;
+        letter-spacing: 1px;
+    }
+}
+
+/* =======================================================
+   HISTORIA COMPLETA · ENCABEZADO ADAPTABLE
+======================================================= */
+
+#historiaCompleta .historia-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* El bloque del título ocupa el espacio disponible */
+#historiaCompleta .historia-identificacion {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* El título puede ocupar varias líneas si es largo */
+#historiaCompleta .historia-titulo {
+    font-size: 35px !important;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+}
+
+/* Expediente: conserva su espacio y evita cortes */
+#historiaCompleta .historia-expediente {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 14px !important;
+}
+
+/* Botón de cerrar: no se achica */
+#historiaCompleta .historia-cerrar {
+    flex: 0 0 auto;
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 500px) {
+    #historiaCompleta .historia-cabecera {
+        gap: 8px;
+    }
+
+    #historiaCompleta .historia-titulo {
+        font-size: 23px !important;
+    }
+
+    #historiaCompleta .historia-expediente {
+        font-size: 11px !important;
+    }
+}
+
+/* Divisor sutil entre la imagen y el texto */
+#historiaCompleta .historia-cuerpo > :nth-child(2),
+#historiaCompleta .identificacionHistoria > :nth-child(2) {
+    border-left: 1px solid rgba(158, 127, 60, 0.35);
+    padding-left: 16px;
+    box-sizing: border-box;
+}
+
+/* En pantallas pequeñas, divisor horizontal */
+@media (max-width: 520px) {
+    #historiaCompleta .historia-cuerpo > :nth-child(2),
+    #historiaCompleta .identificacionHistoria > :nth-child(2) {
+        border-left: none;
+        border-top: 1px solid rgba(158, 127, 60, 0.35);
+        padding-left: 0;
+        padding-top: 14px;
+    }
+}
+
+#historiaCompleta .historia-texto[hidden],
+#historiaCompleta .historia-multimedia[hidden],
+#historiaCompleta .historia-relacionadas[hidden] {
+    display: none !important;
+}
+
+
+/* =========================================================
+   CARRUSEL MULTIMEDIA · HISTORIA COMPLETA
+   Estética de archivo histórico
+   Flechas fijas y descripción independiente
+   ========================================================= */
+
+:root {
+    --hist-azul-archivo: #071923;
+    --hist-azul-profundo: #09131c;
+    --hist-azul-panel: #0d1822;
+
+    --hist-dorado: #c5a059;
+    --hist-dorado-claro: #e2c27c;
+    --hist-dorado-oscuro: #9e7f3c;
+
+    --hist-papel: #dfd3b4;
+    --hist-papel-claro: #f0e6cb;
+    --hist-papel-medio: #c9bc9a;
+    --hist-papel-oscuro: #927e5b;
+
+    --hist-tinta: #302a22;
+}
+/* Fondo del carrusel */
+.carruselMultimedia {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+
+    z-index: 99999;
+    display: none;
+    place-items: center;
+
+    padding: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.carruselMultimedia.activo {
+    display: grid !important;
+}
+
+.carrusel-fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(3, 9, 14, 0.92);
+    backdrop-filter: blur(5px);
+}
+
+/* Ventana principal */
+/* Ventana del carrusel: centrada y limitada a la pantalla */
+.carruselMultimedia .carrusel-ventana {
+    position: absolute !important;
+
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    display: flex;
+    flex-direction: column;
+
+    width: min(900px, calc(100vw - 24px)) !important;
+    height: min(760px, calc(100dvh - 24px)) !important;
+
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    background: var(--hist-azul-profundo);
+    border: 1px solid var(--hist-dorado-oscuro);
+
+    box-shadow:
+        0 0 0 4px rgba(197, 160, 89, 0.08),
+        0 20px 65px rgba(0, 0, 0, 0.65);
+}
+/* Cabecera fija */
+.carrusel-cabecera {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 60px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    background: var(--hist-azul-archivo);
+    border-bottom: 1px solid var(--hist-dorado-oscuro);
+}
+
+.carrusel-etiqueta {
+    color: var(--hist-dorado-claro);
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.carrusel-contador {
+    margin-left: auto;
+    color: var(--hist-papel-medio);
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* Botón cerrar */
+.carrusel-cerrar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--hist-dorado-claro);
+    background: transparent;
+    border: 1px solid var(--hist-dorado-oscuro);
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.carrusel-cerrar:hover {
+    color: var(--hist-azul-profundo);
+    background: var(--hist-dorado);
+}
+
+/* Área multimedia: ocupa siempre el mismo espacio */
+.carrusel-contenido {
+    position: relative;
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) 64px;
+    align-items: stretch;
+    min-height: 0;
+    padding: 18px;
+    gap: 12px;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(197, 160, 89, 0.07),
+            transparent 70%
+        ),
+        var(--hist-azul-profundo);
+}
+
+/* El espacio central se mantiene estable */
+.carrusel-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Imágenes y videos */
+.carrusel-imagen,
+.carrusel-video {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.carrusel-video {
+    width: 100%;
+}
+
+/* Flechas: posición fija, centradas en el área multimedia */
+.carrusel-flecha {
+    position: relative;
+    align-self: center;
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 58px;
+    margin: 0;
+    padding: 0;
+    color: var(--hist-dorado-claro);
+    background: rgba(7, 25, 35, 0.85);
+    border: 1px solid var(--hist-dorado-oscuro);
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.carrusel-flecha:hover {
+    color: var(--hist-azul-profundo);
+    background: var(--hist-dorado);
+    border-color: var(--hist-dorado-claro);
+}
+
+.carrusel-flecha:focus-visible,
+.carrusel-cerrar:focus-visible {
+    outline: 2px solid var(--hist-dorado-claro);
+    outline-offset: 3px;
+}
+
+/* Audio */
+.carrusel-audio {
+    width: min(560px, 100%);
+    padding: 24px;
+    box-sizing: border-box;
+    background: var(--hist-azul-panel);
+    border: 1px solid var(--hist-dorado-oscuro);
+}
+
+.carrusel-audio audio {
+    display: block;
+    width: 100%;
+}
+
+.carrusel-audio-icono,
+.carrusel-documento-icono {
+    margin-bottom: 18px;
+    color: var(--hist-dorado-claro);
+    font-size: 48px;
+    text-align: center;
+}
+
+/* Documentos */
+.carrusel-documento {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: min(560px, 100%);
+    max-height: 100%;
+    min-height: 220px;
+    padding: 30px;
+    box-sizing: border-box;
+    color: var(--hist-tinta);
+    background: var(--hist-papel);
+    border: 1px solid var(--hist-papel-oscuro);
+    text-align: center;
+}
+
+.carrusel-documento a {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 18px;
+    color: var(--hist-azul-archivo);
+    background: var(--hist-dorado);
+    border: 1px solid var(--hist-dorado-oscuro);
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.carrusel-documento a:hover {
+    background: var(--hist-dorado-claro);
+}
+
+/* Descripción: franja independiente, siempre abajo */
+.carrusel-descripcion {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 64px;
+    max-height: 110px;
+    padding: 14px 20px;
+    box-sizing: border-box;
+    color: var(--hist-papel);
+    background: var(--hist-azul-panel);
+    border-top: 1px solid var(--hist-dorado-oscuro);
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+}
+
+/* Evitar desplazamiento de la página */
+body.carrusel-abierto {
+    overflow: hidden;
+}
+
+/* Adaptación a pantallas pequeñas */
+
+@media (max-width: 650px) {
+    .carruselMultimedia {
+        padding: 12px;
+        place-items: center;
+        box-sizing: border-box;
+    }
+
+    .carrusel-ventana {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        max-height: calc(100dvh - 24px);
+        min-height: 0;
+        margin: auto;
+    }
+
+    .carrusel-cabecera {
+        min-height: 54px;
+        padding: 9px 12px;
+        gap: 8px;
+    }
+
+    .carrusel-contenido {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+        gap: 4px;
+        padding: 8px 3px;
+    }
+
+    .carrusel-media {
+        min-height: 0;
+    }
+
+    .carrusel-flecha {
+        width: 32px;
+        height: 46px;
+        font-size: 23px;
+    }
+
+    .carrusel-descripcion {
+        min-height: 58px;
+        max-height: 95px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .carrusel-audio {
+        padding: 12px;
+    }
+
+    .carrusel-documento {
+        min-height: 160px;
+        padding: 16px;
+    }
+}
+
+/* Visor de documentos integrado en el carrusel */
+.carrusel-documento-visor {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    border: 1px solid var(--hist-dorado-oscuro);
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HISTORIA COMPLETA · MINIATURA DE AUDIO
+========================================================= */
+
+#historiaCompleta .historia-media-audio {
+    width: 145px;
+    height: 90px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--hist-papel-claro),
+            var(--hist-papel)
+        );
+
+    border: 1px solid var(--hist-dorado);
+    border-radius: 2px;
+
+    color: var(--hist-tinta);
+}
+
+#historiaCompleta .historia-media-audio-icono {
+    display: block;
+    color: var(--hist-marron);
+    font-family: "Courier New", monospace;
+    font-size: 27px;
+    line-height: 1;
+}
+
+#historiaCompleta .historia-media-audio-etiqueta {
+    display: block;
+    color: var(--hist-tinta);
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+
+
+#historiaCompleta .historia-media-documento {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+
+#historiaCompleta .historia-media-doc-icono {
+    display: block;
+    color: var(--hist-marron);
+    font-family: "Courier New", monospace;
+    font-size: 27px;
+    line-height: 1;
+}
+
+#historiaCompleta .historia-media-doc-etiqueta {
+    display: block;
+    color: var(--hist-tinta);
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* =========================================================
+   HISTORIA COMPLETA · TÓTEM VERTICAL
+   Ventana rectangular y centrada
+   ========================================================= */
+
+body.totem-right #historiaCompleta .historia-ventana,
+body.totem-left #historiaCompleta .historia-ventana {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 76% !important;
+    height: 68% !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    transform: translate(-50%, -50%) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+body.totem-right #historiaCompleta .historia-contenido,
+body.totem-left #historiaCompleta .historia-contenido {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 10px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+body.totem-right #historiaCompleta .historia-cuerpo,
+body.totem-left #historiaCompleta .historia-cuerpo {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+body.totem-right #historiaCompleta .imagenHistoria,
+body.totem-left #historiaCompleta .imagenHistoria {
+    flex: 0 0 42% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+body.totem-right #historiaCompleta .imagenHistoria img,
+body.totem-left #historiaCompleta .imagenHistoria img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+}
+
+body.totem-right #historiaCompleta .historia-informacion,
+body.totem-left #historiaCompleta .historia-informacion {
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* TÓTEM VERTICAL · ESQUINAS RECTAS */
+
+body.totem-right #historiaCompleta .historia-ventana,
+body.totem-left #historiaCompleta .historia-ventana {
+    border-radius: 0 !important;
+}
+
+body.totem-right #historiaCompleta .historia-ventana::before,
+body.totem-left #historiaCompleta .historia-ventana::before {
+    border-radius: 0 !important;
+}
+
+body.totem-right #historiaCompleta .imagenHistoria,
+body.totem-left #historiaCompleta .imagenHistoria,
+body.totem-right #historiaCompleta .imagenHistoria img,
+body.totem-left #historiaCompleta .imagenHistoria img {
+    border-radius: 0 !important;
+}
+
+/* TÓTEM VERTICAL · DIVISOR ENTRE IMAGEN Y TEXTO */
+
+body.totem-right #historiaCompleta .imagenHistoria,
+body.totem-left #historiaCompleta .imagenHistoria {
+    border-bottom: 2px solid #C7A85B !important;
+    padding-bottom: 10px !important;
+    box-sizing: border-box !important;
+}
+
+body.totem-right #historiaCompleta .historia-informacion,
+body.totem-left #historiaCompleta .historia-informacion {
+    border-top: 1px solid rgba(199, 168, 91, 0.45) !important;
+    padding-top: 12px !important;
+    box-sizing: border-box !important;
+}
+
+/* TÓTEM VERTICAL · LÍNEAS LATERALES DEL TEXTO */
+
+body.totem-right #historiaCompleta .historia-informacion,
+body.totem-left #historiaCompleta .historia-informacion {
+    border-left: 1px solid rgba(199, 168, 91, 0.65) !important;
+    border-right: 1px solid rgba(199, 168, 91, 0.65) !important;
+    box-sizing: border-box !important;
+}
+
+
+/* TÓTEM VERTICAL · QUITAR RECUADROS LATERALES DE MULTIMEDIA */
+body.totem-right .carrusel-imagen,
+body.totem-left .carrusel-imagen,
+body.totem-right .carrusel-video,
+body.totem-left .carrusel-video {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* HISTORIA COMPLETA: eliminar marcos laterales de miniaturas */
+#historiaCompleta #multimediaHistoria .historia-media,
+#historiaCompleta #multimediaHistoria .historia-media:hover,
+#historiaCompleta #multimediaHistoria .historia-media:focus,
+#historiaCompleta #multimediaHistoria .historia-media:active {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    background: transparent !important;
+    padding: 0 !important;
+
+    width: 145px !important;
+    height: 90px !important;
+    min-width: 145px !important;
+    max-width: 145px !important;
+
+    overflow: hidden !important;
+}
+
+#historiaCompleta #multimediaHistoria .historia-media::before,
+#historiaCompleta #multimediaHistoria .historia-media::after {
+    content: none !important;
+    display: none !important;
+}
+
+#historiaCompleta #multimediaHistoria .historia-media > img,
+#historiaCompleta #multimediaHistoria .historia-media > video {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    object-fit: cover !important;
+}
+
+#historiaCompleta #multimediaHistoria .historia-media-audio,
+#historiaCompleta #multimediaHistoria .historia-media-documento {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+
+/* HISTORIA COMPLETA: multimedia en filas que se adaptan al espacio */
+#historiaCompleta #multimediaHistoria {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#historiaCompleta #multimediaHistoria > .historia-media {
+    flex: 0 0 145px !important;
+    width: 145px !important;
+    max-width: 145px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CARRUSEL MULTIMEDIA · TÓTEM VERTICAL
+   Mismo tamaño que la ventana de Historia Completa
+========================================================= */
+
+body.totem-right .carruselMultimedia .carrusel-ventana,
+body.totem-left .carruselMultimedia .carrusel-ventana {
+    position: fixed !important;
+
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    width: 76% !important;
+    height: 68% !important;
+
+    max-width: 90% !important;
+    max-height: 48% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    box-sizing: border-box !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    overflow: hidden !important;
+}
+
+/* =========================================================
+   FICHAS RELACIONADAS · REDUCCIÓN FINAL
+========================================================= */
+
+#historiaCompleta .historia-lista-relacionadas,
+#historiaCompleta .relacionadasHistoria {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 165px), 1fr));
+    gap: 9px;
+}
+
+#historiaCompleta .historia-relacionada {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+}
+
+#historiaCompleta .historia-relacionada-imagen {
+    height: 105px;
+    flex: 0 0 105px;
+    object-fit: contain;
+}
+
+#historiaCompleta .historia-relacionada-contenido {
+    padding: 8px;
+    gap: 5px;
+}
+
+#historiaCompleta .historia-relacionada-relacion {
+    font-size: 9px;
+    line-height: 1.3;
+}
+
+#historiaCompleta .historia-relacionada-titulo {
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+#historiaCompleta .historia-relacionada-menu {
+    font-size: 8px;
+    line-height: 1.3;
+}
+
+#historiaCompleta .historia-relacionada-ver {
+    padding: 5px 7px;
+    font-size: 8px;
+}
+
+@media (max-width: 520px) {
+    #historiaCompleta .historia-relacionada-imagen {
+        height: 90px;
+        flex-basis: 90px;
+    }
+
+    #historiaCompleta .historia-relacionada-contenido {
+        padding: 7px;
+        gap: 4px;
+    }
+}
+
+
+/* =========================================================
+   GLOBITO DE DESCRIPCIÓN DE ETIQUETAS
+========================================================= */
+
+#globitoDescripcionEtiqueta {
+    position: fixed;
+    z-index: 999999;
+
+    width: max-content;
+    min-width: 0;
+    max-width: min(260px, calc(100vw - 40px));
+    box-sizing: border-box;
+
+    padding: 10px 13px;
+
+    background: #F4EBDD;
+    color: #26343A;
+    border: 1px solid #C7A85B;
+    border-radius: 8px;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+
+    box-shadow: 0 4px 14px rgb(0 0 0 / 30%);
+    pointer-events: auto;
+}
+
+/* Piquito horizontal: borde exterior dorado */
+#globitoDescripcionEtiqueta::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: var(--posicion-piquito, 50%);
+    transform: translateX(-50%);
+
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 9px solid #C7A85B;
+}
+
+/* Piquito horizontal: interior del mismo color que el recuadro */
+#globitoDescripcionEtiqueta::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: var(--posicion-piquito, 50%);
+    transform: translateX(-50%);
+    margin-bottom: -1px;
+
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 8px solid #F4EBDD;
+}
+
+/* Piquito invertido cuando el globo aparece arriba */
+#globitoDescripcionEtiqueta.globito-arriba::before {
+    top: 100%;
+    bottom: auto;
+    border-bottom: 0;
+    border-top: 9px solid #C7A85B;
+}
+
+#globitoDescripcionEtiqueta.globito-arriba::after {
+    top: 100%;
+    bottom: auto;
+    border-bottom: 0;
+    border-top: 8px solid #F4EBDD;
 }
