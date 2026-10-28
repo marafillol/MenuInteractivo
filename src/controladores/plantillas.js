@@ -1,5 +1,5 @@
 const Plantilla = require("../modelos/plantilla");
-
+const cachePublico = require("../middleware/cachePublico");
 const { interpretarJson } =
     require("../utilidades/interpretarJson");
 // ======================================
@@ -126,6 +126,7 @@ const crearPlantilla = async(req,res)=>{
 
         const id =
         await Plantilla.crear(req.body);
+        cachePublico.invalidar();
 
         res.json({
 
@@ -162,6 +163,7 @@ const actualizarPlantilla = async(req,res)=>{
             req.body
 
         );
+        cachePublico.invalidar();
 
         res.json({
 
@@ -211,6 +213,7 @@ const eliminarPlantilla = async(req,res)=>{
 
 
         await Plantilla.eliminar(id);
+        cachePublico.invalidar();
 
 
         res.json({

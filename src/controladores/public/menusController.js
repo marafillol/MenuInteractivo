@@ -1,32 +1,18 @@
-const Menu =
-require("../../modelos/public/menu");
 
-async function obtenerMenus(req,res){
+const cachePublica = require("../../servicios/cachePublica");
 
-    try{
+async function obtenerMenus(req, res) {
+    const menus = cachePublica.obtenerDatosPublicos("menus");
 
-        const menus =
-        await Menu.obtenerMenus();
-
-        res.json(menus);
-
-    }
-    catch(error){
-
-        console.error(error);
-
-        res.status(500).json({
-
-            error:"Error al obtener los menús."
-
+    if (menus === null) {
+        return res.status(503).json({
+            error: "Los menús públicos todavía se están preparando."
         });
-
     }
 
+    res.json(menus);
 }
 
-module.exports={
-
+module.exports = {
     obtenerMenus
-
 };

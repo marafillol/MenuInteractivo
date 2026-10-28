@@ -1,6 +1,7 @@
 const Ficha = require("../modelos/ficha");
 const RelacionFicha = require("../modelos/relacionFichaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
+const cachePublico = require("../middleware/cachePublico");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
 
 const limpiarArchivoSubido = async (ruta) => {
@@ -149,8 +150,15 @@ const crearFicha = async(req,res)=>{
         };
 
         const id = await Ficha.crear(datos);
+
+        cachePublico.invalidar();
+
         imagenSubida = null;
-        return res.json({ mensaje:"Ficha creada correctamente", id_ficha:id });
+
+        return res.json({
+            mensaje: "Ficha creada correctamente",
+            id_ficha: id
+        });
     }catch(error){
         await limpiarArchivoSubido(imagenSubida);
         return res.status(500).json({ error:error.message });
@@ -191,9 +199,15 @@ const actualizarFicha = async(req,res)=>{
         }
 
         await Ficha.actualizar(req.params.id_ficha, datos);
+
+        cachePublico.invalidar();
+
         // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
         imagenNueva = null;
-        return res.json({ mensaje:"Ficha actualizada correctamente" });
+
+        return res.json({
+            mensaje: "Ficha actualizada correctamente"
+        });
     }catch(error){
         if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
@@ -245,10 +259,10 @@ const eliminarFicha = async(req,res)=>{
         // Eliminar la ficha
         await Ficha.eliminar(id);
 
+        cachePublico.invalidar();
+
         res.json({
-
-            mensaje:"Ficha eliminada correctamente"
-
+            mensaje: "Ficha eliminada correctamente"
         });
 
     }catch(error){

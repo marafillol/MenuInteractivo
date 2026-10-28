@@ -7,17 +7,12 @@
 // Agregá acá la plantilla del explorador si tiene su propio .html
 const PLANTILLAS_PRECARGA = [
     "html/bienvenida.html",
-    "html/ficha.html"
+    "html/ficha.html",
+    "html/explorador.html",
+    "html/historiaCompleta.html"
 ];
 
-// Si es true, antes de animar se espera a que las imágenes
-// de la vista nueva estén cargadas (evita que aparezcan "de golpe").
-const ESPERAR_IMAGENES_DE_VISTA = true;
 
-// Si es true, mientras se prepara la vista nueva (y tarda más
-// de 250 ms) se muestra un cartel sobre la vista actual, para
-// que el toque no parezca "ignorado".
-const MOSTRAR_INDICADOR_DE_CARGA = false;
 
 // Tiempo máximo de espera de imágenes/fuentes (ms).
 // Evita que el tótem quede colgado si falla la red.
@@ -39,107 +34,6 @@ const fetchOriginal =
     window.fetch.bind(window);
 
 
-// -------------------------------------------------------
-// RASTREO DE PEDIDOS DE RED
-//
-// Sirve para saber cuándo una vista terminó de cargar sus
-// datos (fichas, categorías...), aunque el renderizador no
-// los espere con await.
-// -------------------------------------------------------
-
-let pedidosPendientes =
-    0;
-
-let ultimaActividadRed =
-    Date.now();
-
-
-function rastrear(promesa) {
-
-    pedidosPendientes++;
-
-    ultimaActividadRed =
-        Date.now();
-
-
-    const terminar =
-        () => {
-
-            pedidosPendientes--;
-
-            ultimaActividadRed =
-                Date.now();
-
-        };
-
-
-    promesa.then(
-        terminar,
-        terminar
-    );
-
-
-    return promesa;
-
-}
-
-
-// Espera a que no haya pedidos en curso durante un instante.
-// "max" evita quedarse esperando para siempre si la red falla.
-function esperarRedQuieta(
-    quietoMs = 150,
-    max = 4000
-) {
-
-    const limite =
-        Date.now() + max;
-
-
-    return new Promise(resolve => {
-
-        const revisar =
-            () => {
-
-                const ahora =
-                    Date.now();
-
-
-                if (ahora >= limite) {
-
-                    resolve();
-
-                    return;
-
-                }
-
-
-                if (
-                    pedidosPendientes === 0 &&
-                    ahora - ultimaActividadRed >= quietoMs
-                ) {
-
-                    resolve();
-
-                    return;
-
-                }
-
-
-                setTimeout(
-                    revisar,
-                    40
-                );
-
-            };
-
-
-        revisar();
-
-    });
-
-}
-
-
 window.fetch = function (recurso, opciones) {
 
     const url =
@@ -158,11 +52,9 @@ window.fetch = function (recurso, opciones) {
 
     if (!esPlantilla) {
 
-        return rastrear(
-            fetchOriginal(
-                recurso,
-                opciones
-            )
+        return fetchOriginal(
+            recurso,
+            opciones
         );
 
     }
@@ -194,12 +86,10 @@ window.fetch = function (recurso, opciones) {
     }
 
 
-    // clone(): cada quien lee su propia copia de la respuesta
-    return rastrear(
-        cachePlantillas
-            .get(url)
-            .then(respuesta => respuesta.clone())
-    );
+    // Cada llamada recibe su propia copia de la respuesta.
+    return cachePlantillas
+        .get(url)
+        .then(respuesta => respuesta.clone());
 
 };
 
@@ -242,47 +132,6 @@ function esperarImagen(ruta) {
 }
 
 
-// Espera a que las imágenes de una vista estén cargadas.
-// Las imágenes con loading="lazy" se ignoran: si están fuera
-// de pantalla nunca cargan y bloquearían la transición.
-function esperarImagenesDeVista(vista) {
-
-    if (!vista) {
-        return Promise.resolve();
-    }
-
-
-    const pendientes =
-        [...vista.querySelectorAll("img")]
-            .filter(img => img.loading !== "lazy")
-            .map(img => {
-
-                if (img.complete) {
-
-                    return img.naturalWidth > 0 && img.decode
-                        ? img.decode().catch(() => {})
-                        : Promise.resolve();
-
-                }
-
-                return new Promise(resolve => {
-
-                    img.addEventListener("load", resolve, { once: true });
-
-                    img.addEventListener("error", resolve, { once: true });
-
-                });
-
-            });
-
-
-    return conTiempoMaximo(
-        Promise.allSettled(pendientes)
-    );
-
-}
-
-
 // Carga explícita de las tipografías. Con "display=swap" el
 // navegador dibuja primero la fuente de reemplazo y después
 // cambia: ese cambio se ve como un parpadeo del texto.
@@ -316,48 +165,38 @@ function esperarFuentes() {
 }
 
 
-// =======================================================
-// ESTADO
-// =======================================================
-
-let viewportListo =
-    false;
-
 // Evita que un doble toque dispare dos transiciones a la vez
 // (en un tótem táctil es la causa más común de glitches).
 let transicionEnCurso =
     false;
 
 
-// =======================================================
-// INDICADOR DE CARGA
-// =======================================================
-
-function crearIndicadorCarga() {
-
-    const el =
-        document.createElement(
-            "div"
-        );
-
-    el.setAttribute(
-        "role",
-        "status"
+const descriptorGetElementById =
+    Object.getOwnPropertyDescriptor(
+        document,
+        "getElementById"
     );
 
-    el.textContent =
-        "CONSULTANDO ARCHIVO...";
+const getElementByIdOriginal =
+    document.getElementById;
 
-    el.style.cssText =
-        "position:fixed;left:0;right:0;bottom:8%;text-align:center;" +
-        "z-index:9999;pointer-events:none;" +
-        "font:700 1.2rem 'Courier Prime',monospace;" +
-        "letter-spacing:.15em;color:#fff;text-shadow:0 0 8px #000;";
+function restaurarGetElementById() {
 
-    return el;
+    if (descriptorGetElementById) {
+
+        Object.defineProperty(
+            document,
+            "getElementById",
+            descriptorGetElementById
+        );
+
+    } else {
+
+        delete document.getElementById;
+
+    }
 
 }
-
 
 // =======================================================
 // CAMBIAR VISTA
@@ -368,10 +207,7 @@ function crearIndicadorCarga() {
 // inserta y se anima. Así #app nunca queda vacío (negro).
 // =======================================================
 
-async function cambiarVista(
-    renderizarVista,
-    presetId = "fade"
-) {
+async function cambiarVista(renderizarVista) {
 
     if (transicionEnCurso) {
 
@@ -396,26 +232,13 @@ async function cambiarVista(
     let vistaSaliente =
         null;
 
-    let indicador =
-        null;
-
-    let temporizadorIndicador =
-        null;
 
 
     try {
 
-        if (!viewportListo) {
-
-            app.classList.add(
-                "transition-viewport"
-            );
-
-
-            viewportListo =
-                true;
-
-        }
+        app.classList.add(
+            "transition-viewport"
+        );
 
 
         vistaSaliente =
@@ -438,9 +261,7 @@ async function cambiarVista(
             "app";
 
         staging.className =
-            app.className
-                .replace(/\btransicionando\b/g, "")
-                .trim();
+            app.className;
 
         staging.setAttribute(
             "aria-hidden",
@@ -455,42 +276,22 @@ async function cambiarVista(
             app
         );
 
-
-        if (
-            MOSTRAR_INDICADOR_DE_CARGA &&
-            vistaSaliente
-        ) {
-
-            temporizadorIndicador =
-                setTimeout(
-                    () => {
-
-                        indicador =
-                            crearIndicadorCarga();
-
-                        document.body.appendChild(
-                            indicador
-                        );
-
-                    },
-                    250
-                );
-
-        }
-
-
         // Mientras se renderiza, los renderizadores que pidan
         // document.getElementById("app") reciben la zona de
         // preparación en lugar de la pantalla visible.
+
         document.getElementById =
-            id => (
-                id === "app"
+            function (id) {
+
+                return id === "app"
                     ? staging
-                    : Document.prototype.getElementById.call(
+                    : getElementByIdOriginal.call(
                         document,
                         id
-                    )
-            );
+                    );
+
+            };
+
 
 
         try {
@@ -500,7 +301,7 @@ async function cambiarVista(
         }
         finally {
 
-            delete document.getElementById;
+            restaurarGetElementById();
 
         }
 
@@ -511,58 +312,16 @@ async function cambiarVista(
         // vacío (negro) y las fichas llegan después.
         // ===============================================
 
-        const inicioEspera =
-            performance.now();
-
-        // La primera vista (bienvenida) no carga datos: no hace
-        // falta esperar la red y se evita demorar el arranque.
-        if (vistaSaliente) {
-
-            await esperarRedQuieta();
-
-        }
-
         console.log(
-            `[transiciones] Datos listos en ${Math.round(performance.now() - inicioEspera)} ms ` +
+            `[transiciones] Vista preparada ` +
             `(zona de preparación: ${staging.childNodes.length} nodos)`
         );
-
-
-        // ===============================================
-        // ESPERAR IMÁGENES (la vista aún está oculta)
-        // ===============================================
-
-        if (
-            ESPERAR_IMAGENES_DE_VISTA &&
-            staging.childNodes.length
-        ) {
-
-            const inicioImagenes =
-                performance.now();
-
-            await esperarImagenesDeVista(
-                staging
-            );
-
-            console.log(
-                `[transiciones] Imágenes listas en ${Math.round(performance.now() - inicioImagenes)} ms`
-            );
-
-        }
-
 
         // ===============================================
         // INSERTAR LA VISTA NUEVA
         // ===============================================
 
-        let vistaEntrante =
-            null;
-
-
         if (staging.childNodes.length) {
-
-            vistaEntrante =
-                staging.firstElementChild;
 
             app.prepend(
                 ...staging.childNodes
@@ -578,11 +337,6 @@ async function cambiarVista(
                 "(no pasó por la zona de preparación). Revisar cómo " +
                 "obtiene #app el renderizador (explorador.js)."
             );
-
-            vistaEntrante =
-                app.firstElementChild !== vistaSaliente
-                    ? app.firstElementChild
-                    : null;
 
             if (
                 vistaSaliente &&
@@ -604,19 +358,9 @@ async function cambiarVista(
             null;
 
 
-        // ===============================================
-        // ANIMAR
-        // ===============================================
-
-        app.classList.add(
-            "transicionando"
-        );
-
-
+        // Retirar la vista anterior una vez insertada la nueva.
         if (vistaSaliente) {
-
             vistaSaliente.remove();
-
         }
 
     }
@@ -643,14 +387,9 @@ async function cambiarVista(
     }
     finally {
 
-        clearTimeout(
-            temporizadorIndicador
-        );
-
-        indicador?.remove();
 
 
-        delete document.getElementById;
+        restaurarGetElementById();
 
 
         if (staging) {
@@ -658,11 +397,6 @@ async function cambiarVista(
             staging.remove();
 
         }
-
-
-        app.classList.remove(
-            "transicionando"
-        );
 
 
         transicionEnCurso =
@@ -678,8 +412,7 @@ async function cambiarVista(
 // =======================================================
 
 function envolverNavegacion(
-    nombreFuncion,
-    presetId
+    nombreFuncion
 ) {
 
     const original =
@@ -704,9 +437,14 @@ function envolverNavegacion(
     window[nombreFuncion] =
         function (...args) {
 
+            if (nombreFuncion === "mostrarExplorador") {
+                console.log(
+                    "[MEDICIÓN] Clic en Explorar historias"
+                );
+            }
+
             return cambiarVista(
-                () => original(...args),
-                presetId
+                () => original(...args)
             );
 
         };
@@ -719,6 +457,12 @@ function envolverNavegacion(
 // =======================================================
 
 function quitarPantallaDeCarga() {
+
+    console.log(
+        `[ARRANQUE] Se quita la pantalla de carga a los ${
+            Math.round(performance.now())
+        } ms desde la navegación`
+    );
 
     document.body.classList.remove(
         "cargando-visita"
@@ -765,19 +509,19 @@ document.addEventListener(
             );
 
 
-            await Promise.all([
-
+            // Precargar recursos en segundo plano, sin bloquear el arranque.
+            Promise.all([
                 esperarFuentes(),
-
                 esperarImagen("img/mar.png"),
-
                 esperarImagen("img/lineas-01.png"),
-
                 esperarImagen("img/logo-museo-islas.png"),
-
                 esperarImagen("img/clip.png")
-
-            ]);
+            ]).catch(error => {
+                console.warn(
+                    "[transiciones] Error precargando recursos:",
+                    error
+                );
+            });
 
 
             // ===============================================
@@ -793,14 +537,14 @@ document.addEventListener(
 
 
             envolverNavegacion(
-                "mostrarBienvenida",
-                "fade"
+                "mostrarBienvenida"
+
             );
 
 
             envolverNavegacion(
-                "mostrarExplorador",
-                "fade"
+                "mostrarExplorador"
+
             );
 
 
@@ -808,9 +552,38 @@ document.addEventListener(
             // PRIMERA VISTA
             // ===============================================
 
+            const inicioBienvenida = performance.now();
+
+            console.log(
+                "[ARRANQUE] Comienza a mostrar la bienvenida",
+                Math.round(performance.now()),
+                "ms desde navigation start"
+            );
+
             await cambiarVista(
-                () => bienvenidaOriginal(),
-                "fade"
+                () => bienvenidaOriginal()
+
+            );
+            console.log(
+                "[ARRANQUE] cambiarVista terminó",
+                Math.round(performance.now()),
+                "ms desde navigation start"
+            );
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log(
+                        `[ARRANQUE] Bienvenida visible y pintada aproximadamente a los ${
+                            Math.round(performance.now())
+                        } ms`
+                    );
+                });
+            });
+
+            console.log(
+                `[ARRANQUE] Bienvenida preparada en ${
+                    Math.round(performance.now() - inicioBienvenida)
+                } ms`
             );
 
         }

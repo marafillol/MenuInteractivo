@@ -1,6 +1,6 @@
 const RelacionFicha =
 require("../modelos/relacionFichaModelo");
-
+const cachePublico = require("../middleware/cachePublico");
 
 
 // ===================================
@@ -52,6 +52,7 @@ const guardarRelacionesFicha = async(req,res)=>{
             req.params.id,
             relaciones
         );
+        cachePublico.invalidar();
 
         res.json({
 
@@ -78,6 +79,7 @@ const eliminarRelacionFicha = async(req,res)=>{
         await RelacionFicha.eliminarRelacion(
             req.params.id
         );
+        cachePublico.invalidar();
 
         res.json({
 

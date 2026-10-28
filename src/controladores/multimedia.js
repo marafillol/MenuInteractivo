@@ -1,6 +1,6 @@
 const Multimedia = require("../modelos/multimedia");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
-
+const cachePublico = require("../middleware/cachePublico");
 const tiposMultimedia = new Set(["imagen", "video", "audio", "pdf"]);
 
 const miniaturaPorTipo = (tipo) => ({
@@ -133,6 +133,7 @@ const crearMultimedia = async(req,res)=>{
         };
 
         const id = await Multimedia.crear(datos);
+        cachePublico.invalidar();
         // El registro quedó guardado; el archivo ya no debe limpiarse desde el catch.
         rutaSubida = null;
 
@@ -225,6 +226,7 @@ const actualizarMultimedia = async(req,res)=>{
         };
 
         await Multimedia.actualizar(req.params.id, datos);
+        cachePublico.invalidar();
         guardado = true;
 
         let advertencia = null;
@@ -276,6 +278,7 @@ const eliminarMultimedia = async(req,res)=>{
         }
 
         await Multimedia.eliminar(req.params.id);
+        cachePublico.invalidar();
 
         let advertencia = null;
         try {

@@ -43,50 +43,22 @@ const CONFIG_FICHAS = {
 
 };
 
-
-// =======================================================
-// INICIALIZACIÃ“N
-// =======================================================
-
-
-if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        iniciarFichas,
-        { once: true }
-    );
-} else {
-    iniciarFichas();
-}
-
-
 async function iniciarFichas() {
-
-    console.log(
-        "[FICHAS] Inicializando..."
+    const contenedor = document.getElementById(
+        CONFIG_FICHAS.contenedor
     );
+
+    // Esta vista no está cargada. No inicializar fichas.
+    if (!contenedor) {
+        return;
+    }
+
 
 
     prepararBuscador();
-
     prepararContenedor();
 
-
-    /*
-       Por ahora cargamos todas las fichas.
-
-       MÃ¡s adelante el Explorador podrÃ¡
-       llamar directamente a:
-
-       cargarFichas(idMenu)
-    */
-
     await cargarFichas();
-
-
-    console.log(
-        "[FICHAS] InicializaciÃ³n completa."
-    );
 
 }
 
@@ -225,13 +197,6 @@ async function cargarFichas(
                 `${CONFIG_FICHAS.api}/menu/${idMenu}`;
 
         }
-
-
-        console.log(
-            "[FICHAS] Cargando:",
-            url
-        );
-
 
         const respuesta =
             await fetch(url);
@@ -1233,15 +1198,7 @@ function abrirFicha(
     }
 
 
-    /*
-       Por ahora, si el visor todavÃ­a
-       no existe, simplemente dejamos
-       registrado el ID.
-    */
 
-    console.log(
-        "[FICHAS] Visor todavÃ­a no conectado."
-    );
 
 }
 
@@ -1374,7 +1331,3 @@ window.fichasPublicas = {
 window.pintarFichasPublicas =
     pintarFichas;
 
-
-console.log(
-    "[PRUEBA] SE ESTÃ EJECUTANDO ESTE fichas.js"
-);

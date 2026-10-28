@@ -1,5 +1,5 @@
-/* =====================================================
-   MÓDULO DE TÓTEM - EXPANSIÓN TOTAL VERTICAL
+﻿/* =====================================================
+   MÃ“DULO DE TÃ“TEM - EXPANSIÃ“N TOTAL VERTICAL
    ===================================================== */
 
 /* Estado normal (horizontal) */
@@ -21,7 +21,7 @@ body.totem-left {
     background-color: #0c1017 !important;
 }
 
-/* Giro a la Derecha (90°) */
+/* Giro a la Derecha (90Â°) */
 body.totem-right .totem-wrapper {
     position: fixed !important;
     top: 50% !important;
@@ -37,7 +37,7 @@ body.totem-right .totem-wrapper {
     box-sizing: border-box !important;
 }
 
-/* Giro a la Izquierda (-90°) */
+/* Giro a la Izquierda (-90Â°) */
 body.totem-left .totem-wrapper {
     position: fixed !important;
     top: 50% !important;
@@ -54,7 +54,7 @@ body.totem-left .totem-wrapper {
 }
 
 /* =====================================================
-   FORZAR EXPANSIÓN AL 100% DE PUNTA A PUNTA
+   FORZAR EXPANSIÃ“N AL 100% DE PUNTA A PUNTA
    ===================================================== */
 
 body.totem-right #app, body.totem-left #app,
@@ -98,7 +98,7 @@ body.totem-right [class*="card"], body.totem-left [class*="card"] {
     box-sizing: border-box !important;
 }
 
-/* Imágenes optimizadas */
+/* ImÃ¡genes optimizadas */
 body.totem-right .tarjeta-ficha img, body.totem-left .tarjeta-ficha img,
 body.totem-right [class*="ficha"] img, body.totem-left [class*="ficha"] img,
 body.totem-right [class*="card"] img, body.totem-left [class*="card"] img {
@@ -106,15 +106,15 @@ body.totem-right [class*="card"] img, body.totem-left [class*="card"] img {
     object-fit: cover !important;
 }
 
-/* Neutralizar cualquier estilo en línea (height/width dinámicos) que la app intente aplicar después */
-body.totem-right .totem-wrapper *, 
+/* Neutralizar cualquier estilo en lÃ­nea (height/width dinÃ¡micos) que la app intente aplicar despuÃ©s */
+body.totem-right .totem-wrapper *,
 body.totem-left .totem-wrapper * {
     max-width: 100% !important;
     box-sizing: border-box !important;
 }
 
-/* Forzar que el contenedor raíz de la app no se achique nunca */
-body.totem-right #app, 
+/* Forzar que el contenedor raÃ­z de la app no se achique nunca */
+body.totem-right #app,
 body.totem-left #app {
     width: 100% !important;
     height: 100% !important;
@@ -145,14 +145,15 @@ body.totem-right [class*="grid"], body.totem-left [class*="grid"] {
    OVERLAYS / MULTIMEDIA EN VERTICAL
    -----------------------------------------------------
    Deben ir al FINAL del archivo: las reglas [class*="ficha"]
-   de arriba también matchean .visor-ficha y pisarían el tamaño.
+   de arriba tambiÃ©n matchean .visor-ficha y pisarÃ­an el tamaÃ±o.
    ===================================================== */
 
 /* 1) Cualquier overlay colgado directamente del <body> (visor de ficha,
       expediente, lightbox, transiciones...) rota igual que el wrapper.
       No depende de nombres de clase. */
-body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link),
-body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link),
+/* Excluir el globito de las reglas generales de overlays. */
+body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link):not(#globitoDescripcionEtiqueta),
+body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link):not(#globitoDescripcionEtiqueta),
 body.totem-right #historiaCompleta,
 body.totem-left #historiaCompleta,
 body.totem-right #visorFicha,
@@ -162,7 +163,7 @@ body.totem-left #visorFicha {
     left: 50% !important;
     right: auto !important;
     bottom: auto !important;
-    width: 100vh !important;   /* se intercambian: el ancho lógico es el alto real */
+    width: 100vh !important;   /* se intercambian: el ancho lÃ³gico es el alto real */
     height: 100vw !important;
     max-width: none !important;
     margin: 0 !important;
@@ -171,21 +172,22 @@ body.totem-left #visorFicha {
     z-index: 1000 !important;
 }
 
-body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-right > *:not(.totem-wrapper):not(script):not(style):not(link):not(#globitoDescripcionEtiqueta),
 body.totem-right #historiaCompleta,
 body.totem-right #visorFicha {
     transform: translate(-50%, -50%) rotate(90deg) !important;
 }
 
-body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link),
+body.totem-left > *:not(.totem-wrapper):not(script):not(style):not(link):not(#globitoDescripcionEtiqueta),
 body.totem-left #historiaCompleta,
 body.totem-left #visorFicha {
     transform: translate(-50%, -50%) rotate(-90deg) !important;
 }
 
+
 /* 2) Elemento en PANTALLA COMPLETA (requestFullscreen en una imagen/video):
-      va a la "capa superior" del navegador y NO hereda la rotación del wrapper,
-      por eso hay que rotarlo a él directamente. */
+      va a la "capa superior" del navegador y NO hereda la rotaciÃ³n del wrapper,
+      por eso hay que rotarlo a Ã©l directamente. */
 body.totem-right :fullscreen,
 body.totem-right .totem-wrapper :fullscreen {
     position: fixed !important;
@@ -218,8 +220,8 @@ body.totem-left .totem-wrapper :fullscreen {
     background: #000 !important;
 }
 
-/* 3) Imágenes/videos dentro de los visores: la regla [class*="ficha"] img
-      de más arriba las limitaba a 130px con recorte (cover). Acá se anula. */
+/* 3) ImÃ¡genes/videos dentro de los visores: la regla [class*="ficha"] img
+      de mÃ¡s arriba las limitaba a 130px con recorte (cover). AcÃ¡ se anula. */
 body.totem-right #visorFicha img,
 body.totem-left #visorFicha img,
 body.totem-right #historiaCompleta img,
@@ -234,4 +236,146 @@ body.totem-left #multimediaHistoria iframe {
     max-height: 100% !important;
     height: auto !important;
     object-fit: contain !important;
+}
+
+
+
+
+/* =====================================================
+   GLOBITO DE ETIQUETAS Â· TÃ“TEM
+   ===================================================== */
+
+/* Globo de descripciÃ³n en orientaciÃ³n vertical */
+body.totem-right #globitoDescripcionEtiqueta,
+body.totem-left #globitoDescripcionEtiqueta {
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: min(260px, calc(100vh - 32px)) !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    transform-origin: center center !important;
+    z-index: 999999 !important;
+}
+
+/* Texto del globo */
+body.totem-right #globitoDescripcionEtiqueta .globito-texto,
+body.totem-left #globitoDescripcionEtiqueta .globito-texto {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Desactivar los piquitos horizontales originales */
+body.totem-right #globitoDescripcionEtiqueta::before,
+body.totem-right #globitoDescripcionEtiqueta::after,
+body.totem-left #globitoDescripcionEtiqueta::before,
+body.totem-left #globitoDescripcionEtiqueta::after {
+    content: none !important;
+}
+
+/* =====================================================
+   PIQUITO DEL GLOBITO · TÓTEM VERTICAL
+   Sin borde dorado
+   ===================================================== */
+
+/* Base */
+body.totem-right #globitoDescripcionEtiqueta .globito-piquito,
+body.totem-left #globitoDescripcionEtiqueta .globito-piquito {
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* =====================================================
+   TÓTEM DERECHO · ROTACIÓN +90°
+   ===================================================== */
+
+/* Piquito hacia arriba */
+body.totem-right #globitoDescripcionEtiqueta[data-direccion-piquito="arriba"] .globito-piquito {
+    left: -15px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-right-color: #F4EBDD;
+}
+
+/* Piquito hacia abajo */
+body.totem-right #globitoDescripcionEtiqueta[data-direccion-piquito="abajo"] .globito-piquito {
+    left: auto;
+    right: -15px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-left-color: #F4EBDD;
+}
+
+/* Piquito hacia la izquierda */
+body.totem-right #globitoDescripcionEtiqueta[data-direccion-piquito="izquierda"] .globito-piquito {
+    left: 50%;
+    right: auto;
+    top: -15px;
+    bottom: auto;
+    transform: translateX(-50%);
+    border-bottom-color: #F4EBDD;
+}
+
+/* Piquito hacia la derecha */
+body.totem-right #globitoDescripcionEtiqueta[data-direccion-piquito="derecha"] .globito-piquito {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: -15px;
+    transform: translateX(-50%);
+    border-top-color: #F4EBDD;
+}
+
+/* =====================================================
+   TÓTEM IZQUIERDO · ROTACIÓN -90°
+   ===================================================== */
+
+/* Piquito hacia arriba */
+body.totem-left #globitoDescripcionEtiqueta[data-direccion-piquito="arriba"] .globito-piquito {
+    left: auto;
+    right: -15px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-left-color: #F4EBDD;
+}
+
+/* Piquito hacia abajo */
+body.totem-left #globitoDescripcionEtiqueta[data-direccion-piquito="abajo"] .globito-piquito {
+    left: -15px;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-right-color: #F4EBDD;
+}
+
+/* Piquito hacia la izquierda */
+body.totem-left #globitoDescripcionEtiqueta[data-direccion-piquito="izquierda"] .globito-piquito {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: -15px;
+    transform: translateX(-50%);
+    border-top-color: #F4EBDD;
+}
+
+/* Piquito hacia la derecha */
+body.totem-left #globitoDescripcionEtiqueta[data-direccion-piquito="derecha"] .globito-piquito {
+    left: 50%;
+    right: auto;
+    top: -15px;
+    bottom: auto;
+    transform: translateX(-50%);
+    border-bottom-color: #F4EBDD;
 }

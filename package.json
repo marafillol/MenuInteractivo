@@ -15,8 +15,10 @@
     "@supabase/supabase-js": "^2.117.2",
     "archiver": "^7.0.1",
     "cors": "^2.8.6",
+    "cropperjs": "^1.6.2",
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
+    "lucide": "^0.468.0",
     "multer": "^2.2.0",
     "pg": "^8.23.0",
     "sqlite3": "^5.1.7"

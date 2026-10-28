@@ -987,7 +987,7 @@ function mostrarContenidoOculto(
                     </i>
 
                     <span>
-                        No hay ${nombreTipo(tipo)}
+                        No hay ${obtenerTipoDashboard(tipo).nombre}
                         ocultos.
                     </span>
 
