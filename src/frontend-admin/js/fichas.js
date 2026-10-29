@@ -224,6 +224,11 @@ function obtenerRutaImagenFicha(ruta) {
 
 var fichaEliminar = null;
 var fichaEditando = null;
+// Menú recordado para crear otra ficha mientras
+// permanezcamos en la misma ventana de Fichas.
+if (window.__menuCreacionFicha === undefined) {
+    window.__menuCreacionFicha = null;
+}
 
 // Relaciones que quedarán guardadas al actualizar.
 var relacionesPendientes = [];
@@ -268,6 +273,403 @@ function actualizarCabeceraFichas() {
     }
 }
 
+/* =========================================================
+   FILTRO DE FICHAS POR MENÚ
+========================================================= */
+
+/* =========================================================
+   FILTRO BUSCABLE DE FICHAS POR MENÚ
+========================================================= */
+
+async function inicializarFiltroMenuFichas() {
+    const contenedor = document.getElementById(
+        "filtroMenuFichasContenedor"
+    );
+    const boton = document.getElementById("btnFiltroMenuFichas");
+    const textoBoton = document.getElementById("textoFiltroMenuFichas");
+    const flecha = boton?.querySelector(".flecha-selector-fichas");
+    const panel = document.getElementById("panelFiltroMenuFichas");
+    const opciones = document.getElementById("opcionesMenuFichas");
+    const buscar = document.getElementById("buscarMenuFichas");
+
+    if (
+        !contenedor ||
+        !boton ||
+        !textoBoton ||
+        !panel ||
+        !opciones ||
+        !buscar
+    ) {
+        return;
+    }
+
+    // Dentro de un menú específico, el filtro general no se muestra.
+    if (menuSeleccionado) {
+        contenedor.style.display = "none";
+        return;
+    }
+
+    contenedor.style.display = "block";
+
+    // No volver a cargar menús, fichas ni registrar eventos
+    // si el filtro ya fue inicializado en este mismo elemento.
+    if (contenedor.dataset.inicializado === "true") {
+        return;
+    }
+
+    try {
+        const [menus, fichas] = await Promise.all([
+            fcMenus(),
+            fcFichas()
+        ]);
+
+        const idsMenusConFichas = new Set(
+            fichas
+                .filter(ficha => ficha.id_menu != null)
+                .map(ficha => String(ficha.id_menu))
+        );
+
+        const menusConFichas = menus.filter(menu =>
+            idsMenusConFichas.has(String(menu.id_menu))
+        );
+
+        // Guardar las opciones para la búsqueda y el teclado.
+        window.__menusFiltroFichas = menusConFichas;
+
+        let filtroActual = window.__filtroMenuFichas || "";
+
+        // Si el menú seleccionado ya no está disponible, limpiar el filtro.
+        if (
+            filtroActual &&
+            !menusConFichas.some(
+                menu => String(menu.id_menu) === String(filtroActual)
+            )
+        ) {
+            filtroActual = "";
+            window.__filtroMenuFichas = "";
+        }
+
+        const menuActual = menusConFichas.find(
+            menu => String(menu.id_menu) === String(filtroActual)
+        );
+
+        textoBoton.textContent = menuActual
+            ? `Menú: ${menuActual.nombre}`
+            : "Menú: Todos";
+
+        function cerrarPanel(devolverFoco) {
+            panel.style.display = "none";
+            boton.setAttribute("aria-expanded", "false");
+
+            if (flecha) {
+                flecha.style.transform = "rotate(0deg)";
+            }
+
+            window.__indiceOpcionMenuFichas = -1;
+
+            if (devolverFoco) {
+                boton.focus();
+            }
+        }
+
+        function abrirPanel() {
+            panel.style.display = "block";
+            boton.setAttribute("aria-expanded", "true");
+
+            if (flecha) {
+                flecha.style.transform = "rotate(180deg)";
+            }
+
+            buscar.value = "";
+            window.__indiceOpcionMenuFichas = -1;
+
+            renderizarOpcionesMenuFichas();
+
+            buscar.focus();
+        }
+
+        window.__cerrarFiltroMenuFichas = cerrarPanel;
+
+        function crearOpcion(texto, valor) {
+            const opcion = document.createElement("button");
+
+            opcion.type = "button";
+            opcion.textContent = texto;
+            opcion.dataset.valor = String(valor);
+            opcion.setAttribute("role", "option");
+            opcion.setAttribute(
+                "aria-selected",
+                String(String(valor) === String(
+                    window.__filtroMenuFichas || ""
+                ))
+            );
+
+            opcion.style.cssText = `
+                display: block;
+                width: 100%;
+                padding: 9px 10px;
+                border: none;
+                border-radius: 4px;
+                background: ${
+                    String(valor) === String(
+                        window.__filtroMenuFichas || ""
+                    )
+                        ? "#eee6d2"
+                        : "transparent"
+                };
+                color: #222;
+                text-align: left;
+                cursor: pointer;
+            `;
+
+            opcion.addEventListener("mouseenter", () => {
+                const lista = obtenerOpcionesVisibles();
+                const indice = lista.indexOf(opcion);
+
+                if (indice !== -1) {
+                    resaltarOpcion(indice);
+                }
+            });
+
+
+            opcion.addEventListener("click", () => {
+
+                // Quitar el aviso y restaurar las fichas de la búsqueda global.
+                if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+                    window.limpiarFiltroBuscadorGlobal();
+                }
+
+                window.__filtroMenuFichas = valor;
+
+                textoBoton.textContent = valor
+                    ? `Menú: ${texto}`
+                    : "Menú: Todos";
+
+                cerrarPanel(false);
+
+                cargarFichas();
+            });
+
+
+            opciones.appendChild(opcion);
+        }
+
+        window.__renderizarOpcionesMenuFichas = function () {
+            renderizarOpcionesMenuFichas();
+        };
+
+
+        function renderizarOpcionesMenuFichas() {
+            const busqueda = buscar.value.trim().toLocaleLowerCase("es");
+
+            opciones.innerHTML = "";
+            window.__indiceOpcionMenuFichas = -1;
+
+            const menusFiltrados = menusConFichas.filter(menu =>
+                String(menu.nombre || "")
+                    .toLocaleLowerCase("es")
+                    .includes(busqueda)
+            );
+
+            if (
+                !busqueda ||
+                "Menú: Todos".includes(busqueda) ||
+                "Menú: Todos".includes(busqueda)
+            ) {
+                crearOpcion("Menú: Todos", "");
+            }
+
+            menusFiltrados.forEach(menu => {
+                crearOpcion(menu.nombre, String(menu.id_menu));
+            });
+
+            if (opciones.children.length === 0) {
+                const mensaje = document.createElement("div");
+                mensaje.textContent = "No se encontraron menús.";
+                mensaje.style.cssText = `
+                    padding: 10px;
+                    color: #666;
+                    font-size: 13px;
+                `;
+                opciones.appendChild(mensaje);
+                return;
+            }
+
+            Array.from(opciones.querySelectorAll("button")).forEach(
+                (opcion, indice) => {
+                    opcion.dataset.indice = String(indice);
+                }
+            );
+        }
+
+
+        function obtenerOpcionesVisibles() {
+            return Array.from(
+                opciones.querySelectorAll("button")
+            );
+        }
+
+
+        function resaltarOpcion(indice) {
+            const lista = obtenerOpcionesVisibles();
+
+            if (lista.length === 0) {
+                window.__indiceOpcionMenuFichas = -1;
+                return;
+            }
+
+            indice = Math.max(0, Math.min(indice, lista.length - 1));
+            window.__indiceOpcionMenuFichas = indice;
+
+            lista.forEach((opcion, i) => {
+                const seleccionada =
+                    opcion.getAttribute("aria-selected") === "true";
+
+                opcion.style.outline =
+                    i === indice ? "2px solid #c7a85b" : "none";
+
+                opcion.style.background =
+                    i === indice || seleccionada
+                        ? "#eee6d2"
+                        : "transparent";
+            });
+
+            lista[indice].scrollIntoView({
+                block: "nearest",
+                behavior: "auto"
+            });
+        }
+
+
+        function manejarTeclado(event) {
+            const lista = obtenerOpcionesVisibles();
+            const indice = window.__indiceOpcionMenuFichas ?? -1;
+
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+
+                if (lista.length > 0) {
+                    resaltarOpcion(
+                        indice < 0 ? 0 : (indice + 1) % lista.length
+                    );
+                }
+
+                return;
+            }
+
+            if (event.key === "ArrowUp") {
+                event.preventDefault();
+
+                if (lista.length > 0) {
+                    resaltarOpcion(
+                        indice < 0
+                            ? lista.length - 1
+                            : (indice - 1 + lista.length) % lista.length
+                    );
+                }
+
+                return;
+            }
+
+            if (event.key === "Enter") {
+                event.preventDefault();
+
+                if (indice >= 0 && lista[indice]) {
+                    lista[indice].click();
+                } else if (lista.length === 1) {
+                    lista[0].click();
+                }
+
+                return;
+            }
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+                cerrarPanel(true);
+            }
+        }
+
+        // Registrar los eventos una sola vez.
+        if (boton.dataset.eventoRegistrado !== "true") {
+            boton.addEventListener("click", event => {
+                event.stopPropagation();
+
+                if (panel.style.display === "block") {
+                    cerrarPanel(false);
+                } else {
+                    abrirPanel();
+                }
+            });
+
+            boton.dataset.eventoRegistrado = "true";
+        }
+
+        if (buscar.dataset.eventosRegistrados !== "true") {
+            buscar.addEventListener("input", () => {
+                window.__indiceOpcionMenuFichas = -1;
+                renderizarOpcionesMenuFichas();
+            });
+
+            buscar.addEventListener("keydown", manejarTeclado);
+
+
+
+            buscar.dataset.eventosRegistrados = "true";
+        }
+
+        if (document.body.dataset.cerrarFiltroMenuRegistrado !== "true") {
+            document.addEventListener("click", event => {
+                const contenedorActual = document.getElementById(
+                    "filtroMenuFichasContenedor"
+                );
+
+                if (
+                    contenedorActual &&
+                    !contenedorActual.contains(event.target)
+                ) {
+                    const panelActual = document.getElementById(
+                        "panelFiltroMenuFichas"
+                    );
+
+                    const botonActual = document.getElementById(
+                        "btnFiltroMenuFichas"
+                    );
+
+                    const flechaActual = botonActual?.querySelector(
+                        ".flecha-selector-fichas"
+                    );
+
+                    if (panelActual) {
+                        panelActual.style.display = "none";
+                    }
+
+                    if (botonActual) {
+                        botonActual.setAttribute("aria-expanded", "false");
+                    }
+
+                    if (flechaActual) {
+                        flechaActual.style.transform = "rotate(0deg)";
+                    }
+
+                    window.__indiceOpcionMenuFichas = -1;
+                }
+            });
+
+            document.body.dataset.cerrarFiltroMenuRegistrado = "true";
+        }
+
+        renderizarOpcionesMenuFichas();
+
+        contenedor.dataset.inicializado = "true";
+
+    } catch (error) {
+        console.error(
+            "Error cargando menús para filtrar fichas:",
+            error
+        );
+    }
+}
+
 
 /* =========================================================
    CARGAR FICHAS
@@ -275,22 +677,44 @@ function actualizarCabeceraFichas() {
 
 async function cargarFichas() {
 
+    const idCargaFichas = window.__idCargaVentana;
+
     actualizarCabeceraFichas();
 
     try {
+        await inicializarFiltroMenuFichas();
+
+        // Si el usuario cambió de ventana durante la espera,
+        // no continuar con la carga anterior.
+        if (idCargaFichas !== window.__idCargaVentana) {
+            return;
+        }
+
         const botonNuevaFicha = document.getElementById("nuevaFicha");
         const barraVolver = document.getElementById("barraVolver");
 
         let url = "/api/fichas";
 
         if (menuSeleccionado) {
+            // Navegación existente: fichas de un menú específico.
             url = `/api/fichas/menu/${menuSeleccionado}`;
 
             if (barraVolver) {
                 barraVolver.style.display = "inline-flex";
             }
-        } else if (barraVolver) {
-            barraVolver.style.display = "none";
+
+        } else {
+            // Gestión general: permitir filtrar sin cambiar
+            // el menú usado para crear o editar fichas.
+            const filtroMenu = window.__filtroMenuFichas || "";
+
+            if (filtroMenu) {
+                url = `/api/fichas/menu/${filtroMenu}`;
+            }
+
+            if (barraVolver) {
+                barraVolver.style.display = "none";
+            }
         }
 
         if (botonNuevaFicha) {
@@ -299,12 +723,20 @@ async function cargarFichas() {
 
         const respuesta = await window.fetchProtegido(url);
 
+        if (idCargaFichas !== window.__idCargaVentana) {
+            return;
+        }
+
         if (!respuesta.ok) {
             console.error("Error obteniendo fichas:", respuesta.status);
             return;
         }
 
         const fichas = await respuesta.json();
+
+        if (idCargaFichas !== window.__idCargaVentana) {
+            return;
+        }
 
         // Si es la lista completa, aprovecharla como caché
         // (la usan el select y las mini-fichas de relaciones).
@@ -1046,22 +1478,27 @@ function recuperarBorradorFicha() {
     return true;
 }
 
-// Autoguardado con debounce (antes escribía en cada tecla).
+
 if (!window.__autoguardadoFichasInicializado) {
     window.__autoguardadoFichasInicializado = true;
 
-    let temporizadorBorrador = null;
+    window.__temporizadorBorradorFicha = null;
 
     const guardarDiferido = (e) => {
         if (!e.target.closest("#modalFicha")) return;
 
-        clearTimeout(temporizadorBorrador);
-        temporizadorBorrador = setTimeout(guardarBorradorFicha, 400);
+        clearTimeout(window.__temporizadorBorradorFicha);
+
+        window.__temporizadorBorradorFicha = setTimeout(
+            guardarBorradorFicha,
+            400
+        );
     };
 
     document.addEventListener("input", guardarDiferido);
     document.addEventListener("change", guardarDiferido);
 }
+
 
 
 /* =========================================================
@@ -1091,6 +1528,10 @@ async function prepararFormularioNuevaFicha(idMenu) {
 
     modalFicha.dataset.idFicha = "";
     modalFicha.dataset.idMenu = idMenu;
+
+    // Recordar el menú para volver a abrir el formulario,
+    // sin modificar el filtro de la lista general.
+    window.__menuCreacionFicha = String(idMenu);
 
     aplicarMenuEnFormulario(idMenu);
 
@@ -1150,38 +1591,29 @@ async function prepararFormularioNuevaFicha(idMenu) {
 ========================================================= */
 
 async function abrirNuevaFicha() {
+    // Si estamos dentro de un menú específico, respetarlo.
+    const menuContextual = menuSeleccionado || null;
 
-    console.log("Nueva ficha. Menú seleccionado:", menuSeleccionado);
+    // En Gestión general, recuperar el menú anterior solamente
+    // si todavía existe un borrador pendiente para ese menú.
+    const menuRecordado = window.__menuCreacionFicha;
 
-    // Recuperar el menú del borrador más reciente.
-    if (!menuSeleccionado && window.Borradores) {
-        const borradorNuevo = window.Borradores
-            .obtenerTodos("fichas")
-            .find(b =>
-                String(b.idRegistro ?? "").startsWith("nuevo-menu-")
-            );
+    const borradorPendiente =
+        !menuContextual &&
+        menuRecordado &&
+        window.Borradores?.leer(
+            "fichas",
+            `nuevo-menu-${menuRecordado}`
+        )?.datos;
 
-        if (borradorNuevo) {
-            menuSeleccionado = String(borradorNuevo.idRegistro)
-                .substring("nuevo-menu-".length);
+    const idMenu = menuContextual ||
+        (borradorPendiente ? menuRecordado : null);
 
-            const modalFicha = document.getElementById("modalFicha");
+    console.log("Nueva ficha. Menú para crear:", idMenu);
 
-            if (modalFicha) {
-                modalFicha.dataset.origenBorrador = "general";
-            }
-
-            console.log(
-                "Reabriendo borrador de ficha del menú:",
-                menuSeleccionado
-            );
-        }
-    }
-
-    // Dentro de un menú: abrir directamente el formulario.
-    if (menuSeleccionado) {
+    if (idMenu) {
         try {
-            await prepararFormularioNuevaFicha(menuSeleccionado);
+            await prepararFormularioNuevaFicha(idMenu);
         } catch (error) {
             console.error("Error abriendo nueva ficha:", error);
 
@@ -1194,14 +1626,16 @@ async function abrirNuevaFicha() {
         return;
     }
 
-    // Gestión general: selector de tipo.
+    // Si no hay borrador, pedir el menú nuevamente.
     const modal = document.getElementById("modalTipoFicha");
 
     if (modal) {
-        modal.style.display = "flex";
         await cargarTiposFicha();
+        modal.style.display = "flex";
     }
 }
+
+
 
 // Se registra una sola vez aunque panel.js recargue este archivo.
 if (!window.__fichasEventoNuevaRegistrado) {
@@ -1221,32 +1655,89 @@ if (!window.__fichasEventoNuevaRegistrado) {
 }
 
 
+function descartarBorradorFichaAlSalir() {
+    const modal = document.getElementById("modalFicha");
+
+    if (!modal || modal.style.display === "none") {
+        return;
+    }
+
+    // Guardar inmediatamente los datos actuales antes de salir.
+    clearTimeout(window.__temporizadorBorradorFicha);
+    guardarBorradorFicha();
+
+    // Ocultar el formulario, pero conservar el borrador,
+    // el menú asociado y la clave necesaria para recuperarlo.
+    modal.style.display = "none";
+
+    // Salimos de la vista contextual, si corresponde.
+    menuSeleccionado = null;
+    nombreMenuSeleccionado = "";
+}
+
+window.descartarBorradorFichaAlSalir =
+    descartarBorradorFichaAlSalir;
+
+
 /* =========================================================
    CERRAR MODAL FICHA
 ========================================================= */
+
+
 
 function cerrarFicha() {
     const modal = document.getElementById("modalFicha");
 
     if (!modal) return;
 
-    const clave = obtenerClaveBorradorFicha();
+    // 1. Cancelar cualquier autoguardado pendiente.
+    clearTimeout(window.__temporizadorBorradorFicha);
 
-    if (window.Borradores && clave) {
-        window.Borradores.eliminar("fichas", clave);
+    // 2. Obtener la clave antes de limpiar el modal.
+    const claveBorrador = obtenerClaveBorradorFicha();
+
+    // 3. Eliminar el borrador con el tipo correcto: "fichas".
+    if (window.Borradores && claveBorrador) {
+        window.Borradores.eliminar("fichas", claveBorrador);
+        console.log(
+            "[Fichas] Borrador descartado:",
+            claveBorrador
+        );
     }
 
+    // 4. Ocultar el modal antes de limpiar los campos.
     modal.style.display = "none";
 
-    // Si se estaba creando una ficha desde Gestión general,
-    // limpiar el menú recuperado del borrador.
-    if (modal.dataset.origenBorrador === "general") {
-        menuSeleccionado = null;
-        nombreMenuSeleccionado = "";
+    // 5. Limpiar los datos asociados a la ficha.
+    modal.dataset.idFicha = "";
+    modal.dataset.idMenu = "";
+    delete modal.dataset.origenBorrador;
+
+    // 6. Restablecer el formulario.
+    const formulario = document.getElementById("formFicha");
+
+    if (formulario) {
+        formulario.reset();
     }
 
-    delete modal.dataset.origenBorrador;
+    // Limpiar también los campos dinámicos.
+    document.querySelectorAll(
+        "#modalFicha .campo-dinamico"
+    ).forEach(campo => {
+        campo.value = "";
+    });
+
+    // Limpiar relaciones temporales.
+    relacionesPendientes = [];
+    relacionesEliminadasPendientes = [];
+
+    fichaEditando = null;
+
+    window.__menuCreacionFicha = null;
 }
+
+
+
 
 
 /* =========================================================
@@ -1670,7 +2161,14 @@ async function confirmarEliminarFicha() {
         if (!respuesta.ok) {
             cerrarEliminarFicha();
 
-            mostrarMensaje("Error", resultado.error);
+            if (
+                Array.isArray(resultado.multimedia) &&
+                resultado.multimedia.length > 0
+            ) {
+                mostrarBloqueoEliminarFicha(resultado);
+            } else {
+                mostrarMensaje("Error", resultado.error);
+            }
 
             return;
         }
@@ -1710,6 +2208,44 @@ function etiquetaEstaActiva(etiqueta) {
             String(valor).trim().toLowerCase()
         )
     );
+}
+
+
+async function limpiarFiltrosFichas() {
+    if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+        window.limpiarFiltroBuscadorGlobal();
+    }
+
+    window.__filtroMenuFichas = "";
+    window.__indiceOpcionMenuFichas = -1;
+
+    const boton = document.getElementById("btnFiltroMenuFichas");
+    const textoBoton = document.getElementById("textoFiltroMenuFichas");
+    const panel = document.getElementById("panelFiltroMenuFichas");
+    const buscar = document.getElementById("buscarMenuFichas");
+    const flecha = boton?.querySelector(".flecha-selector-fichas");
+
+    if (textoBoton) {
+        textoBoton.textContent = "Menú: Todos";
+    }
+
+    if (panel) {
+        panel.style.display = "none";
+    }
+
+    if (buscar) {
+        buscar.value = "";
+    }
+
+    if (boton) {
+        boton.setAttribute("aria-expanded", "false");
+    }
+
+    if (flecha) {
+        flecha.style.transform = "rotate(0deg)";
+    }
+
+    await cargarFichas();
 }
 
 
@@ -2094,5 +2630,54 @@ function mostrarMensaje(titulo, mensaje) {
     document.getElementById("tituloMensaje").textContent = titulo;
     document.getElementById("textoMensaje").textContent = mensaje;
 
+    const listaMultimedia = modal.querySelector("#listaMultimediaBloqueo");
+    const accionesMultimedia = modal.querySelector("#accionesMultimediaBloqueo");
+
+    if (listaMultimedia) {
+        listaMultimedia.replaceChildren();
+        listaMultimedia.style.display = "none";
+    }
+
+    if (accionesMultimedia) {
+        accionesMultimedia.style.display = "none";
+    }
+
     modal.style.display = "flex";
+}
+
+
+function mostrarBloqueoEliminarFicha(resultado) {
+    const modal = document.getElementById("modalMensajeFicha");
+    const titulo = modal?.querySelector("#tituloMensaje");
+    const texto = modal?.querySelector("#textoMensaje");
+    const lista = document.getElementById("listaMultimediaBloqueo");
+    const acciones = document.getElementById("accionesMultimediaBloqueo");
+
+    if (!modal || !titulo || !texto || !lista || !acciones) {
+        mostrarMensaje("Error", resultado.error);
+        return;
+    }
+
+    window.fichaBloqueadaParaMultimedia = resultado.ficha;
+
+    titulo.textContent = "No se puede eliminar la ficha";
+    texto.textContent = resultado.error;
+
+    // No mostrar títulos, descripciones ni identificadores
+    // de los archivos multimedia asociados.
+    lista.replaceChildren();
+    lista.style.display = "none";
+
+    // Mantener los botones para cancelar o ir a multimedia.
+    acciones.style.display = "flex";
+    modal.style.display = "flex";
+}
+
+function irAMultimediaFichaBloqueada() {
+    const ficha = window.fichaBloqueadaParaMultimedia;
+
+    if (!ficha) return;
+
+    cerrarMensajeFicha();
+    verMultimediaFicha(ficha.id_ficha, ficha.titulo);
 }

@@ -1,4 +1,5 @@
-const Menu = require("../modelos/menu");
+﻿const Menu = require("../modelos/menu");
+const Ficha = require("../modelos/ficha");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
 const cachePublico = require("../middleware/cachePublico");
 const limpiarArchivoSubido = async (ruta) => {
@@ -6,12 +7,12 @@ const limpiarArchivoSubido = async (ruta) => {
     try {
         await eliminarArchivo(ruta);
     } catch {
-        console.error("No se pudo limpiar un archivo nuevo de menú.");
+        console.error("No se pudo limpiar un archivo nuevo de menÃº.");
     }
 };
 
 // ==========================
-// LISTAR MENÚS
+// LISTAR MENÃšS
 // ==========================
 
 const listarMenus = async(req,res)=>{
@@ -33,7 +34,7 @@ const listarMenus = async(req,res)=>{
 };
 
 // ==========================
-// CREAR MENÚ
+// CREAR MENÃš
 // ==========================
 
 const crearMenu = async(req,res)=>{
@@ -44,7 +45,7 @@ const crearMenu = async(req,res)=>{
         const id_plantilla = req.body.id_plantilla;
 
         if(!nombre){
-            return res.status(400).json({ error:"Debe ingresar un nombre para el menú." });
+            return res.status(400).json({ error:"Debe ingresar un nombre para el menÃº." });
         }
         if(!id_plantilla){
             return res.status(400).json({ error:"Debe seleccionar una plantilla." });
@@ -60,10 +61,10 @@ const crearMenu = async(req,res)=>{
         };
 
         const id = await Menu.crear(datosMenu);
-        cachePublico.invalidar();
+        cachePublico.invalidar(["menus", "fichas"]);
         imagenSubida = null;
 
-        return res.json({ mensaje:"Menú creado correctamente", id_menu:id });
+        return res.json({ mensaje:"MenÃº creado correctamente", id_menu:id });
     }catch(error){
         await limpiarArchivoSubido(imagenSubida);
         return res.status(500).json({ error:error.message });
@@ -71,7 +72,7 @@ const crearMenu = async(req,res)=>{
 };
 
 // ==========================
-// OBTENER MENÚ POR ID
+// OBTENER MENÃš POR ID
 // ==========================
 
 const obtenerMenu = async(req,res)=>{
@@ -93,7 +94,7 @@ const obtenerMenu = async(req,res)=>{
 };
 
 // ==========================
-// ACTUALIZAR MENÚ
+// ACTUALIZAR MENÃš
 // ==========================
 
 const actualizarMenu = async(req,res)=>{
@@ -109,7 +110,7 @@ const actualizarMenu = async(req,res)=>{
 
         if (!menuActual) {
             return res.status(404).json({
-                error: "No se encontró el menú."
+                error: "No se encontrÃ³ el menÃº."
             });
         }
 
@@ -120,13 +121,13 @@ const actualizarMenu = async(req,res)=>{
             Number(id_plantilla) !== Number(menuActual.id_plantilla)
         ) {
             return res.status(400).json({
-                error: "No se puede cambiar la plantilla porque este menú ya tiene fichas asociadas."
+                error: "No se puede cambiar la plantilla porque este menÃº ya tiene fichas asociadas."
             });
         }
 
 
         if(!nombre){
-            return res.status(400).json({ error:"Debe ingresar un nombre para el menú." });
+            return res.status(400).json({ error:"Debe ingresar un nombre para el menÃº." });
         }
         if(!id_plantilla){
             return res.status(400).json({ error:"Debe seleccionar una plantilla." });
@@ -145,10 +146,10 @@ const actualizarMenu = async(req,res)=>{
         }
 
         await Menu.actualizar(req.params.id, datos);
-        cachePublico.invalidar();
-        // Se conserva la imagen anterior: aún no se ha verificado que no esté compartida.
+        cachePublico.invalidar(["menus", "fichas"]);
+        // Se conserva la imagen anterior: aÃºn no se ha verificado que no estÃ© compartida.
         imagenNueva = null;
-        return res.json({ mensaje:"Menú actualizado" });
+        return res.json({ mensaje:"MenÃº actualizado" });
     }catch(error){
         if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
@@ -159,36 +160,48 @@ const actualizarMenu = async(req,res)=>{
 
 const eliminarMenu = async (req, res) => {
     try {
+
+        console.log("[ELIMINAR MENÃš] Controlador actualizado ejecutado");
         const id_menu = req.params.id;
 
         const menu = await Menu.obtenerPorId(id_menu);
 
         if (!menu) {
             return res.status(404).json({
-                error: "No se encontró el menú que intenta eliminar."
+                error: "No se encontrÃ³ el menÃº que intenta eliminar."
             });
         }
 
         const cantidad = await Menu.contarFichas(id_menu);
 
         if (cantidad > 0) {
+            const fichas = await Ficha.obtenerFichasPorMenu(id_menu);
+
             return res.status(400).json({
-                error: `No se puede eliminar este menú porque tiene ${cantidad} ficha(s) asociada(s). Primero debe desvincular las fichas para poder eliminarlo.`
+                error: `No se puede eliminar el menÃº "${menu.nombre}" porque tiene ${cantidad} ficha(s) asociada(s).`,
+                menu: {
+                    id_menu: menu.id_menu,
+                    nombre: menu.nombre
+                },
+                fichas: fichas.map(ficha => ({
+                    id_ficha: ficha.id_ficha,
+                    titulo: ficha.titulo
+                }))
             });
         }
 
         await Menu.eliminar(id_menu);
-        cachePublico.invalidar();
+        cachePublico.invalidar(["menus", "fichas"]);
 
         return res.json({
-            mensaje: "Menú eliminado correctamente."
+            mensaje: "MenÃº eliminado correctamente."
         });
 
     } catch (error) {
-        console.error("Error eliminando menú:", error);
+        console.error("Error eliminando menÃº:", error);
 
         return res.status(500).json({
-            error: "Ocurrió un error al intentar eliminar el menú."
+            error: "OcurriÃ³ un error al intentar eliminar el menÃº."
         });
     }
 };
@@ -203,3 +216,4 @@ module.exports = {
     eliminarMenu
 
 };
+

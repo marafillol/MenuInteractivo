@@ -16,84 +16,12 @@ let multimediaEditando = null;
 let multimediaEliminar = null;
 let guardandoMultimedia = false;
 
+let menusFiltroMultimedia = [];
+let fichasFiltroMultimedia = [];
+let filtrosMultimediaInicializados = false;
+let multimediaFiltroMultimedia = [];
+let indiceOpcionMultimedia = -1;
 
-
-/* =========================================================
-   BORRADORES DE MULTIMEDIA
-========================================================= */
-
-function obtenerClaveBorradorMultimedia() {
-    if (!window.Borradores || !window.usuarioActual?.id_usuario) {
-        return null;
-    }
-
-    if (multimediaEditando) {
-        return String(multimediaEditando);
-    }
-
-    if (window.multimediaFichaActual && fichaSeleccionada) {
-        return `nuevo-ficha-${fichaSeleccionada}`;
-    }
-
-    return "nuevo";
-}
-
-function obtenerDatosBorradorMultimedia() {
-    return {
-        id_ficha: window.multimediaFichaActual
-            ? (fichaSeleccionada ?? "")
-            : (obtenerElemento("multiFicha")?.value ?? ""),
-        descripcion: obtenerElemento("multiDescripcion")?.value ?? "",
-        tipo_multi: obtenerElemento("multiTipo")?.value ?? "",
-        activo: obtenerElemento("multiActivo")?.checked ?? true
-    };
-}
-
-function guardarBorradorMultimedia() {
-    const modal = obtenerElemento("modalMultimediaNuevo");
-    const clave = obtenerClaveBorradorMultimedia();
-
-    if (!modal || modal.style.display === "none" || !clave) {
-        return;
-    }
-
-    window.Borradores.guardar(
-        "multimedia",
-        clave,
-        obtenerDatosBorradorMultimedia()
-    );
-}
-
-function recuperarBorradorMultimedia() {
-    const clave = obtenerClaveBorradorMultimedia();
-
-    if (!clave || !window.Borradores) {
-        return false;
-    }
-
-    const borrador = window.Borradores.leer("multimedia", clave);
-
-    if (!borrador?.datos) {
-        return false;
-    }
-
-    const datos = borrador.datos;
-
-    const descripcion = obtenerElemento("multiDescripcion");
-    const tipo = obtenerElemento("multiTipo");
-    const activo = obtenerElemento("multiActivo");
-    const ficha = obtenerElemento("multiFicha");
-
-    if (descripcion) descripcion.value = datos.descripcion ?? "";
-    if (tipo) tipo.value = datos.tipo_multi ?? "";
-    if (activo) activo.checked = datos.activo ?? true;
-
-    if (ficha && !window.multimediaFichaActual) {
-        ficha.value = String(datos.id_ficha ?? "");
-    }
-
-    return true;
-}
 
 
 /* =========================================================
@@ -164,11 +92,549 @@ function obtenerRutaMultimedia(ruta) {
 
 
 /* =========================================================
+   FILTROS DE MULTIMEDIA POR MENÚ Y FICHA
+========================================================= */
+
+/* =========================================================
+   FILTROS BUSCABLES DE MULTIMEDIA POR MENÚ Y FICHA
+========================================================= */
+
+function cerrarDesplegablesMultimedia() {
+    const desplegables = [
+        ["desplegableMenuMultimedia", "selectorMenuMultimedia"],
+        ["desplegableFichaMultimedia", "selectorFichaMultimedia"]
+    ];
+
+    desplegables.forEach(([idDesplegable, idBoton]) => {
+        const desplegable = obtenerElemento(idDesplegable);
+        const boton = obtenerElemento(idBoton);
+
+        if (desplegable) {
+            desplegable.style.display = "none";
+        }
+
+        if (boton) {
+            boton.setAttribute("aria-expanded", "false");
+
+            const flecha = boton.querySelector(".flecha-selector-multimedia");
+
+            if (flecha) {
+                flecha.style.transform = "rotate(0deg)";
+            }
+        }
+    });
+}
+
+function alternarDesplegableMultimedia(tipo) {
+    const configuracion = tipo === "menu"
+        ? {
+            desplegable: "desplegableMenuMultimedia",
+            boton: "selectorMenuMultimedia",
+            busqueda: "buscarMenuMultimedia",
+            otroDesplegable: "desplegableFichaMultimedia"
+        }
+        : {
+            desplegable: "desplegableFichaMultimedia",
+            boton: "selectorFichaMultimedia",
+            busqueda: "buscarFichaMultimedia",
+            otroDesplegable: "desplegableMenuMultimedia"
+        };
+
+    const desplegable = obtenerElemento(configuracion.desplegable);
+    const boton = obtenerElemento(configuracion.boton);
+    const otroDesplegable = obtenerElemento(configuracion.otroDesplegable);
+
+    if (!desplegable || !boton) {
+        return;
+    }
+
+    const estabaAbierto = desplegable.style.display === "block";
+
+    cerrarDesplegablesMultimedia();
+
+    if (!estabaAbierto) {
+        desplegable.style.display = "block";
+        boton.setAttribute("aria-expanded", "true");
+
+        const flecha = boton.querySelector(".flecha-selector-multimedia");
+
+        if (flecha) {
+            flecha.style.transform = "rotate(180deg)";
+        }
+
+        const busqueda = obtenerElemento(configuracion.busqueda);
+
+        if (busqueda) {
+            busqueda.focus();
+            busqueda.select();
+        }
+    }
+
+    if (otroDesplegable) {
+        otroDesplegable.style.display = "none";
+    }
+}
+
+
+function crearOpcionFiltroMultimedia(texto, valor, seleccionada, alSeleccionar) {
+    const opcion = document.createElement("button");
+
+    opcion.type = "button";
+    opcion.textContent = texto;
+    opcion.setAttribute("role", "option");
+    opcion.setAttribute("aria-selected", seleccionada ? "true" : "false");
+
+    opcion.style.cssText = `
+        display: block;
+        width: 100%;
+        padding: 9px 10px;
+        border: none;
+        border-radius: 4px;
+        background: ${seleccionada ? "rgba(199, 168, 91, .18)" : "transparent"};
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+        overflow-wrap: anywhere;
+    `;
+
+    opcion.addEventListener("mouseenter", () => {
+        opcion.style.background = "rgba(199, 168, 91, .25)";
+    });
+
+    opcion.addEventListener("mouseleave", () => {
+        opcion.style.background = seleccionada
+            ? "rgba(199, 168, 91, .18)"
+            : "transparent";
+    });
+
+    opcion.addEventListener("click", alSeleccionar);
+
+    return opcion;
+}
+
+
+function actualizarTextoSelectoresMultimedia() {
+    const idMenu = obtenerElemento("filtroMenuMultimedia")?.value || "";
+    const idFicha = obtenerElemento("filtroFichaMultimedia")?.value || "";
+
+    const textoMenu = obtenerElemento("textoSelectorMenuMultimedia");
+    const textoFicha = obtenerElemento("textoSelectorFichaMultimedia");
+
+    const menu = menusFiltroMultimedia.find(
+        item => String(item.id_menu) === String(idMenu)
+    );
+
+    const ficha = fichasFiltroMultimedia.find(
+        item => String(item.id_ficha) === String(idFicha)
+    );
+
+    if (textoMenu) {
+        textoMenu.textContent = menu
+            ? `Menú: ${menu.nombre}`
+            : "Menú: Todos";
+    }
+
+    if (textoFicha) {
+        textoFicha.textContent = ficha
+            ? `Ficha: #${ficha.id_ficha} - ${ficha.titulo}`
+            : "Ficha: Todas";
+    }
+}
+
+
+function renderizarOpcionesMenuMultimedia() {
+    const contenedor = obtenerElemento("opcionesMenuMultimedia");
+    const busqueda = obtenerElemento("buscarMenuMultimedia");
+    const filtroMenu = obtenerElemento("filtroMenuMultimedia");
+
+    if (!contenedor || !filtroMenu) {
+        return;
+    }
+
+    const texto = (busqueda?.value || "")
+        .trim()
+        .toLocaleLowerCase("es-AR");
+
+    contenedor.innerHTML = "";
+    indiceOpcionMultimedia = -1;
+
+    // Opción para quitar el filtro por menú.
+    contenedor.appendChild(
+        crearOpcionFiltroMultimedia(
+            "Menú: Todos",
+            "",
+            !filtroMenu.value,
+            async () => {
+
+                if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+                    window.limpiarFiltroBuscadorGlobal();
+                }
+                filtroMenu.value = "";
+                obtenerElemento("filtroFichaMultimedia").value = "";
+
+                const buscarFicha = obtenerElemento("buscarFichaMultimedia");
+                if (buscarFicha) {
+                    buscarFicha.value = "";
+                }
+
+                cerrarDesplegablesMultimedia();
+                actualizarTextoSelectoresMultimedia();
+                renderizarOpcionesMenuMultimedia();
+                renderizarOpcionesFichaMultimedia();
+
+                await cargarMultimedia();
+            }
+        )
+    );
+
+    const menusDisponibles = menusFiltroMultimedia.filter(menu =>
+        String(menu.nombre || "")
+            .toLocaleLowerCase("es-AR")
+            .includes(texto)
+    );
+
+    if (menusDisponibles.length === 0) {
+        const mensaje = document.createElement("p");
+        mensaje.textContent = "No se encontraron menús.";
+        mensaje.style.cssText = "padding: 8px 10px; margin: 0; opacity: .7;";
+        contenedor.appendChild(mensaje);
+        return;
+    }
+
+    menusDisponibles.forEach(menu => {
+        const id = String(menu.id_menu);
+
+        contenedor.appendChild(
+            crearOpcionFiltroMultimedia(
+                menu.nombre || `Menú #${id}`,
+                id,
+                filtroMenu.value === id,
+                async () => {
+
+                    if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+                        window.limpiarFiltroBuscadorGlobal();
+                    }
+                    filtroMenu.value = id;
+                    obtenerElemento("filtroFichaMultimedia").value = "";
+
+                    const buscarFicha = obtenerElemento("buscarFichaMultimedia");
+                    if (buscarFicha) {
+                        buscarFicha.value = "";
+                    }
+
+                    cerrarDesplegablesMultimedia();
+                    actualizarTextoSelectoresMultimedia();
+                    renderizarOpcionesMenuMultimedia();
+                    renderizarOpcionesFichaMultimedia();
+
+                    await cargarMultimedia();
+                }
+            )
+        );
+    });
+}
+
+
+function renderizarOpcionesFichaMultimedia() {
+    const contenedor = obtenerElemento("opcionesFichaMultimedia");
+    const busqueda = obtenerElemento("buscarFichaMultimedia");
+    const filtroMenu = obtenerElemento("filtroMenuMultimedia");
+    const filtroFicha = obtenerElemento("filtroFichaMultimedia");
+
+    if (!contenedor || !filtroMenu || !filtroFicha) {
+        return;
+    }
+
+    const texto = (busqueda?.value || "")
+        .trim()
+        .toLocaleLowerCase("es-AR");
+
+    const idMenu = filtroMenu.value;
+
+    contenedor.innerHTML = "";
+    indiceOpcionMultimedia = -1;
+
+    // Opción para quitar el filtro por ficha.
+    contenedor.appendChild(
+        crearOpcionFiltroMultimedia(
+            "Ficha: Todas",
+            "",
+            !filtroFicha.value,
+            async () => {
+
+                if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+                    window.limpiarFiltroBuscadorGlobal();
+                }
+                filtroFicha.value = "";
+
+                cerrarDesplegablesMultimedia();
+                actualizarTextoSelectoresMultimedia();
+                renderizarOpcionesFichaMultimedia();
+
+                await cargarMultimedia();
+            }
+        )
+    );
+
+    const fichasDisponibles = fichasFiltroMultimedia.filter(ficha => {
+        const coincideMenu =
+            !idMenu || String(ficha.id_menu) === String(idMenu);
+
+        const titulo = String(ficha.titulo || "")
+            .toLocaleLowerCase("es-AR");
+
+        const id = String(ficha.id_ficha);
+
+        const coincideBusqueda =
+            titulo.includes(texto) || id.includes(texto);
+
+        return coincideMenu && coincideBusqueda;
+    });
+
+    if (fichasDisponibles.length === 0) {
+        const mensaje = document.createElement("p");
+        mensaje.textContent = "No se encontraron fichas con multimedia.";
+        mensaje.style.cssText = "padding: 8px 10px; margin: 0; opacity: .7;";
+        contenedor.appendChild(mensaje);
+        return;
+    }
+
+    fichasDisponibles.forEach(ficha => {
+        const id = String(ficha.id_ficha);
+
+        contenedor.appendChild(
+            crearOpcionFiltroMultimedia(
+                `#${ficha.id_ficha} - ${ficha.titulo || "Ficha sin título"}`,
+                id,
+                filtroFicha.value === id,
+                async () => {
+
+                    if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+                        window.limpiarFiltroBuscadorGlobal();
+                    }
+                    filtroFicha.value = id;
+
+                    cerrarDesplegablesMultimedia();
+                    actualizarTextoSelectoresMultimedia();
+                    renderizarOpcionesFichaMultimedia();
+
+                    await cargarMultimedia();
+                }
+            )
+        );
+    });
+}
+
+
+async function inicializarFiltrosMultimedia() {
+    const filtroMenu = obtenerElemento("filtroMenuMultimedia");
+    const filtroFicha = obtenerElemento("filtroFichaMultimedia");
+
+    if (!filtroMenu || !filtroFicha) {
+        return;
+    }
+
+    if (!filtrosMultimediaInicializados) {
+        try {
+            const [respuestaMenus, respuestaFichas, respuestaMultimedia] =
+                await Promise.all([
+                    window.fetchProtegido("/api/menus"),
+                    window.fetchProtegido("/api/fichas"),
+                    window.fetchProtegido("/api/multimedia")
+                ]);
+
+            if (
+                !respuestaMenus.ok ||
+                !respuestaFichas.ok ||
+                !respuestaMultimedia.ok
+            ) {
+                throw new Error("No se pudieron cargar los datos de los filtros.");
+            }
+
+            const [menus, fichas, multimedia] = await Promise.all([
+                respuestaMenus.json(),
+                respuestaFichas.json(),
+                respuestaMultimedia.json()
+            ]);
+
+            if (
+                !Array.isArray(menus) ||
+                !Array.isArray(fichas) ||
+                !Array.isArray(multimedia)
+            ) {
+                throw new Error("La API devolvió datos con un formato inesperado.");
+            }
+
+            multimediaFiltroMultimedia = multimedia;
+
+            const idsFichasConMultimedia = new Set(
+                multimedia.map(item => String(item.id_ficha))
+            );
+
+            fichasFiltroMultimedia = fichas.filter(ficha =>
+                idsFichasConMultimedia.has(String(ficha.id_ficha))
+            );
+
+            const idsMenusConMultimedia = new Set(
+                fichasFiltroMultimedia.map(ficha => String(ficha.id_menu))
+            );
+
+            menusFiltroMultimedia = menus.filter(menu =>
+                idsMenusConMultimedia.has(String(menu.id_menu))
+            );
+
+            filtrosMultimediaInicializados = true;
+
+        } catch (error) {
+            console.error("Error inicializando filtros multimedia:", error);
+            return;
+        }
+    }
+
+    // Si el filtro seleccionado ya no existe, se limpia.
+    if (
+        filtroMenu.value &&
+        !menusFiltroMultimedia.some(
+            menu => String(menu.id_menu) === filtroMenu.value
+        )
+    ) {
+        filtroMenu.value = "";
+    }
+
+    if (
+        filtroFicha.value &&
+        !fichasFiltroMultimedia.some(ficha =>
+            String(ficha.id_ficha) === filtroFicha.value &&
+            (
+                !filtroMenu.value ||
+                String(ficha.id_menu) === filtroMenu.value
+            )
+        )
+    ) {
+        filtroFicha.value = "";
+    }
+
+    actualizarTextoSelectoresMultimedia();
+    renderizarOpcionesMenuMultimedia();
+    renderizarOpcionesFichaMultimedia();
+
+    // Registrar eventos una sola vez.
+    const filtros = obtenerElemento("filtrosMultimedia");
+
+    if (filtros && filtros.dataset.eventosRegistrados !== "true") {
+        obtenerElemento("selectorMenuMultimedia")?.addEventListener(
+            "click",
+            () => alternarDesplegableMultimedia("menu")
+        );
+
+        obtenerElemento("selectorFichaMultimedia")?.addEventListener(
+            "click",
+            () => alternarDesplegableMultimedia("ficha")
+        );
+
+        obtenerElemento("buscarMenuMultimedia")?.addEventListener(
+            "input",
+            () => {
+                indiceOpcionMultimedia = -1;
+                renderizarOpcionesMenuMultimedia();
+            }
+        );
+
+        obtenerElemento("buscarFichaMultimedia")?.addEventListener(
+            "input",
+            () => {
+                indiceOpcionMultimedia = -1;
+                renderizarOpcionesFichaMultimedia();
+            }
+        );
+
+        obtenerElemento("buscarMenuMultimedia")?.addEventListener(
+            "keydown",
+            event => manejarTecladoFiltroMultimedia(event, "menu")
+        );
+
+        obtenerElemento("buscarFichaMultimedia")?.addEventListener(
+            "keydown",
+            event => manejarTecladoFiltroMultimedia(event, "ficha")
+        );
+
+        filtros.dataset.eventosRegistrados = "true";
+    }
+}
+
+
+// Cerrar los desplegables cuando se hace clic fuera de los filtros.
+if (!window.__eventosDesplegablesMultimediaRegistrados) {
+    window.__eventosDesplegablesMultimediaRegistrados = true;
+
+    document.addEventListener("click", event => {
+        const filtros = obtenerElemento("filtrosMultimedia");
+
+        if (filtros && !filtros.contains(event.target)) {
+            cerrarDesplegablesMultimedia();
+        }
+    });
+}
+
+
+/* =========================================================
+   LIMPIAR FILTROS DE MULTIMEDIA
+========================================================= */
+
+
+async function limpiarFiltrosMultimedia() {
+
+    // Quitar también el filtro de la búsqueda global.
+    if (typeof window.limpiarFiltroBuscadorGlobal === "function") {
+        window.limpiarFiltroBuscadorGlobal();
+    }
+
+    const filtroMenu = obtenerElemento("filtroMenuMultimedia");
+    const filtroFicha = obtenerElemento("filtroFichaMultimedia");
+    const buscarMenu = obtenerElemento("buscarMenuMultimedia");
+    const buscarFicha = obtenerElemento("buscarFichaMultimedia");
+
+    // El resto de la función queda exactamente igual.
+
+
+    if (filtroMenu) {
+        filtroMenu.value = "";
+    }
+
+    if (filtroFicha) {
+        filtroFicha.value = "";
+    }
+
+    if (buscarMenu) {
+        buscarMenu.value = "";
+    }
+
+    if (buscarFicha) {
+        buscarFicha.value = "";
+    }
+
+    cerrarDesplegablesMultimedia();
+
+    await inicializarFiltrosMultimedia();
+
+    actualizarTextoSelectoresMultimedia();
+    renderizarOpcionesMenuMultimedia();
+    renderizarOpcionesFichaMultimedia();
+
+    await cargarMultimedia();
+}
+
+/* =========================================================
    CARGAR MULTIMEDIA
 ========================================================= */
 
 async function cargarMultimedia() {
 
+    const idCargaVentana = window.__idCargaVentana;
+
+    console.trace("[DIAGNÓSTICO] Se ejecutó cargarMultimedia()");
+    console.log("[DIAGNÓSTICO] Ventana actual:", window.__ultimaVentanaPanel);
+    console.log("[DIAGNÓSTICO] URL:", window.location.href);
     const panel =
         obtenerElemento("panelFichaMultimedia");
 
@@ -331,9 +797,7 @@ async function cargarMultimedia() {
 
 
             const listaGeneral =
-                obtenerElemento(
-                    "listaMultimedia"
-                );
+                obtenerElemento("listaMultimediaGeneral");
 
             if (listaGeneral) {
                 listaGeneral.innerHTML = "";
@@ -341,6 +805,9 @@ async function cargarMultimedia() {
 
         }
 
+        if (!fichaSeleccionada) {
+            await inicializarFiltrosMultimedia();
+        }
 
         /* =================================================
            CONSULTAR API
@@ -365,14 +832,48 @@ async function cargarMultimedia() {
         }
 
 
-        const multimedia =
-            await respuesta.json();
 
+        const multimedia = await respuesta.json();
+        if (
+            idCargaVentana !== window.__idCargaVentana ||
+            window.__ultimaVentanaPanel !== "multimedia"
+        ) {
+            return;
+        }
 
-        console.log(
-            "Multimedia recibida:",
-            multimedia
-        );
+        console.log("Multimedia recibida:", multimedia);
+
+        let multimediaFiltrada = multimedia;
+
+        // Aplicar filtros únicamente en la vista general.
+        if (!fichaSeleccionada && Array.isArray(multimediaFiltrada)) {
+            const selectMenu = obtenerElemento("filtroMenuMultimedia");
+            const selectFicha = obtenerElemento("filtroFichaMultimedia");
+
+            const idMenuFiltro = selectMenu?.value || "";
+            const idFichaFiltro = selectFicha?.value || "";
+
+            if (idMenuFiltro) {
+                const idsFichasMenu = new Set(
+                    fichasFiltroMultimedia
+                        .filter(ficha =>
+                            String(ficha.id_menu) === String(idMenuFiltro)
+                        )
+                        .map(ficha => String(ficha.id_ficha))
+                );
+
+                multimediaFiltrada = multimediaFiltrada.filter(item =>
+                    idsFichasMenu.has(String(item.id_ficha))
+                );
+            }
+
+            if (idFichaFiltro) {
+                multimediaFiltrada = multimediaFiltrada.filter(item =>
+                    String(item.id_ficha) === String(idFichaFiltro)
+                );
+            }
+        }
+
 
 
         const esConsulta =
@@ -408,9 +909,9 @@ async function cargarMultimedia() {
         ================================================= */
 
         if (
-            !Array.isArray(multimedia) ||
-            multimedia.length === 0
-        ) {
+            !Array.isArray(multimediaFiltrada) ||
+            multimediaFiltrada.length === 0
+        ){
 
             contenedor.innerHTML = `
 
@@ -454,7 +955,7 @@ async function cargarMultimedia() {
            CREAR TARJETAS
         ================================================= */
 
-        multimedia.forEach(item => {
+        multimediaFiltrada.forEach(item => {
 
             const vista =
                 generarVistaMiniatura(item);
@@ -1291,7 +1792,7 @@ try {
     /* Mostrar modal y recuperar borrador */
     modal.style.display = "flex";
 
-    recuperarBorradorMultimedia();
+
 }
 
 
@@ -1371,175 +1872,71 @@ async function cargarFichasMultimedia() {
 
     throw error;
 }
-
 }
-
-
-/* =========================================================
-   GUARDAR MULTIMEDIA
-========================================================= */
 
 async function guardarMultimedia() {
-
-
     if (guardandoMultimedia) {
-    return;
-}
+        return;
+    }
 
-    const archivoInput =
-        obtenerElemento(
-            "multiArchivo"
-        );
+    const archivoInput = obtenerElemento("multiArchivo");
+    const archivo = archivoInput?.files[0];
 
-
-    const archivo =
-        archivoInput?.files[0];
-
-    const claveBorradorMultimedia = obtenerClaveBorradorMultimedia();
-
-    /* =================================================
-       VALIDAR ARCHIVO
-    ================================================= */
-
+    // Validar archivo obligatorio al crear.
     if (!multimediaEditando && !archivo) {
-
         mostrarMensaje(
             "Campo obligatorio",
             "Debe seleccionar un archivo multimedia."
         );
 
-
-        if (archivoInput) {
-            archivoInput.focus();
-        }
-
-
+        archivoInput?.focus();
         return;
-
     }
 
-
-    /* =================================================
-       DETERMINAR FICHA
-    ================================================= */
-
+    // Determinar ficha asociada.
     let idFicha;
 
-
     if (window.multimediaFichaActual) {
-
-        idFicha =
-            fichaSeleccionada;
-
+        idFicha = fichaSeleccionada;
     } else {
-
-        const selectFicha =
-            obtenerElemento(
-                "multiFicha"
-            );
-
-        idFicha =
-            selectFicha?.value;
-
+        idFicha = obtenerElemento("multiFicha")?.value;
     }
 
-
-    /* =================================================
-       VALIDAR FICHA
-    ================================================= */
-
     if (!idFicha) {
-
         mostrarMensaje(
             "Ficha obligatoria",
             "Debe seleccionar una ficha para asociar el archivo."
         );
-
         return;
-
     }
 
+    const formulario = new FormData();
 
-    console.log(
-        "Guardando multimedia:",
-        {
-            idFicha,
-            fichaDesdeSeleccion:
-                window.multimediaFichaActual,
-            archivo: archivo?.name
-        }
-    );
-
-
-    /* =================================================
-       FORM DATA
-    ================================================= */
-
-    const formulario =
-        new FormData();
-
-
-    formulario.append(
-        "id_ficha",
-        idFicha
-    );
-
-
+    formulario.append("id_ficha", idFicha);
     formulario.append(
         "descripcion",
-        obtenerElemento(
-            "multiDescripcion"
-        )?.value || ""
+        obtenerElemento("multiDescripcion")?.value || ""
     );
-
-
     formulario.append(
         "tipo_multi",
-        obtenerElemento(
-            "multiTipo"
-        )?.value || ""
+        obtenerElemento("multiTipo")?.value || ""
     );
-
-
     formulario.append(
         "activo",
-        obtenerElemento(
-            "multiActivo"
-        )?.checked
-            ? 1
-            : 0
+        obtenerElemento("multiActivo")?.checked ? 1 : 0
     );
 
-
     if (archivo) {
-
-        formulario.append(
-            "archivo",
-            archivo
-        );
-
+        formulario.append("archivo", archivo);
     }
 
+    const url = multimediaEditando
+        ? `/api/multimedia/${multimediaEditando}`
+        : "/api/multimedia";
 
-    /* =================================================
-       URL Y MÉTODO
-    ================================================= */
+    const metodo = multimediaEditando ? "PUT" : "POST";
 
-    const url =
-        multimediaEditando
-            ? `/api/multimedia/${multimediaEditando}`
-            : "/api/multimedia";
-
-
-    const metodo =
-        multimediaEditando
-            ? "PUT"
-            : "POST";
-
-
-            // Bloquear nuevos envíos mientras se procesa este
-            // guardado.
-        guardandoMultimedia = true;
+    guardandoMultimedia = true;
 
     const botonGuardar = document.querySelector(
         '#modalMultimediaNuevo button[onclick*="guardarMultimedia"]'
@@ -1550,131 +1947,61 @@ async function guardarMultimedia() {
         botonGuardar.textContent = "Guardando...";
     }
 
-
     try {
+        const respuesta = await window.fetchProtegido(url, {
+            method: metodo,
+            body: formulario
+        });
 
-        const respuesta =
-            await window.fetchProtegido(
-                url,
-                {
-                    method: metodo,
-                    body: formulario
-                }
-            );
-
-
-        /* =================================================
-           RESPUESTA SEGURA
-        ================================================= */
-
-        const texto =
-            await respuesta.text();
-
-
+        const texto = await respuesta.text();
         let resultado = {};
 
-
         try {
-
-            resultado =
-                texto
-                    ? JSON.parse(texto)
-                    : {};
-
+            resultado = texto ? JSON.parse(texto) : {};
         } catch (errorJSON) {
-
-            console.error(
-                "El servidor no devolvió JSON:",
-                texto
-            );
-
-
+            console.error("El servidor no devolvió JSON:", texto);
             throw new Error(
                 `El servidor respondió HTTP ${respuesta.status}`
             );
-
         }
-
-
-        /* =================================================
-           ERROR HTTP
-        ================================================= */
 
         if (!respuesta.ok) {
-
-            console.error(
-                "Error del servidor:",
-                resultado
-            );
-
-
             mostrarMensaje(
                 "Error",
-                resultado.error ||
-                "No se pudo guardar la multimedia."
+                resultado.error || "No se pudo guardar la multimedia."
             );
-
-
             return;
-
         }
 
-
-        /* =================================================
-           GUARDADO CORRECTO
-        ================================================= */
-
-        console.log(
-            "Multimedia guardada correctamente:",
-            resultado
-        );
-
-        if (window.Borradores && claveBorradorMultimedia) {
-    window.Borradores.eliminar(
-        "multimedia",
-        claveBorradorMultimedia
-    );
-}
-
+        console.log("Multimedia guardada correctamente:", resultado);
 
         multimediaEditando = null;
 
-
-        const titulo =
-            document.querySelector(
-                "#modalMultimediaNuevo h3"
-            );
-
+        const titulo = document.querySelector(
+            "#modalMultimediaNuevo h3"
+        );
 
         if (titulo) {
-
-            titulo.textContent =
-                "Nuevo archivo";
-
+            titulo.textContent = "Nuevo archivo";
         }
-
 
         cerrarNuevoMultimedia();
 
+        filtrosMultimediaInicializados = false;
         await cargarMultimedia();
 
         if (resultado.advertencia) {
             mostrarMensaje("Aviso", resultado.advertencia);
         }
-
-        } catch (error) {
-        console.error(
-            "Error guardando multimedia:",
-            error
-        );
+    } catch (error) {
+        console.error("Error guardando multimedia:", error);
 
         mostrarMensaje(
             "Error",
             error.message ||
-            "Ocurrió un error al guardar la multimedia."
+                "Ocurrió un error al guardar la multimedia."
         );
     } finally {
-        // Permitir nuevos intentos de guardado.
         guardandoMultimedia = false;
 
         if (botonGuardar) {
@@ -1764,9 +2091,12 @@ function cerrarMensaje() {
    CERRAR NUEVO / EDITAR MULTIMEDIA
 ========================================================= */
 
+
 function cerrarNuevoMultimedia() {
 
+
     multimediaEditando = null;
+
 
 
     const modal =
@@ -2036,9 +2366,6 @@ try {
             archivo.value = "";
 
         }
-
-        // Recuperar borrador local de la multimedia editada
-        recuperarBorradorMultimedia();
 
 
         /* =================================================
@@ -2476,7 +2803,7 @@ async function nuevoMultimediaDesdeFicha() {
 
     modal.style.display = "flex";
 
-    recuperarBorradorMultimedia();
+
 
 }
 
@@ -2594,6 +2921,7 @@ async function confirmarEliminarMultimedia() {
 
         cerrarEliminarMultimedia();
 
+        filtrosMultimediaInicializados = false;
         await cargarMultimedia();
 
         if (resultado.advertencia) {
@@ -2781,23 +3109,119 @@ document.addEventListener("click", function (event) {
 });
 
 
+function obtenerOpcionesVisiblesMultimedia(tipo) {
+    const idContenedor = tipo === "menu"
+        ? "opcionesMenuMultimedia"
+        : "opcionesFichaMultimedia";
 
-/* =========================================================
-   EVENTOS DE AUTOGUARDADO DE MULTIMEDIA
-========================================================= */
+    const contenedor = obtenerElemento(idContenedor);
 
-if (!window.__autoguardadoMultimediaInicializado) {
-    window.__autoguardadoMultimediaInicializado = true;
+    if (!contenedor) {
+        return [];
+    }
 
-    document.addEventListener("input", (evento) => {
-        if (evento.target.closest("#modalMultimediaNuevo")) {
-            guardarBorradorMultimedia();
-        }
+    return Array.from(
+        contenedor.querySelectorAll('button[role="option"]')
+    ).filter(opcion => opcion.getClientRects().length > 0);
+}
+
+
+function resaltarOpcionMultimedia(tipo, indice) {
+    const opciones = obtenerOpcionesVisiblesMultimedia(tipo);
+
+    if (opciones.length === 0) {
+        indiceOpcionMultimedia = -1;
+        return;
+    }
+
+    // Mantener el índice dentro de los límites.
+    indiceOpcionMultimedia = Math.max(
+        0,
+        Math.min(indice, opciones.length - 1)
+    );
+
+    opciones.forEach((opcion, i) => {
+        const activa = i === indiceOpcionMultimedia;
+
+        opcion.style.background = activa
+            ? "rgba(199, 168, 91, .3)"
+            : (
+                opcion.getAttribute("aria-selected") === "true"
+                    ? "rgba(199, 168, 91, .18)"
+                    : "transparent"
+            );
+
+        opcion.style.outline = activa
+            ? "2px solid rgba(199, 168, 91, .7)"
+            : "none";
     });
 
-    document.addEventListener("change", (evento) => {
-        if (evento.target.closest("#modalMultimediaNuevo")) {
-            guardarBorradorMultimedia();
-        }
+    opciones[indiceOpcionMultimedia].scrollIntoView({
+        block: "nearest"
     });
 }
+
+
+function manejarTecladoFiltroMultimedia(event, tipo) {
+    const opciones = obtenerOpcionesVisiblesMultimedia(tipo);
+
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+
+        resaltarOpcionMultimedia(
+            tipo,
+            indiceOpcionMultimedia < 0
+                ? 0
+                : indiceOpcionMultimedia + 1
+        );
+
+        return;
+    }
+
+    if (event.key === "ArrowUp") {
+        event.preventDefault();
+
+        if (opciones.length === 0) {
+            indiceOpcionMultimedia = -1;
+            return;
+        }
+
+        resaltarOpcionMultimedia(
+            tipo,
+            indiceOpcionMultimedia < 0
+                ? opciones.length - 1
+                : indiceOpcionMultimedia - 1
+        );
+
+        return;
+    }
+
+    if (event.key === "Enter") {
+        event.preventDefault();
+
+        if (
+            indiceOpcionMultimedia >= 0 &&
+            opciones[indiceOpcionMultimedia]
+        ) {
+            opciones[indiceOpcionMultimedia].click();
+            indiceOpcionMultimedia = -1;
+        }
+
+        return;
+    }
+
+    if (event.key === "Escape") {
+        event.preventDefault();
+        cerrarDesplegablesMultimedia();
+        indiceOpcionMultimedia = -1;
+
+        const boton = obtenerElemento(
+            tipo === "menu"
+                ? "selectorMenuMultimedia"
+                : "selectorFichaMultimedia"
+        );
+
+        boton?.focus();
+    }
+}
+

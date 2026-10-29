@@ -112,148 +112,141 @@ function obtenerRutaImagenMenu(ruta) {
 
 
 
-async function cargarMenus(){
+async function cargarMenus() {
+    // Identificar la navegación en la que comenzó esta carga.
+    const idCarga = window.__idCargaVentana;
+    const ventanaInicial = window.__ultimaVentanaPanel;
 
-    try{
+    // No iniciar la carga si Menús no es la ventana activa.
+    if (ventanaInicial !== "menus") {
+        return;
+    }
 
-        const respuesta = await window.fetchProtegido("/api/menus");
+    const esCargaActual = () =>
+        idCarga === window.__idCargaVentana &&
+        window.__ultimaVentanaPanel === "menus";
+
+    try {
+        const respuesta =
+            await window.fetchProtegido("/api/menus");
+
+        // Si el usuario cambió de ventana, descartar la respuesta.
+        if (!esCargaActual()) return;
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar los menús.");
+        }
 
         const menus = await respuesta.json();
 
-        const esConsulta = window.usuarioActual?.rol === "consulta";
-
+        // Comprobar nuevamente después del procesamiento asíncrono.
+        if (!esCargaActual()) return;
 
         const contenedor = document.getElementById("listaMenus");
 
-
-        if(!contenedor){
-
-            console.error("No existe listaMenus");
-
+        // Si la ventana cambió mientras se procesaba la respuesta,
+        // descartar esta carga obsoleta.
+        if (!esCargaActual()) {
             return;
         }
 
+        if (!contenedor) {
+            console.error(
+                "[MENÚS] La navegación sigue siendo Menús, pero no existe #listaMenus.",
+                {
+                    idCarga,
+                    ventanaActual: window.__ultimaVentanaPanel,
+                    url: window.location.href
+                }
+            );
+            return;
+        }
 
-        contenedor.innerHTML="";
+        const esConsulta =
+            window.usuarioActual?.rol === "consulta";
 
+        contenedor.innerHTML = "";
 
-
-        menus.forEach(menu=>{
-
+        menus.forEach(menu => {
             const fechaMenu = obtenerFechaMenu(menu);
 
-
-            console.log(menu);
-
-
-
             contenedor.innerHTML += `
-
-
-            <article class="menu-tarjeta ${menu.visible == 0 ? "menu-desactivado" : ""}">
-
-
-                <div class="menu-imagen">
-
-                    <img
-                    src="${obtenerRutaImagenMenu(menu.imagen)}"
-                    onerror="this.onerror=null;this.src='/img/no-image.png'"
-                    />
-
-                </div>
-
-
-
-                <div class="menu-info">
-
-                    <span class="campo-titulo-menu">
-                        TÍTULO
-                    </span>
-                    <h3>
-                        ${menu.nombre}
-                    </h3>
-
-
-
-                    <p>
-                        ${(menu.descripcion || "Sin descripcion").replace(/\n/g," ")}
-                    </p>
-
-                    <div class="datos-menu">
-
-                        <small>
-                            <i data-lucide="layers" aria-hidden="true"></i>
-                            Plantilla: ${menu.nombre_plantilla || "Sin nombre"}
-                            - #${menu.id_plantilla ?? "Sin asignar"}
-                        </small>
-
-                        <small>
-                            <i data-lucide="calendar" aria-hidden="true"></i>
-                            ${fechaMenu.etiqueta}: ${fechaMenu.fecha}
-                        </small>
-
+                <article class="menu-tarjeta ${
+                    menu.visible == 0 ? "menu-desactivado" : ""
+                }">
+                    <div class="menu-imagen">
+                        <img
+                            src="${obtenerRutaImagenMenu(menu.imagen)}"
+                            onerror="this.onerror=null;this.src='/img/no-image.png'"
+                        />
                     </div>
 
+                    <div class="menu-info">
+                        <span class="campo-titulo-menu">TÍTULO</span>
+                        <h3>${menu.nombre}</h3>
 
-                    <div class="menu-acciones">
+                        <p>
+                            ${(menu.descripcion || "Sin descripcion")
+                                .replace(/\n/g, " ")}
+                        </p>
 
-                        <button
-                            class="menu-btn-vista"
-                            onclick="vistaPreviaMenu(${menu.id_menu})">
-                            Vista previa
-                        </button>
+                        <div class="datos-menu">
+                            <small>
+                                <i data-lucide="layers" aria-hidden="true"></i>
+                                Plantilla: ${menu.nombre_plantilla || "Sin nombre"}
+                                - #${menu.id_plantilla ?? "Sin asignar"}
+                            </small>
 
-                        <button
-                            class="menu-btn-ver"
-                            onclick='verMenu(${menu.id_menu}, ${JSON.stringify(menu.nombre)})'>
+                            <small>
+                                <i data-lucide="calendar" aria-hidden="true"></i>
+                                ${fechaMenu.etiqueta}: ${fechaMenu.fecha}
+                            </small>
+                        </div>
 
-                            Ver Fichas
-
-                        </button>
-
-                        ${!esConsulta ? `
+                        <div class="menu-acciones">
                             <button
-                                class="menu-btn-editar"
-                                onclick="editarMenu(${menu.id_menu})">
-                                Editar
+                                class="menu-btn-vista"
+                                onclick="vistaPreviaMenu(${menu.id_menu})">
+                                Vista previa
                             </button>
 
                             <button
-                                class="menu-btn-eliminar"
-                                onclick="abrirEliminarMenu(${menu.id_menu})">
-                                Eliminar
+                                class="menu-btn-ver"
+                                onclick='verMenu(${menu.id_menu}, ${JSON.stringify(menu.nombre)})'>
+                                Ver Fichas
                             </button>
-                        ` : ""}
 
+                            ${!esConsulta ? `
+                                <button
+                                    class="menu-btn-editar"
+                                    onclick="editarMenu(${menu.id_menu})">
+                                    Editar
+                                </button>
+
+                                <button
+                                    class="menu-btn-eliminar"
+                                    onclick="abrirEliminarMenu(${menu.id_menu})">
+                                    Eliminar
+                                </button>
+                            ` : ""}
+                        </div>
                     </div>
-
-
-                </div>
-
-
-            </article>
-
-
+                </article>
             `;
-
-
         });
+
+        if (!esCargaActual()) return;
 
         if (window.lucide) {
             window.lucide.createIcons();
         }
 
-    }catch(error){
+    } catch (error) {
+        // No informar como error de la ventana activa una carga obsoleta.
+        if (!esCargaActual()) return;
 
-
-        console.error(
-            "Error cargando menus:",
-            error
-        );
-
-
+        console.error("Error cargando menús:", error);
     }
-
 }
 
 
@@ -745,20 +738,32 @@ async function confirmarEliminarMenu(){
             method:"DELETE"
         });
 
-        const resultado =
-        await respuesta.json();
+        const resultado = await respuesta.json();
 
-        if(!respuesta.ok){
+        console.log("[ELIMINAR MENÚ] Estado HTTP:", respuesta.status);
+        console.log(
+            "[ELIMINAR MENÚ] Respuesta completa:",
+            JSON.stringify(resultado, null, 2)
+        );
+        console.log(
+            "[ELIMINAR MENÚ] Tipo de respuesta:",
+            typeof resultado
+        );
+        console.log(
+            "[ELIMINAR MENÚ] Propiedades:",
+            Object.keys(resultado || {})
+        );
 
+        if (!respuesta.ok) {
             cerrarConfirmacion();
 
-            mostrarMensaje(
-                "No se pudo eliminar",
-                resultado.error
-            );
+            if (Array.isArray(resultado.fichas) && resultado.fichas.length > 0) {
+                mostrarBloqueoEliminarMenu(resultado);
+            } else {
+                mostrarMensaje("No se pudo eliminar", resultado.error);
+            }
 
             return;
-
         }
 
         cerrarConfirmacion();
@@ -792,10 +797,57 @@ function mostrarMensaje(titulo, texto) {
 
     tituloElemento.textContent = titulo;
     textoElemento.textContent = texto;
+
+    const listaFichas = modal.querySelector("#listaFichasBloqueo");
+    const accionesFichas = modal.querySelector("#accionesFichasBloqueo");
+
+    if (listaFichas) {
+        listaFichas.replaceChildren();
+        listaFichas.style.display = "none";
+    }
+
+    if (accionesFichas) {
+        accionesFichas.style.display = "none";
+    }
+    modal.style.display = "flex";
+}
+function mostrarBloqueoEliminarMenu(resultado) {
+    const modal = document.getElementById("modalMensaje");
+    const titulo = modal?.querySelector("#tituloMensaje");
+    const texto = modal?.querySelector("#textoMensaje");
+    const lista = document.getElementById("listaFichasBloqueo");
+    const acciones = document.getElementById("accionesFichasBloqueo");
+
+    if (!modal || !titulo || !texto || !lista || !acciones) {
+        mostrarMensaje("No se pudo eliminar", resultado.error);
+        return;
+    }
+
+    // Guardar el menú para poder acceder a sus fichas.
+    window.menuBloqueadoParaFichas = resultado.menu;
+
+    titulo.textContent = "No se puede eliminar el menú";
+    texto.textContent =
+        "Este menú tiene fichas asociadas. Para eliminarlo, primero debe resolver esa asociación.";
+
+    // No mostrar los títulos ni los nombres de las fichas.
+    lista.replaceChildren();
+    lista.style.display = "none";
+
+    // Mostrar únicamente las acciones disponibles.
+    acciones.style.display = "flex";
+
     modal.style.display = "flex";
 }
 
+function irAFichasMenuBloqueado() {
+    const menu = window.menuBloqueadoParaFichas;
 
+    if (!menu) return;
+
+    cerrarMensaje();
+    verMenu(menu.id_menu, menu.nombre);
+}
 
 function cerrarMensaje(){
 

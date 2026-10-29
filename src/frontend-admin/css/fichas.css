@@ -3706,3 +3706,181 @@ article.ficha-tarjeta.ficha-desactivada:hover {
 .relacion-vista-imagen img {
     filter: grayscale(100%);
 }
+
+
+
+/* =========================================================
+   MODAL MENSAJE / AVISO DE FICHAS
+   Estilo coherente con el modal de mensajes de MENÚS
+========================================================= */
+
+.ventana-fichas #modalMensajeFicha .modal-contenido {
+    position: relative;
+    box-sizing: border-box;
+
+    width: 430px;
+    max-width: 95%;
+    max-height: 85vh;
+
+    padding: 0;
+    overflow: hidden;
+    overflow-y: auto;
+
+    background: linear-gradient(
+        rgba(247, 243, 230, .99),
+        rgba(238, 233, 215, .99)
+    );
+
+    border: 1px solid #8b9aaa;
+    border-radius: 5px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, .35),
+        0 4px 10px rgba(0, 0, 0, .18);
+
+    animation: expedienteModalFicha .25s ease;
+}
+
+/* Cabecera */
+.ventana-fichas #modalMensajeFicha .modal-contenido::before {
+    content: "EXPEDIENTE · AVISO";
+
+    display: block;
+    box-sizing: border-box;
+
+    padding: 11px 28px;
+
+    background: linear-gradient(
+        90deg,
+        #244b6d 0%,
+        #2d587b 70%,
+        #315e81 100%
+    );
+
+    border-bottom: 4px solid #c5a46d;
+
+    color: #eef3f7;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Título */
+.ventana-fichas #modalMensajeFicha #tituloMensaje {
+    margin: 0;
+    padding: 22px 65px 12px 28px;
+
+    color: #294f73;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .5px;
+
+    border-bottom: 1px solid #c7c0ad;
+}
+
+.ventana-fichas #modalMensajeFicha #tituloMensaje::after {
+    content: "";
+    display: block;
+
+    width: 45px;
+    height: 3px;
+    margin-top: 9px;
+
+    background: #c5a46d;
+}
+
+/* Mensaje */
+.ventana-fichas #modalMensajeFicha #textoMensaje {
+    margin: 0;
+    padding: 20px 28px 10px;
+
+    color: #4b5660;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Lista de archivos multimedia, si corresponde */
+.ventana-fichas #modalMensajeFicha #listaMultimediaBloqueo {
+    margin: 12px 28px;
+    padding-left: 24px;
+
+    color: #4b5660;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Botones */
+.ventana-fichas #modalMensajeFicha .acciones-modal {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin: 12px 28px 25px;
+    padding-top: 17px;
+
+    border-top: 1px solid #c8c2b2;
+}
+
+.ventana-fichas #modalMensajeFicha .acciones-modal button {
+    min-width: 110px;
+    padding: 10px 18px;
+
+    border: 1px solid #294d6a;
+    border-radius: 4px;
+
+    background: #315b7d;
+    color: white;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.ventana-fichas #modalMensajeFicha .acciones-modal button:hover {
+    background: #274c69;
+    transform: translateY(-1px);
+}
+
+/* Botón para cerrar */
+.ventana-fichas #modalMensajeFicha .cerrar {
+    position: absolute;
+    top: 47px;
+    right: 18px;
+    z-index: 20;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, .45);
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, .08);
+    color: white;
+
+    font-size: 15px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.ventana-fichas #modalMensajeFicha .cerrar:hover {
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .8);
+    transform: none;
+}

@@ -14,6 +14,14 @@ const iniciosConexion = new WeakMap();
 pool.on("connect", (cliente) => {
     iniciosConexion.set(cliente, performance.now());
 
+    // Captura errores de conexión incluso mientras el cliente está en uso.
+    cliente.on("error", (error) => {
+        console.error(
+            "[POOL][CLIENTE] Error de conexión PostgreSQL:",
+            error.message
+        );
+    });
+
     console.log(
         `[POOL] Conexión establecida. ` +
         `total=${pool.totalCount}; ` +
@@ -54,6 +62,39 @@ setInterval(() => {
     );
 }, 2000).unref();
 
+
+const conectarCliente = async () => {
+    const cliente = await pool.connect();
+    let errorConexion = null;
+    let liberado = false;
+
+    const manejarError = (error) => {
+        errorConexion ??= error;
+
+        console.error(
+            "[DB] Error en cliente PostgreSQL:",
+            error.message
+        );
+    };
+
+    cliente.on("error", manejarError);
+
+    return {
+        cliente,
+
+        liberar() {
+            if (liberado) return;
+            liberado = true;
+
+            // Si la conexión falló, el pool debe descartar este cliente.
+            cliente.release(errorConexion || undefined);
+
+            // El pool vuelve a administrar los errores cuando queda inactivo.
+            cliente.removeListener("error", manejarError);
+        }
+    };
+};
+
 const contextoAsync = new AsyncLocalStorage();
 const umbralConsultaLentaMs = Number.parseInt(process.env.DB_LOG_SLOW_QUERIES_MS || "0", 10);
 
@@ -92,36 +133,36 @@ const ejecutar = (consulta, valores = [], contexto = contextoAsync.getStore()) =
     const inicioSolicitado = process.hrtime.bigint();
 
 
+
 const ejecutarEnPool = async () => {
     const inicioEjecucion = process.hrtime.bigint();
     let inicioConsulta;
+    let conexion;
 
     try {
-        const cliente = await pool.connect();
+        conexion = await conectarCliente();
+        const { cliente } = conexion;
         const inicioQuery = process.hrtime.bigint();
 
-        try {
-            inicioConsulta = inicioQuery;
-            const resultado = await cliente.query(sql, valores);
-            const fin = process.hrtime.bigint();
+        inicioConsulta = inicioQuery;
 
-            if (umbralConsultaLentaMs > 0) {
-                const esperaMs = Number(inicioQuery - inicioEjecucion) / 1e6;
-                const consultaMs = Number(fin - inicioQuery) / 1e6;
+        const resultado = await cliente.query(sql, valores);
+        const fin = process.hrtime.bigint();
 
-                if (esperaMs + consultaMs >= umbralConsultaLentaMs) {
-                    console.warn(
-                        `[db][diagnóstico] espera_conexion=${esperaMs.toFixed(1)} ms; ` +
-                        `consulta=${consultaMs.toFixed(1)} ms; ` +
-                        `${resumenConsulta(sql)}; filas=${resultado.rowCount}`
-                    );
-                }
+        if (umbralConsultaLentaMs > 0) {
+            const esperaMs = Number(inicioQuery - inicioEjecucion) / 1e6;
+            const consultaMs = Number(fin - inicioQuery) / 1e6;
+
+            if (esperaMs + consultaMs >= umbralConsultaLentaMs) {
+                console.warn(
+                    `[db][diagnóstico] espera_conexion=${esperaMs.toFixed(1)} ms; ` +
+                    `consulta=${consultaMs.toFixed(1)} ms; ` +
+                    `${resumenConsulta(sql)}; filas=${resultado.rowCount}`
+                );
             }
-
-            return resultado;
-        } finally {
-            cliente.release();
         }
+
+        return resultado;
     } catch (error) {
         if (umbralConsultaLentaMs > 0) {
             console.warn(
@@ -131,8 +172,13 @@ const ejecutarEnPool = async () => {
         }
 
         throw error;
+    } finally {
+        if (conexion) {
+            conexion.liberar();
+        }
     }
 };
+
 
 
     if (!contexto) return ejecutarEnPool();
@@ -290,7 +336,8 @@ const db = {
             throw new TypeError("La transacción requiere una función.");
         }
 
-        const cliente = await pool.connect();
+        const conexion = await conectarCliente();
+        const { cliente } = conexion;
 
         try {
             await cliente.query("BEGIN");
@@ -300,6 +347,7 @@ const db = {
 
             const resultado = await trabajo(consultar);
             await cliente.query("COMMIT");
+
             return resultado;
         } catch (error) {
             try {
@@ -307,25 +355,30 @@ const db = {
             } catch (errorRollback) {
                 registrarErrorSinCallback("rollback", errorRollback);
             }
+
             throw error;
         } finally {
-            cliente.release();
+            conexion.liberar();
         }
     },
+
+
 
     async preparar() {
         await Promise.all(
             Array.from({ length: 3 }, async () => {
-                const cliente = await pool.connect();
+                const conexion = await conectarCliente();
+                const { cliente } = conexion;
 
                 try {
                     await cliente.query("SELECT 1");
                 } finally {
-                    cliente.release();
+                    conexion.liberar();
                 }
             })
         );
     },
+
 
     close(callback) {
         pool.end().then(

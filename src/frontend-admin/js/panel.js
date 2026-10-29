@@ -233,177 +233,214 @@ function cargarScriptVentana(nombre){
 }
 
 
+function descartarTodosLosBorradores() {
+    if (window.Borradores) {
+        const borradores = window.Borradores.obtenerTodos();
+
+        borradores.forEach(borrador => {
+            window.Borradores.eliminar(
+                borrador.tipo,
+                borrador.idRegistro
+            );
+        });
+    }
+
+    // Olvidar el último menú usado para crear fichas.
+    // Se ejecuta al cambiar de ventana.
+    window.__menuCreacionFicha = null;
+
+    // Limpiar el formulario de Fichas para evitar
+    // que un autoguardado pendiente vuelva a crear el borrador.
+    const modal = document.getElementById("modalFicha");
+
+    if (modal) {
+        modal.style.display = "none";
+        modal.dataset.idFicha = "";
+        modal.dataset.idMenu = "";
+        delete modal.dataset.origenBorrador;
+    }
+}
+
+
+
 // ==========================================================
 // CARGAR VENTANAS
 // ==========================================================
 
-async function cargarVentana(nombre, mantenerMenu=false){
 
-    console.log(
-        "======================================"
-    );
+async function cargarVentana(nombre, mantenerMenu = false) {
+    // Solo la navegación más reciente puede continuar.
+    const idCarga = (window.__idCargaVentana || 0) + 1;
+    window.__idCargaVentana = idCarga;
 
-    console.log(
-        "CARGAR VENTANA:",
+    const esCargaActual = () =>
+        window.__idCargaVentana === idCarga;
+
+    console.log("[NAVEGACIÓN]", {
         nombre,
-        "mantenerMenu:",
         mantenerMenu,
-        "menuSeleccionado ANTES:",
-        menuSeleccionado
-    );
+        idCarga
+    });
+
+    const ventanaActual =
+        nombre === "fichas" && mantenerMenu
+            ? "fichas-contextual"
+            : nombre;
+
+    const ventanaAnterior = window.__ultimaVentanaPanel;
+
+    if (
+        ventanaAnterior &&
+        ventanaAnterior !== ventanaActual
+    ) {
+        descartarTodosLosBorradores();
+
+        if (
+            ventanaAnterior === "fichas" ||
+            ventanaAnterior === "fichas-contextual"
+        ) {
+            menuSeleccionado = null;
+            nombreMenuSeleccionado = "";
+        }
+    }
 
     try {
+        const respuesta = await fetch(`ventanas/${nombre}.html`);
 
-        const respuesta =
-        await fetch(
-            `ventanas/${nombre}.html`
-        );
+        if (!esCargaActual()) return;
 
         if (!respuesta.ok) {
-
             throw new Error(
                 "No se encontró la ventana: " + nombre
             );
-
         }
 
-        const html =
-        await respuesta.text();
+        const html = await respuesta.text();
 
-        console.log("HTML CARGADO:", nombre);
-        console.log(html);
+        if (!esCargaActual()) return;
 
         contenedorPanel.innerHTML = html;
 
+        window.__ultimaVentanaPanel = ventanaActual;
+
         tituloVentana.textContent =
-            nombre.charAt(0).toUpperCase() +
-            nombre.slice(1);
+            nombre.charAt(0).toUpperCase() + nombre.slice(1);
 
-        console.log(
-            "Ventana cargada:",
-            nombre
-        );
+        console.log("Ventana cargada:", nombre);
 
-        // Cargar el script de la ventana
         await cargarScriptVentana(nombre);
 
-        const aplicarPermisosConsulta = ()=>{
+        // Otra navegación pudo empezar mientras cargábamos el script.
+        if (!esCargaActual()) return;
 
-            if(
+        const aplicarPermisosConsulta = () => {
+            if (
                 window.Permisos &&
                 window.usuarioActual?.rol === "consulta"
-            ){
-
-                Permisos.ocultarBotonesEdicion();
-
+            ) {
+                window.Permisos.ocultarBotonesEdicion();
             }
-
         };
-
-        // Ejecutar función correspondiente
 
         if (nombre === "menus") {
             await cargarMenus();
+            if (!esCargaActual()) return;
+
             await cargarSelectPlantillas();
+            if (!esCargaActual()) return;
+
             aplicarPermisosConsulta();
         }
 
-
-
         if (nombre === "fichas") {
-            console.log("ENTRANDO A FICHAS", {
-                mantenerMenu,
-                menuSeleccionado
-            });
-
-            // Si se entra desde el panel general, quitar el filtro.
             if (!mantenerMenu) {
                 menuSeleccionado = null;
                 nombreMenuSeleccionado = "";
             }
 
-            cargarFichas();
+            await cargarFichas();
+
+            if (!esCargaActual()) return;
+
             aplicarPermisosConsulta();
         }
 
-
-
-        if(nombre === "multimedia"){
-
-            // Si entra desde el menú lateral,
-            // mostrar todas las multimedias.
-            // Si entra desde una ficha,
-            // conservar la ficha seleccionada.
-
-            if(!mantenerMenu){
-
+        if (nombre === "multimedia") {
+            if (!mantenerMenu) {
                 fichaSeleccionada = null;
                 nombreFichaSeleccionada = "";
-
             }
 
-            cargarMultimedia();
+            // Esperar la carga y evitar que quede ejecutándose
+            // después de abandonar esta ventana.
+            await cargarMultimedia();
+
+            if (!esCargaActual()) return;
 
             aplicarPermisosConsulta();
-
         }
 
-        if(nombre === "etiquetas"){
+        if (nombre === "etiquetas") {
             iniciarEtiquetas();
+
+            if (!esCargaActual()) return;
+
             aplicarPermisosConsulta();
         }
 
-        if(nombre === "plantillas"){
-
+        if (nombre === "plantillas") {
             iniciarPlantillas();
 
-            cargarPlantillas();
+            if (!esCargaActual()) return;
+
+            await cargarPlantillas();
+
+            if (!esCargaActual()) return;
 
             aplicarPermisosConsulta();
-
         }
 
-        if(nombre === "dashboard"){
-
+        if (nombre === "dashboard") {
             await cargarDashboard();
 
-            aplicarPermisosConsulta();
+            if (!esCargaActual()) return;
 
+            aplicarPermisosConsulta();
         }
 
-        if(nombre === "usuarios"){
-
-            if(typeof iniciarUsuarios === "function"){
+        if (nombre === "usuarios") {
+            if (typeof iniciarUsuarios === "function") {
                 iniciarUsuarios();
             }
 
-            cargarUsuarios();
+            if (!esCargaActual()) return;
+
+            await cargarUsuarios();
+
+            if (!esCargaActual()) return;
 
             aplicarPermisosConsulta();
-
         }
 
-        if(nombre === "configuracion"){
-
+        if (nombre === "configuracion") {
             iniciarConfiguracion();
-
         }
+
+        if (!esCargaActual()) return;
 
         actualizarIconos();
         activarAccesosRapidos();
 
-    }
+    } catch (error) {
+        // No mostrar errores de navegaciones que ya quedaron obsoletas.
+        if (!esCargaActual()) return;
 
-    catch(error){
-
-        console.error(error);
+        console.error("Error cargando ventana:", error);
 
         contenedorPanel.innerHTML = `
             <h2>Error cargando ventana</h2>
         `;
-
     }
-
 }
 
 
@@ -459,12 +496,44 @@ async function iniciarPanel(){
 
     actualizarFecha();
 
-    await cargarUsuarioActual();
+    const usuarioCargado = await cargarUsuarioActual();
+
+    if (!usuarioCargado) {
+        if (window.authRedirigiendoLogin) {
+            return;
+        }
+
+        const errorAuth = window.errorInicializacionAuth;
+        const estado = errorAuth?.status;
+
+        if (estado === 403) {
+            window.alert(
+                errorAuth?.mensaje ||
+                "Tu cuenta no tiene permiso para acceder al panel."
+            );
+            return;
+        }
+
+        const reintentar = window.confirm(
+            (errorAuth?.mensaje ||
+                "No se pudo verificar tu sesión por un problema de conexión.") +
+            "\n¿Querés volver a intentar?"
+        );
+
+        if (reintentar) {
+            window.location.reload();
+        }
+
+        return;
+    }
 
     await cargarScriptVentana("borradores");
 
     await cargarScriptVentana("configuracion");
-    aplicarConfiguracionAdminGuardada();
+
+    if (window.usuarioActual?.rol === "admin") {
+        await aplicarConfiguracionAdminGuardada();
+    }
 
     activarNavegacion();
 
@@ -592,116 +661,48 @@ window.addEventListener("click", function(e){
 // CARGAR USUARIO LOGUEADO
 // ==========================================================
 
-async function cargarUsuarioActual(){
-
-    try{
-
-
+async function cargarUsuarioActual() {
+    try {
         console.log("Cargando usuario actual...");
 
+        // Reutilizar el perfil verificado durante la inicializacion.
+        const usuario = await window.supabaseAuthReady;
 
-        const respuesta =
-        await window.fetchProtegido(
-            "/api/usuarios/me"
-        );
-
-
-
-        const usuario =
-        await respuesta.json();
-
-
-
-        if(!respuesta.ok){
-
-
-            mostrarMensaje(
-
-                "Acceso denegado",
-
-                usuario.error
-
-            );
-
-
+        if (!usuario || usuario.__errorInicializacionAuth) {
             return false;
-
         }
-
-
-
-        // Guardar usuario globalmente
 
         window.usuarioActual = usuario;
 
+        console.log("USUARIO SQL:", usuario);
+        console.log("ROL:", usuario.rol);
 
-
-        console.log(
-            "USUARIO SQL:",
-            usuario
-        );
-
-
-        console.log(
-            "ROL:",
-            usuario.rol
-        );
-
-
-
-        // Aplicar permisos
-
-        if(window.Permisos){
-
-            Permisos.ocultarSecciones();
-
+        // Aplicar permisos sin modificar la logica existente.
+        if (window.Permisos) {
+            window.Permisos.ocultarSecciones();
         }
 
+        console.log("Permisos aplicados");
 
+        const nombre = document.getElementById("nombreUsuario");
 
-        console.log(
-            "Permisos aplicados"
-        );
-
-
-
-        // Mostrar nombre arriba
-
-        const nombre =
-        document.getElementById(
-            "nombreUsuario"
-        );
-
-
-        if(nombre){
-
-            nombre.textContent =
-            usuario.nombre;
-
+        if (nombre) {
+            nombre.textContent = usuario.nombre;
         }
-
-
 
         return true;
 
+    } catch (error) {
+        console.error("ERROR USUARIO:", error);
 
-
-    }catch(error){
-
-
-        console.error(
-            "ERROR USUARIO:",
-            error
-        );
-
+        window.errorInicializacionAuth = window.errorInicializacionAuth || {
+            status: null,
+            mensaje: "No se pudo verificar la sesion. Intenta nuevamente."
+        };
 
         return false;
-
-
     }
-
 }
-
 function abrirModalCerrarSesion(){
 
     document.getElementById(
@@ -744,47 +745,41 @@ async function confirmarCerrarSesion() {
 
 
 
-function activarAccesosRapidos(){
-
-    const accesos =
-        document.querySelectorAll(
-            ".acceso-dashboard"
-        );
+function activarAccesosRapidos() {
+    const accesos = document.querySelectorAll(
+        ".acceso-dashboard"
+    );
 
     accesos.forEach(acceso => {
+        // Evitar registrar el mismo evento dos veces
+        // sobre un mismo elemento.
+        if (acceso.dataset.navegacionRegistrada === "true") {
+            return;
+        }
+
+        acceso.dataset.navegacionRegistrada = "true";
 
         acceso.addEventListener("click", () => {
+            const ventana = acceso.dataset.acceso;
 
-            const ventana =
-                acceso.dataset.acceso;
+            if (!ventana) return;
 
-            if(!ventana){
-                return;
-            }
+            const botonSidebar = document.querySelector(
+                `.sidebar .item[data-ventana="${ventana}"]`
+            );
 
-            // Marcar como activo el botón correspondiente
-            const botonSidebar =
-                document.querySelector(
-                    `.sidebar .item[data-ventana="${ventana}"]`
-                );
-
-            document
-                .querySelectorAll(".sidebar .item")
+            document.querySelectorAll(".sidebar .item")
                 .forEach(item => {
                     item.classList.remove("activo");
                 });
 
-            if(botonSidebar){
+            if (botonSidebar) {
                 botonSidebar.classList.add("activo");
             }
 
-            // Cargar la ventana
             cargarVentana(ventana);
-
         });
-
     });
-
 }
 
 iniciarPanel();

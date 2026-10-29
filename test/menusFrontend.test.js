@@ -92,7 +92,7 @@ function prepararPrueba({
     };
 
     const inicioHelper = codigo.indexOf(
-        "function obtenerRutaImagenMenu(ruta)"
+        "function obtenerFechaMenu(menu)"
     );
 
     const finHelper = codigo.indexOf(
@@ -122,7 +122,7 @@ function prepararPrueba({
         finPreview
     );
 
-    assert.notEqual(inicioHelper, -1, "Falta obtenerRutaImagenMenu");
+    assert.notEqual(inicioHelper, -1, "Falta obtenerFechaMenu");
     assert.notEqual(finHelper, -1, "Falta cargarMenus");
     assert.notEqual(finLista, -1, "No se encontró el final de cargarMenus");
     assert.notEqual(inicioPreview, -1, "Falta vistaPreviaMenu");
@@ -140,6 +140,8 @@ function prepararPrueba({
         document,
         window: {
             usuarioActual: { rol },
+            __idCargaVentana: 1,
+            __ultimaVentanaPanel: "menus",
             fetchProtegido
         },
         console: {

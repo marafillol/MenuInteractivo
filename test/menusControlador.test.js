@@ -59,6 +59,16 @@ const MenuMock = {
     }
 };
 
+const FichaMock = {
+    async obtenerFichasPorMenu() {
+        if (state.error) throw state.error;
+
+        return state.cantidadFichas > 0
+            ? [{ id_ficha: 7, titulo: "Ficha de prueba" }]
+            : [];
+    }
+};
+
 const almacenamientoMock = {
     async subirArchivo(archivo, carpeta) {
         state.subidas.push({ archivo, carpeta });
@@ -73,6 +83,7 @@ const almacenamientoMock = {
 Module._load = function (request, parent, isMain) {
     if (parent?.filename === controllerPath) {
         if (request === "../modelos/menu") return MenuMock;
+        if (request === "../modelos/ficha") return FichaMock;
 
         if (request === "../config/almacenamientoSupabase") {
             return almacenamientoMock;
@@ -363,7 +374,7 @@ test("eliminar menú rechaza la operación si tiene fichas", async () => {
 
     await controller.eliminarMenu({ params: { id: "3" } }, res);
 
-    assert.equal(res.statusCode, 409);
+    assert.equal(res.statusCode, 400);
     assert.equal(state.idEliminado, null);
 });
 

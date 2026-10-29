@@ -17,6 +17,16 @@ let etiquetasExplorador = [];
 let menuActivoExplorador = null;
 let solicitudIndice = 0;
 
+// =======================================================
+// ACTUALIZACIÓN AUTOMÁTICA DE FICHAS
+// =======================================================
+
+const INTERVALO_ACTUALIZACION_FICHAS = 15000;
+
+let temporizadorActualizacionFichas = null;
+let actualizacionFichasEnCurso = false;
+let etiquetaActivaExplorador = null;
+
 // Cuántas tarjetas entran en la primera pantalla. Sus fotos se cargan
 // al instante (eager) y la vista espera a que estén listas; el resto
 // queda en "lazy" para no bajar cientos de imágenes de golpe.
@@ -448,6 +458,16 @@ async function inicializarExplorador() {
 
     renderizarIndice();
 
+    // Evitar duplicar temporizadores al reinicializar la vista.
+    if (temporizadorActualizacionFichas !== null) {
+        clearInterval(temporizadorActualizacionFichas);
+    }
+
+    temporizadorActualizacionFichas = setInterval(
+        actualizarFichasExplorador,
+        INTERVALO_ACTUALIZACION_FICHAS
+    );
+
 
 
 }
@@ -610,6 +630,75 @@ async function cargarFichasExplorador() {
 }
 
 // =======================================================
+// ACTUALIZAR FICHAS SIN PERDER EL FILTRO ACTIVO
+// =======================================================
+
+async function actualizarFichasExplorador() {
+    if (
+        actualizacionFichasEnCurso ||
+        !document.getElementById("contenedorFichas")
+    ) {
+        return;
+    }
+
+    actualizacionFichasEnCurso = true;
+
+    try {
+        const respuesta = await fetch("/api/public/fichas", {
+            cache: "no-store"
+        });
+
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+
+        const datos = await respuesta.json();
+
+        if (!Array.isArray(datos)) {
+            throw new Error("La API no devolvió un array de fichas.");
+        }
+
+        const fichasActualizadas = datos.map(normalizarFicha);
+
+        const firmaAnterior = JSON.stringify(fichasExplorador);
+        const firmaNueva = JSON.stringify(fichasActualizadas);
+
+        if (firmaAnterior === firmaNueva) {
+            return;
+        }
+
+        fichasExplorador = fichasActualizadas;
+
+        console.log(
+            "[explorador] Se detectaron cambios en las fichas."
+        );
+
+        if (etiquetaActivaExplorador !== null) {
+            await mostrarFichasPorEtiqueta(etiquetaActivaExplorador);
+        } else {
+            const buscador = document.getElementById("buscador");
+            const termino = buscador?.value || "";
+
+            if (termino.trim()) {
+                filtrarFichasExplorador(termino);
+            } else {
+                mostrarTodasLasFichas();
+            }
+        }
+
+        actualizarMensajeCentral();
+
+    } catch (error) {
+        console.warn(
+            "[explorador] No se pudieron actualizar las fichas:",
+            error
+        );
+    } finally {
+        actualizacionFichasEnCurso = false;
+    }
+}
+
+// =======================================================
 // NORMALIZAR FICHA
 // =======================================================
 
@@ -690,6 +779,7 @@ function mostrarTodasLasFichas() {
 // =======================================================
 
 function filtrarFichasExplorador(texto) {
+    etiquetaActivaExplorador = null;
     const termino = normalizarTexto(texto);
     const fichasBase = obtenerFichasDelMenuActivo();
 
@@ -1271,6 +1361,7 @@ async function renderizarIndice() {
         evento.stopPropagation();
 
         menuActivoExplorador = null;
+        etiquetaActivaExplorador = null;
 
         const buscador = document.getElementById("buscador");
         if (buscador) {
@@ -1498,6 +1589,7 @@ function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
 function mostrarFichasPorMenu(idMenu) {
 
     menuActivoExplorador = idMenu;
+    etiquetaActivaExplorador = null;
 
     const menuSeleccionado = menusExplorador.find(
         menu => Number(menu.id_menu) === Number(idMenu)
@@ -1531,6 +1623,8 @@ function mostrarFichasPorMenu(idMenu) {
 // FILTRAR POR ETIQUETA
 // =======================================================
 async function mostrarFichasPorEtiqueta(idEtiqueta) {
+
+    etiquetaActivaExplorador = idEtiqueta;
 
 
     try {

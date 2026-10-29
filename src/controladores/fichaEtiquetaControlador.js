@@ -49,7 +49,7 @@ class FichaEtiquetaControlador{
                 idFicha,
                 etiquetas
             );
-            cachePublico.invalidar();
+            cachePublico.invalidar(["fichas"]);
 
             res.json({
                 mensaje:"Etiquetas actualizadas correctamente."

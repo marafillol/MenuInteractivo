@@ -5,7 +5,7 @@
 (function () {
 
     const ESPERA_MS = 300;
-    const MINIMO_LETRAS = 2;
+    const MINIMO_LETRAS = 1;
 
     const ORDEN_TIPOS = ["ficha", "menu", "etiqueta", "multimedia", "plantilla"];
 
@@ -59,8 +59,19 @@
             ventana: "plantillas",
             lista: "#gridPlantillas",
             tarjeta: ".tarjeta-plantilla",
-            idTarjeta: tarjeta =>
-                leerIdDesdeOnclick(tarjeta, /vistaPreviaPlantilla\(\s*(\d+)\s*\)/),
+            idTarjeta: tarjeta => {
+                const boton = tarjeta.querySelector(".btn-vista-plantilla");
+
+                if (!boton) {
+                    return null;
+                }
+
+                return boton.closest(".tarjeta-plantilla")
+                    ?.querySelector("h3")
+                    ?.textContent
+                    ? tarjeta.dataset.idPlantilla || null
+                    : null;
+            },
             verTodos: "Ver todas las plantillas"
         }
 
@@ -164,23 +175,38 @@
     // Deja visible solo la tarjeta buscada y agrega un aviso
     // con un botón para volver a ver todas
     async function mostrarSoloResultado(resultado, config) {
-
         const tarjetas = await esperarElementos(config.tarjeta);
 
-        const elegida = tarjetas.find(
-            tarjeta =>
-                config.idTarjeta(tarjeta) === String(resultado.id)
-        );
+        const elegida = tarjetas.find(tarjeta => {
+            const idTarjeta = config.idTarjeta(tarjeta);
 
-        // Si no se encuentra, se deja la lista completa
+            console.log("[buscador] Comparando IDs:", {
+                idBuscado: resultado.id,
+                idTarjeta,
+                coincide: String(idTarjeta) === String(resultado.id)
+            });
+
+            return String(idTarjeta) === String(resultado.id);
+        });
+
         if (!elegida) {
+            console.warn("[buscador] No se encontró la tarjeta:", {
+                resultado,
+                cantidadTarjetas: tarjetas.length,
+                selector: config.tarjeta,
+                primerosIDs: tarjetas.slice(0, 10).map(config.idTarjeta)
+            });
             return;
         }
 
-        tarjetas.forEach(tarjeta => {
-            if (tarjeta !== elegida) {
-                tarjeta.style.display = "none";
-            }
+        console.log("[buscador] Tarjeta encontrada:", elegida);
+        console.log("[buscador] Estado de la tarjeta:", {
+            idBuscado: resultado.id,
+            tipo: resultado.tipo,
+            titulo: resultado.titulo,
+            tarjeta: elegida.outerHTML.slice(0, 500),
+            visible: elegida.getClientRects().length > 0,
+            display: getComputedStyle(elegida).display
         });
 
         const lista = document.querySelector(config.lista);
@@ -188,6 +214,25 @@
         if (!lista) {
             return;
         }
+
+        // Quitar avisos globales anteriores de esta sección.
+        lista.parentElement
+            ?.querySelectorAll(":scope > .buscador-filtro-activo")
+            .forEach(aviso => aviso.remove());
+
+        // Guardar el estado actual, sin modificar los filtros locales.
+        const visibilidadAnterior = new Map(
+            tarjetas.map(tarjeta => [
+                tarjeta,
+                tarjeta.style.display
+            ])
+        );
+
+        tarjetas.forEach(tarjeta => {
+            if (tarjeta !== elegida) {
+                tarjeta.style.display = "none";
+            }
+        });
 
         const aviso = document.createElement("div");
         aviso.className = "buscador-filtro-activo";
@@ -201,51 +246,85 @@
         volver.type = "button";
         volver.textContent = config.verTodos || "Ver todos";
 
-        volver.addEventListener("click", () => {
-
-            tarjetas.forEach(tarjeta => {
-                tarjeta.style.display = "";
+        const restaurarTarjetas = () => {
+            visibilidadAnterior.forEach((display, tarjeta) => {
+                tarjeta.style.display = display;
             });
 
             aviso.remove();
+        };
 
-        });
+        aviso._restaurarTarjetas = restaurarTarjetas;
+
+        volver.addEventListener("click", restaurarTarjetas);
 
         aviso.append(texto, volver);
-
         lista.before(aviso);
-
     }
 
 
-    // Abre la sección que corresponde al tipo del resultado
+
     async function abrirResultado(resultado) {
+        console.log("[buscador] Clic en resultado:", resultado);
 
-        const config = TIPOS[resultado.tipo];
+        try {
+            const config = TIPOS[resultado.tipo];
 
-        if (!config || typeof cargarVentana !== "function") {
-            return;
+            if (!config) {
+                console.error("[buscador] Tipo de resultado desconocido:", resultado.tipo);
+                return;
+            }
+
+            if (typeof cargarVentana !== "function") {
+                console.error("[buscador] cargarVentana no está disponible.");
+                return;
+            }
+
+            document
+                .querySelectorAll(".sidebar .item")
+                .forEach(item => {
+                    item.classList.toggle(
+                        "activo",
+                        item.dataset.ventana === config.ventana
+                    );
+                });
+
+            entrada.value = "";
+            cerrarLista();
+
+            if (resultado.tipo === "ficha") {
+                window.__filtroMenuFichas = "";
+                menuSeleccionado = null;
+                nombreMenuSeleccionado = "";
+            }
+
+            if (resultado.tipo === "multimedia") {
+                fichaSeleccionada = null;
+                nombreFichaSeleccionada = "";
+            }
+
+            console.log("[buscador] Abriendo sección:", config.ventana);
+
+            await cargarVentana(config.ventana);
+
+            console.log(
+                "[buscador] Sección cargada. Tarjetas encontradas:",
+                config.tarjeta
+                    ? document.querySelectorAll(config.tarjeta).length
+                    : "No corresponde"
+            );
+
+            if (config.tarjeta) {
+                await mostrarSoloResultado(resultado, config);
+            }
+
+            console.log("[buscador] Proceso finalizado:", resultado);
+
+        } catch (error) {
+            console.error("[buscador] Error al abrir el resultado:", error);
         }
-
-        document
-            .querySelectorAll(".sidebar .item")
-            .forEach(item => {
-                item.classList.toggle(
-                    "activo",
-                    item.dataset.ventana === config.ventana
-                );
-            });
-
-        entrada.value = "";
-        cerrarLista();
-
-        await cargarVentana(config.ventana);
-
-        if (config.tarjeta) {
-            await mostrarSoloResultado(resultado, config);
-        }
-
     }
+
 
 
     function mostrarResultados(resultados) {
@@ -275,6 +354,8 @@
                 const boton = document.createElement("button");
                 boton.type = "button";
                 boton.className = "buscador-resultado";
+
+                boton.classList.add("buscador-resultado-destacado");
 
                 // textContent (no innerHTML): los títulos los escriben
                 // usuarios y no deben interpretarse como HTML
@@ -391,3 +472,18 @@
     });
 
 })();
+
+function limpiarFiltroBuscadorGlobal() {
+    document
+        .querySelectorAll(".buscador-filtro-activo")
+        .forEach(aviso => {
+            const restaurar = aviso._restaurarTarjetas;
+
+            if (typeof restaurar === "function") {
+                restaurar();
+            } else {
+                aviso.remove();
+            }
+        });
+}
+window.limpiarFiltroBuscadorGlobal = limpiarFiltroBuscadorGlobal;

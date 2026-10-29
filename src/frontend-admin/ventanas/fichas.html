@@ -352,6 +352,123 @@
          LISTADO DE FICHAS
     ========================================================== -->
 
+
+
+
+
+    <div
+            id="filtroMenuFichasContenedor"
+            style="display: none; position: relative; margin-bottom: 18px;"
+    >
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+
+            <button
+                    type="button"
+                    id="btnFiltroMenuFichas"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    style="
+                width: 240px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                padding: 7px 12px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+                text-align: left;
+            "
+            >
+                <span id="textoFiltroMenuFichas">Menú: Todos</span>
+
+                <svg
+                        class="flecha-selector-fichas"
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        style="flex-shrink: 0; transition: transform 0.2s ease;"
+                >
+                    <path d="m6 9 6 6 6-6"></path>
+                </svg>
+            </button>
+
+            <button
+                    type="button"
+                    id="btnLimpiarFiltrosFichas"
+                    onclick="limpiarFiltrosFichas()"
+                    style="
+                padding: 7px 12px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+            "
+            >
+                Limpiar filtros
+            </button>
+
+        </div>
+
+        <div
+                id="panelFiltroMenuFichas"
+                style="
+            display: none;
+            position: absolute;
+            top: calc(100% - 42px);
+            left: 0;
+            z-index: 1000;
+            width: 280px;
+            max-width: calc(100vw - 40px);
+            box-sizing: border-box;
+            padding: 8px;
+            border: 1px solid #c7a85b;
+            border-radius: 6px;
+            background: var(--fondo-panel, #fff);
+            color: var(--color-texto, #222);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+        "
+        >
+            <input
+                    id="buscarMenuFichas"
+                    type="text"
+                    placeholder="Escribí para buscar un menú..."
+                    autocomplete="off"
+                    aria-label="Buscar menú"
+                    style="
+                box-sizing: border-box;
+                width: 100%;
+                padding: 8px 10px;
+                margin-bottom: 6px;
+                border: 1px solid #c7a85b;
+                border-radius: 5px;
+                background: transparent;
+                color: inherit;
+            "
+            >
+
+            <div
+                    id="opcionesMenuFichas"
+                    role="listbox"
+                    aria-label="Opciones de menú"
+                    style="max-height: 220px; overflow-y: auto;"
+            ></div>
+        </div>
+    </div>
+
+
+
+
+
     <div
             id="listaFichas"
             class="grid-fichas"
@@ -573,6 +690,25 @@
 
             <p id="textoMensaje"></p>
 
+            <ul
+                    id="listaMultimediaBloqueo"
+                    style="display: none; margin: 12px 0; padding-left: 24px;"
+            ></ul>
+
+            <div
+                    id="accionesMultimediaBloqueo"
+                    class="acciones-modal"
+                    style="display: none;"
+            >
+                <button
+                        type="button"
+                        class="btn-ver"
+                        onclick="irAMultimediaFichaBloqueada()"
+                >
+                    Ver archivos multimedia
+                </button>
+            </div>
+
             <div class="acciones-modal">
 
                 <button
@@ -590,3 +726,4 @@
     </div>
 
 </section>
+
