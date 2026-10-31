@@ -38,13 +38,17 @@ const buscar = async (req, res) => {
             return res.json([]);
         }
 
+        const esAdmin = req.usuario?.rol === "admin";
+
         const [fichas, menus, etiquetas, multimedia, plantillas] =
             await Promise.all([
                 Ficha.obtenerFichas(),
                 Menu.obtenerMenus(),
                 Etiqueta.obtenerTodas(),
                 Multimedia.obtenerMultimedia(),
-                Plantilla.obtenerPlantillas()
+                esAdmin
+                    ? Plantilla.obtenerPlantillas()
+                    : Promise.resolve([])
             ]);
 
         const resultadosFichas = fichas

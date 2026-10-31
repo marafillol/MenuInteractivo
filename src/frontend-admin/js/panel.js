@@ -269,12 +269,26 @@ function descartarTodosLosBorradores() {
 
 
 async function cargarVentana(nombre, mantenerMenu = false) {
+
+    // Verificar permisos ANTES de iniciar la navegación.
+    if (
+        !window.Permisos ||
+        !window.Permisos.puedeAccederVentana(nombre)
+    ) {
+        console.warn(
+            `[PERMISOS] Acceso denegado a la ventana: ${nombre}`
+        );
+
+        return false;
+    }
+
     // Solo la navegación más reciente puede continuar.
     const idCarga = (window.__idCargaVentana || 0) + 1;
     window.__idCargaVentana = idCarga;
 
     const esCargaActual = () =>
         window.__idCargaVentana === idCarga;
+
 
     console.log("[NAVEGACIÓN]", {
         nombre,
@@ -322,6 +336,14 @@ async function cargarVentana(nombre, mantenerMenu = false) {
         contenedorPanel.innerHTML = html;
 
         window.__ultimaVentanaPanel = ventanaActual;
+
+        // Ocultar controles de edición antes de inicializar la ventana.
+        if (
+            window.usuarioActual?.rol === "consulta" &&
+            window.Permisos
+        ) {
+            window.Permisos.ocultarBotonesEdicion();
+        }
 
         tituloVentana.textContent =
             nombre.charAt(0).toUpperCase() + nombre.slice(1);
@@ -674,13 +696,20 @@ async function cargarUsuarioActual() {
 
         window.usuarioActual = usuario;
 
+        // Establecer el rol en HTML antes de mostrar el panel.
+        // Las reglas CSS ya saben qué elementos ocultar.
+        document.documentElement.dataset.rol = usuario.rol;
+
         console.log("USUARIO SQL:", usuario);
         console.log("ROL:", usuario.rol);
 
-        // Aplicar permisos sin modificar la logica existente.
+        // Aplicar permisos adicionales.
         if (window.Permisos) {
             window.Permisos.ocultarSecciones();
         }
+
+        // Mostrar el panel cuando los permisos ya están aplicados.
+        document.body.style.visibility = "visible";
 
         console.log("Permisos aplicados");
 

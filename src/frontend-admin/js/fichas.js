@@ -679,14 +679,35 @@ async function cargarFichas() {
 
     const idCargaFichas = window.__idCargaVentana;
 
+    // Identificador propio para evitar que una consulta anterior
+    // sobrescriba el resultado de un filtro más reciente.
+    const idSolicitud =
+        (window.__idSolicitudListaFichas || 0) + 1;
+
+    window.__idSolicitudListaFichas = idSolicitud;
+
+    const contenedor = document.getElementById("listaFichas");
+
+    // Ocultar inmediatamente las fichas anteriores.
+    // Así no se muestran todas mientras se carga el filtro.
+    if (contenedor) {
+        contenedor.innerHTML = `
+            <div class="mensaje-sin-fichas">
+                <p> </p>
+            </div>
+        `;
+    }
+
     actualizarCabeceraFichas();
 
     try {
         await inicializarFiltroMenuFichas();
 
-        // Si el usuario cambió de ventana durante la espera,
-        // no continuar con la carga anterior.
-        if (idCargaFichas !== window.__idCargaVentana) {
+        // Comprobar que esta solicitud siga siendo la vigente.
+        if (
+            idCargaFichas !== window.__idCargaVentana ||
+            idSolicitud !== window.__idSolicitudListaFichas
+        ) {
             return;
         }
 
@@ -696,7 +717,6 @@ async function cargarFichas() {
         let url = "/api/fichas";
 
         if (menuSeleccionado) {
-            // Navegación existente: fichas de un menú específico.
             url = `/api/fichas/menu/${menuSeleccionado}`;
 
             if (barraVolver) {
@@ -704,8 +724,6 @@ async function cargarFichas() {
             }
 
         } else {
-            // Gestión general: permitir filtrar sin cambiar
-            // el menú usado para crear o editar fichas.
             const filtroMenu = window.__filtroMenuFichas || "";
 
             if (filtroMenu) {
@@ -723,23 +741,29 @@ async function cargarFichas() {
 
         const respuesta = await window.fetchProtegido(url);
 
-        if (idCargaFichas !== window.__idCargaVentana) {
+        if (
+            idCargaFichas !== window.__idCargaVentana ||
+            idSolicitud !== window.__idSolicitudListaFichas
+        ) {
             return;
         }
 
         if (!respuesta.ok) {
-            console.error("Error obteniendo fichas:", respuesta.status);
-            return;
+            throw new Error(
+                "Error obteniendo fichas: HTTP " + respuesta.status
+            );
         }
 
         const fichas = await respuesta.json();
 
-        if (idCargaFichas !== window.__idCargaVentana) {
+        if (
+            idCargaFichas !== window.__idCargaVentana ||
+            idSolicitud !== window.__idSolicitudListaFichas
+        ) {
             return;
         }
 
-        // Si es la lista completa, aprovecharla como caché
-        // (la usan el select y las mini-fichas de relaciones).
+        // Si es la lista completa, aprovecharla como caché.
         if (url === "/api/fichas") {
             fcCache.set("fichas", {
                 promesa: Promise.resolve(fichas),
@@ -748,8 +772,6 @@ async function cargarFichas() {
         }
 
         const esConsulta = window.usuarioActual?.rol === "consulta";
-
-        const contenedor = document.getElementById("listaFichas");
 
         if (!contenedor) {
             console.error("No existe listaFichas");
@@ -872,7 +894,24 @@ async function cargarFichas() {
         }
 
     } catch (error) {
+
+        // No mostrar errores de solicitudes que ya quedaron obsoletas.
+        if (
+            idCargaFichas !== window.__idCargaVentana ||
+            idSolicitud !== window.__idSolicitudListaFichas
+        ) {
+            return;
+        }
+
         console.error("Error cargando fichas:", error);
+
+        if (contenedor) {
+            contenedor.innerHTML = `
+                <div class="mensaje-sin-fichas">
+                    <p>No se pudieron cargar las fichas. Intentá nuevamente.</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -918,7 +957,7 @@ async function vistaPreviaFicha(id_ficha) {
         setTexto("vpFichaResumen", ficha.resumen || "-");
         setTexto("vpFichaTexto", ficha.texto || "-");
         setTexto("vpFichaVisible", ficha.visible == 1 ? "Sí" : "No");
-        setTexto("vpFichaUsuario", ficha.id_usuario || "-");
+
         setTexto("vpFichaCreado", mostrarFechaArgentina(ficha.creado));
         setTexto(
             "vpFichaActualizado",

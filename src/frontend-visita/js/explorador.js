@@ -1457,6 +1457,15 @@ async function renderizarIndice() {
             boton.className = "item-indice";
             boton.textContent = etiqueta.nombre;
 
+            // Resaltar la etiqueta seleccionada.
+            if (
+                Number(etiqueta.id_etiqueta) ===
+                Number(etiquetaActivaExplorador)
+            ) {
+                boton.classList.add("menu-activo");
+                boton.setAttribute("aria-current", "true");
+            }
+
             boton.addEventListener(
                 "click",
                 evento => {
@@ -1625,6 +1634,7 @@ function mostrarFichasPorMenu(idMenu) {
 async function mostrarFichasPorEtiqueta(idEtiqueta) {
 
     etiquetaActivaExplorador = idEtiqueta;
+    renderizarIndice();
 
 
     try {

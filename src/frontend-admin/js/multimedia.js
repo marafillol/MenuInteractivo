@@ -1512,27 +1512,15 @@ async function vistaPreviaMultimedia(id_multi) {
                         <div class="dato-multimedia">
 
                             <span>
-                                ID Multimedia
-                            </span>
-
-                            <strong>
-                                ${item.id_multi}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="dato-multimedia">
-
-                            <span>
                                 Ficha asociada
                             </span>
 
                             <strong>
-                                Ficha #${item.id_ficha}
+                                ${item.ficha || "Ficha sin nombre"} — #${item.id_ficha}
                             </strong>
 
                         </div>
+
 
 
                         <div class="dato-multimedia">
@@ -2293,6 +2281,17 @@ try {
     return;
 }
 
+// Al editar, permitir cambiar la ficha asociada.
+window.multimediaFichaActual = false;
+
+const contenedorFicha = obtenerElemento(
+    "contenedorFichaMultimedia"
+);
+
+if (contenedorFicha) {
+    contenedorFicha.style.display = "block";
+}
+
 
 
         /* =================================================
@@ -2427,11 +2426,8 @@ try {
             </h4>
 
             <p>
-
                 <strong>Ficha asociada:</strong>
-
-                ${item.ficha || "-"}
-
+                ${item.ficha || "Ficha sin nombre"} — #${item.id_ficha}
             </p>
 
             ${vista}
