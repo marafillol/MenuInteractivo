@@ -1,3 +1,5 @@
+
+
 <section class="ventana ventana-multimedia">
 
     <!-- =========================================================
@@ -94,109 +96,233 @@
          VISTA GENERAL DE MULTIMEDIA
     ========================================================= -->
 
+
     <div id="vistaGeneralMultimedia">
 
-        <!-- =====================================================
-             FILTROS: por menú y por ficha
-        ====================================================== -->
 
-        <style>
-            .filtros-multimedia {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: flex-end;
-                gap: 12px 16px;
-                margin: 0 0 18px;
-                padding: 12px 14px;
-                border: 1px solid rgba(128, 128, 128, .35);
-                border-radius: 8px;
-            }
 
-            .filtros-multimedia .filtro-campo {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                flex: 1 1 200px;
-                max-width: 340px;
-            }
-
-            .filtros-multimedia label {
-                font-size: .8rem;
-                opacity: .8;
-            }
-
-            .filtros-multimedia select,
-            .filtros-multimedia button {
-                padding: 8px 10px;
-                border-radius: 6px;
-                font: inherit;
-            }
-
-            .filtros-multimedia button {
-                cursor: pointer;
-            }
-
-            .filtros-multimedia .contador-multimedia {
-                margin-left: auto;
-                align-self: center;
-                font-size: .85rem;
-                opacity: .75;
-            }
-        </style>
-
+        <!-- Filtros de multimedia -->
         <div
                 id="filtrosMultimedia"
-                class="filtros-multimedia">
+                style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    ">
 
-            <div class="filtro-campo">
+            <!-- FILTRO BUSCABLE DE MENÚ -->
+            <div
+                    id="contenedorSelectorMenuMultimedia"
+                    style="position: relative; min-width: 220px;">
 
-                <label for="filtroMenuMultimedia">
-                    Menú
-                </label>
+                <input
+                        type="hidden"
+                        id="filtroMenuMultimedia"
+                        value="">
 
-                <select id="filtroMenuMultimedia">
+                <button
+                        type="button"
+                        id="selectorMenuMultimedia"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        style="
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                padding: 7px 10px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+                text-align: left;
+            ">
+                    <span id="textoSelectorMenuMultimedia">Menú: Todos</span>
+                    <svg
+                            class="flecha-selector-multimedia"
+                            aria-hidden="true"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
 
-                    <option value="">
-                        Todos los menús
-                    </option>
+                <div
+                        id="desplegableMenuMultimedia"
+                        style="
+                display: none;
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                width: 100%;
+                min-width: 260px;
+                box-sizing: border-box;
+                padding: 8px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: var(--fondo-panel, #fff);
+                color: var(--color-texto, #222);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+                z-index: 1000;
+            ">
 
-                </select>
+                    <input
+                            id="buscarMenuMultimedia"
+                            type="text"
+                            placeholder="Escribí para buscar un menú..."
+                            autocomplete="off"
+                            aria-label="Buscar menú"
+                            style="
+                    box-sizing: border-box;
+                    width: 100%;
+                    padding: 8px 10px;
+                    margin-bottom: 6px;
+                    border: 1px solid #c7a85b;
+                    border-radius: 5px;
+                    background: transparent;
+                    color: inherit;
+                ">
 
+                    <div
+                            id="opcionesMenuMultimedia"
+                            role="listbox"
+                            aria-label="Opciones de menú"
+                            style="
+                    max-height: 220px;
+                    overflow-y: auto;
+                ">
+                    </div>
+
+                </div>
             </div>
 
 
-            <div class="filtro-campo">
+            <!-- FILTRO BUSCABLE DE FICHA -->
+            <div
+                    id="contenedorSelectorFichaMultimedia"
+                    style="position: relative; min-width: 260px;">
 
-                <label for="filtroFichaMultimedia">
-                    Ficha
-                </label>
+                <input
+                        type="hidden"
+                        id="filtroFichaMultimedia"
+                        value="">
 
-                <select id="filtroFichaMultimedia">
+                <button
+                        type="button"
+                        id="selectorFichaMultimedia"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        style="
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                padding: 7px 10px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+                text-align: left;
+            ">
+                    <span id="textoSelectorFichaMultimedia">Ficha: Todas</span>
 
-                    <option value="">
-                        Todas las fichas
-                    </option>
+                    <svg
+                            class="flecha-selector-multimedia"
+                            aria-hidden="true"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            style="transition: transform 0.2s ease;">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
 
-                </select>
+                </button>
 
+                <div
+                        id="desplegableFichaMultimedia"
+                        style="
+                display: none;
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                width: 100%;
+                min-width: 300px;
+                box-sizing: border-box;
+                padding: 8px;
+                border: 1px solid #c7a85b;
+                border-radius: 6px;
+                background: var(--fondo-panel, #fff);
+                color: var(--color-texto, #222);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+                z-index: 1000;
+            ">
+
+                    <input
+                            id="buscarFichaMultimedia"
+                            type="text"
+                            placeholder="Escribí un título o número..."
+                            autocomplete="off"
+                            aria-label="Buscar ficha"
+                            style="
+                    box-sizing: border-box;
+                    width: 100%;
+                    padding: 8px 10px;
+                    margin-bottom: 6px;
+                    border: 1px solid #c7a85b;
+                    border-radius: 5px;
+                    background: transparent;
+                    color: inherit;
+                ">
+
+                    <div
+                            id="opcionesFichaMultimedia"
+                            role="listbox"
+                            aria-label="Opciones de ficha"
+                            style="
+                    max-height: 220px;
+                    overflow-y: auto;
+                ">
+                    </div>
+
+                </div>
             </div>
 
 
+            <!-- LIMPIAR -->
             <button
-                    id="limpiarFiltrosMultimedia"
-                    type="button">
-
+                    type="button"
+                    id="btnLimpiarFiltrosMultimedia"
+                    onclick="limpiarFiltrosMultimedia()"
+                    style="
+            padding: 7px 12px;
+            border: 1px solid #c7a85b;
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+        ">
                 Limpiar filtros
-
             </button>
 
-
-            <span
-                    id="contadorMultimedia"
-                    class="contador-multimedia">
-            </span>
-
         </div>
+
 
 
         <div
@@ -205,6 +331,7 @@
         </div>
 
     </div>
+
 
 
     <!-- =========================================================

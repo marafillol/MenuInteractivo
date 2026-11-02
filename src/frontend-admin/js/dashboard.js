@@ -1165,8 +1165,3 @@ function alternarContenidoOculto(
 
 }
 
-
-// =======================================================
-// INICIAR DASHBOARD
-// =======================================================
-// La carga se realiza desde panel.js al abrir la ventana.

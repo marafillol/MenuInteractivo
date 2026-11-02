@@ -9,13 +9,21 @@ class PoolFalso {
     constructor() {}
     on() {}
     async connect() {
+
         return {
+            on() {
+                return this;
+            },
+            removeListener() {
+                return this;
+            },
             query: async (sql, valores = []) => {
                 consultasTransaccion.push(String(sql).trim());
                 return this.query(sql, valores);
             },
             release: () => { clientesLiberados += 1; }
         };
+
     }
     query(sql, valores = []) {
         const marca = valores[0] ?? "sin-parametro";

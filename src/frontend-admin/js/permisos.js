@@ -1,5 +1,49 @@
 const Permisos = {
 
+    puedeAccederVentana(nombreVentana) {
+        const usuario = window.usuarioActual;
+
+        if (!usuario || !usuario.rol) {
+            return false;
+        }
+
+        const rol = usuario.rol;
+
+        // Ventanas disponibles para todos los roles.
+        const ventanasGenerales = [
+            "dashboard"
+        ];
+
+        // Ventanas disponibles para Admin, Editor y Consulta.
+        const ventanasContenido = [
+            "menus",
+            "fichas",
+            "multimedia",
+            "etiquetas"
+        ];
+
+        // Admin puede acceder a todas las ventanas.
+        if (rol === "admin") {
+            return [
+                ...ventanasGenerales,
+                ...ventanasContenido,
+                "plantillas",
+                "usuarios",
+                "configuracion"
+            ].includes(nombreVentana);
+        }
+
+        // Editor y Consulta solo pueden acceder al contenido.
+        if (rol === "editor" || rol === "consulta") {
+            return [
+                ...ventanasGenerales,
+                ...ventanasContenido
+            ].includes(nombreVentana);
+        }
+
+        // Cualquier rol desconocido queda sin acceso.
+        return false;
+    },
 
     ocultarSecciones(){
 

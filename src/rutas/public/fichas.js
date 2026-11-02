@@ -14,15 +14,19 @@ router.get(
     fichasController.obtenerFichas
 );
 
+
 router.get(
     "/menu/:id_menu",
+    cachePublico,
     fichasController.obtenerFichasPorMenu
 );
 
 router.get(
     "/etiqueta/:id_etiqueta",
+    cachePublico,
     fichasController.obtenerFichasPorEtiqueta
 );
+
 
 router.get(
     "/:id_ficha",

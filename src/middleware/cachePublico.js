@@ -102,11 +102,29 @@ function cachePublico(req, res, next) {
     next();
 }
 
-// Invalidar la caché cuando se crean, modifican o eliminan fichas.
-cachePublico.invalidar = function () {
+cachePublico.invalidarHTTP = function () {
     versionCache++;
     cache.clear();
     solicitudesEnCurso.clear();
 };
 
+cachePublico.invalidar = function (
+    colecciones = ["fichas", "menus", "etiquetas"]
+) {
+    cachePublico.invalidarHTTP();
+
+    const cachePublica = require("../servicios/cachePublica");
+
+    // Mantener el comportamiento de las pruebas y de la caché no inicializada.
+    if (cachePublica.obtenerDatosPublicos("fichas") === null) {
+        return;
+    }
+
+    cachePublica.actualizarCachePublica(colecciones).catch(error => {
+        console.error(
+            "[CACHE PUBLICA] Falló la actualización tras invalidar:",
+            error.message
+        );
+    });
+};
 module.exports = cachePublico;

@@ -7,31 +7,29 @@ async function esperarTokenSupabase() {
 }
 
 
+
 async function fetchProtegido(url, opciones = {}) {
     const inicio = performance.now();
 
     await esperarTokenSupabase();
-    const despuesDeEsperar = performance.now();
 
+    // Obtener el token después de que la autenticación esté lista.
     const token = await window.obtenerTokenSupabase();
-    const despuesDelToken = performance.now();
 
     const headers = new Headers(opciones.headers || {});
     headers.set("Authorization", "Bearer " + token);
 
-    const respuesta = await fetch(url, { ...opciones, headers });
-    const fin = performance.now();
+    const respuesta = await fetch(url, {
+        ...opciones,
+        headers
+    });
 
     console.log("[fetchProtegido]", url, {
-        esperaInicializacionMs: Math.round(despuesDeEsperar - inicio),
-        obtenerTokenMs: Math.round(despuesDelToken - despuesDeEsperar),
-        respuestaServidorMs: Math.round(fin - despuesDelToken),
-        totalMs: Math.round(fin - inicio),
+        totalMs: Math.round(performance.now() - inicio),
         status: respuesta.status
     });
 
     return respuesta;
 }
-
 
 window.fetchProtegido = fetchProtegido;

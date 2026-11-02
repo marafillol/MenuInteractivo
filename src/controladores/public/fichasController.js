@@ -32,121 +32,97 @@ async function obtenerFichas(req, res) {
 }
 
 
-async function obtenerFichasPorMenu(req,res){
-
+async function obtenerFichasPorMenu(req, res) {
     const inicio = performance.now();
 
-    try{
+    try {
+        const fichasCacheadas =
+            cachePublica.obtenerDatosPublicos("fichas");
 
-        let fichas =
-        await Ficha.obtenerPorMenu(
-            req.params.id_menu
+        if (fichasCacheadas === null) {
+            return res.status(503).json({
+                error: "Los datos públicos todavía se están preparando."
+            });
+        }
+
+        const idMenu = Number(req.params.id_menu);
+
+        const fichas = fichasCacheadas.filter(
+            ficha => Number(ficha.id_menu) === idMenu
         );
 
         console.log(
-            `[TIEMPO API] obtenerFichas: consulta ${(
-                performance.now() - inicio
-            ).toFixed(1)} ms`
+            `[CACHE PUBLICA] Fichas del menú ${idMenu} servidas en ${
+                (performance.now() - inicio).toFixed(1)
+            } ms`
         );
 
-
-        fichas = fichas.map(ficha=>{
-
-
-            ficha.datos_json =
-            ficha.datos_json
-            ?
-            interpretarJson(ficha.datos_json)
-            :
-            {};
-
-
-            ficha.plantilla =
-            ficha.plantilla_json
-            ?
-            interpretarJson(ficha.plantilla_json)
-            :
-            null;
-
-
-            delete ficha.plantilla_json;
-
-
-            return ficha;
-
-
-        });
-
-
-        res.json(fichas);
-
-    }
-
-    catch(error){
-
+        return res.json(fichas);
+    } catch (error) {
         console.error(error);
 
-        res.status(500).json({
-
-            error:"Error al obtener las fichas."
-
-        });
-
-    }
-
-}
-
-async function obtenerFichasPorEtiqueta(req,res){
-    try{
-        let fichas =
-        await Ficha.obtenerPorEtiqueta(
-            req.params.id_etiqueta
-        );
-
-        fichas = fichas.map(ficha=>{
-            ficha.datos_json =
-            ficha.datos_json
-            ?
-            interpretarJson(ficha.datos_json)
-            :
-            {};
-
-            ficha.plantilla =
-            ficha.plantilla_json
-            ?
-            interpretarJson(ficha.plantilla_json)
-            :
-            null;
-
-            delete ficha.plantilla_json;
-
-            return ficha;
-        });
-
-        res.json(fichas);
-    }
-    catch(error){
-        console.error(error);
-        res.status(500).json({
-            error:"Error al obtener las fichas por etiqueta."
+        return res.status(500).json({
+            error: "Error al obtener las fichas."
         });
     }
 }
+async function obtenerFichasPorEtiqueta(req, res) {
+    try {
+        const idEtiqueta = Number(req.params.id_etiqueta);
 
+        const fichas = cachePublica.obtenerDatosPublicos("fichas");
+        const relaciones = cachePublica.obtenerDatosPublicos(
+            "relacionesEtiquetas"
+        );
+
+        if (fichas === null || relaciones === null) {
+            return res.status(503).json({
+                error: "Los datos públicos todavía se están cargando."
+            });
+        }
+
+        const idsFichas = new Set(
+            relaciones
+                .filter(
+                    relacion =>
+                        Number(relacion.id_etiqueta) === idEtiqueta
+                )
+                .map(relacion => Number(relacion.id_ficha))
+        );
+
+        const fichasFiltradas = fichas.filter(
+            ficha => idsFichas.has(Number(ficha.id_ficha))
+        );
+
+        return res.json(fichasFiltradas);
+    } catch (error) {
+        console.error(
+            "[FICHAS PUBLICAS] Error al filtrar por etiqueta:",
+            error
+        );
+
+        return res.status(500).json({
+            error: "Error al obtener las fichas de la etiqueta."
+        });
+    }
+}
 
 async function obtenerFichaPorId(req, res) {
     const inicioTotal = performance.now();
-    const idFicha = req.params.id_ficha;
+    const idFicha = Number(req.params.id_ficha);
 
     try {
-        const inicioConsulta = performance.now();
+        const fichasDetalle =
+            cachePublica.obtenerDatosPublicos("fichasDetalle");
 
-        const ficha = await Ficha.obtenerPorId(idFicha);
+        if (!fichasDetalle) {
+            return res.status(503).json({
+                error: "Los datos públicos todavía no están disponibles."
+            });
+        }
 
-        console.log(
-            `[TIEMPO FICHA ${idFicha}] Consulta unificada: ${
-                (performance.now() - inicioConsulta).toFixed(1)
-            } ms`
+        const ficha = fichasDetalle.find(
+            elemento => Number(elemento.id_ficha) === idFicha
         );
 
         if (!ficha) {
@@ -155,19 +131,9 @@ async function obtenerFichaPorId(req, res) {
             });
         }
 
-        // Los arreglos vienen incluidos en la consulta SQL.
         ficha.etiquetas = ficha.etiquetas || [];
         ficha.relacionadas = ficha.relacionadas || [];
         ficha.multimedia = ficha.multimedia || [];
-
-        ficha.datos_json = ficha.datos_json
-            ? interpretarJson(ficha.datos_json)
-            : {};
-
-        if (ficha.plantilla_json) {
-            ficha.plantilla = interpretarJson(ficha.plantilla_json);
-            delete ficha.plantilla_json;
-        }
 
         console.log(
             `[TIEMPO FICHA ${idFicha}] Total antes de responder: ${
@@ -175,17 +141,15 @@ async function obtenerFichaPorId(req, res) {
             } ms`
         );
 
-        res.json(ficha);
+        return res.json(ficha);
     } catch (error) {
         console.error(error);
 
-        res.status(500).json({
+        return res.status(500).json({
             error: "Error al obtener la ficha."
         });
     }
 }
-
-
 
 module.exports={
     obtenerFichas,

@@ -1,1433 +1,575 @@
-
 /* =========================================================
-   MENU INTERACTIVO
-   PANEL ADMINISTRATIVO
-   INTERFAZ INSTITUCIONAL
-   OPTIMIZADO PARA ZOOM 100%
-========================================================= */
-html,
-body {
-
-    width: 100%;
-    height: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    overflow: hidden;
-
-}
-
-body {
-
-    min-width: 100%;
-    min-height: 100vh;
-
-}
-.panel-admin {
-
-    display: flex;
-
-    width: 100%;
-    height: 100vh;
-
-    min-width: 100vw;
-    min-height: 100vh;
-
-    margin: 0;
-    padding: 0;
-
-    overflow: hidden;
-
-    background: var(--fondo);
-
-    color: var(--texto);
-
-    font-family:
-        "Roboto",
-        Arial,
-        sans-serif;
-}
-
-/* =========================================================
-   VARIABLES
-========================================================= */
+   MENU INTERACTIVO - PANEL ADMINISTRATIVO
+   Estructura general, contenido y modal de cierre de sesión
+   ========================================================= */
 
 :root {
-
     --azul: #163A61;
     --azul-oscuro: #0F2A48;
     --azul-profundo: #0B223A;
-
     --celeste: #81D2F7;
-
     --dorado: #DBB060;
     --dorado-suave: #E8C982;
-
     --fondo: #F3F6F8;
     --fondo-contenido: #EEF2F5;
     --blanco: #FFFFFF;
-
     --texto: #1E2933;
     --texto-secundario: #64717D;
-
     --borde: #D9E0E6;
-
     --rojo: #8B3A3A;
-
     --radio: 9px;
-
-    --sombra-suave:
-        0 2px 8px rgba(15, 42, 72, .06);
-
-    --sombra:
-        0 5px 16px rgba(15, 42, 72, .08);
+    --sombra-suave: 0 2px 8px rgba(15, 42, 72, .06);
+    --sombra: 0 5px 16px rgba(15, 42, 72, .08);
 }
 
-
-/* =========================================================
-   RESET DEL PANEL
-========================================================= */
-
-.panel-admin,
-.panel-admin * {
-
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
-
-.panel-admin {
-
-    display: flex;
-
+html,
+body {
     width: 100%;
-
-    height: 100vh;
-
-    overflow: hidden;
-
-    background: var(--fondo);
-
-    color: var(--texto);
-
-    font-family:
-        "Roboto",
-        Arial,
-        sans-serif;
+    min-width: 0;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
+body {
+    overflow: hidden;
+    font-family: "Roboto", Arial, sans-serif;
+    color: var(--texto);
+    background: var(--fondo);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+.panel-admin {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    color: var(--texto);
+    background: var(--fondo);
+    font-family: "Roboto", Arial, sans-serif;
+}
+
+.panel-admin,
+.panel-admin * {
+    box-sizing: border-box;
+}
 
 /* =========================================================
    ZONA PRINCIPAL
-========================================================= */
+   ========================================================= */
 
 .panel-admin .panel-main {
-
-    flex: 1;
-
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    width: 0;
     min-width: 0;
-
-    height: 100vh;
-
-    display: flex;
-
-    flex-direction: column;
-
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
-
     background: var(--fondo-contenido);
-
-    transition:
-        margin-left .25s ease;
+    transition: margin-left .25s ease;
 }
 
-
 /* =========================================================
-   SIDEBAR
-========================================================= */
-
-.panel-admin .sidebar {
-
-    width: 200px;
-
-    min-width: 200px;
-
-    flex-shrink: 0;
-
-    height: 100vh;
-
-    position: relative;
-
-    display: flex;
-
-    flex-direction: column;
-
-    overflow: hidden;
-
-    background:
-        linear-gradient(
-            180deg,
-            var(--azul),
-            var(--azul-oscuro)
-        );
-
-    border-right:
-        1px solid rgba(219, 176, 96, .75);
-
-    box-shadow:
-        6px 0 20px rgba(9, 29, 49, .16);
-
-    transition:
-        width .25s ease,
-        min-width .25s ease;
-}
-
-
-/* =========================================================
-   TEXTURA SIDEBAR
-========================================================= */
-
-.panel-admin .sidebar::after {
-
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    opacity: .30;
-
-    background:
-        repeating-linear-gradient(
-            45deg,
-            rgba(255,255,255,.025) 0px,
-            rgba(255,255,255,.025) 2px,
-            transparent 2px,
-            transparent 8px
-        );
-}
-
-
-/* =========================================================
-   CABECERA SUPERIOR
-========================================================= */
+   BARRA SUPERIOR
+   ========================================================= */
 
 .panel-admin .barra-superior {
-
-    height: 72px;
-
-    min-height: 72px;
-
-    flex: 0 0 72px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    padding:
-        10px 20px;
-
-    background:
-        rgba(255,255,255,.97);
-
-    border-bottom:
-        1px solid var(--borde);
-
-    box-shadow:
-        0 2px 10px rgba(15,42,72,.06);
-
     position: relative;
-
     z-index: 10;
+    display: flex;
+    flex: 0 0 72px;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    height: 72px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, .97);
+    border-bottom: 1px solid var(--borde);
+    box-shadow: 0 2px 10px rgba(15, 42, 72, .06);
 }
-
-
-/* =========================================================
-   BOTÓN SIDEBAR
-========================================================= */
 
 .panel-admin .boton-menu-lateral {
-
     display: inline-grid;
-
+    flex: 0 0 38px;
     place-items: center;
-
     width: 38px;
-
     height: 38px;
-
-    min-width: 38px;
-
-    padding: 0;
-
     margin: 0;
-
-    border: none;
-
-    border-radius: 6px;
-
+    padding: 0;
+    color: #fff;
     background: var(--azul);
-
-    color: white;
-
+    border: 0;
+    border-radius: 6px;
     cursor: pointer;
-
-    transition:
-        background .2s ease,
-        transform .2s ease,
-        box-shadow .2s ease;
+    transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
 }
-
 
 .panel-admin .boton-menu-lateral:hover {
-
     background: var(--azul-oscuro);
-
-    transform:
-        translateY(-1px);
-
-    box-shadow:
-        0 3px 8px rgba(15,42,72,.18);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(15, 42, 72, .18);
 }
 
-
 .panel-admin .boton-menu-lateral svg {
-
     width: 20px;
-
     height: 20px;
 }
 
-
-/* =========================================================
-   TITULO DE LA VENTANA
-========================================================= */
-
 .panel-admin .titulo-panel {
-
-    min-width: 0;
-
-    margin-right: auto;
-
     display: flex;
-
+    flex: 1 1 auto;
     flex-direction: column;
-
     justify-content: center;
+    min-width: 0;
+    margin-right: auto;
 }
-
 
 .panel-admin .barra-superior h1 {
-
     margin: 0;
-
-    font-family:
-        "Cinzel",
-        Georgia,
-        serif;
-
-    font-size: 22px;
-
-    line-height: 1.2;
-
-    font-weight: 700;
-
+    overflow: hidden;
     color: var(--azul);
-
+    font-family: "Cinzel", Georgia, serif;
+    font-size: clamp(17px, 1.5vw, 22px);
+    font-weight: 700;
+    line-height: 1.2;
     letter-spacing: .2px;
+    text-overflow: ellipsis;
 }
-
 
 .panel-admin .subtitulo {
-
     display: block;
-
     margin-top: 3px;
-
+    overflow: hidden;
     color: var(--texto-secundario);
-
     font-size: 11px;
-
     letter-spacing: .2px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-
 
 /* =========================================================
-   USUARIO
-========================================================= */
+   USUARIO Y AVATAR
+   ========================================================= */
 
 .panel-admin .usuario {
-
     display: flex;
-
+    flex: 0 0 auto;
     align-items: center;
-
     gap: 9px;
-
-    padding:
-        5px 8px 5px 11px;
-
-    background:
-        #F8FAFB;
-
-    border:
-        1px solid var(--borde);
-
+    padding: 5px 8px 5px 11px;
+    background: #F8FAFB;
+    border: 1px solid var(--borde);
     border-radius: 8px;
-
-    box-shadow:
-        var(--sombra-suave);
+    box-shadow: var(--sombra-suave);
 }
-
 
 .panel-admin .usuario-info {
-
     display: flex;
-
     flex-direction: column;
-
+    min-width: 0;
     text-align: right;
-
-    min-width: 80px;
 }
-
 
 .panel-admin .usuario-info strong {
-
+    overflow: hidden;
     color: var(--azul);
-
     font-size: 13px;
-
     font-weight: 600;
-
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
-
 
 .panel-admin .usuario-info small {
-
     margin-top: 2px;
-
     color: var(--texto-secundario);
-
     font-size: 10px;
-
     white-space: nowrap;
 }
 
-
 .panel-admin .avatar {
-
-    width: 36px;
-
-    height: 36px;
-
-    min-width: 36px;
-
+    position: relative;
     display: flex;
-
+    flex: 0 0 36px;
     align-items: center;
-
     justify-content: center;
-
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    color: #fff;
+    background: linear-gradient(145deg, var(--azul), var(--azul-oscuro));
+    border: 2px solid rgba(219, 176, 96, .75);
     border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--azul),
-            var(--azul-oscuro)
-        );
-
-    color: white;
-
-    border:
-        2px solid rgba(219,176,96,.65);
-
-    box-shadow:
-        0 3px 7px rgba(15,42,72,.15);
+    box-shadow: 0 2px 7px rgba(15, 42, 72, .18);
 }
 
-
 .panel-admin .avatar svg {
-
     width: 18px;
-
     height: 18px;
 }
 
+.panel-admin .avatar img {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 27px;
+    height: 27px;
+    margin: 0;
+    object-fit: contain;
+}
 
 /* =========================================================
-   CONTENIDO GENERAL
-========================================================= */
+   CONTENIDO Y VENTANAS
+   ========================================================= */
 
 .panel-admin #contenido {
-
-    flex: 1;
-
+    flex: 1 1 auto;
+    min-width: 0;
     min-height: 0;
-
     height: auto;
-
+    padding: 20px;
+    overflow-x: auto;
     overflow-y: auto;
-
-    overflow-x: hidden;
-
-    padding:
-        20px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #F3F6F8,
-            #EAEFF3
-        );
+    background: linear-gradient(135deg, #F3F6F8, #EAEFF3);
+    scrollbar-width: thin;
+    scrollbar-color: #C7D0D8 transparent;
 }
-
-
-/* =========================================================
-   CONTENEDOR DE CADA PESTAÑA
-========================================================= */
 
 .panel-admin .ventana {
-
     width: 100%;
-
+    min-width: 0;
     min-height: 100%;
-
-    padding:
-        22px;
-
-    background:
-        rgba(255,255,255,.96);
-
-    border:
-        1px solid var(--borde);
-
+    padding: 22px;
+    background: rgba(255, 255, 255, .96);
+    border: 1px solid var(--borde);
     border-radius: 10px;
-
-    box-shadow:
-        var(--sombra);
-
-    animation:
-        aparecerVentana .22s ease;
+    box-shadow: var(--sombra);
+    animation: aparecerVentana .22s ease;
 }
-
-
-/* =========================================================
-   ANIMACIÓN
-========================================================= */
-
-@keyframes aparecerVentana {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            translateY(5px);
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-            translateY(0);
-    }
-}
-
-
-/* =========================================================
-   SCROLL PRINCIPAL
-========================================================= */
 
 .panel-admin #contenido::-webkit-scrollbar {
-
     width: 7px;
+    height: 7px;
 }
-
 
 .panel-admin #contenido::-webkit-scrollbar-track {
-
     background: transparent;
 }
-
 
 .panel-admin #contenido::-webkit-scrollbar-thumb {
-
-    background:
-        #C7D0D8;
-
+    background: #C7D0D8;
     border-radius: 10px;
 }
-
 
 .panel-admin #contenido::-webkit-scrollbar-thumb:hover {
-
-    background:
-        var(--azul);
+    background: var(--azul);
 }
 
+@keyframes aparecerVentana {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* =========================================================
-   SCROLL SIDEBAR
-========================================================= */
-
-.panel-admin .sidebar nav::-webkit-scrollbar {
-
-    width: 4px;
-}
-
-
-.panel-admin .sidebar nav::-webkit-scrollbar-track {
-
-    background: transparent;
-}
-
-
-.panel-admin .sidebar nav::-webkit-scrollbar-thumb {
-
-    background:
-        rgba(219,176,96,.45);
-
-    border-radius: 10px;
-}
-
-
-/* =========================================================
-   BOTONES GENERALES
-========================================================= */
-
-.panel-admin button {
-
-    font-family:
-        "Roboto",
-        Arial,
-        sans-serif;
-}
-
+   ACCESIBILIDAD
+   ========================================================= */
 
 .panel-admin button:focus-visible,
 .panel-admin input:focus-visible,
 .panel-admin select:focus-visible,
 .panel-admin textarea:focus-visible {
-
-    outline:
-        2px solid rgba(129,210,247,.8);
-
-    outline-offset:
-        2px;
+    outline: 2px solid rgba(129, 210, 247, .9);
+    outline-offset: 2px;
 }
 
 /* =========================================================
    MODAL CERRAR SESIÓN
-   ESTÉTICA ARCHIVO HISTÓRICO / MUSEO MALVINAS
-========================================================= */
+   ========================================================= */
 
 .modal-cerrar-sesion {
-
     position: fixed;
-
-    inset: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 25px;
-
-    background:
-        rgba(3, 14, 28, .78);
-
-    backdrop-filter:
-        blur(5px);
-
     z-index: 99999;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    overflow-y: auto;
+    background: rgba(3, 14, 28, .78);
+    backdrop-filter: blur(5px);
 }
-
-
-/* =========================================================
-   CONTENEDOR DEL CARTEL
-========================================================= */
 
 .modal-cerrar-contenido {
-
-    width: 420px;
-
-    max-width: 100%;
-
-    padding: 38px 40px;
-
     position: relative;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(13, 45, 78, .98),
-            rgba(7, 29, 53, .98)
-        );
-
-    border:
-        1px solid rgba(216, 198, 161, .65);
-
-    border-radius: 14px;
-
-    box-shadow:
-
-        0 30px 70px rgba(0, 0, 0, .75),
-
-        0 0 0 1px
-        rgba(255, 255, 255, .04) inset;
-
+    width: 420px;
+    max-width: 100%;
+    max-height: calc(100dvh - 40px);
+    padding: 38px 40px;
+    overflow-y: auto;
     text-align: center;
-
-    animation:
-        aparecerModal .25s ease-out;
+    background: linear-gradient(145deg, rgba(13, 45, 78, .98), rgba(7, 29, 53, .98));
+    border: 1px solid rgba(216, 198, 161, .65);
+    border-radius: 14px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .75), 0 0 0 1px rgba(255, 255, 255, .04) inset;
+    animation: aparecerModal .25s ease-out;
 }
 
-
-/* =========================================================
-   BORDE INTERNO
-========================================================= */
-
 .modal-cerrar-contenido::before {
-
-    content: "";
-
     position: absolute;
-
     inset: 9px;
-
-    border:
-        1px solid rgba(216, 198, 161, .25);
-
+    content: "";
+    border: 1px solid rgba(216, 198, 161, .25);
     border-radius: 9px;
-
     pointer-events: none;
 }
 
-
-/* =========================================================
-   DETALLE DECORATIVO SUPERIOR
-========================================================= */
-
 .modal-cerrar-contenido::after {
-
-    content: "✦";
-
     position: absolute;
-
     top: 15px;
-
     left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    color:
-        #d8c6a1;
-
+    color: #D8C6A1;
     font-size: 18px;
-
     line-height: 1;
-
-    text-shadow:
-        0 0 8px rgba(216, 198, 161, .35);
+    text-shadow: 0 0 8px rgba(216, 198, 161, .35);
+    content: "✦";
+    transform: translateX(-50%);
 }
 
-
-/* =========================================================
-   TÍTULO
-========================================================= */
-
 .modal-cerrar-contenido h2 {
-
     position: relative;
-
-    margin:
-        15px 0 20px;
-
+    margin: 15px 0 20px;
     padding-bottom: 18px;
-
-    color:
-        #f4eddb;
-
-    font-family:
-        Georgia,
-        serif;
-
+    color: #F4EDDB;
+    font-family: Georgia, serif;
     font-size: 25px;
-
     font-weight: bold;
-
     letter-spacing: 2px;
-
     text-transform: uppercase;
 }
 
-
-/* =========================================================
-   LÍNEA DECORATIVA
-========================================================= */
-
 .modal-cerrar-contenido h2::after {
-
-    content: "";
-
     position: absolute;
-
     bottom: 0;
-
     left: 50%;
-
-    transform:
-        translateX(-50%);
-
     width: 100px;
-
     height: 1px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #d8c6a1,
-            transparent
-        );
+    content: "";
+    background: linear-gradient(90deg, transparent, #D8C6A1, transparent);
+    transform: translateX(-50%);
 }
 
-
-/* =========================================================
-   TEXTO
-========================================================= */
-
 .modal-cerrar-contenido p {
-
-    margin:
-        0 auto 25px;
-
     max-width: 330px;
-
-    color:
-        #dce5ed;
-
-    font-family:
-        Georgia,
-        serif;
-
+    margin: 0 auto 25px;
+    color: #DCE5ED;
+    font-family: Georgia, serif;
     font-size: 16px;
-
     line-height: 1.6;
 }
 
-
-/* =========================================================
-   ACCIONES
-========================================================= */
-
 .modal-cerrar-contenido .acciones-modal {
-
-    margin-top: 25px;
-
     display: flex;
-
     justify-content: center;
-
     gap: 12px;
+    margin-top: 25px;
 }
-
-
-/* =========================================================
-   BOTONES
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal button {
-
     width: auto;
-
     min-width: 125px;
-
     padding: 12px 24px;
-
-    border:
-        1px solid rgba(216, 198, 161, .45);
-
-    border-radius: 7px;
-
-    cursor: pointer;
-
-    font-family:
-        Georgia,
-        serif;
-
+    color: #E1E9F0;
+    font-family: Georgia, serif;
     font-size: 14px;
-
     font-weight: bold;
-
     letter-spacing: 1px;
-
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        background .25s ease;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(216, 198, 161, .45);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
 }
-
-
-/* =========================================================
-   CANCELAR
-========================================================= */
-
-.modal-cerrar-contenido .acciones-modal button:first-child {
-
-    background:
-        rgba(255, 255, 255, .08);
-
-    color:
-        #e1e9f0;
-
-    border-color:
-        rgba(216, 198, 161, .35);
-}
-
-
-/* =========================================================
-   CERRAR SESIÓN
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal .boton-principal {
-
-    background:
-        linear-gradient(
-            135deg,
-            #705438,
-            #4d3722
-        );
-
-    color:
-        #fff;
-
-    box-shadow:
-        0 5px 15px rgba(0, 0, 0, .35);
+    color: #fff;
+    background: linear-gradient(135deg, #705438, #4D3722);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .35);
 }
-
-
-/* =========================================================
-   HOVER
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal button:hover {
-
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, .45);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .45);
 }
-
-
-/* =========================================================
-   HOVER CANCELAR
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal button:first-child:hover {
-
-    background:
-        rgba(255, 255, 255, .14);
+    background: rgba(255, 255, 255, .14);
 }
-
-
-/* =========================================================
-   HOVER CERRAR
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal .boton-principal:hover {
-
-    background:
-        linear-gradient(
-            135deg,
-            #806142,
-            #5b4229
-        );
+    background: linear-gradient(135deg, #806142, #5B4229);
 }
-
-
-/* =========================================================
-   CLICK
-========================================================= */
 
 .modal-cerrar-contenido .acciones-modal button:active {
-
-    transform:
-        translateY(0);
+    transform: translateY(0);
 }
-
-
-/* =========================================================
-   ANIMACIÓN
-========================================================= */
 
 @keyframes aparecerModal {
-
     from {
-
         opacity: 0;
-
-        transform:
-            translateY(-15px)
-            scale(.97);
+        transform: translateY(-15px) scale(.97);
     }
-
     to {
-
         opacity: 1;
-
-        transform:
-            translateY(0)
-            scale(1);
+        transform: translateY(0) scale(1);
     }
 }
 
-
 /* =========================================================
-   RESPONSIVE
-========================================================= */
+   TABLETS Y PANTALLAS MEDIANAS
+   ========================================================= */
 
-@media (max-width: 500px) {
+@media (max-width: 1000px) {
+    .panel-admin #contenido {
+        padding: 16px;
+    }
 
-    .modal-cerrar-sesion {
-
+    .panel-admin .ventana {
         padding: 20px;
     }
+}
 
+/* =========================================================
+   TELÉFONOS
+   ========================================================= */
 
-    .modal-cerrar-contenido {
-
-        padding:
-            35px 25px;
+@media (max-width: 700px) {
+    .panel-admin {
+        flex-direction: column;
     }
 
+    .panel-admin .panel-main {
+        flex: 1 1 auto;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+    }
+
+    .panel-admin .barra-superior {
+        flex-basis: 64px;
+        height: 64px;
+        gap: 9px;
+        padding: 7px 10px;
+    }
+
+    .panel-admin .barra-superior h1 {
+        font-size: clamp(15px, 4vw, 19px);
+    }
+
+    .panel-admin .subtitulo,
+    .panel-admin .usuario-info {
+        display: none;
+    }
+
+    .panel-admin .usuario {
+        padding: 4px;
+    }
+
+    .panel-admin #contenido {
+        padding: 10px;
+    }
+
+    .panel-admin .ventana {
+        padding: 14px;
+        border-radius: 9px;
+    }
+}
+
+@media (max-width: 420px) {
+    .panel-admin .barra-superior {
+        gap: 7px;
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    .panel-admin .boton-menu-lateral {
+        flex-basis: 34px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .panel-admin .avatar {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .panel-admin #contenido {
+        padding: 8px;
+    }
+
+    .panel-admin .ventana {
+        padding: 12px;
+    }
+
+    .modal-cerrar-sesion {
+        padding: 16px;
+    }
+
+    .modal-cerrar-contenido {
+        padding: 34px 22px 25px;
+    }
 
     .modal-cerrar-contenido h2 {
-
         font-size: 21px;
-
         letter-spacing: 1.5px;
     }
 
-
     .modal-cerrar-contenido p {
-
         font-size: 15px;
     }
 
-
     .modal-cerrar-contenido .acciones-modal {
-
         flex-direction: column;
-
-        align-items: center;
+        align-items: stretch;
     }
-
 
     .modal-cerrar-contenido .acciones-modal button {
-
         width: 100%;
-
-        max-width: 220px;
-    }
-
-}
-
-@keyframes aparecerModal {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            scale(.96);
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-            scale(1);
+        max-width: none;
     }
 }
 
-
-/* =========================================================
-   SIDEBAR PLEGADA
-========================================================= */
-
-@media (min-width: 701px) {
-
-    .panel-admin.sidebar-plegada .sidebar {
-
-        width: 68px;
-
-        min-width: 68px;
+@media (prefers-reduced-motion: reduce) {
+    .panel-admin *,
+    .modal-cerrar-contenido {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
     }
-
-
-    /* Logo */
-
-    .panel-admin.sidebar-plegada .sidebar .logo {
-
-        padding:
-            16px 6px 15px;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-    }
-
-
-    .panel-admin.sidebar-plegada .sidebar .logo h2,
-    .panel-admin.sidebar-plegada .sidebar .logo span,
-    .panel-admin.sidebar-plegada .sidebar .separador {
-
-        display: none;
-    }
-
-
-    .panel-admin.sidebar-plegada .sidebar .logo img {
-
-        width: 42px;
-
-        height: 42px;
-
-        margin: 0;
-
-        object-fit: contain;
-
-        filter:
-            drop-shadow(
-                0 3px 7px rgba(0,0,0,.25)
-            );
-    }
-
-
-    /* Navegación */
-
-    .panel-admin.sidebar-plegada .sidebar nav {
-
-        padding:
-            12px 7px;
-    }
-
-
-    .panel-admin.sidebar-plegada .sidebar .item {
-
-        width: 48px;
-
-        min-width: 48px;
-
-        height: 44px;
-
-        min-height: 44px;
-
-        justify-content: center;
-
-        gap: 0;
-
-        padding: 8px;
-
-        margin:
-            0 auto 5px;
-
-        font-size: 0;
-    }
-
-
-    .panel-admin.sidebar-plegada .sidebar .item:hover {
-
-        transform: none;
-    }
-
-
-    .panel-admin.sidebar-plegada .sidebar .item i,
-    .panel-admin.sidebar-plegada .sidebar .item svg {
-
-        width: 20px;
-
-        height: 20px;
-
-        flex: 0 0 20px;
-    }
-
-
-    /* Footer */
-
-    .panel-admin.sidebar-plegada .sidebar-footer {
-
-        padding:
-            10px 7px 13px;
-    }
-
-
-    .panel-admin.sidebar-plegada #cerrarSesion {
-
-        width: 48px;
-
-        min-width: 48px;
-
-        height: 43px;
-
-        justify-content: center;
-
-        gap: 0;
-
-        padding: 8px;
-
-        margin: 0 auto;
-    }
-
-
-    .panel-admin.sidebar-plegada #cerrarSesion span {
-
-        display: none;
-    }
-}
-
-
-/* =========================================================
-   RESPONSIVE TABLET
-========================================================= */
-
-@media (max-width: 1100px) and (min-width: 701px) {
-
-    .panel-admin .sidebar {
-
-        width: 200px;
-
-        min-width: 200px;
-    }
-
-
-    .panel-admin #contenido {
-
-        padding:
-            18px;
-    }
-
-
-    .panel-admin .ventana {
-
-        padding:
-            20px;
-    }
-
-}
-
-
-/* =========================================================
-   RESPONSIVE TELÉFONO
-========================================================= */
-
-@media (max-width: 700px) {
-
-    .panel-admin {
-
-        min-height: 100dvh;
-
-        height: 100dvh;
-
-        flex-direction: column;
-    }
-
-
-    .panel-admin .sidebar {
-
-        width: 100%;
-
-        min-width: 100%;
-
-        height: 58px;
-
-        min-height: 58px;
-
-        flex-shrink: 0;
-    }
-
-
-    .panel-admin .sidebar .logo,
-    .panel-admin .sidebar-footer {
-
-        display: none;
-    }
-
-
-    .panel-admin .sidebar nav {
-
-        display: flex;
-
-        align-items: center;
-
-        gap: 6px;
-
-        padding: 6px 8px;
-
-        overflow-x: auto;
-
-        overflow-y: hidden;
-    }
-
-
-    .panel-admin .sidebar .item {
-
-        width: 46px;
-
-        min-width: 46px;
-
-        height: 44px;
-
-        justify-content: center;
-
-        gap: 0;
-
-        padding: 8px;
-
-        margin: 0;
-
-        font-size: 0;
-    }
-
-
-    .panel-admin .panel-main {
-
-        width: 100%;
-
-        height:
-            calc(100dvh - 58px);
-    }
-
-
-    .panel-admin .barra-superior {
-
-        height: 68px;
-
-        min-height: 68px;
-
-        flex-basis: 68px;
-
-        padding:
-            8px 12px;
-    }
-
-
-    .panel-admin .barra-superior h1 {
-
-        font-size: 19px;
-    }
-
-
-    .panel-admin .subtitulo {
-
-        display: none;
-    }
-
-
-    .panel-admin .usuario-info {
-
-        display: none;
-    }
-
-
-    .panel-admin .usuario {
-
-        padding:
-            4px;
-    }
-
-
-    .panel-admin .avatar {
-
-        width: 36px;
-
-        height: 36px;
-
-        min-width: 36px;
-    }
-
-
-    .panel-admin #contenido {
-
-        padding:
-            12px;
-    }
-
-
-    .panel-admin .ventana {
-
-        padding:
-            16px;
-
-        border-radius:
-            9px;
-    }
-}
-
-
-/* =========================================================
-   AVATAR USUARIO
-========================================================= */
-
-.panel-admin .avatar {
-
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background:
-        linear-gradient(
-            145deg,
-            var(--azul),
-            var(--azul-oscuro)
-        );
-
-    border:
-        2px solid rgba(219,176,96,.75);
-
-    box-shadow:
-        0 2px 7px rgba(15,42,72,.18);
-
-    overflow: hidden;
-
-    position: relative;
-}
-
-
-.panel-admin .avatar img {
-
-    width: 27px;
-    height: 27px;
-
-    object-fit: contain;
-
-    display: block;
-
-    margin: 0;
-
-    position: relative;
-
-    z-index: 2;
 }
