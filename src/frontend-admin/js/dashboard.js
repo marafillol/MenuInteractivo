@@ -987,7 +987,7 @@ function mostrarContenidoOculto(
                     </i>
 
                     <span>
-                        No hay ${nombreTipo(tipo)}
+                        No hay ${obtenerTipoDashboard(tipo).nombre}
                         ocultos.
                     </span>
 
@@ -1165,8 +1165,3 @@ function alternarContenidoOculto(
 
 }
 
-
-// =======================================================
-// INICIAR DASHBOARD
-// =======================================================
-// La carga se realiza desde panel.js al abrir la ventana.

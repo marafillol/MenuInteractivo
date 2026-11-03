@@ -1152,6 +1152,8 @@ async function cargarPlantillas() {
                 ? "tarjeta-plantilla"
                 : "tarjeta-plantilla plantilla-inactiva";
 
+            tarjeta.dataset.idPlantilla = String(plantilla.id_plantilla);
+
             const informacion = document.createElement("div");
             informacion.className = "info-plantilla";
 

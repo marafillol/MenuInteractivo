@@ -1,11 +1,99 @@
 const { AsyncLocalStorage } = require("node:async_hooks");
 const { Pool } = require("pg");
 const { traducirConsulta } = require("./databaseSqlCompat");
-
+const { performance } = require("node:perf_hooks");
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    min: 3,
+    max: 5,
+    idleTimeoutMillis: 30000
 });
+const iniciosConexion = new WeakMap();
+
+pool.on("connect", (cliente) => {
+    iniciosConexion.set(cliente, performance.now());
+
+    // Captura errores de conexión incluso mientras el cliente está en uso.
+    cliente.on("error", (error) => {
+        console.error(
+            "[POOL][CLIENTE] Error de conexión PostgreSQL:",
+            error.message
+        );
+    });
+
+    console.log(
+        `[POOL] Conexión establecida. ` +
+        `total=${pool.totalCount}; ` +
+        `idle=${pool.idleCount}; ` +
+        `esperando=${pool.waitingCount}`
+    );
+});
+
+pool.on("acquire", (cliente) => {
+    const inicio = iniciosConexion.get(cliente);
+
+    const tiempoDesdeConexion = inicio !== undefined
+        ? (performance.now() - inicio).toFixed(1)
+        : "conexión ya existente";
+
+    console.log(
+        `[POOL] Conexión adquirida; ` +
+        `tiempo_desde_apertura=${tiempoDesdeConexion} ms`
+    );
+});
+
+pool.on("remove", () => {
+    console.log(
+        `[POOL] Conexión eliminada. ` +
+        `total=${pool.totalCount}; ` +
+        `idle=${pool.idleCount}`
+    );
+});
+
+pool.on("error", (error) => {
+    console.error("[POOL] Error:", error.message);
+});
+setInterval(() => {
+    console.log(
+        `[POOL] total=${pool.totalCount}; ` +
+        `idle=${pool.idleCount}; ` +
+        `esperando=${pool.waitingCount}`
+    );
+}, 2000).unref();
+
+
+const conectarCliente = async () => {
+    const cliente = await pool.connect();
+    let errorConexion = null;
+    let liberado = false;
+
+    const manejarError = (error) => {
+        errorConexion ??= error;
+
+        console.error(
+            "[DB] Error en cliente PostgreSQL:",
+            error.message
+        );
+    };
+
+    cliente.on("error", manejarError);
+
+    return {
+        cliente,
+
+        liberar() {
+            if (liberado) return;
+            liberado = true;
+
+            // Si la conexión falló, el pool debe descartar este cliente.
+            cliente.release(errorConexion || undefined);
+
+            // El pool vuelve a administrar los errores cuando queda inactivo.
+            cliente.removeListener("error", manejarError);
+        }
+    };
+};
 
 const contextoAsync = new AsyncLocalStorage();
 const umbralConsultaLentaMs = Number.parseInt(process.env.DB_LOG_SLOW_QUERIES_MS || "0", 10);
@@ -44,17 +132,54 @@ const ejecutar = (consulta, valores = [], contexto = contextoAsync.getStore()) =
     const sql = traducirConsulta(consulta);
     const inicioSolicitado = process.hrtime.bigint();
 
-    const ejecutarEnPool = async () => {
-        const inicioEjecucion = process.hrtime.bigint();
-        try {
-            const resultado = await pool.query(sql, valores);
-            informarConsultaLenta(sql, inicioSolicitado, inicioEjecucion, process.hrtime.bigint(), resultado.rowCount, null);
-            return resultado;
-        } catch (error) {
-            informarConsultaLenta(sql, inicioSolicitado, inicioEjecucion, process.hrtime.bigint(), null, error.code || "sin_codigo");
-            throw error;
+
+
+const ejecutarEnPool = async () => {
+    const inicioEjecucion = process.hrtime.bigint();
+    let inicioConsulta;
+    let conexion;
+
+    try {
+        conexion = await conectarCliente();
+        const { cliente } = conexion;
+        const inicioQuery = process.hrtime.bigint();
+
+        inicioConsulta = inicioQuery;
+
+        const resultado = await cliente.query(sql, valores);
+        const fin = process.hrtime.bigint();
+
+        if (umbralConsultaLentaMs > 0) {
+            const esperaMs = Number(inicioQuery - inicioEjecucion) / 1e6;
+            const consultaMs = Number(fin - inicioQuery) / 1e6;
+
+            if (esperaMs + consultaMs >= umbralConsultaLentaMs) {
+                console.warn(
+                    `[db][diagnóstico] espera_conexion=${esperaMs.toFixed(1)} ms; ` +
+                    `consulta=${consultaMs.toFixed(1)} ms; ` +
+                    `${resumenConsulta(sql)}; filas=${resultado.rowCount}`
+                );
+            }
         }
-    };
+
+        return resultado;
+    } catch (error) {
+        if (umbralConsultaLentaMs > 0) {
+            console.warn(
+                `[db][diagnóstico] Error en ${resumenConsulta(sql)}; ` +
+                `codigo=${error.code || "sin_codigo"}`
+            );
+        }
+
+        throw error;
+    } finally {
+        if (conexion) {
+            conexion.liberar();
+        }
+    }
+};
+
+
 
     if (!contexto) return ejecutarEnPool();
 
@@ -211,7 +336,8 @@ const db = {
             throw new TypeError("La transacción requiere una función.");
         }
 
-        const cliente = await pool.connect();
+        const conexion = await conectarCliente();
+        const { cliente } = conexion;
 
         try {
             await cliente.query("BEGIN");
@@ -221,6 +347,7 @@ const db = {
 
             const resultado = await trabajo(consultar);
             await cliente.query("COMMIT");
+
             return resultado;
         } catch (error) {
             try {
@@ -228,11 +355,30 @@ const db = {
             } catch (errorRollback) {
                 registrarErrorSinCallback("rollback", errorRollback);
             }
+
             throw error;
         } finally {
-            cliente.release();
+            conexion.liberar();
         }
     },
+
+
+
+    async preparar() {
+        await Promise.all(
+            Array.from({ length: 3 }, async () => {
+                const conexion = await conectarCliente();
+                const { cliente } = conexion;
+
+                try {
+                    await cliente.query("SELECT 1");
+                } finally {
+                    conexion.liberar();
+                }
+            })
+        );
+    },
+
 
     close(callback) {
         pool.end().then(

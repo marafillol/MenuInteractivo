@@ -1,5 +1,5 @@
-const Plantilla = require("../modelos/plantilla");
-
+﻿const Plantilla = require("../modelos/plantilla");
+const cachePublico = require("../middleware/cachePublico");
 const { interpretarJson } =
     require("../utilidades/interpretarJson");
 // ======================================
@@ -72,7 +72,7 @@ const obtenerPlantilla = async(req,res)=>{
 
 
 // ======================================
-// OBTENER PLANTILLA POR MENÚ
+// OBTENER PLANTILLA POR MENÃš
 // ======================================
 
 
@@ -126,6 +126,7 @@ const crearPlantilla = async(req,res)=>{
 
         const id =
         await Plantilla.crear(req.body);
+        cachePublico.invalidar(["fichas", "menus"]);
 
         res.json({
 
@@ -162,6 +163,7 @@ const actualizarPlantilla = async(req,res)=>{
             req.body
 
         );
+        cachePublico.invalidar(["fichas", "menus"]);
 
         res.json({
 
@@ -203,7 +205,7 @@ const eliminarPlantilla = async(req,res)=>{
             return res.status(400).json({
 
                 error:
-                "No se puede eliminar la plantilla porque está siendo utilizada por un menú."
+                "No se puede eliminar la plantilla porque estÃ¡ siendo utilizada por un menÃº."
 
             });
 
@@ -211,6 +213,7 @@ const eliminarPlantilla = async(req,res)=>{
 
 
         await Plantilla.eliminar(id);
+        cachePublico.invalidar(["fichas", "menus"]);
 
 
         res.json({

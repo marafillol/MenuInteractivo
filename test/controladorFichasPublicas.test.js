@@ -32,18 +32,38 @@ const modeloFalso = {
     }
 };
 
+const cacheFalsa = {
+    datos: null,
+    obtenerDatosPublicos(tipo) {
+        return this.datos?.[tipo] ?? null;
+    }
+};
+
 const cargarOriginal = Module._load;
 Module._load = function (solicitud, padre, esPrincipal) {
     const esModeloFichaPublica =
         solicitud === "../../modelos/public/ficha" &&
-        padre?.filename?.endsWith(path.join("src", "controladores", "public", "fichasController.js"));
+        padre?.filename?.endsWith(
+            path.join("src", "controladores", "public", "fichasController.js")
+        );
+
+    const esCachePublica =
+        solicitud === "../../servicios/cachePublica" &&
+        padre?.filename?.endsWith(
+            path.join("src", "controladores", "public", "fichasController.js")
+        );
 
     if (esModeloFichaPublica) {
         return modeloFalso;
     }
 
+    if (esCachePublica) {
+        return cacheFalsa;
+    }
+
     return cargarOriginal.call(this, solicitud, padre, esPrincipal);
 };
+
 
 let controlador;
 try {
@@ -76,11 +96,24 @@ function crearFicha(datosJson, plantillaJson) {
     };
 }
 
-test("listado público admite objetos JSONB y cadenas JSON", async () => {
-    estado.lista = [
-        crearFicha({ texto: "JSONB" }, { campos: [{ nombre: "titulo" }] }),
-        crearFicha('{"texto":"SQLite"}', '{"campos":[{"nombre":"titulo"}]}')
-    ];
+
+test("listado público devuelve las fichas preparadas en la caché", async () => {
+    cacheFalsa.datos = {
+        fichas: [
+            {
+                ...crearFicha({ texto: "JSONB" }, { campos: [{ nombre: "titulo" }] }),
+                plantilla: { campos: [{ nombre: "titulo" }] }
+            },
+            {
+                ...crearFicha({ texto: "SQLite" }, { campos: [{ nombre: "titulo" }] }),
+                plantilla: { campos: [{ nombre: "titulo" }] }
+            }
+        ]
+    };
+
+    for (const ficha of cacheFalsa.datos.fichas) {
+        delete ficha.plantilla_json;
+    }
 
     const res = crearRespuesta();
     await controlador.obtenerFichas({}, res);
@@ -93,11 +126,26 @@ test("listado público admite objetos JSONB y cadenas JSON", async () => {
     assert.deepEqual(res.cuerpo[1].plantilla, { campos: [{ nombre: "titulo" }] });
 });
 
+
 test("filtro por menú admite objetos JSONB", async () => {
-    estado.lista = [crearFicha({ resumen: "Resumen" }, { campos: [] })];
+    const ficha = {
+        ...crearFicha({ resumen: "Resumen" }, { campos: [] }),
+        id_menu: 1,
+        plantilla: { campos: [] }
+    };
+
+    delete ficha.plantilla_json;
+
+    cacheFalsa.datos = {
+        fichas: [ficha]
+    };
 
     const res = crearRespuesta();
-    await controlador.obtenerFichasPorMenu({ params: { id_menu: "1" } }, res);
+
+    await controlador.obtenerFichasPorMenu(
+        { params: { id_menu: "1" } },
+        res
+    );
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.cuerpo[0].datos_json, { resumen: "Resumen" });
@@ -105,75 +153,87 @@ test("filtro por menú admite objetos JSONB", async () => {
 });
 
 test("filtro por etiqueta admite objetos JSONB", async () => {
-    estado.lista = [crearFicha({ etiqueta: "Historia" }, { campos: [] })];
+    const ficha = {
+        ...crearFicha({ etiqueta: "Historia" }, { campos: [] }),
+        plantilla: { campos: [] }
+    };
+
+    delete ficha.plantilla_json;
+
+    cacheFalsa.datos = {
+        fichas: [ficha],
+        relacionesEtiquetas: [
+            {
+                id_ficha: 7,
+                id_etiqueta: 1
+            }
+        ]
+    };
 
     const res = crearRespuesta();
-    await controlador.obtenerFichasPorEtiqueta({ params: { id_etiqueta: "1" } }, res);
+
+    await controlador.obtenerFichasPorEtiqueta(
+        { params: { id_etiqueta: "1" } },
+        res
+    );
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.cuerpo[0].datos_json, { etiqueta: "Historia" });
     assert.deepEqual(res.cuerpo[0].plantilla, { campos: [] });
 });
-
-test("detalle público consulta etiquetas, relaciones y multimedia en paralelo", async () => {
-    estado.ficha = crearFicha({ descripcion: "Detalle" }, { campos: [] });
-
-    const originales = {
-        etiquetas: modeloFalso.obtenerEtiquetas,
-        relacionadas: modeloFalso.obtenerRelacionadas,
-        multimedia: modeloFalso.obtenerMultimedia
+test("detalle público devuelve las asociaciones incluidas en la consulta unificada", async () => {
+    cacheFalsa.datos = {
+        fichasDetalle: [
+            {
+                ...crearFicha({ descripcion: "Detalle" }, { campos: [] }),
+                etiquetas: [{ id_etiqueta: 1 }],
+                relacionadas: [{ id_ficha_destino: 8 }],
+                multimedia: [{ id_multi: 2 }]
+            }
+        ]
     };
-    const llamadas = [];
-    const resolver = {};
-
-    modeloFalso.obtenerEtiquetas = () => {
-        llamadas.push("etiquetas");
-        return new Promise((resolve) => { resolver.etiquetas = resolve; });
-    };
-    modeloFalso.obtenerRelacionadas = () => {
-        llamadas.push("relacionadas");
-        return new Promise((resolve) => { resolver.relacionadas = resolve; });
-    };
-    modeloFalso.obtenerMultimedia = () => {
-        llamadas.push("multimedia");
-        return new Promise((resolve) => { resolver.multimedia = resolve; });
-    };
-
-    try {
-        const res = crearRespuesta();
-        const solicitud = controlador.obtenerFichaPorId({ params: { id_ficha: "7" } }, res);
-        // Deja continuar la resolución asíncrona de la ficha base, sin resolver asociaciones.
-        await Promise.resolve();
-
-        // Las tres funciones deben arrancar antes de resolver cualquiera de ellas.
-        assert.deepEqual(llamadas, ["etiquetas", "relacionadas", "multimedia"]);
-
-        resolver.etiquetas([{ id_etiqueta: 1 }]);
-        resolver.relacionadas([{ id_ficha_destino: 8 }]);
-        resolver.multimedia([{ id_multi: 2 }]);
-
-        await solicitud;
-
-        assert.equal(res.statusCode, 200);
-        assert.deepEqual(res.cuerpo.etiquetas, [{ id_etiqueta: 1 }]);
-        assert.deepEqual(res.cuerpo.relacionadas, [{ id_ficha_destino: 8 }]);
-        assert.deepEqual(res.cuerpo.multimedia, [{ id_multi: 2 }]);
-    } finally {
-        modeloFalso.obtenerEtiquetas = originales.etiquetas;
-        modeloFalso.obtenerRelacionadas = originales.relacionadas;
-        modeloFalso.obtenerMultimedia = originales.multimedia;
-    }
-});
-
-test("detalle público admite objetos JSONB en ficha y plantilla", async () => {
-    estado.ficha = crearFicha({ descripcion: "Detalle" }, { campos: [{ nombre: "descripcion" }] });
 
     const res = crearRespuesta();
-    await controlador.obtenerFichaPorId({ params: { id_ficha: "7" } }, res);
+    await controlador.obtenerFichaPorId(
+        { params: { id_ficha: "7" } },
+        res
+    );
 
     assert.equal(res.statusCode, 200);
-    assert.deepEqual(res.cuerpo.datos_json, { descripcion: "Detalle" });
-    assert.deepEqual(res.cuerpo.plantilla, { campos: [{ nombre: "descripcion" }] });
+    assert.deepEqual(res.cuerpo.etiquetas, [{ id_etiqueta: 1 }]);
+    assert.deepEqual(res.cuerpo.relacionadas, [{ id_ficha_destino: 8 }]);
+    assert.deepEqual(res.cuerpo.multimedia, [{ id_multi: 2 }]);
+});
+
+
+test("detalle público admite objetos JSONB en ficha y plantilla", async () => {
+    cacheFalsa.datos = {
+        fichasDetalle: [
+            {
+                id_ficha: 7,
+                titulo: "Ficha de prueba",
+                datos_json: { descripcion: "Detalle" },
+                plantilla: {
+                    campos: [{ nombre: "descripcion" }]
+                }
+            }
+        ]
+    };
+
+    const res = crearRespuesta();
+
+    await controlador.obtenerFichaPorId(
+        { params: { id_ficha: "7" } },
+        res
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.cuerpo.datos_json, {
+        descripcion: "Detalle"
+    });
+    assert.deepEqual(res.cuerpo.plantilla, {
+        campos: [{ nombre: "descripcion" }]
+    });
     assert.equal("plantilla_json" in res.cuerpo, false);
     assert.deepEqual(res.cuerpo.etiquetas, []);
     assert.deepEqual(res.cuerpo.relacionadas, []);

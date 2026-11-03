@@ -1,41 +1,18 @@
-const Etiqueta =
-require("../../modelos/public/etiquetas");
 
+const cachePublica = require("../../servicios/cachePublica");
 
-// =======================================================
-// OBTENER TODAS LAS ETIQUETAS
-// =======================================================
+async function obtenerEtiquetas(req, res) {
+    const etiquetas = cachePublica.obtenerDatosPublicos("etiquetas");
 
-async function obtenerEtiquetas(req,res){
-
-    try{
-
-        const etiquetas =
-        await Etiqueta.obtenerTodas();
-
-        res.json(etiquetas);
-
-    }
-    catch(error){
-
-        console.error(
-            "[PUBLIC] Error al obtener etiquetas:",
-            error
-        );
-
-        res.status(500).json({
-
-            error:"Error al obtener las etiquetas."
-
+    if (etiquetas === null) {
+        return res.status(503).json({
+            error: "Las etiquetas públicas todavía se están preparando."
         });
-
     }
 
+    res.json(etiquetas);
 }
 
-
 module.exports = {
-
     obtenerEtiquetas
-
 };

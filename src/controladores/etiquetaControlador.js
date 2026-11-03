@@ -1,6 +1,7 @@
 const Etiqueta =
 require("../modelos/etiquetaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
+const cachePublico = require("../middleware/cachePublico");
 
 
 exports.obtenerEtiquetas = async(req,res)=>{
@@ -25,25 +26,40 @@ exports.obtenerEtiquetas = async(req,res)=>{
 };
 
 
-
 exports.crearEtiqueta = async (req, res) => {
-
     try {
-
         const etiqueta = await Etiqueta.crear(req.body);
 
+        cachePublico.invalidar(["etiquetas", "fichas"]);
+
         res.json(etiqueta);
-
     } catch (error) {
-
         console.error(error);
 
         res.status(500).json({
             error: error.message
         });
-
     }
+};
 
+exports.eliminarEtiqueta = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        await FichaEtiqueta.eliminarEtiquetasRelacionadas(id);
+
+        const resultado = await Etiqueta.eliminar(id);
+
+        cachePublico.invalidar(["etiquetas", "fichas"]);
+
+        res.json(resultado);
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            error: error.message
+        });
+    }
 };
 
 exports.obtenerEtiqueta = async(req,res)=>{
@@ -79,6 +95,8 @@ exports.editarEtiqueta = async(req,res)=>{
             req.body
         );
 
+        cachePublico.invalidar(["etiquetas", "fichas"]);
+
 
         res.json(etiqueta);
 
@@ -93,27 +111,3 @@ exports.editarEtiqueta = async(req,res)=>{
 
 };
 
-
-exports.eliminarEtiqueta = async (req, res) => {
-
-    try {
-
-        const id = req.params.id;
-
-        await FichaEtiqueta.eliminarEtiquetasRelacionadas(id);
-
-        const resultado = await Etiqueta.eliminar(id);
-
-        res.json(resultado);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            error: error.message
-        });
-
-    }
-
-};

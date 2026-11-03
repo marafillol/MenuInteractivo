@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -8,7 +8,54 @@
 
     <title>Panel Administrativo | MenuInteractivo</title>
 
+    <style>
+        /* Evitar mostrar el panel antes de verificar los permisos */
+        body {
+            visibility: hidden;
+        }
 
+        /* Plantillas, Usuarios y Configuración:
+           solamente visibles para administradores */
+        html[data-rol="editor"] [data-ventana="plantillas"],
+        html[data-rol="editor"] [data-ventana="usuarios"],
+        html[data-rol="editor"] [data-ventana="configuracion"],
+        html[data-rol="consulta"] [data-ventana="plantillas"],
+        html[data-rol="consulta"] [data-ventana="usuarios"],
+        html[data-rol="consulta"] [data-ventana="configuracion"] {
+            display: none !important;
+        }
+
+        /* Consulta: ocultar controles de edición */
+        html[data-rol="consulta"] .btn-nuevo,
+        html[data-rol="consulta"] .btn-editar,
+        html[data-rol="consulta"] .btn-eliminar,
+        html[data-rol="consulta"] .btn-guardar,
+        html[data-rol="consulta"] .btn-cancelar,
+
+        html[data-rol="consulta"] #nuevoMenu,
+        html[data-rol="consulta"] #guardarMenu,
+
+        html[data-rol="consulta"] #nuevaFicha,
+        html[data-rol="consulta"] #guardarFicha,
+        html[data-rol="consulta"] #btnGuardarFicha,
+
+        html[data-rol="consulta"] #nuevoMultimedia,
+        html[data-rol="consulta"] #nuevoMultimediaFicha,
+        html[data-rol="consulta"] .btn-nuevo-multimedia,
+
+        html[data-rol="consulta"] #nuevaEtiqueta,
+        html[data-rol="consulta"] #guardarEtiqueta,
+
+        html[data-rol="consulta"] #nuevaPlantilla,
+        html[data-rol="consulta"] #btnGuardarPlantilla,
+        html[data-rol="consulta"] #btnNuevoCampo,
+        html[data-rol="consulta"] #btnGuardarCampo,
+
+        html[data-rol="consulta"] #nuevoUsuario,
+        html[data-rol="consulta"] #guardarUsuario {
+            display: none !important;
+        }
+    </style>
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/sidebar.css">
 
@@ -50,7 +97,7 @@
 
         <div class="logo">
 
-            <h2>MENU INTERACTIVO</h2>
+            <h2>Museo de Malvinas</h2>
 
             <img
                     src="imagenes/logo.png"
@@ -285,7 +332,7 @@ Centro de Documentación Histórica
 
 
 <!-- ==========================
-     MODAL CERRAR SESIÓN
+     MODAL CERRAR SESIÃ“N
 =========================== -->
 
 
@@ -355,7 +402,7 @@ Centro de Documentación Histórica
 
 <script src="js/interpretarDatosJson.js"></script>
 
-<script src="js/panel.js"></script>
+<script defer src="js/panel.js"></script>
 
 <script src="js/buscador.js"></script>
 

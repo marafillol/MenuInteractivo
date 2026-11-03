@@ -129,7 +129,8 @@ test("listar menús devuelve las filas recibidas de la base", async () => {
     assert.deepEqual(resultado, [filaMenu]);
     assert.equal(llamadas.length, 1);
     assert.equal(llamadas[0].tipo, "all");
-    assert.match(llamadas[0].sql, /SELECT\s+\*\s+FROM\s+menu/i);
+    assert.match(llamadas[0].sql, /SELECT\s+menu\.\*/i);
+    assert.match(llamadas[0].sql, /LEFT\s+JOIN\s+plantilla/i);
 });
 
 test("listar menús devuelve una lista vacía cuando no hay registros", async () => {
@@ -151,7 +152,10 @@ test("buscar menú consulta por ID y devuelve el registro", async () => {
 
     assert.deepEqual(resultado, filaMenu);
     assert.equal(llamadas[0].tipo, "get");
-    assert.match(llamadas[0].sql, /WHERE\s+id_menu\s*=\s*\?/i);
+    assert.match(
+        llamadas[0].sql,
+        /WHERE\s+menu\.id_menu\s*=\s*\?/i
+    );
     assert.deepEqual(llamadas[0].parametros, [5]);
 });
 

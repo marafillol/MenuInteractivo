@@ -1,14 +1,14 @@
 const Multimedia = require("../modelos/multimedia");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
-
+const cachePublico = require("../middleware/cachePublico");
 const tiposMultimedia = new Set(["imagen", "video", "audio", "pdf"]);
 
 const miniaturaPorTipo = (tipo) => ({
-    imagen: "🖼️",
-    video: "🎥",
-    audio: "🎵",
-    pdf: "📄"
-}[tipo] || "📁");
+    imagen: "\u{1F5BC}\u{FE0F}",
+    video: "\u{1F3A5}",
+    audio: "\u{1F3B5}",
+    pdf: "\u{1F4C4}"
+}[tipo] || "\u{1F4C1}");
 
 const idPositivo = (valor) =>
     /^\d+$/.test(String(valor ?? "")) &&
@@ -133,6 +133,7 @@ const crearMultimedia = async(req,res)=>{
         };
 
         const id = await Multimedia.crear(datos);
+        cachePublico.invalidar(["fichas"]);
         // El registro quedó guardado; el archivo ya no debe limpiarse desde el catch.
         rutaSubida = null;
 
@@ -225,6 +226,7 @@ const actualizarMultimedia = async(req,res)=>{
         };
 
         await Multimedia.actualizar(req.params.id, datos);
+        cachePublico.invalidar(["fichas"]);
         guardado = true;
 
         let advertencia = null;
@@ -276,6 +278,7 @@ const eliminarMultimedia = async(req,res)=>{
         }
 
         await Multimedia.eliminar(req.params.id);
+        cachePublico.invalidar(["fichas"]);
 
         let advertencia = null;
         try {
@@ -323,3 +326,4 @@ module.exports = {
     fechaArgentina
 
 };
+

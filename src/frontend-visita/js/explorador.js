@@ -14,18 +14,149 @@
 let fichasExplorador = [];
 let menusExplorador = [];
 let etiquetasExplorador = [];
+let menuActivoExplorador = null;
+let solicitudIndice = 0;
 
-// El menú y el criterio de búsqueda sobreviven al cierre de paneles,
-// a la apertura de una ficha y al regreso al índice.
-let menuExploradorSeleccionado = null; // null representa «Todos».
-let terminoBusquedaExplorador = "";
-let etiquetaExploradorSeleccionada = null;
+// =======================================================
+// ACTUALIZACIÓN AUTOMÁTICA DE FICHAS
+// =======================================================
+
+const INTERVALO_ACTUALIZACION_FICHAS = 15000;
+
+let temporizadorActualizacionFichas = null;
+let actualizacionFichasEnCurso = false;
+let etiquetaActivaExplorador = null;
 
 // Cuántas tarjetas entran en la primera pantalla. Sus fotos se cargan
 // al instante (eager) y la vista espera a que estén listas; el resto
 // queda en "lazy" para no bajar cientos de imágenes de golpe.
 const FICHAS_PRIMERA_PANTALLA = 12;
 
+
+
+// =======================================================
+// PRECARGA DE EXPEDIENTES COMPLETOS
+// =======================================================
+
+const PRIMERAS_FICHAS_A_PRECARGAR = 2;
+const MAX_PRECARGAS_SIMULTANEAS = 2;
+
+let observadorPrecargaFichas = null;
+
+const fichasEnColaPrecarga = [];
+const fichasSolicitadasPrecarga = new Set();
+
+let precargasActivas = 0;
+
+function solicitarPrecargaFicha(idFicha) {
+    if (
+        idFicha === undefined ||
+        idFicha === null ||
+        idFicha === ""
+    ) {
+        return;
+    }
+
+    const id = String(idFicha);
+
+    if (
+        fichasSolicitadasPrecarga.has(id) ||
+        typeof window.historiaCompleta?.precargar !== "function"
+    ) {
+        return;
+    }
+
+    fichasSolicitadasPrecarga.add(id);
+    fichasEnColaPrecarga.push(id);
+
+    procesarColaPrecargaFichas();
+}
+
+function procesarColaPrecargaFichas() {
+    while (
+        precargasActivas < MAX_PRECARGAS_SIMULTANEAS &&
+        fichasEnColaPrecarga.length > 0
+    ) {
+        const id = fichasEnColaPrecarga.shift();
+
+        precargasActivas++;
+
+        console.log(
+            "[PRECARGA] Preparando expediente:",
+            id
+        );
+
+        Promise.resolve()
+            .then(() => window.historiaCompleta.precargar(id))
+            .catch(error => {
+                console.warn(
+                    "[PRECARGA] Error preparando expediente:",
+                    id,
+                    error
+                );
+
+                fichasSolicitadasPrecarga.delete(id);
+            })
+            .finally(() => {
+                precargasActivas--;
+                fichasSolicitadasPrecarga.delete(id);
+                procesarColaPrecargaFichas();
+            });
+    }
+}
+
+function prepararPrecargaDeTarjetas(contenedor) {
+    if (observadorPrecargaFichas) {
+        observadorPrecargaFichas.disconnect();
+        observadorPrecargaFichas = null;
+    }
+
+    const tarjetas = [
+        ...contenedor.querySelectorAll(".tarjetaFicha")
+    ];
+
+    if (!tarjetas.length) {
+        return;
+    }
+
+    // Preparar primero las cuatro primeras fichas.
+    tarjetas
+        .slice(0, PRIMERAS_FICHAS_A_PRECARGAR)
+        .forEach(tarjeta => {
+            solicitarPrecargaFicha(tarjeta.dataset.id);
+        });
+
+    // Preparar las siguientes cuando se acerquen a la pantalla.
+    if (!("IntersectionObserver" in window)) {
+        return;
+    }
+
+    observadorPrecargaFichas = new IntersectionObserver(
+        entradas => {
+            entradas.forEach(entrada => {
+                if (!entrada.isIntersecting) {
+                    return;
+                }
+
+                const tarjeta = entrada.target;
+
+                observadorPrecargaFichas.unobserve(tarjeta);
+
+                solicitarPrecargaFicha(tarjeta.dataset.id);
+            });
+        },
+        {
+            rootMargin: "300px 0px",
+            threshold: 0
+        }
+    );
+
+    tarjetas
+        .slice(PRIMERAS_FICHAS_A_PRECARGAR)
+        .forEach(tarjeta => {
+            observadorPrecargaFichas.observe(tarjeta);
+        });
+}
 // =======================================================
 // MOSTRAR EXPLORADOR
 // =======================================================
@@ -84,7 +215,7 @@ window.mostrarExplorador = mostrarExplorador;
 
 async function inicializarExplorador() {
 
-    console.log("[explorador] Inicializando...");
+
 
     await cargarFichasExplorador();
 
@@ -184,9 +315,7 @@ async function inicializarExplorador() {
             buscador.value = "";
         }
 
-        terminoBusquedaExplorador = "";
-        etiquetaExploradorSeleccionada = null;
-        renderizarFichasVisibles();
+        mostrarTodasLasFichas();
         cerrarPaneles();
 
     });
@@ -204,10 +333,8 @@ async function inicializarExplorador() {
         }
 
         buscador.value = "";
-        terminoBusquedaExplorador = "";
-        etiquetaExploradorSeleccionada = null;
 
-        renderizarFichasVisibles();
+        mostrarTodasLasFichas();
 
 
 
@@ -219,10 +346,8 @@ async function inicializarExplorador() {
 
     buscador?.addEventListener("input", () => {
 
-        terminoBusquedaExplorador = buscador.value;
-        etiquetaExploradorSeleccionada = null;
         filtrarFichasExplorador(
-            terminoBusquedaExplorador
+            buscador.value
         );
 
     });
@@ -331,12 +456,19 @@ async function inicializarExplorador() {
     // ESTADO INICIAL
     // ===================================================
 
-    renderizarFichasVisibles();
     renderizarIndice();
 
-    console.log(
-        "[explorador] Inicialización completa."
+    // Evitar duplicar temporizadores al reinicializar la vista.
+    if (temporizadorActualizacionFichas !== null) {
+        clearInterval(temporizadorActualizacionFichas);
+    }
+
+    temporizadorActualizacionFichas = setInterval(
+        actualizarFichasExplorador,
+        INTERVALO_ACTUALIZACION_FICHAS
     );
+
+
 
 }
 
@@ -346,10 +478,9 @@ async function inicializarExplorador() {
 
 async function cargarFichasExplorador() {
 
-    console.log(
-        "[explorador] Consultando APIs públicas..."
-    );
+    const inicioCarga = performance.now();
 
+    console.log("[RENDIMIENTO] Comienza cargarFichasExplorador");
     const contenedor =
         document.getElementById(
             "contenedorFichas"
@@ -359,6 +490,8 @@ async function cargarFichasExplorador() {
 
         // Las tres consultas se hacen EN PARALELO. Antes iban una
         // detrás de otra y los tiempos del servidor se sumaban.
+        const inicioConsultas = performance.now();
+
         const [
             respuestaFichas,
             respuestaMenus,
@@ -368,6 +501,12 @@ async function cargarFichasExplorador() {
             fetch("/api/public/menus"),
             fetch("/api/public/etiquetas")
         ]);
+
+        console.log(
+            `[RENDIMIENTO] Respuestas HTTP recibidas: ${
+                Math.round(performance.now() - inicioConsultas)
+            } ms`
+        );
 
         if (!respuestaFichas.ok) {
             throw new Error(
@@ -397,11 +536,19 @@ async function cargarFichasExplorador() {
             respuestaEtiquetas.json()
         ]);
 
+        console.log(
+            `[RENDIMIENTO] JSON procesado: ${
+                Math.round(performance.now() - inicioConsultas)
+            } ms desde el comienzo de las consultas`
+        );
+
         if (!Array.isArray(datosFichas)) {
-            throw new Error(
-                "La API no devolvió un array de fichas."
-            );
+            throw new Error("La API no devolvió un array de fichas.");
         }
+
+        console.log(
+            `[RENDIMIENTO] Cantidad de fichas: ${datosFichas.length}`
+        );
 
         if (!Array.isArray(datosMenus)) {
             throw new Error(
@@ -445,24 +592,13 @@ async function cargarFichasExplorador() {
         });
 
         etiquetasExplorador = datosEtiquetas;
+        console.log(
+            `[RENDIMIENTO] Datos normalizados: ${
+                Math.round(performance.now() - inicioCarga)
+            } ms desde el comienzo de la carga`
+        );
 
-
-        // No reiniciar la selección al volver a cargar datos del explorador.
-        if (
-            menuExploradorSeleccionado !== null &&
-            !menusExplorador.some(menu =>
-                Number(menu.id_menu) === Number(menuExploradorSeleccionado)
-            )
-        ) {
-            menuExploradorSeleccionado = null;
-        }
-
-        const buscadorActual = document.getElementById("buscador");
-        if (buscadorActual) {
-            buscadorActual.value = terminoBusquedaExplorador;
-        }
-
-        renderizarFichasVisibles();
+        mostrarTodasLasFichas();
         renderizarIndice();
         actualizarMensajeCentral();
 
@@ -491,6 +627,75 @@ async function cargarFichasExplorador() {
 
     }
 
+}
+
+// =======================================================
+// ACTUALIZAR FICHAS SIN PERDER EL FILTRO ACTIVO
+// =======================================================
+
+async function actualizarFichasExplorador() {
+    if (
+        actualizacionFichasEnCurso ||
+        !document.getElementById("contenedorFichas")
+    ) {
+        return;
+    }
+
+    actualizacionFichasEnCurso = true;
+
+    try {
+        const respuesta = await fetch("/api/public/fichas", {
+            cache: "no-store"
+        });
+
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+
+        const datos = await respuesta.json();
+
+        if (!Array.isArray(datos)) {
+            throw new Error("La API no devolvió un array de fichas.");
+        }
+
+        const fichasActualizadas = datos.map(normalizarFicha);
+
+        const firmaAnterior = JSON.stringify(fichasExplorador);
+        const firmaNueva = JSON.stringify(fichasActualizadas);
+
+        if (firmaAnterior === firmaNueva) {
+            return;
+        }
+
+        fichasExplorador = fichasActualizadas;
+
+        console.log(
+            "[explorador] Se detectaron cambios en las fichas."
+        );
+
+        if (etiquetaActivaExplorador !== null) {
+            await mostrarFichasPorEtiqueta(etiquetaActivaExplorador);
+        } else {
+            const buscador = document.getElementById("buscador");
+            const termino = buscador?.value || "";
+
+            if (termino.trim()) {
+                filtrarFichasExplorador(termino);
+            } else {
+                mostrarTodasLasFichas();
+            }
+        }
+
+        actualizarMensajeCentral();
+
+    } catch (error) {
+        console.warn(
+            "[explorador] No se pudieron actualizar las fichas:",
+            error
+        );
+    } finally {
+        actualizacionFichasEnCurso = false;
+    }
 }
 
 // =======================================================
@@ -527,81 +732,125 @@ function normalizarFicha(ficha) {
     };
 
 }
-
 // =======================================================
-// ESTADO Y FILTRADO DE FICHAS
+// FICHAS DEL CONTEXTO ACTUAL
 // =======================================================
 
-function obtenerFichasDelMenuSeleccionado() {
-    if (menuExploradorSeleccionado === null) {
-        return [...fichasExplorador];
+function obtenerFichasDelMenuActivo() {
+    if (menuActivoExplorador === null) {
+        return fichasExplorador;
     }
 
     return fichasExplorador.filter(
         ficha =>
             Number(ficha.id_menu) ===
-            Number(menuExploradorSeleccionado)
+            Number(menuActivoExplorador)
     );
 }
 
-function obtenerFichasVisibles() {
-    let fichas = obtenerFichasDelMenuSeleccionado();
-    const termino = normalizarTexto(terminoBusquedaExplorador);
+// =======================================================
+// MOSTRAR FICHAS DEL CONTEXTO ACTUAL
+// =======================================================
 
-    if (termino) {
-        fichas = fichas.filter(ficha =>
-            fichaCoincideBusqueda(ficha, termino)
-        );
-    }
+function mostrarTodasLasFichas() {
+    const fichas = obtenerFichasDelMenuActivo();
 
-    // Mantener el orden y la plantilla propios del menú mientras se busca
-    // o se borra el texto, en lugar de volver al estilo global.
-    if (menuExploradorSeleccionado !== null) {
-        const menu = menusExplorador.find(
-            elemento =>
-                Number(elemento.id_menu) ===
-                Number(menuExploradorSeleccionado)
-        );
+    const menu = menusExplorador.find(
+        elemento =>
+            Number(elemento.id_menu) ===
+            Number(menuActivoExplorador)
+    );
 
-        return ordenarFichasPorPlantilla(
+    const fichasOrdenadas = menuActivoExplorador === null
+        ? fichas
+        : ordenarFichasPorPlantilla(
             fichas,
             menu?.plantilla || null,
-            menuExploradorSeleccionado
-        );
-    }
-
-    return fichas;
-}
-
-function renderizarFichasVisibles() {
-    const menu = menuExploradorSeleccionado === null
-        ? null
-        : menusExplorador.find(
-            elemento =>
-                Number(elemento.id_menu) ===
-                Number(menuExploradorSeleccionado)
+            menuActivoExplorador
         );
 
-    renderizarResultados(obtenerFichasVisibles(), {
+    renderizarResultados(fichasOrdenadas, {
         plantilla: menu?.plantilla || null
     });
 }
 
-function mostrarTodasLasFichas() {
-    menuExploradorSeleccionado = null;
-    etiquetaExploradorSeleccionada = null;
-    terminoBusquedaExplorador = "";
-
-    const buscador = document.getElementById("buscador");
-    if (buscador) buscador.value = "";
-
-    renderizarFichasVisibles();
-}
+// =======================================================
+// FILTRAR FICHAS POR TEXTO
+// =======================================================
 
 function filtrarFichasExplorador(texto) {
-    terminoBusquedaExplorador = String(texto ?? "");
-    etiquetaExploradorSeleccionada = null;
-    renderizarFichasVisibles();
+    etiquetaActivaExplorador = null;
+    const termino = normalizarTexto(texto);
+    const fichasBase = obtenerFichasDelMenuActivo();
+
+    const menu = menusExplorador.find(
+        elemento =>
+            Number(elemento.id_menu) ===
+            Number(menuActivoExplorador)
+    );
+
+    if (!termino) {
+        mostrarTodasLasFichas();
+        volverAlInicioDeFichas();
+        return;
+    }
+
+    const resultados = fichasBase.filter(
+        ficha => fichaCoincideBusqueda(ficha, termino)
+    );
+
+    renderizarResultados(resultados, {
+        plantilla: menu?.plantilla || null
+    });
+
+    volverAlInicioDeFichas();
+}
+
+// =======================================================
+// ETIQUETAS DEL CONTEXTO ACTUAL
+// =======================================================
+async function obtenerEtiquetasDelMenuActivo() {
+    if (menuActivoExplorador === null) {
+        return etiquetasExplorador;
+    }
+
+    const idMenu = Number(menuActivoExplorador);
+
+    const resultados = await Promise.all(
+        etiquetasExplorador.map(async etiqueta => {
+            try {
+                const respuesta = await fetch(
+                    `/api/public/fichas/etiqueta/${etiqueta.id_etiqueta}`
+                );
+
+                if (!respuesta.ok) {
+                    return null;
+                }
+
+                const fichas = await respuesta.json();
+
+                if (!Array.isArray(fichas)) {
+                    return null;
+                }
+
+                const perteneceAlMenu = fichas.some(
+                    ficha => Number(ficha.id_menu) === idMenu
+                );
+
+                return perteneceAlMenu ? etiqueta : null;
+            } catch (error) {
+                console.error(
+                    "[explorador] Error comprobando etiqueta:",
+                    etiqueta.nombre,
+                    error
+                );
+
+                return null;
+            }
+        })
+    );
+
+    return resultados.filter(Boolean);
 }
 
 // =======================================================
@@ -685,6 +934,8 @@ function normalizarTexto(texto) {
 
 function renderizarResultados(resultados, opciones = {}) {
 
+    const inicioRenderizado = performance.now();
+
     const contenedor =
         document.getElementById(
             "contenedorFichas"
@@ -739,6 +990,13 @@ function renderizarResultados(resultados, opciones = {}) {
     });
 
     contenedor.replaceChildren(fragmento);
+    prepararPrecargaDeTarjetas(contenedor);
+
+    console.log(
+        `[RENDIMIENTO] Renderizadas ${resultados.length} fichas en ${
+            Math.round(performance.now() - inicioRenderizado)
+        } ms`
+    );
 
 }
 
@@ -822,20 +1080,24 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
     const imagen =
         document.createElement("img");
 
-    imagen.src =
-        obtenerImagenExplorador(ficha);
+    const esPrimeraPantalla =
+        indice < FICHAS_PRIMERA_PANTALLA;
 
-    console.log("Ficha:", ficha.id_ficha);
-    console.log("Imagen:", imagen.src);
+    imagen.loading = esPrimeraPantalla
+        ? "eager"
+        : "lazy";
+
+    imagen.decoding = "async";
+
+    if (esPrimeraPantalla) {
+        imagen.fetchPriority = "high";
+    }
 
     imagen.alt =
         obtenerNombreFicha(ficha);
 
-    imagen.loading =
-        indice < FICHAS_PRIMERA_PANTALLA
-            ? "eager"
-            : "lazy";
-    imagen.decoding = "async";
+    imagen.src =
+        obtenerImagenExplorador(ficha);
 
     imagen.onerror = function () {
 
@@ -1030,7 +1292,9 @@ function obtenerNombreFicha(ficha) {
 // ÍNDICE
 // =======================================================
 
-function renderizarIndice() {
+async function renderizarIndice() {
+
+    const solicitudActual = ++solicitudIndice;
 
     const contenedor =
         document.querySelector(
@@ -1038,6 +1302,20 @@ function renderizarIndice() {
         );
 
     if (!contenedor) {
+        return;
+    }
+
+    const menuConsultado = menuActivoExplorador;
+
+    const etiquetasVisibles =
+        await obtenerEtiquetasDelMenuActivo();
+
+    // Si se seleccionó otro menú mientras esperábamos
+    // la respuesta, descartamos este índice desactualizado.
+    if (
+        solicitudActual !== solicitudIndice ||
+        menuConsultado !== menuActivoExplorador
+    ) {
         return;
     }
 
@@ -1067,6 +1345,36 @@ function renderizarIndice() {
         "MENÚS";
 
     columnaMenus.appendChild(tituloMenus);
+    // Botón para volver a mostrar todas las fichas
+    const botonTodos = document.createElement("button");
+
+    botonTodos.type = "button";
+    botonTodos.className = "item-indice";
+    botonTodos.textContent = "TODOS";
+
+    if (menuActivoExplorador === null) {
+        botonTodos.classList.add("menu-activo");
+        botonTodos.setAttribute("aria-current", "true");
+    }
+
+    botonTodos.addEventListener("click", evento => {
+        evento.stopPropagation();
+
+        menuActivoExplorador = null;
+        etiquetaActivaExplorador = null;
+
+        const buscador = document.getElementById("buscador");
+        if (buscador) {
+            buscador.value = "";
+        }
+
+        mostrarTodasLasFichas();
+        renderizarIndice();
+        cerrarPaneles();
+        actualizarMensajeCentral();
+    });
+
+    columnaMenus.appendChild(botonTodos);
 
     const tituloEtiquetas =
         document.createElement("h3");
@@ -1081,41 +1389,7 @@ function renderizarIndice() {
         tituloEtiquetas
     );
 
-    // Todos
-    const botonTodos =
-        document.createElement("button");
 
-    botonTodos.type = "button";
-
-    botonTodos.className =
-        "item-indice boton-todos";
-    botonTodos.classList.toggle(
-        "seleccionado",
-        menuExploradorSeleccionado === null
-    );
-    botonTodos.setAttribute(
-        "aria-pressed",
-        String(menuExploradorSeleccionado === null)
-    );
-
-    botonTodos.textContent =
-        "TODOS";
-
-    botonTodos.addEventListener(
-        "click",
-        evento => {
-
-            evento.stopPropagation();
-
-            mostrarTodasLasFichas();
-            renderizarIndice();
-            cerrarPaneles();
-            actualizarMensajeCentral();
-
-        }
-    );
-
-    columnaMenus.appendChild(botonTodos);
 
     // Menús
     if (menusExplorador.length) {
@@ -1127,15 +1401,14 @@ function renderizarIndice() {
 
             boton.type = "button";
             boton.className = "item-indice";
-            boton.classList.toggle(
-                "seleccionado",
-                Number(menuExploradorSeleccionado) === Number(menu.id_menu)
-            );
-            boton.setAttribute(
-                "aria-pressed",
-                String(Number(menuExploradorSeleccionado) === Number(menu.id_menu))
-            );
             boton.textContent = menu.nombre;
+
+            if (
+                Number(menu.id_menu) === Number(menuActivoExplorador)
+            ) {
+                boton.classList.add("menu-activo");
+                boton.setAttribute("aria-current", "true");
+            }
 
             boton.addEventListener(
                 "click",
@@ -1143,9 +1416,10 @@ function renderizarIndice() {
 
                     evento.stopPropagation();
 
-                    mostrarFichasPorMenu(
-                        menu.id_menu
-                    );
+                    menuActivoExplorador = menu.id_menu;
+
+                    mostrarFichasPorMenu(menu.id_menu);
+                    renderizarIndice();
 
                 }
             );
@@ -1170,10 +1444,11 @@ function renderizarIndice() {
 
     }
 
-    // Etiquetas
-    if (etiquetasExplorador.length) {
 
-        etiquetasExplorador.forEach(etiqueta => {
+
+    if (etiquetasVisibles.length) {
+
+        etiquetasVisibles.forEach(etiqueta => {
 
             const boton =
                 document.createElement("button");
@@ -1181,6 +1456,15 @@ function renderizarIndice() {
             boton.type = "button";
             boton.className = "item-indice";
             boton.textContent = etiqueta.nombre;
+
+            // Resaltar la etiqueta seleccionada.
+            if (
+                Number(etiqueta.id_etiqueta) ===
+                Number(etiquetaActivaExplorador)
+            ) {
+                boton.classList.add("menu-activo");
+                boton.setAttribute("aria-current", "true");
+            }
 
             boton.addEventListener(
                 "click",
@@ -1312,17 +1596,9 @@ function ordenarFichasPorPlantilla(fichas, plantilla, idMenu) {
 
 
 function mostrarFichasPorMenu(idMenu) {
-    menuExploradorSeleccionado = idMenu;
-    etiquetaExploradorSeleccionada = null;
-    const buscador = document.getElementById("buscador");
-    if (buscador) {
-        terminoBusquedaExplorador = buscador.value;
-    }
 
-    console.log(
-        "[explorador] Filtrando por menú:",
-        idMenu
-    );
+    menuActivoExplorador = idMenu;
+    etiquetaActivaExplorador = null;
 
     const menuSeleccionado = menusExplorador.find(
         menu => Number(menu.id_menu) === Number(idMenu)
@@ -1334,10 +1610,7 @@ function mostrarFichasPorMenu(idMenu) {
 
     const plantilla = menuSeleccionado?.plantilla || null;
 
-    console.log(
-        "[explorador] Orden configurado:",
-        plantilla?.interfaz?.ordenFichas || "titulo_asc"
-    );
+
 
     const fichasOrdenadas = ordenarFichasPorPlantilla(
         fichasFiltradas,
@@ -1345,26 +1618,11 @@ function mostrarFichasPorMenu(idMenu) {
         idMenu
     );
 
-    console.log("[PRUEBA] Orden recibido:", plantilla?.interfaz?.ordenFichas);
-
-    console.table(fichasFiltradas.map(f => ({
-        id: f.id_ficha,
-        titulo: f.titulo,
-        creadoOriginal: f.creado,
-        fechaInterpretada: Date.parse(f.creado || ""),
-        fechaValida: Number.isFinite(Date.parse(f.creado || ""))
-    })));
-
-    const termino = normalizarTexto(terminoBusquedaExplorador);
-    const resultados = termino
-        ? fichasOrdenadas.filter(ficha => fichaCoincideBusqueda(ficha, termino))
-        : fichasOrdenadas;
-
-    renderizarResultados(resultados, {
+    renderizarResultados(fichasOrdenadas, {
         plantilla: plantilla
     });
-    renderizarIndice();
 
+    volverAlInicioDeFichas();
     cerrarPaneles();
     actualizarMensajeCentral();
 }
@@ -1373,66 +1631,60 @@ function mostrarFichasPorMenu(idMenu) {
 // =======================================================
 // FILTRAR POR ETIQUETA
 // =======================================================
-
 async function mostrarFichasPorEtiqueta(idEtiqueta) {
 
-    console.log(
-        "[explorador] Filtrando por etiqueta:",
-        idEtiqueta
-    );
+    etiquetaActivaExplorador = idEtiqueta;
+    renderizarIndice();
+
 
     try {
-
-        const respuesta =
-            await fetch(
-                `/api/public/fichas/etiqueta/${idEtiqueta}`
-            );
+        const respuesta = await fetch(
+            `/api/public/fichas/etiqueta/${idEtiqueta}`
+        );
 
         if (!respuesta.ok) {
-            throw new Error(
-                `HTTP ${respuesta.status}`
-            );
+            throw new Error(`HTTP ${respuesta.status}`);
         }
 
-        const fichas =
-            await respuesta.json();
+        const datos = await respuesta.json();
 
-        if (!Array.isArray(fichas)) {
+        if (!Array.isArray(datos)) {
             throw new Error(
                 "La API no devolvió un array de fichas."
             );
         }
 
-        const fichasFiltradas =
-            fichas.map(normalizarFicha);
+        let fichasFiltradas = datos.map(normalizarFicha);
 
-        etiquetaExploradorSeleccionada = idEtiqueta;
-        terminoBusquedaExplorador = "";
-        const buscador = document.getElementById("buscador");
-        if (buscador) buscador.value = "";
-        const permitidas = new Set(
-            obtenerFichasDelMenuSeleccionado().map(ficha => String(ficha.id_ficha))
+        // Si hay un menú activo, excluir las fichas de otros menús.
+        if (menuActivoExplorador !== null) {
+            fichasFiltradas = fichasFiltradas.filter(
+                ficha =>
+                    Number(ficha.id_menu) ===
+                    Number(menuActivoExplorador)
+            );
+        }
+
+        const menu = menusExplorador.find(
+            elemento =>
+                Number(elemento.id_menu) ===
+                Number(menuActivoExplorador)
         );
-        const resultados = fichasFiltradas.filter(ficha =>
-            permitidas.has(String(ficha.id_ficha))
-        );
 
-        renderizarResultados(resultados);
-        renderizarIndice();
+        renderizarResultados(fichasFiltradas, {
+            plantilla: menu?.plantilla || null
+        });
 
+        volverAlInicioDeFichas();
         cerrarPaneles();
         actualizarMensajeCentral();
 
-    }
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "[explorador] Error filtrando por etiqueta:",
             error
         );
-
     }
-
 }
 
 // =======================================================
@@ -1549,6 +1801,26 @@ function cerrarPaneles() {
             "panelBusqueda"
         );
 
+    const btnIndice =
+        document.getElementById(
+            "btnIndice"
+        );
+
+    const btnBuscar =
+        document.getElementById(
+            "btnBuscar"
+        );
+
+    // Si el foco está dentro de un panel que vamos a ocultar,
+    // devolverlo al botón que permite volver a abrirlo.
+    const elementoActivo = document.activeElement;
+
+    if (indice?.contains(elementoActivo)) {
+        btnIndice?.focus();
+    } else if (busqueda?.contains(elementoActivo)) {
+        btnBuscar?.focus();
+    }
+
     indice?.classList.remove("activo");
     busqueda?.classList.remove("activo");
 
@@ -1632,16 +1904,19 @@ function manejarClickExterior(evento) {
 // =======================================================
 
 window.exploradorPublico = {
-    cargar: cargarFichasExplorador,
-    obtener: () => [...fichasExplorador],
-    buscar: filtrarFichasExplorador,
-    cerrar: cerrarPaneles,
-    obtenerFichasVisibles,
-    obtenerEstado: () => ({
-        menuId: menuExploradorSeleccionado,
-        termino: terminoBusquedaExplorador,
-        etiquetaId: etiquetaExploradorSeleccionada
-    })
+
+    cargar:
+        cargarFichasExplorador,
+
+    obtener:
+        () => [...fichasExplorador],
+
+    buscar:
+        filtrarFichasExplorador,
+
+    cerrar:
+        cerrarPaneles
+
 };
 
 
@@ -1805,10 +2080,35 @@ function aplicarPlantillaAlContenedor(contenedor, plantilla) {
     contenedor.classList.add("con-plantilla");
 }
 
-// =======================================================
-// DEBUG
-// =======================================================
 
-console.log(
-    "[explorador] explorador.js cargado correctamente."
-);
+
+
+function volverAlInicioDeFichas() {
+    requestAnimationFrame(() => {
+        const pantalla = document.querySelector(
+            ".pantalla-veteranos"
+        );
+
+        const contenedor = document.getElementById(
+            "contenedorFichas"
+        );
+
+        if (!pantalla || !contenedor) {
+            console.warn(
+                "[explorador] No se encontró la pantalla o el contenedor de fichas."
+            );
+            return;
+        }
+
+        const posicion =
+            contenedor.getBoundingClientRect().top -
+            pantalla.getBoundingClientRect().top +
+            pantalla.scrollTop;
+
+        pantalla.scrollTo({
+            top: Math.max(0, posicion - 150),
+            behavior: "auto"
+        });
+    });
+}
+
