@@ -1,5 +1,7 @@
 
-import { obtenerClienteSupabase } from "./supabaseClient.js";
+import { obtenerClienteSupabase, obtenerConfiguracionAutenticacion } from "./supabaseClient.js";
+
+const CLAVE_TOKEN_LOCAL = "menu_interactivo_token_local";
 
 const esPanel = window.location.pathname.endsWith("panel.html");
 
@@ -7,16 +9,19 @@ window.supabaseAuthReady = (async () => {
     if (!esPanel) return null;
 
     try {
-        const cliente = await obtenerClienteSupabase();
-
-        // Esperar a que Supabase restaure la sesión guardada.
-        const { data, error } = await cliente.auth.getSession();
-
-        if (error) {
-            throw error;
+        const configuracion = await obtenerConfiguracionAutenticacion();
+        let cliente = null;
+        let token = null;
+        if (configuracion.modo === "local") {
+            token = localStorage.getItem(CLAVE_TOKEN_LOCAL);
+        } else {
+            cliente = await obtenerClienteSupabase();
+            const { data, error } = await cliente.auth.getSession();
+            if (error) throw error;
+            token = data?.session?.access_token;
         }
 
-        if (!data?.session?.access_token) {
+        if (!token) {
             window.authRedirigiendoLogin = true;
             window.location.replace("index.html");
             return null;
@@ -24,7 +29,7 @@ window.supabaseAuthReady = (async () => {
 
         const respuesta = await fetch("/api/usuarios/me", {
             headers: {
-                Authorization: `Bearer ${data.session.access_token}`
+                Authorization: `Bearer ${token}`
             }
         });
 
@@ -37,7 +42,8 @@ window.supabaseAuthReady = (async () => {
             };
 
             if (respuesta.status === 401) {
-                await cliente.auth.signOut();
+                if (configuracion.modo === "local") localStorage.removeItem(CLAVE_TOKEN_LOCAL);
+                else await cliente.auth.signOut();
                 window.authRedirigiendoLogin = true;
                 window.location.replace("index.html");
                 return null;
@@ -82,6 +88,12 @@ window.obtenerTokenSupabase = async function () {
         }
     }
 
+    const configuracion = await obtenerConfiguracionAutenticacion();
+    if (configuracion.modo === "local") {
+        const token = localStorage.getItem(CLAVE_TOKEN_LOCAL);
+        if (!token) throw new Error("No hay una sesión local activa.");
+        return token;
+    }
     const cliente = await obtenerClienteSupabase();
     const { data, error } = await cliente.auth.getSession();
 
@@ -99,6 +111,12 @@ window.obtenerTokenSupabase = async function () {
 };
 
 window.cerrarSesionSupabase = async function () {
+    const configuracion = await obtenerConfiguracionAutenticacion();
+    if (configuracion.modo === "local") {
+        localStorage.removeItem(CLAVE_TOKEN_LOCAL);
+        await fetch("/api/auth/logout", { method: "POST" });
+        return;
+    }
     const cliente = await obtenerClienteSupabase();
     const { error } = await cliente.auth.signOut();
 

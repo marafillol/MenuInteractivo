@@ -1,3 +1,11 @@
+const { esModoLocal } = require("../config/modoServidor");
+
+if (esModoLocal) {
+
+    module.exports = require("./autenticarLocal");
+
+} else {
+
 const Usuario = require("../modelos/usuario");
 const {
     estaSupabaseAuthConfigurado,
@@ -70,3 +78,5 @@ const autenticarSupabase = async (req, res, next) => {
 };
 
 module.exports = autenticarSupabase;
+
+}
