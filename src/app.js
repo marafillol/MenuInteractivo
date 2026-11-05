@@ -331,13 +331,10 @@ async function iniciarServidor() {
             );
         }
 
-        // La caché pública de main se mantiene para Supabase/PostgreSQL.
-        // En modo local se evita depender de su ciclo de preparación.
-        if (!esModoLocal) {
-            const cachePublica = require("./servicios/cachePublica");
-            await cachePublica.actualizarCachePublica();
-            cachePublica.iniciarActualizacionPeriodica();
-        }
+        // La caché pública se utiliza en ambos modos; sus modelos consultan el adaptador activo.
+        const cachePublica = require("./servicios/cachePublica");
+        await cachePublica.actualizarCachePublica();
+        cachePublica.iniciarActualizacionPeriodica();
     } catch (error) {
         console.error(
             "No se pudo preparar la caché pública:",
