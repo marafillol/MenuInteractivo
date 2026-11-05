@@ -275,6 +275,7 @@ app.use(
 // Configuración pública mínima para inicializar Supabase Auth en el navegador.
 // La clave de servicio nunca se envía al cliente.
 app.get("/api/public/auth-config", (req, res) => {
+    if (esModoLocal) return res.json({ modo: "local" });
     const { obtenerConfiguracionPublica } = require("./config/supabaseAuth");
     const configuracion = obtenerConfiguracionPublica();
     if (!configuracion) {
