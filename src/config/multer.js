@@ -39,26 +39,24 @@ const storage = estaConfigurado
                 return;
             }
 
-            // Algunos subdirectorios (audio/documentos) pueden no existir
-            // en una instalación nueva del museo. Crearlos evita errores ENOENT.
+            // Crear directorios faltantes para instalaciones locales nuevas.
             fs.mkdir(path.resolve(process.cwd(), destino), { recursive: true }, (error) => {
                 cb(error, destino);
             });
         },
 
         filename: (req, file, cb) => {
-            // El nombre recibido del navegador nunca debe poder aportar
-            // segmentos de ruta ni caracteres de control al nombre local.
+            // Evitar que el nombre original aporte segmentos de ruta.
             const nombreOriginal = path.basename(
                 String(file.originalname || "archivo").replace(/\\/g, "/")
             );
             const nombreSeguro = nombreOriginal
                 .normalize("NFD")
-                .replace(/[\\u0300-\\u036f]/g, "")
+                .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-zA-Z0-9._-]/g, "_")
-                .replace(/^\\.+/, "");
+                .replace(/^\.+/, "");
 
-            cb(null, `${Date.now()}-${nombreSeguro || "archivo"}`);
+            cb(null, Date.now() + "-" + (nombreSeguro || "archivo"));
         }
     });
 
