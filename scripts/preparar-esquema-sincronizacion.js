@@ -1,5 +1,4 @@
 require("dotenv").config();
-const crypto = require("node:crypto");
 const db = require("../src/database");
 const { esModoSupabase } = require("../src/config/modoServidor");
 
@@ -12,7 +11,6 @@ const run = (sql, values = []) => new Promise((resolve, reject) =>
   db.run(sql, values, function (error) { error ? reject(error) : resolve(this); }));
 const all = (sql, values = []) => new Promise((resolve, reject) =>
   db.all(sql, values, (error, rows) => error ? reject(error) : resolve(rows)));
-
 async function hasColumn(table, column) {
   const rows = esModoSupabase
     ? await all("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=? AND column_name=?", [table, column])
@@ -23,21 +21,13 @@ async function addColumn(table, column, type) {
   if (!await hasColumn(table, column)) await run(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${type}`);
 }
 async function ensureTable(sqlite, postgres) { await run(esModoSupabase ? postgres : sqlite); }
-
 async function main() {
   console.log(`Preparando metadatos en ${esModoSupabase ? "PostgreSQL" : "SQLite"}; no se sincronizan datos.`);
-  for (const [table, key] of entidades) {
+  for (const [table] of entidades) {
     await addColumn(table, "sync_id", esModoSupabase ? "UUID" : "TEXT");
     await addColumn(table, "sync_version", "INTEGER NOT NULL DEFAULT 1");
     await addColumn(table, "sync_deleted_at", esModoSupabase ? "TIMESTAMPTZ" : "TEXT");
-    const rows = await all(`SELECT * FROM "${table}" WHERE sync_id IS NULL`);
-    for (const row of rows) {
-      const values = key ? [row[key]] : [row.id_ficha, row.id_etiqueta];
-      const where = key ? `"${key}"=?` : '"id_ficha"=? AND "id_etiqueta"=?';
-      await run(`UPDATE "${table}" SET sync_id=?, sync_version=1 WHERE ${where}`, [crypto.randomUUID(), ...values]);
-    }
     await run(`CREATE UNIQUE INDEX IF NOT EXISTS "ux_${table}_sync_id" ON "${table}" (sync_id)`);
-    console.log(`  ${table}: ${rows.length} UUID asignados`);
   }
   await ensureTable(
     "CREATE TABLE IF NOT EXISTS sync_dispositivos (device_id TEXT PRIMARY KEY, nombre TEXT NOT NULL, cursor_ultimo INTEGER NOT NULL DEFAULT 0, activo INTEGER NOT NULL DEFAULT 1, creado TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, ultimo_contacto TEXT)",
@@ -53,7 +43,7 @@ async function main() {
   );
   await run("CREATE INDEX IF NOT EXISTS ix_sync_eventos_pendientes ON sync_eventos (aplicado, id_evento)");
   await run("CREATE INDEX IF NOT EXISTS ix_sync_conflictos_pendientes ON sync_conflictos (resuelto, detectado)");
-  console.log("Esquema base listo. La sincronización sigue deshabilitada hasta completar captura de cambios, API y pruebas.");
+  console.log("Esquema preparado. Los sync_id existentes quedan NULL hasta reconciliar ambas bases mediante un manifiesto compartido.");
 }
 main().catch(error => { console.error("Preparación cancelada:", error.message); process.exitCode = 1; })
   .finally(() => { if (typeof db.close === "function") db.close(); });
