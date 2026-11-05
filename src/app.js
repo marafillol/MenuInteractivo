@@ -11,6 +11,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const db = require("./database");
+const { esModoLocal, modoServidor } = require("./config/modoServidor");
 
 const app = express();
 
@@ -64,6 +66,17 @@ app.use(
     express.static(
         path.join(__dirname,"../public")
     )
+);
+
+// Recursos del panel incluidos con el proyecto para no depender de CDNs.
+app.use(
+    "/proveedores/lucide",
+    express.static(path.join(__dirname, "../node_modules/lucide/dist/umd"))
+);
+
+app.use(
+    "/proveedores/cropperjs",
+    express.static(path.join(__dirname, "../node_modules/cropperjs/dist"))
 );
 
 
@@ -149,6 +162,9 @@ require("./rutas/admin/configuracion");
 const buscarRoutes =
 require("./rutas/admin/buscar");
 
+const authRoutes =
+require("./rutas/auth");
+
 // =======================================================
 // IMPORTACIÓN DE RUTAS PÚBLICAS
 // =======================================================
@@ -173,6 +189,11 @@ require("./rutas/public/etiquetas");
 // =======================================================
 // ENDPOINTS API ADMIN
 // =======================================================
+
+app.use(
+    "/api/auth",
+    authRoutes
+);
 
 
 app.use(
@@ -265,6 +286,10 @@ app.use(
 // Configuración pública mínima para inicializar Supabase Auth en el navegador.
 // La clave de servicio nunca se envía al cliente.
 app.get("/api/public/auth-config", (req, res) => {
+    if (esModoLocal) {
+        return res.json({ modo: "local" });
+    }
+
     const { obtenerConfiguracionPublica } = require("./config/supabaseAuth");
     const configuracion = obtenerConfiguracionPublica();
     if (!configuracion) {
@@ -290,6 +315,24 @@ app.get("/api/estado-admin",(req,res)=>{
 
     });
 
+});
+
+app.get("/health", (req, res) => {
+    db.get("SELECT 1 AS disponible", [], (error) => {
+        if (error) {
+            return res.status(503).json({
+                servidor: false,
+                baseDeDatos: false,
+                modo: modoServidor
+            });
+        }
+
+        return res.json({
+            servidor: true,
+            baseDeDatos: true,
+            modo: modoServidor
+        });
+    });
 });
 
 

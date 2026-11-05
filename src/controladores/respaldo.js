@@ -17,6 +17,7 @@ const fs = require("fs");
 const { Readable } = require("stream");
 const archiver = require("archiver");
 const { createClient } = require("@supabase/supabase-js");
+const { esModoSupabase } = require("../config/modoServidor");
 
 // ADAPTAR si hace falta: ruta al database.js del proyecto.
 // Funciona tanto con PostgreSQL (DATABASE_URL) como con SQLite.
@@ -43,7 +44,7 @@ const claveServicio =
     process.env.SUPABASE_SECRET_KEY;
 
 const supabase =
-    process.env.SUPABASE_URL && claveServicio
+    esModoSupabase && process.env.SUPABASE_URL && claveServicio
         ? createClient(process.env.SUPABASE_URL, claveServicio, {
             auth: {
                 autoRefreshToken: false,

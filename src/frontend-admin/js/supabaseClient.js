@@ -1,37 +1,48 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+let configuracionAutenticacion;
+let clienteSupabase;
+let importacionSupabase;
 
-let cliente;
-let configurando;
+export async function obtenerConfiguracionAutenticacion() {
+    if (configuracionAutenticacion) {
+        return configuracionAutenticacion;
+    }
 
-export function obtenerClienteSupabase() {
-    if (cliente) return Promise.resolve(cliente);
-    if (configurando) return configurando;
+    const respuesta = await fetch("/api/auth/config", {
+        headers: { Accept: "application/json" }
+    });
+    const configuracion = await respuesta.json().catch(() => ({}));
 
-    configurando = (async () => {
-        const respuesta = await fetch("/api/public/auth-config", {
-            headers: { Accept: "application/json" }
-        });
-        if (!respuesta.ok) {
-            throw new Error("No se pudo obtener la configuración pública de Supabase.");
+    if (!respuesta.ok || !configuracion.modo) {
+        throw new Error(configuracion.error || "No se pudo obtener la configuración de autenticación.");
+    }
+
+    configuracionAutenticacion = configuracion;
+    return configuracionAutenticacion;
+}
+
+export async function obtenerClienteSupabase() {
+    const configuracion = await obtenerConfiguracionAutenticacion();
+
+    if (configuracion.modo !== "supabase") {
+        throw new Error("Supabase no está activo en el servidor local.");
+    }
+
+    if (clienteSupabase) {
+        return clienteSupabase;
+    }
+
+    if (!importacionSupabase) {
+        importacionSupabase = import("https://esm.sh/@supabase/supabase-js@2");
+    }
+
+    const { createClient } = await importacionSupabase;
+    clienteSupabase = createClient(configuracion.url, configuracion.publishableKey, {
+        auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
         }
-
-        const configuracion = await respuesta.json();
-        if (!configuracion.url || !configuracion.publishableKey) {
-            throw new Error("Falta configurar la URL o la clave pública de Supabase.");
-        }
-
-        cliente = createClient(configuracion.url, configuracion.publishableKey, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
-        return cliente;
-    })().catch((error) => {
-        configurando = null;
-        throw error;
     });
 
-    return configurando;
+    return clienteSupabase;
 }

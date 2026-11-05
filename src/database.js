@@ -1,6 +1,11 @@
 require("dotenv").config();
+const { esModoSupabase } = require("./config/modoServidor");
 
-if (process.env.DATABASE_URL) {
+if (esModoSupabase) {
+
+    if (!process.env.DATABASE_URL) {
+        throw new Error("Falta DATABASE_URL para iniciar el modo Supabase.");
+    }
 
     module.exports = require("./databasePostgres");
 
@@ -18,7 +23,9 @@ const path = require("path");
 
 // Define la ruta absoluta donde se encuentra el archivo SQLite.
 // La base de datos utilizada por el sistema es museo.db.
-const dbPath = path.resolve(__dirname, "../database/museo.db");
+const dbPath = process.env.DATABASE_SQLITE_PATH
+    ? path.resolve(process.env.DATABASE_SQLITE_PATH)
+    : path.resolve(__dirname, "../database/museo.db");
 
 
 // =====================================================
@@ -72,6 +79,8 @@ db.serialize(() => {
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
 
             supabase_uid TEXT UNIQUE,
+
+            password_hash TEXT,
 
             nombre TEXT NOT NULL,
 
@@ -370,13 +379,22 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
         const columnas = await consultarSQLite("PRAGMA table_info(usuario)");
         const tieneIdentificadorAuthAnterior = columnas.some((columna) => columna.name.endsWith("_uid") && columna.name !== "supabase_uid");
         const tieneSupabaseUid = columnas.some((columna) => columna.name === "supabase_uid");
+        const tienePasswordHash = columnas.some((columna) => columna.name === "password_hash");
+
+        const agregarPasswordHash = async () => {
+            if (!tienePasswordHash) {
+                await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN password_hash TEXT");
+            }
+        };
 
         if (!tieneIdentificadorAuthAnterior && !tieneSupabaseUid) {
             await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN supabase_uid TEXT");
+            await agregarPasswordHash();
             return;
         }
 
         if (!tieneIdentificadorAuthAnterior) {
+            await agregarPasswordHash();
             return;
         }
 
@@ -387,6 +405,7 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
                 CREATE TABLE usuario_migracion (
                     id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
                     supabase_uid TEXT UNIQUE,
+                    password_hash TEXT,
                     nombre TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
                     rol TEXT NOT NULL,
@@ -397,10 +416,11 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
             `);
 
             const valorUid = tieneSupabaseUid ? "supabase_uid" : "NULL";
+            const valorHash = tienePasswordHash ? "password_hash" : "NULL";
             await ejecutarSQLite(`
                 INSERT INTO usuario_migracion
-                    (id_usuario, supabase_uid, nombre, email, rol, activo, creado, actualizado)
-                SELECT id_usuario, ${valorUid}, nombre, email, rol, activo, creado, actualizado
+                    (id_usuario, supabase_uid, password_hash, nombre, email, rol, activo, creado, actualizado)
+                SELECT id_usuario, ${valorUid}, ${valorHash}, nombre, email, rol, activo, creado, actualizado
                 FROM usuario
             `);
             await ejecutarSQLite("DROP TABLE usuario");

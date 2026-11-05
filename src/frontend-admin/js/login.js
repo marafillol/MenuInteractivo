@@ -1,4 +1,9 @@
-import { obtenerClienteSupabase } from "./supabaseClient.js";
+import {
+    obtenerClienteSupabase,
+    obtenerConfiguracionAutenticacion
+} from "./supabaseClient.js";
+
+const CLAVE_TOKEN_LOCAL = "menu_interactivo_token_local";
 
 function mostrarMensajeLogin(titulo, texto) {
     const tituloEl = document.getElementById("tituloLoginMensaje");
@@ -14,6 +19,22 @@ document.getElementById("btnAceptarLogin")?.addEventListener("click", () => {
     if (modal) modal.style.display = "none";
 });
 
+async function iniciarSesionLocal(email, password) {
+    const respuesta = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+    const datos = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok || !datos.token) {
+        throw new Error(datos.error || "No se pudo iniciar la sesión local.");
+    }
+
+    localStorage.setItem(CLAVE_TOKEN_LOCAL, datos.token);
+    return datos.token;
+}
+
 document.getElementById("formLogin")?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
 
@@ -23,37 +44,43 @@ document.getElementById("formLogin")?.addEventListener("submit", async (evento) 
     if (boton) boton.disabled = true;
 
     try {
-        const cliente = await obtenerClienteSupabase();
-        const { data, error } = await cliente.auth.signInWithPassword({ email, password });
+        const configuracion = await obtenerConfiguracionAutenticacion();
+        let token;
 
-        if (error || !data?.session?.access_token) {
-            mostrarMensajeLogin(
-                "No se pudo iniciar sesión",
-                "El correo o la contraseña son incorrectos, o la cuenta necesita restablecer su contraseña."
-            );
-            return;
+        if (configuracion.modo === "local") {
+            token = await iniciarSesionLocal(email, password);
+        } else {
+            const cliente = await obtenerClienteSupabase();
+            const { data, error } = await cliente.auth.signInWithPassword({ email, password });
+
+            if (error || !data?.session?.access_token) {
+                throw new Error("El correo o la contraseña son incorrectos, o la cuenta necesita restablecer su contraseña.");
+            }
+
+            token = data.session.access_token;
         }
 
         const respuesta = await fetch("/api/usuarios/me", {
-            headers: { Authorization: "Bearer " + data.session.access_token }
+            headers: { Authorization: "Bearer " + token }
         });
         const perfil = await respuesta.json().catch(() => ({}));
 
         if (!respuesta.ok) {
-            await cliente.auth.signOut();
-            mostrarMensajeLogin(
-                "Acceso denegado",
-                perfil.error || "La cuenta no está habilitada para el sistema."
-            );
-            return;
+            if (configuracion.modo === "local") {
+                localStorage.removeItem(CLAVE_TOKEN_LOCAL);
+            } else {
+                const cliente = await obtenerClienteSupabase();
+                await cliente.auth.signOut();
+            }
+            throw new Error(perfil.error || "La cuenta no está habilitada para el sistema.");
         }
 
         window.location.href = "panel.html";
     } catch (error) {
-        console.error("No se pudo completar el inicio de sesión con Supabase.");
+        console.error("No se pudo completar el inicio de sesión.");
         mostrarMensajeLogin(
             "Error de acceso",
-            "No se pudo conectar con la autenticación. Revisá la configuración de Supabase."
+            error.message || "No se pudo iniciar sesión."
         );
     } finally {
         if (boton) boton.disabled = false;

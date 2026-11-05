@@ -1,10 +1,13 @@
 const { createClient } = require("@supabase/supabase-js");
+const fs = require("fs");
+const path = require("path");
+const { esModoSupabase } = require("./modoServidor");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
 const urlProyectoConfigurada = process.env.SUPABASE_URL;
 const clavePrivadaSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 const estaConfigurado = Boolean(
-    process.env.SUPABASE_URL && clavePrivadaSupabase
+    esModoSupabase && process.env.SUPABASE_URL && clavePrivadaSupabase
 );
 
 const supabase = estaConfigurado
@@ -54,8 +57,24 @@ const subirArchivo = async (archivo, carpeta) => {
 // Elimina únicamente objetos cuya URL pertenece al proyecto y al bucket
 // configurados. Rutas locales o URLs externas se ignoran deliberadamente.
 const eliminarArchivo = async (rutaPublica) => {
-    if (!rutaPublica || !supabase) {
+    if (!rutaPublica) {
         return false;
+    }
+
+    if (!supabase) {
+        const raizProyecto = path.resolve(__dirname, "../..");
+        const rutaRelativa = String(rutaPublica)
+            .replace(/^\/+/, "")
+            .replace(/\\/g, "/");
+        const rutaAbsoluta = path.resolve(raizProyecto, rutaRelativa);
+        const directorioImagenes = path.join(raizProyecto, "imagenes");
+
+        if (!rutaAbsoluta.startsWith(directorioImagenes + path.sep) || !fs.existsSync(rutaAbsoluta)) {
+            return false;
+        }
+
+        await fs.promises.unlink(rutaAbsoluta);
+        return true;
     }
 
     let url;
