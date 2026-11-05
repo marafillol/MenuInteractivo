@@ -11,6 +11,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const db = require("./database");
+const { esModoLocal, modoServidor } = require("./config/modoServidor");
 
 const app = express();
 
@@ -58,6 +60,10 @@ app.use(
     )
 );
 
+
+// Recursos incluidos con el proyecto para funcionar sin CDN.
+app.use("/proveedores/lucide", express.static(path.join(__dirname, "../node_modules/lucide/dist/umd")));
+app.use("/proveedores/cropperjs", express.static(path.join(__dirname, "../node_modules/cropperjs/dist")));
 
 // RECURSOS PÚBLICOS
 app.use(
@@ -175,6 +181,10 @@ require("./rutas/public/etiquetas");
 // =======================================================
 
 
+const authRoutes = require("./rutas/auth");
+
+app.use("/api/auth", authRoutes);
+
 app.use(
     "/api/dashboard",
     dashboardRoutes
@@ -275,6 +285,13 @@ app.get("/api/public/auth-config", (req, res) => {
     return res.json(configuracion);
 });
 
+app.get("/health", (req, res) => {
+    db.get("SELECT 1 AS disponible", [], (error) => {
+        if (error) return res.status(503).json({ servidor: false, baseDeDatos: false, modo: modoServidor });
+        return res.json({ servidor: true, baseDeDatos: true, modo: modoServidor });
+    });
+});
+
 // =======================================================
 // ESTADO DEL SERVIDOR
 // =======================================================
@@ -313,13 +330,13 @@ async function iniciarServidor() {
             );
         }
 
-        const cachePublica = require("./servicios/cachePublica");
-
-        // Preparar los datos antes de aceptar peticiones.
-        await cachePublica.actualizarCachePublica();
-
-        // Renovar los datos en segundo plano.
-        cachePublica.iniciarActualizacionPeriodica();
+        // La caché pública de main se mantiene para Supabase/PostgreSQL.
+        // En modo local se evita depender de su ciclo de preparación.
+        if (!esModoLocal) {
+            const cachePublica = require("./servicios/cachePublica");
+            await cachePublica.actualizarCachePublica();
+            cachePublica.iniciarActualizacionPeriodica();
+        }
     } catch (error) {
         console.error(
             "No se pudo preparar la caché pública:",
