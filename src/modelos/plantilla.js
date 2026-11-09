@@ -530,7 +530,8 @@ module.exports = {
 
     eliminar,
 
-    contarMenus
+    contarMenus,
+    eliminarSiNoUtilizada
 
 
 };
