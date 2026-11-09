@@ -578,6 +578,17 @@ const eliminarRelaciones = (id_ficha)=>{
 // por los controladores.
 //
 
+const eliminarCompleta = async (id) => db.withTransaction(async (consultar) => {
+    const resultado = await consultar("SELECT COUNT(*) AS cantidad FROM multimedia WHERE id_ficha = ?", [id]);
+    const cantidad = Number(resultado.rows[0]?.cantidad || 0);
+    if (cantidad > 0) return { eliminada: false, multimedia: cantidad };
+
+    await consultar("DELETE FROM relacion_ficha WHERE id_ficha_origen = ? OR id_ficha_destino = ?", [id, id]);
+    await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [id]);
+    const eliminacion = await consultar("DELETE FROM ficha WHERE id_ficha = ?", [id]);
+    return { eliminada: eliminacion.rowCount > 0, multimedia: 0 };
+});
+
 module.exports = {
 
     obtenerFichas,
