@@ -15,7 +15,6 @@ jobs:
   pruebas:
     runs-on: ubuntu-latest
     env:
-      MODO_SERVIDOR: local
       LOCAL_AUTH_SECRET: ci-solamente-no-usar-en-produccion-1234567890
     steps:
       - name: Obtener código
