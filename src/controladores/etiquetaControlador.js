@@ -1,6 +1,5 @@
 const Etiqueta =
 require("../modelos/etiquetaModelo");
-const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 const cachePublico = require("../middleware/cachePublico");
 
 
