@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 /**
- * Genera un manifiesto preliminar SQLite ↔ PostgreSQL.
+ * Manifiesto preliminar SQLite ↔ PostgreSQL.
+ * Solo lectura: SQLite OPEN_READONLY y PostgreSQL BEGIN READ ONLY.
+ * Nunca asigna sync_id ni modifica las bases.
  *
- * SOLO LECTURA: SQLite se abre con OPEN_READONLY y PostgreSQL ejecuta
- * BEGIN READ ONLY. No asigna sync_id ni modifica tablas.
- *
- * Requiere:
- *   RECONCILIACION_SQLITE_PATH=/ruta/a/copia.sqlite
- *   RECONCILIACION_POSTGRES_URL=postgresql://... (copia descartable)
- * Opcional:
- *   RECONCILIACION_SALIDA=/ruta/manifiesto.json
+ * Variables requeridas (siempre copias descartables):
+ * RECONCILIACION_SQLITE_PATH
+ * RECONCILIACION_POSTGRES_URL
+ * Opcional: RECONCILIACION_SALIDA
  */
 require("dotenv").config();
 const fs = require("node:fs");
@@ -23,49 +21,68 @@ const POSTGRES_URL = process.env.RECONCILIACION_POSTGRES_URL;
 const OUTPUT = process.env.RECONCILIACION_SALIDA ||
   path.resolve(process.cwd(), "manifiesto-reconciliacion.json");
 
+// Los campos ID/FK y rutas físicas no se usan para comparar contenido.
+// Las dependencias se validarán en una etapa posterior con mapas aprobados.
 const ENTIDADES = [
-  { tabla: "plantilla", pk: ["id_plantilla"] },
-  { tabla: "menu", pk: ["id_menu"] },
-  { tabla: "ficha", pk: ["id_ficha"] },
-  { tabla: "etiqueta", pk: ["id_etiqueta"] },
+  { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"] },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"] },
+  { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true },
-  { tabla: "multimedia", pk: ["id_multi"], multimedia: true },
-  { tabla: "configuracion", pk: ["clave"], configuracion: true }
+  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true },
+  { tabla: "configuracion", pk: ["clave"], excluir: ["actualizado"], configuracion: true }
 ];
 
 function canonicalizar(valor) {
   if (Array.isArray(valor)) return valor.map(canonicalizar);
-  if (valor && typeof valor === "object") {
+  if (valor && typeof valor === "object" && !(valor instanceof Date)) {
     return Object.fromEntries(Object.keys(valor).sort().map(k => [k, canonicalizar(valor[k])]));
   }
+  if (valor instanceof Date) return valor.toISOString();
   return valor;
 }
-function hashRegistro(registro, clavesExcluir) {
+function huella(registro, excluir) {
   const contenido = Object.fromEntries(
-    Object.entries(registro).filter(([k]) => !clavesExcluir.includes(k))
+    Object.entries(registro).filter(([campo]) => !excluir.includes(campo))
   );
-  return crypto.createHash("sha256")
-    .update(JSON.stringify(canonicalizar(contenido)))
-    .digest("hex");
+  return crypto.createHash("sha256").update(JSON.stringify(canonicalizar(contenido))).digest("hex");
 }
-function consultaSQLite(db, sql, params = []) {
-  return new Promise((resolve, reject) =>
-    db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows))
-  );
+function allSQLite(db, sql) {
+  return new Promise((resolve, reject) => db.all(sql, [], (e, rows) => e ? reject(e) : resolve(rows)));
 }
-function consultaPostgres(client, sql) {
+function allPostgres(client, sql) {
   return client.query(sql).then(r => r.rows);
 }
-function comprobarIdentificadores(registro, claves) {
-  return claves.every(k => Object.prototype.hasOwnProperty.call(registro, k));
+function cerrarSQLite(db) {
+  return new Promise(resolve => db.close(() => resolve()));
+}
+function tieneClaves(fila, claves) {
+  return claves.every(k => Object.prototype.hasOwnProperty.call(fila, k));
+}
+function prepararFilas(filas, entidad) {
+  return filas.map(fila => ({
+    clave_local: Object.fromEntries(entidad.pk.map(k => [k, fila[k]])),
+    huella_contenido: entidad.relacion ? null : huella(fila, entidad.excluir),
+    valores: canonicalizar(fila)
+  }));
+}
+function agruparPorHuella(filas) {
+  const mapa = new Map();
+  for (const fila of filas) {
+    if (!fila.huella_contenido) continue;
+    const lista = mapa.get(fila.huella_contenido) || [];
+    lista.push(fila);
+    mapa.set(fila.huella_contenido, lista);
+  }
+  return mapa;
 }
 async function main() {
   if (!SQLITE_PATH || !POSTGRES_URL) {
-    throw new Error("Configurá RECONCILIACION_SQLITE_PATH y RECONCILIACION_POSTGRES_URL con rutas/credenciales de COPIAS, nunca de producción.");
+    throw new Error("Configurá RECONCILIACION_SQLITE_PATH y RECONCILIACION_POSTGRES_URL con copias descartables, nunca producción.");
   }
   if (!fs.existsSync(SQLITE_PATH)) throw new Error("No existe la copia SQLite indicada.");
-  if (fs.existsSync(OUTPUT)) throw new Error(`El archivo de salida ya existe; no se sobrescribe: ${OUTPUT}`);
+  if (fs.existsSync(OUTPUT)) throw new Error("El archivo de salida ya existe; no se sobrescribe: " + OUTPUT);
 
   const sqlite = new sqlite3.Database(SQLITE_PATH, sqlite3.OPEN_READONLY);
   const pg = new Client({
@@ -74,112 +91,124 @@ async function main() {
     connectionTimeoutMillis: 10000,
     ssl: process.env.RECONCILIACION_PG_SSL === "true" ? { rejectUnauthorized: true } : undefined
   });
+  let pgConectado = false;
+  let transaccion = false;
+  let sqliteCerrada = false;
 
-  let transaccionPg = false;
   try {
     await pg.connect();
+    pgConectado = true;
     await pg.query("BEGIN READ ONLY");
-    transaccionPg = true;
+    transaccion = true;
     await pg.query("SET LOCAL statement_timeout = '30s'");
     await pg.query("SET LOCAL lock_timeout = '5s'");
 
-    const sqliteInfo = await consultaSQLite(sqlite, "PRAGMA database_list");
-    const sqliteVersion = await consultaSQLite(sqlite, "SELECT sqlite_version() AS version");
-    const pgInfo = await consultaPostgres(pg, "SELECT current_database() AS database, current_schema() AS schema, version() AS version");
+    const sqliteVersion = await allSQLite(sqlite, "SELECT sqlite_version() AS version");
+    const pgInfo = await allPostgres(pg, "SELECT current_database() AS database, current_schema() AS schema");
 
-    const manifiesto = {
-      formato: 1,
+    const informe = {
+      formato: 2,
       generado_en: new Date().toISOString(),
-      modo: "solo_lectura_sin_asignacion_de_sync_id",
+      modo: "solo_lectura",
       fuentes: {
         sqlite: { archivo: path.basename(SQLITE_PATH), version: sqliteVersion[0]?.version },
         postgres: { database: pgInfo[0]?.database, schema: pgInfo[0]?.schema }
       },
-      advertencias: [
-        "Este informe no aprueba correspondencias ni asigna sync_id.",
-        "Los hashes son huellas preliminares; diferencias de IDs foráneos pueden producir hashes distintos.",
-        "Las coincidencias de hash requieren revisión de dependencias y contenido antes de aprobarse.",
-        "No se inspecciona el contenido binario de multimedia ni se equiparan rutas con URLs.",
-        "No se incluyen usuarios ni datos de autenticación."
+      reglas: [
+        "Las huellas excluyen claves primarias y foráneas numéricas cuando están definidas como dependencias.",
+        "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
+        "Las tablas de relaciones se enumeran pero no se emparejan hasta reconciliar sus extremos.",
+        "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
+        "No se leen ni exportan usuarios, credenciales, sesiones o tokens."
       ],
       entidades: {}
     };
 
     for (const entidad of ENTIDADES) {
-      const { tabla, pk } = entidad;
-      const local = await consultaSQLite(sqlite, `SELECT * FROM "${tabla}"`);
-      const remotas = await consultaPostgres(pg,
-        "SELECT * FROM public." + '"' + tabla + '"'
-      );
+      const tabla = entidad.tabla;
+      const localRaw = await allSQLite(sqlite, 'SELECT * FROM "' + tabla + '"');
+      const remotoRaw = await allPostgres(pg, 'SELECT * FROM public."' + tabla + '"');
 
-      for (const [lado, filas] of [["SQLite", local], ["PostgreSQL", remotas]]) {
+      for (const [origen, filas] of [["SQLite", localRaw], ["PostgreSQL", remotoRaw]]) {
         for (const fila of filas) {
-          if (!comprobarIdentificadores(fila, pk)) {
-            throw new Error(`Falta una clave esperada en ${lado}.${tabla}: ${pk.join(", ")}`);
+          if (!tieneClaves(fila, entidad.pk)) {
+            throw new Error("Esquema inesperado en " + origen + "." + tabla + "; faltan: " + entidad.pk.join(", "));
           }
         }
       }
 
-      const preparar = filas => filas.map(fila => ({
-        clave: Object.fromEntries(pk.map(k => [k, fila[k]])),
-        huella_sha256: hashRegistro(fila, pk),
-        campos: Object.keys(fila).sort(),
-        // Los valores se conservan para revisión; no contienen tabla usuario.
-        valores: canonicalizar(fila)
-      }));
-      const filasLocal = preparar(local);
-      const filasRemotas = preparar(remotas);
-      const contar = filas => {
-        const mapa = new Map();
-        for (const fila of filas) mapa.set(fila.huella_sha256, (mapa.get(fila.huella_sha256) || 0) + 1);
-        return mapa;
-      };
-      const conteoLocal = contar(filasLocal);
-      const conteoRemoto = contar(filasRemotas);
-      const hashesCompartidos = [...conteoLocal.keys()].filter(h => conteoRemoto.has(h));
-      const duplicadosLocal = [...conteoLocal].filter(([, n]) => n > 1).map(([hash, cantidad]) => ({ hash, cantidad }));
-      const duplicadosRemotos = [...conteoRemoto].filter(([, n]) => n > 1).map(([hash, cantidad]) => ({ hash, cantidad }));
+      const local = prepararFilas(localRaw, entidad);
+      const remoto = prepararFilas(remotoRaw, entidad);
+      if (entidad.relacion) {
+        informe.entidades[tabla] = {
+          clave_primaria: entidad.pk,
+          estado: "pendiente_de_reconciliar_extremos",
+          conteos: { sqlite: local.length, postgres: remoto.length },
+          filas_sqlite: local,
+          filas_postgres: remoto
+        };
+        continue;
+      }
 
-      manifiesto.entidades[tabla] = {
-        clave_primaria: pk,
-        tipo: entidad.relacion ? "relacion_requiere_revision" : entidad.configuracion ? "clave_natural" : "registro",
+      const gruposLocal = agruparPorHuella(local);
+      const gruposRemoto = agruparPorHuella(remoto);
+      const compartidas = [];
+      const ambiguas = [];
+      for (const [hash, filasLocal] of gruposLocal) {
+        const filasRemotas = gruposRemoto.get(hash);
+        if (!filasRemotas) continue;
+        const candidato = {
+          huella_contenido: hash,
+          claves_sqlite: filasLocal.map(f => f.clave_local),
+          claves_postgres: filasRemotas.map(f => f.clave_local),
+          cantidad_sqlite: filasLocal.length,
+          cantidad_postgres: filasRemotas.length
+        };
+        if (filasLocal.length === 1 && filasRemotas.length === 1) {
+          compartidas.push({ ...candidato, estado: "candidato_revision_manual" });
+        } else {
+          ambiguas.push({ ...candidato, estado: "ambiguo_por_duplicidad" });
+        }
+      }
+
+      const hashesRemotos = new Set(gruposRemoto.keys());
+      const hashesLocales = new Set(gruposLocal.keys());
+      informe.entidades[tabla] = {
+        clave_primaria: entidad.pk,
+        campos_excluidos_de_huella: entidad.excluir,
         conteos: {
-          sqlite: filasLocal.length,
-          postgres: filasRemotas.length,
-          huellas_compartidas: hashesCompartidos.length,
-          duplicados_sqlite: duplicadosLocal.length,
-          duplicados_postgres: duplicadosRemotos.length
+          sqlite: local.length,
+          postgres: remoto.length,
+          candidatos_unicos: compartidas.length,
+          grupos_ambiguos: ambiguas.length,
+          solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
+          solo_postgres_por_contenido: remoto.filter(f => !hashesLocales.has(f.huella_contenido)).length
         },
-        huellas_compartidas: hashesCompartidos.map(hash => ({
-          hash,
-          cantidad_sqlite: conteoLocal.get(hash),
-          cantidad_postgres: conteoRemoto.get(hash),
-          estado: "candidato_revision_manual"
-        })),
-        duplicados: { sqlite: duplicadosLocal, postgres: duplicadosRemotos },
-        solo_sqlite: filasLocal.filter(f => !conteoRemoto.has(f.huella_sha256)),
-        solo_postgres: filasRemotas.filter(f => !conteoLocal.has(f.huella_sha256)),
-        filas_sqlite: filasLocal,
-        filas_postgres: filasRemotas
+        candidatos_unicos: compartidas,
+        ambiguos: ambiguas,
+        solo_sqlite: local.filter(f => !hashesRemotos.has(f.huella_contenido)),
+        solo_postgres: remoto.filter(f => !hashesLocales.has(f.huella_contenido))
       };
     }
 
     await pg.query("ROLLBACK");
-    transaccionPg = false;
-    await new Promise((resolve, reject) => sqlite.close(err => err ? reject(err) : resolve()));
+    transaccion = false;
+    await cerrarSQLite(sqlite);
+    sqliteCerrada = true;
 
     fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
-    fs.writeFileSync(OUTPUT, JSON.stringify(manifiesto, null, 2), { flag: "wx" });
-    console.log("Manifiesto generado en modo solo lectura:");
-    console.log(OUTPUT);
-    for (const [tabla, datos] of Object.entries(manifiesto.entidades)) {
-      console.log(`- ${tabla}: SQLite ${datos.conteos.sqlite}, PostgreSQL ${datos.conteos.postgres}, huellas compartidas ${datos.conteos.huellas_compartidas}`);
+    fs.writeFileSync(OUTPUT, JSON.stringify(informe, null, 2), { flag: "wx" });
+    console.log("Manifiesto preliminar generado: " + OUTPUT);
+    for (const [tabla, datos] of Object.entries(informe.entidades)) {
+      const c = datos.conteos;
+      console.log("- " + tabla + ": SQLite " + c.sqlite + ", PostgreSQL " + c.postgres +
+        (c.candidatos_unicos !== undefined ? ", candidatos únicos " + c.candidatos_unicos + ", ambiguos " + c.grupos_ambiguos : ", relaciones pendientes"));
     }
-    console.log("No se modificaron las bases ni se asignaron sync_id.");
+    console.log("Solo lectura: no se modificaron las bases ni se asignaron sync_id.");
   } finally {
-    if (transaccionPg) await pg.query("ROLLBACK").catch(() => {});
-    await pg.end().catch(() => {});
-    await new Promise(resolve => sqlite.close(() => resolve())).catch(() => {});
+    if (transaccion && pgConectado) await pg.query("ROLLBACK").catch(() => {});
+    if (pgConectado) await pg.end().catch(() => {});
+    if (!sqliteCerrada) await cerrarSQLite(sqlite);
   }
 }
 
