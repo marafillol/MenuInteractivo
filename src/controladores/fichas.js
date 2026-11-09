@@ -232,33 +232,20 @@ const eliminarFicha = async(req,res)=>{
 
         const id = req.params.id_ficha;
 
-        const cantidad =
-        await Ficha.contarMultimedia(id);
+        const resultado = await Ficha.eliminarCompleta(id);
 
-        if (cantidad > 0) {
+        if (!resultado.eliminada && resultado.multimedia > 0) {
             const archivos = await Multimedia.obtenerPorFicha(id);
             const ficha = await Ficha.obtenerPorId(id);
-
             return res.status(409).json({
-                error: `No se puede eliminar la ficha "${ficha?.titulo || "sin tÃ­tulo"}" porque tiene ${cantidad} archivo(s) multimedia asociado(s).`,
-                ficha: {
-                    id_ficha: id,
-                    titulo: ficha?.titulo || "Sin tÃ­tulo"
-                },
+                error: `No se puede eliminar la ficha "${ficha?.titulo || "sin título"}" porque tiene ${resultado.multimedia} archivo(s) multimedia asociado(s).`,
+                ficha: { id_ficha: id, titulo: ficha?.titulo || "Sin título" },
                 multimedia: archivos
             });
         }
-
-        // Eliminar relaciones ficha-ficha
-        await RelacionFicha.eliminarRelacionesFicha(id);
-
-
-        // Eliminar relaciones ficha-etiqueta
-        await FichaEtiqueta.eliminarRelacionesFicha(id);
-
-
-        // Eliminar la ficha
-        await Ficha.eliminar(id);
+        if (!resultado.eliminada) {
+            return res.status(404).json({ error: "No se encontró la ficha." });
+        }
 
         cachePublico.invalidar(["fichas"]);
 
