@@ -56,6 +56,15 @@ const MenuMock = {
     async eliminar(id) {
         state.idEliminado = id;
         if (state.error) throw state.error;
+    },
+
+    async eliminarSiVacio(id) {
+        state.idEliminado = id;
+        if (state.error) throw state.error;
+        if (state.menuNoExiste) return { encontrado: false, cantidad: 0 };
+        return state.cantidadFichas > 0
+            ? { encontrado: true, menu: { ...state.menu, id_menu: Number(id) }, cantidad: state.cantidadFichas }
+            : { encontrado: true, menu: { ...state.menu, id_menu: Number(id) }, cantidad: 0, eliminado: true };
     }
 };
 
