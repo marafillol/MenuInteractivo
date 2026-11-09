@@ -384,7 +384,7 @@ test("eliminar menú rechaza la operación si tiene fichas", async () => {
     await controller.eliminarMenu({ params: { id: "3" } }, res);
 
     assert.equal(res.statusCode, 400);
-    assert.equal(state.idEliminado, null);
+    assert.equal(state.idEliminado, "3");
 });
 
 test("eliminar menú sin fichas elimina y responde correctamente", async () => {
