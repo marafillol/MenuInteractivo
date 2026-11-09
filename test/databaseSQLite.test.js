@@ -88,6 +88,20 @@ test("SQLite prepara integridad referencial, WAL, busy_timeout y migraciones", (
             if (fichaConservada.cantidad !== 1) throw new Error("La ficha con multimedia fue eliminada");
             await ejecutar("DELETE FROM multimedia WHERE id_ficha = ?", [1]);
 
+            const menuConFichas = await Menu.eliminarSiVacio(1);
+            if (!menuConFichas.encontrado || menuConFichas.cantidad !== 1 || menuConFichas.eliminado) {
+                throw new Error("Se permitió eliminar un menú que todavía tiene fichas");
+            }
+            const menuConservado = await consultar("SELECT COUNT(*) AS cantidad FROM menu WHERE id_menu = 1");
+            if (menuConservado.cantidad !== 1) throw new Error("El menú con fichas fue eliminado");
+
+            const plantillaEnUso = await Plantilla.eliminarSiNoUtilizada(1);
+            if (!plantillaEnUso.encontrada || plantillaEnUso.cantidad !== 1 || plantillaEnUso.eliminada) {
+                throw new Error("Se permitió eliminar una plantilla que todavía utiliza un menú");
+            }
+            const plantillaConservada = await consultar("SELECT COUNT(*) AS cantidad FROM plantilla WHERE id_plantilla = 1");
+            if (plantillaConservada.cantidad !== 1) throw new Error("La plantilla en uso fue eliminada");
+
             const fichaEliminada = await Ficha.eliminarCompleta(1);
             if (!fichaEliminada.eliminada) throw new Error("No se eliminó la ficha de prueba");
             const menuEliminado = await Menu.eliminarSiVacio(1);
