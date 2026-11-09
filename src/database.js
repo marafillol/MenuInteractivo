@@ -420,6 +420,89 @@ db.preparar = () => {
     return preparacionPendiente;
 };
 
+
+const abrirConexionTransaccion = () => new Promise((resolve, reject) => {
+    const conexion = new sqlite3.Database(dbPath, (error) => {
+        if (error) {
+            conexion.close(() => reject(error));
+            return;
+        }
+        resolve(conexion);
+    });
+});
+
+const consultarEnTransaccion = (conexion, sql, parametros = []) => {
+    const consulta = String(sql).trim();
+    const esLectura = /^(SELECT|PRAGMA|EXPLAIN)\\b/i.test(consulta);
+
+    return new Promise((resolve, reject) => {
+        if (esLectura) {
+            conexion.all(sql, parametros, (error, filas) => {
+                if (error) return reject(error);
+                resolve({ rows: filas, rowCount: filas.length });
+            });
+            return;
+        }
+
+        conexion.run(sql, parametros, function (error) {
+            if (error) return reject(error);
+            resolve({
+                rows: [],
+                rowCount: this.changes,
+                lastID: this.lastID,
+                changes: this.changes
+            });
+        });
+    });
+};
+
+// Cada transacción utiliza una conexión propia. Así, consultas normales de la
+// conexión principal nunca se incorporan accidentalmente a una transacción.
+// BEGIN IMMEDIATE reserva el turno de escritura y busy_timeout permite esperar
+// a que termine otro escritor antes de devolver SQLITE_BUSY.
+db.withTransaction = async (trabajo) => {
+    if (typeof trabajo !== "function") {
+        throw new TypeError("La transacción requiere una función.");
+    }
+
+    await db.preparar();
+    const conexion = await abrirConexionTransaccion();
+    let iniciada = false;
+
+    try {
+        await new Promise((resolve, reject) => {
+            conexion.run("PRAGMA foreign_keys = ON", (error) => error ? reject(error) : resolve());
+        });
+        await new Promise((resolve, reject) => {
+            conexion.run("PRAGMA busy_timeout = 5000", (error) => error ? reject(error) : resolve());
+        });
+        await new Promise((resolve, reject) => {
+            conexion.run("BEGIN IMMEDIATE", (error) => error ? reject(error) : resolve());
+        });
+        iniciada = true;
+
+        const consultar = (sql, parametros = []) =>
+            consultarEnTransaccion(conexion, sql, parametros);
+
+        const resultado = await trabajo(consultar);
+
+        await new Promise((resolve, reject) => {
+            conexion.run("COMMIT", (error) => error ? reject(error) : resolve());
+        });
+        iniciada = false;
+        return resultado;
+    } catch (error) {
+        if (iniciada) {
+            await new Promise((resolve) => {
+                conexion.run("ROLLBACK", () => resolve());
+            });
+        }
+        throw error;
+    } finally {
+        await new Promise((resolve) => conexion.close(() => resolve()));
+    }
+};
+
 module.exports = db;
 
 }
