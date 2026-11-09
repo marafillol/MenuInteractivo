@@ -34,6 +34,8 @@ const ENTIDADES = [
   { tabla: "configuracion", pk: ["clave"], excluir: ["actualizado"], configuracion: true }
 ];
 
+const METADATOS_SYNC = ["sync_id", "sync_version", "sync_deleted_at"];
+
 function canonicalizar(valor) {
   if (Array.isArray(valor)) return valor.map(canonicalizar);
   if (valor && typeof valor === "object" && !(valor instanceof Date)) {
@@ -42,9 +44,41 @@ function canonicalizar(valor) {
   if (valor instanceof Date) return valor.toISOString();
   return valor;
 }
-function huella(registro, excluir) {
+
+// SQLite suele representar JSON como TEXT y booleanos como 0/1;
+// PostgreSQL puede devolver JSON como objeto y booleanos como true/false.
+// Homogeneizamos esos tipos antes de calcular la huella.
+function normalizarRegistro(tabla, registro) {
+  const salida = { ...registro };
+  const camposJson = {
+    plantilla: ["plantilla_json"],
+    ficha: ["datos_json"]
+  }[tabla] || [];
+
+  for (const campo of camposJson) {
+    if (typeof salida[campo] === "string") {
+      try { salida[campo] = JSON.parse(salida[campo]); }
+      catch { /* JSON inválido se conserva literalmente para que difiera */ }
+    }
+  }
+
+  const camposBooleanos = {
+    menu: ["visible"],
+    ficha: ["visible"],
+    etiqueta: ["activo"],
+    multimedia: ["activo"]
+  }[tabla] || [];
+
+  for (const campo of camposBooleanos) {
+    if (salida[campo] === 0 || salida[campo] === 1) salida[campo] = Boolean(salida[campo]);
+  }
+  return canonicalizar(salida);
+}
+function huella(tabla, registro, excluir) {
+  const ignorar = new Set([...excluir, ...METADATOS_SYNC]);
+  const normalizado = normalizarRegistro(tabla, registro);
   const contenido = Object.fromEntries(
-    Object.entries(registro).filter(([campo]) => !excluir.includes(campo))
+    Object.entries(normalizado).filter(([campo]) => !ignorar.has(campo))
   );
   return crypto.createHash("sha256").update(JSON.stringify(canonicalizar(contenido))).digest("hex");
 }
@@ -63,7 +97,7 @@ function tieneClaves(fila, claves) {
 function prepararFilas(filas, entidad) {
   return filas.map(fila => ({
     clave_local: Object.fromEntries(entidad.pk.map(k => [k, fila[k]])),
-    huella_contenido: entidad.relacion ? null : huella(fila, entidad.excluir),
+    huella_contenido: entidad.relacion ? null : huella(entidad.tabla, fila, entidad.excluir),
     valores: canonicalizar(fila)
   }));
 }
@@ -116,6 +150,8 @@ async function main() {
       },
       reglas: [
         "Las huellas excluyen claves primarias y foráneas numéricas cuando están definidas como dependencias.",
+        "JSON y booleanos se normalizan para reducir diferencias de representación entre SQLite y PostgreSQL.",
+        "Los metadatos sync_id, sync_version y sync_deleted_at no participan en las huellas.",
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
         "Las tablas de relaciones se enumeran pero no se emparejan hasta reconciliar sus extremos.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
