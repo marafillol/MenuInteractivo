@@ -359,19 +359,47 @@ db.serialize(() => {
 });
 
 
-// Exporta la conexión para que los modelos puedan utilizarla
-// y ejecutar consultas sobre la base de datos.
-// Migraciones aditivas: no reconstruyen ni eliminan la tabla usuario.
-// Así se conservan los perfiles existentes y se habilita el hash de contraseña local.
+// Preparación explícita de SQLite. El servidor debe esperar esta promesa
+// antes de atender peticiones para garantizar PRAGMAs y migraciones completas.
 const consultarSQLite = (sql) => new Promise((resolve, reject) => {
     db.all(sql, [], (error, filas) => error ? reject(error) : resolve(filas));
+});
+const obtenerSQLite = (sql) => new Promise((resolve, reject) => {
+    db.get(sql, [], (error, fila) => error ? reject(error) : resolve(fila));
 });
 const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
     db.run(sql, (error) => error ? reject(error) : resolve());
 });
 
-(async () => {
-    try {
+let preparacionPendiente = null;
+
+db.preparar = () => {
+    if (preparacionPendiente) return preparacionPendiente;
+
+    preparacionPendiente = (async () => {
+        // Estas opciones son por conexión; foreign_keys debe activarse
+        // antes de ejecutar escrituras de la aplicación.
+        await ejecutarSQLite("PRAGMA foreign_keys = ON");
+        await ejecutarSQLite("PRAGMA busy_timeout = 5000");
+
+        // WAL permite lectores concurrentes mientras se escribe. SQLite
+        // mantiene un único escritor a la vez.
+        const journal = await obtenerSQLite("PRAGMA journal_mode = WAL");
+        if (String(journal?.journal_mode || "").toLowerCase() !== "wal") {
+            throw new Error("No se pudo activar el modo WAL de SQLite.");
+        }
+
+        const foreignKeys = await obtenerSQLite("PRAGMA foreign_keys");
+        if (Number(foreignKeys?.foreign_keys) !== 1) {
+            throw new Error("No se pudo activar la integridad referencial de SQLite.");
+        }
+
+        const busyTimeout = await obtenerSQLite("PRAGMA busy_timeout");
+        if (Number(busyTimeout?.timeout) !== 5000) {
+            throw new Error("No se pudo configurar busy_timeout en SQLite.");
+        }
+
+        // Migraciones aditivas: no reconstruyen ni eliminan tablas o datos.
         const columnas = await consultarSQLite("PRAGMA table_info(usuario)");
         const nombres = new Set(columnas.map((columna) => columna.name));
         if (!nombres.has("supabase_uid")) {
@@ -380,10 +408,17 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
         if (!nombres.has("password_hash")) {
             await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN password_hash TEXT");
         }
-    } catch (error) {
-        console.error("No se pudieron preparar las columnas de autenticación local; código=", error.code || "sin_codigo");
-    }
-})();
+
+        console.log("[SQLite] Integridad referencial, WAL y busy_timeout preparados.");
+    })().catch((error) => {
+        // No dejar una promesa rechazada cacheada: el proceso fallará al iniciar
+        // y el error quedará visible en los logs.
+        preparacionPendiente = null;
+        throw error;
+    });
+
+    return preparacionPendiente;
+};
 
 module.exports = db;
 
