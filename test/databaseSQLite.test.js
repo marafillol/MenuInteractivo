@@ -36,6 +36,40 @@ test("SQLite prepara integridad referencial, WAL, busy_timeout y migraciones", (
                 rechazoReferencial = error.code === "SQLITE_CONSTRAINT";
             }
             if (!rechazoReferencial) throw new Error("SQLite aceptó una referencia inexistente");
+
+            const ejecutarTx = (sql, valores = []) => db.withTransaction((consultarTx) =>
+                consultarTx(sql, valores)
+            );
+
+            await ejecutar("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla tx", "{}"]);
+            await ejecutar("INSERT INTO menu (nombre, id_plantilla) VALUES (?, ?)", ["Menu tx", 1]);
+            await ejecutar("INSERT INTO ficha (id_menu, titulo) VALUES (?, ?)", [1, "Ficha tx"]);
+            await ejecutar("INSERT INTO etiqueta (nombre) VALUES (?)", ["Etiqueta tx"]);
+            await ejecutar("INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)", [1, 1]);
+
+            let rollbackCorrecto = false;
+            try {
+                await db.withTransaction(async (tx) => {
+                    await tx("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [1]);
+                    throw new Error("forzar rollback");
+                });
+            } catch (error) {
+                rollbackCorrecto = error.message === "forzar rollback";
+            }
+            if (!rollbackCorrecto) throw new Error("No se propagó el error de la transacción");
+            const relacion = await consultar("SELECT COUNT(*) AS cantidad FROM ficha_etiqueta WHERE id_ficha = 1");
+            if (relacion.cantidad !== 1) throw new Error("El rollback no restauró la relación");
+
+            await ejecutar("INSERT INTO configuracion (clave, valor) VALUES (?, ?)", ["contador_tx", "0"]);
+            const incrementar = () => db.withTransaction(async (tx) => {
+                const actual = await tx("SELECT valor FROM configuracion WHERE clave = ?", ["contador_tx"]);
+                const siguiente = Number(actual.rows[0].valor) + 1;
+                await tx("UPDATE configuracion SET valor = ? WHERE clave = ?", [String(siguiente), "contador_tx"]);
+            });
+            await Promise.all([incrementar(), incrementar()]);
+            const contador = await consultar("SELECT valor FROM configuracion WHERE clave = ?", ["contador_tx"]);
+            if (contador.valor !== "2") throw new Error("Las transacciones concurrentes perdieron una actualización");
+
             await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
         })().catch(error => {
             console.error(error);
