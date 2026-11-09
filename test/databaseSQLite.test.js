@@ -10,8 +10,8 @@ test("SQLite prepara integridad referencial, WAL, busy_timeout y migraciones", (
     const archivoDb = path.join(directorio, "prueba.db");
     const codigo = `
         const db = require("./src/database");
-        const consultar = (sql) => new Promise((resolve, reject) => {
-            db.get(sql, [], (error, fila) => error ? reject(error) : resolve(fila));
+        const consultar = (sql, valores = []) => new Promise((resolve, reject) => {
+            db.get(sql, valores, (error, fila) => error ? reject(error) : resolve(fila));
         });
         const ejecutar = (sql, valores = []) => new Promise((resolve, reject) => {
             db.run(sql, valores, function(error) {
