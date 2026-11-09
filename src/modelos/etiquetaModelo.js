@@ -301,6 +301,21 @@ class Etiqueta {
     }
 
 
+
+    static eliminarConRelaciones(id) {
+        return db.withTransaction(async (consultar) => {
+            const etiqueta = await consultar(
+                "SELECT id_etiqueta FROM etiqueta WHERE id_etiqueta = ?",
+                [id]
+            );
+            if (!etiqueta.rows.length) return { eliminado: false };
+
+            await consultar("DELETE FROM ficha_etiqueta WHERE id_etiqueta = ?", [id]);
+            await consultar("DELETE FROM etiqueta WHERE id_etiqueta = ?", [id]);
+            return { eliminado: true };
+        });
+    }
+
 }
 
 
