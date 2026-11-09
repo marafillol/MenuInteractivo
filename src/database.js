@@ -433,7 +433,7 @@ const abrirConexionTransaccion = () => new Promise((resolve, reject) => {
 
 const consultarEnTransaccion = (conexion, sql, parametros = []) => {
     const consulta = String(sql).trim();
-    const esLectura = /^(SELECT|PRAGMA|EXPLAIN)\\b/i.test(consulta);
+    const esLectura = /^(SELECT|PRAGMA|EXPLAIN)\b/i.test(consulta);
 
     return new Promise((resolve, reject) => {
         if (esLectura) {
