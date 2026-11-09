@@ -1,6 +1,5 @@
 ﻿const Ficha = require("../modelos/ficha");
 const Multimedia = require("../modelos/multimedia");
-const RelacionFicha = require("../modelos/relacionFichaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 const cachePublico = require("../middleware/cachePublico");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
