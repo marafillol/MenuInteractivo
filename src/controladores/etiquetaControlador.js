@@ -46,9 +46,10 @@ exports.eliminarEtiqueta = async (req, res) => {
     try {
         const id = req.params.id;
 
-        await FichaEtiqueta.eliminarEtiquetasRelacionadas(id);
-
-        const resultado = await Etiqueta.eliminar(id);
+        const resultado = await Etiqueta.eliminarConRelaciones(id);
+        if (!resultado.eliminado) {
+            return res.status(404).json({ error: "No se encontró la etiqueta." });
+        }
 
         cachePublico.invalidar(["etiquetas", "fichas"]);
 
