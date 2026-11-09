@@ -76,6 +76,18 @@ test("SQLite prepara integridad referencial, WAL, busy_timeout y migraciones", (
             const Plantilla = require("./src/modelos/plantilla");
             const Etiqueta = require("./src/modelos/etiquetaModelo");
 
+            await ejecutar(
+                "INSERT INTO multimedia (id_ficha, ruta_archivo) VALUES (?, ?)",
+                [1, "prueba/archivo.png"]
+            );
+            const fichaConMultimedia = await Ficha.eliminarCompleta(1);
+            if (fichaConMultimedia.eliminada || fichaConMultimedia.multimedia !== 1) {
+                throw new Error("Se permitió eliminar una ficha con multimedia");
+            }
+            const fichaConservada = await consultar("SELECT COUNT(*) AS cantidad FROM ficha WHERE id_ficha = 1");
+            if (fichaConservada.cantidad !== 1) throw new Error("La ficha con multimedia fue eliminada");
+            await ejecutar("DELETE FROM multimedia WHERE id_ficha = ?", [1]);
+
             const fichaEliminada = await Ficha.eliminarCompleta(1);
             if (!fichaEliminada.eliminada) throw new Error("No se eliminó la ficha de prueba");
             const menuEliminado = await Menu.eliminarSiVacio(1);
