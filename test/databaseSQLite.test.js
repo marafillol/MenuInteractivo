@@ -70,6 +70,29 @@ test("SQLite prepara integridad referencial, WAL, busy_timeout y migraciones", (
             const contador = await consultar("SELECT valor FROM configuracion WHERE clave = ?", ["contador_tx"]);
             if (contador.valor !== "2") throw new Error("Las transacciones concurrentes perdieron una actualización");
 
+
+            const Ficha = require("./src/modelos/ficha");
+            const Menu = require("./src/modelos/menu");
+            const Plantilla = require("./src/modelos/plantilla");
+            const Etiqueta = require("./src/modelos/etiquetaModelo");
+
+            const fichaEliminada = await Ficha.eliminarCompleta(1);
+            if (!fichaEliminada.eliminada) throw new Error("No se eliminó la ficha de prueba");
+            const menuEliminado = await Menu.eliminarSiVacio(1);
+            if (!menuEliminado.eliminado) throw new Error("No se eliminó el menú vacío");
+            const plantillaEliminada = await Plantilla.eliminarSiNoUtilizada(1);
+            if (!plantillaEliminada.eliminada) throw new Error("No se eliminó la plantilla sin uso");
+
+            await ejecutar("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla etiqueta", "{}"]);
+            await ejecutar("INSERT INTO menu (nombre, id_plantilla) VALUES (?, ?)", ["Menu etiqueta", 2]);
+            await ejecutar("INSERT INTO ficha (id_menu, titulo) VALUES (?, ?)", [2, "Ficha etiqueta"]);
+            await ejecutar("INSERT INTO etiqueta (nombre) VALUES (?)", ["Etiqueta para borrar"]);
+            await ejecutar("INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)", [2, 2]);
+            const etiquetaEliminada = await Etiqueta.eliminarConRelaciones(2);
+            if (!etiquetaEliminada.eliminado) throw new Error("No se eliminó la etiqueta");
+            const relacionesRestantes = await consultar("SELECT COUNT(*) AS cantidad FROM ficha_etiqueta WHERE id_etiqueta = 2");
+            if (relacionesRestantes.cantidad !== 0) throw new Error("Quedaron relaciones de la etiqueta eliminada");
+
             await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
         })().catch(error => {
             console.error(error);
