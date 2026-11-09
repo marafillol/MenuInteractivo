@@ -505,6 +505,16 @@ const contarMenus = (id_plantilla)=>{
 // desde los controladores.
 //
 
+const eliminarSiNoUtilizada = async (id) => db.withTransaction(async (consultar) => {
+    const plantilla = await consultar("SELECT * FROM plantilla WHERE id_plantilla = ?", [id]);
+    if (!plantilla.rows.length) return { encontrada: false, cantidad: 0 };
+    const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM menu WHERE id_plantilla = ?", [id]);
+    const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+    if (cantidad > 0) return { encontrada: true, plantilla: plantilla.rows[0], cantidad };
+    await consultar("DELETE FROM plantilla WHERE id_plantilla = ?", [id]);
+    return { encontrada: true, plantilla: plantilla.rows[0], cantidad: 0, eliminada: true };
+});
+
 module.exports = {
 
 
