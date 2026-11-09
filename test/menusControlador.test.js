@@ -410,8 +410,8 @@ test("eliminar menú responde 500 si falla el borrado", async () => {
     const res = crearRespuesta();
 
     // El conteo funciona; simulamos que el borrado falla.
-    const originalEliminar = MenuMock.eliminar;
-    MenuMock.eliminar = async () => {
+    const originalEliminar = MenuMock.eliminarSiVacio;
+    MenuMock.eliminarSiVacio = async () => {
         throw new Error("fallo al borrar");
     };
 
@@ -419,6 +419,6 @@ test("eliminar menú responde 500 si falla el borrado", async () => {
         await controller.eliminarMenu({ params: { id: "3" } }, res);
         assert.equal(res.statusCode, 500);
     } finally {
-        MenuMock.eliminar = originalEliminar;
+        MenuMock.eliminarSiVacio = originalEliminar;
     }
 });
