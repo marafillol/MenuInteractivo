@@ -605,6 +605,7 @@ module.exports = {
 
     contarMultimedia,
 
-    eliminarRelaciones
+    eliminarRelaciones,
+    eliminarCompleta
 
 };
