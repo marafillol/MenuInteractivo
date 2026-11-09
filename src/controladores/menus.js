@@ -161,41 +161,23 @@ const actualizarMenu = async(req,res)=>{
 const eliminarMenu = async (req, res) => {
     try {
 
-        console.log("[ELIMINAR MENÃš] Controlador actualizado ejecutado");
         const id_menu = req.params.id;
+        const resultado = await Menu.eliminarSiVacio(id_menu);
 
-        const menu = await Menu.obtenerPorId(id_menu);
-
-        if (!menu) {
-            return res.status(404).json({
-                error: "No se encontrÃ³ el menÃº que intenta eliminar."
-            });
+        if (!resultado.encontrado) {
+            return res.status(404).json({ error: "No se encontró el menú que intenta eliminar." });
         }
-
-        const cantidad = await Menu.contarFichas(id_menu);
-
-        if (cantidad > 0) {
+        if (resultado.cantidad > 0) {
             const fichas = await Ficha.obtenerFichasPorMenu(id_menu);
-
             return res.status(400).json({
-                error: `No se puede eliminar el menÃº "${menu.nombre}" porque tiene ${cantidad} ficha(s) asociada(s).`,
-                menu: {
-                    id_menu: menu.id_menu,
-                    nombre: menu.nombre
-                },
-                fichas: fichas.map(ficha => ({
-                    id_ficha: ficha.id_ficha,
-                    titulo: ficha.titulo
-                }))
+                error: `No se puede eliminar el menú "${resultado.menu.nombre}" porque tiene ${resultado.cantidad} ficha(s) asociada(s).`,
+                menu: { id_menu: resultado.menu.id_menu, nombre: resultado.menu.nombre },
+                fichas: fichas.map(ficha => ({ id_ficha: ficha.id_ficha, titulo: ficha.titulo }))
             });
         }
 
-        await Menu.eliminar(id_menu);
         cachePublico.invalidar(["menus", "fichas"]);
-
-        return res.json({
-            mensaje: "MenÃº eliminado correctamente."
-        });
+        return res.json({ mensaje: "Menú eliminado correctamente." });
 
     } catch (error) {
         console.error("Error eliminando menÃº:", error);
