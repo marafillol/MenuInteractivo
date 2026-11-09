@@ -447,6 +447,16 @@ const contarFichas = (id_menu)=>{
 // desde los controladores.
 //
 
+const eliminarSiVacio = async (id) => db.withTransaction(async (consultar) => {
+    const menu = await consultar("SELECT * FROM menu WHERE id_menu = ?", [id]);
+    if (!menu.rows.length) return { encontrado: false, cantidad: 0 };
+    const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM ficha WHERE id_menu = ?", [id]);
+    const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+    if (cantidad > 0) return { encontrado: true, menu: menu.rows[0], cantidad };
+    await consultar("DELETE FROM menu WHERE id_menu = ?", [id]);
+    return { encontrado: true, menu: menu.rows[0], cantidad: 0, eliminado: true };
+});
+
 module.exports = {
 
     obtenerMenus,
