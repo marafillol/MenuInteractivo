@@ -33,6 +33,7 @@
 //
 
 const db = require("../database");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
 const { randomUUID, createHash } = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -47,13 +48,13 @@ function consultarPromesa(sql, valores = []) {
 }
 
 async function outboxMultimediaDisponible() {
-    if (!esModoLocal || typeof db.withTransaction !== "function") return false;
+    if (!await estaPreparado(["multimedia", "ficha"])) return false;
     try {
-        const columnas = await consultarPromesa('PRAGMA table_info("multimedia")');
-        const nombres = new Set(columnas.map((columna) => columna.name));
-        if (!["sync_id", "sync_version", "sync_deleted_at", "checksum_sha256", "mime_type", "tamano_bytes", "storage_key"].every((nombre) => nombres.has(nombre))) return false;
-        const tablas = await consultarPromesa("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_eventos'");
-        return tablas.length === 1;
+        const columnas = await estaPreparado(["multimedia"]);
+        const { columnasDe } = require("../servicios/sincronizacion/esquema");
+        const filas = await columnasDe("multimedia");
+        const nombres = new Set(filas.map((columna) => columna.name));
+        return ["checksum_sha256", "mime_type", "tamano_bytes", "storage_key"].every((nombre) => nombres.has(nombre));
     } catch {
         return false;
     }
