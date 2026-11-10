@@ -97,39 +97,15 @@ class FichaEtiqueta {
     //   - Militar
     //
 
-    static obtenerPorFicha(idFicha){
-
-        return new Promise((resolve,reject)=>{
-
-            db.all(
-                `
-                SELECT
-                    e.id_etiqueta,
-                    e.nombre,
-                    e.descripcion,
-                    e.activo
-                FROM ficha_etiqueta fe
-                INNER JOIN etiqueta e
-                    ON fe.id_etiqueta = e.id_etiqueta
-                WHERE fe.id_ficha = ?
-                ORDER BY e.nombre
-                `,
-                [idFicha],
-                (error, filas)=>{
-
-                    if(error)
-
-                        reject(error);
-
-                    else
-
-                        resolve(filas);
-
-                }
-            );
-
-        });
-
+    static async obtenerPorFicha(idFicha){
+        const filtro = await outboxRelacionDisponible() ? "AND fe.sync_deleted_at IS NULL" : "";
+        return new Promise((resolve, reject) => db.all(`
+            SELECT e.id_etiqueta, e.nombre, e.descripcion, e.activo
+            FROM ficha_etiqueta fe
+            INNER JOIN etiqueta e ON fe.id_etiqueta = e.id_etiqueta
+            WHERE fe.id_ficha = ? ${filtro}
+            ORDER BY e.nombre
+        `, [idFicha], (error, filas) => error ? reject(error) : resolve(filas)));
     }
 
 
@@ -354,39 +330,15 @@ class FichaEtiqueta {
     // - Lista de fichas relacionadas con esa etiqueta.
     //
 
-    static obtenerPorEtiqueta(idEtiqueta){
-
-        return new Promise((resolve,reject)=>{
-
-            db.all(
-                `
-                SELECT
-                    f.*
-                FROM ficha_etiqueta fe
-
-                INNER JOIN ficha f
-                    ON fe.id_ficha = f.id_ficha
-
-                WHERE fe.id_etiqueta = ?
-
-                ORDER BY f.id_ficha
-                `,
-                [idEtiqueta],
-                (error, filas)=>{
-
-                    if(error)
-
-                        reject(error);
-
-                    else
-
-                        resolve(filas);
-
-                }
-            );
-
-        });
-
+    static async obtenerPorEtiqueta(idEtiqueta){
+        const filtro = await outboxRelacionDisponible() ? "AND fe.sync_deleted_at IS NULL" : "";
+        return new Promise((resolve, reject) => db.all(`
+            SELECT f.*
+            FROM ficha_etiqueta fe
+            INNER JOIN ficha f ON fe.id_ficha = f.id_ficha
+            WHERE fe.id_etiqueta = ? ${filtro}
+            ORDER BY f.id_ficha
+        `, [idEtiqueta], (error, filas) => error ? reject(error) : resolve(filas)));
     }
 
     // ===================================================
