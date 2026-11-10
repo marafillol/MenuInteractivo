@@ -168,14 +168,19 @@ async function main() {
 
     for (const entidad of ENTIDADES) {
       const tabla = entidad.tabla;
-      const columnas = entidad.soloConteo ? entidad.pk.join(", ") : "*";
-      const localRaw = await allSQLite(sqlite, 'SELECT ' + columnas + ' FROM "' + tabla + '"');
-      const remotoRaw = await allPostgres(pg, 'SELECT ' + columnas + ' FROM public."' + tabla + '"');
+      const localRaw = entidad.soloConteo
+        ? await allSQLite(sqlite, 'SELECT COUNT(*) AS cantidad FROM "' + tabla + '"')
+        : await allSQLite(sqlite, 'SELECT * FROM "' + tabla + '"');
+      const remotoRaw = entidad.soloConteo
+        ? await allPostgres(pg, 'SELECT COUNT(*) AS cantidad FROM public."' + tabla + '"')
+        : await allPostgres(pg, 'SELECT * FROM public."' + tabla + '"');
 
-      for (const [origen, filas] of [["SQLite", localRaw], ["PostgreSQL", remotoRaw]]) {
-        for (const fila of filas) {
-          if (!tieneClaves(fila, entidad.pk)) {
-            throw new Error("Esquema inesperado en " + origen + "." + tabla + "; faltan: " + entidad.pk.join(", "));
+      if (!entidad.soloConteo) {
+        for (const [origen, filas] of [["SQLite", localRaw], ["PostgreSQL", remotoRaw]]) {
+          for (const fila of filas) {
+            if (!tieneClaves(fila, entidad.pk)) {
+              throw new Error("Esquema inesperado en " + origen + "." + tabla + "; faltan: " + entidad.pk.join(", "));
+            }
           }
         }
       }
@@ -184,7 +189,7 @@ async function main() {
         informe.entidades[tabla] = {
           clave_primaria: entidad.pk,
           estado: "pendiente_lista_permitida; valores_no_leidos_ni_exportados",
-          conteos: { sqlite: localRaw.length, postgres: remotoRaw.length }
+          conteos: { sqlite: Number(localRaw[0]?.cantidad || 0), postgres: Number(remotoRaw[0]?.cantidad || 0) }
         };
         continue;
       }
@@ -264,7 +269,17 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error("No se pudo generar el manifiesto:", error.message);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch(error => {
+    console.error("No se pudo generar el manifiesto:", error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  canonicalizar,
+  normalizarRegistro,
+  huella,
+  prepararFilas,
+  agruparPorHuella
+};
