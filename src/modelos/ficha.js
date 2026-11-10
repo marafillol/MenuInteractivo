@@ -139,6 +139,16 @@ const crear = async (datos) => {
         const dispositivoId = await obtenerIdDispositivo();
         const syncId = randomUUID();
         return db.withTransaction(async (consultar) => {
+            const menu = await consultar("SELECT sync_id FROM menu WHERE id_menu = ?", [id_menu]);
+            const menuSyncId = menu.rows[0]?.sync_id;
+            if (!menuSyncId) {
+                const insercionLocal = await consultar(`
+                    INSERT INTO ficha (
+                        id_menu, titulo, resumen, texto, imagen, datos_json, visible, creado
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'))
+                `, valores);
+                return insercionLocal.lastID;
+            }
             const insercion = await consultar(`
                 INSERT INTO ficha (
                     id_menu, titulo, resumen, texto, imagen, datos_json,
@@ -150,7 +160,7 @@ const crear = async (datos) => {
                 dispositivoId, entidad: "ficha", operacion: "INSERT",
                 syncId, versionBase: 0, versionResultado: 1,
                 payload: {
-                    id_menu, titulo, resumen: resumen || null, texto: texto || null,
+                    menu_sync_id: menuSyncId, titulo, resumen: resumen || null, texto: texto || null,
                     imagen: imagen || null, datos_json: datos_json || null,
                     visible: visible ?? 1
                 }
@@ -222,6 +232,12 @@ const actualizar = async (id, datos) => {
                 await consultar(sql, valores);
                 return;
             }
+            const menuActual = await consultar("SELECT sync_id FROM menu WHERE id_menu = ?", [datos.id_menu]);
+            const menuSyncId = menuActual.rows[0]?.sync_id;
+            if (!menuSyncId) {
+                await consultar(sql, valores);
+                return;
+            }
             const syncId = anterior.sync_id;
             const versionBase = Number(anterior.sync_version || 1);
             const versionResultado = versionBase + 1;
@@ -238,7 +254,7 @@ const actualizar = async (id, datos) => {
                 dispositivoId, entidad: "ficha", operacion: "UPDATE",
                 syncId, versionBase, versionResultado,
                 payload: {
-                    id_menu: datos.id_menu, titulo: datos.titulo,
+                    menu_sync_id: menuSyncId, titulo: datos.titulo,
                     resumen: datos.resumen ?? null, texto: datos.texto ?? null,
                     imagen: datos.imagen || anterior.imagen || null,
                     datos_json: datos.datos_json ?? null,
@@ -266,37 +282,15 @@ const actualizar = async (id, datos) => {
 // corresponde al controlador.
 //
 
-const eliminar = (id) => {
-
-    return new Promise((resolve,reject)=>{
-
-        db.run(
-            `
-            DELETE FROM ficha
-            WHERE id_ficha = ?
-            `,
-            [id],
-
-            function(error){
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve();
-
-                }
-
-            }
-
+const eliminar = async (id) => {
+    if (await outboxFichaDisponible()) {
+        return eliminarCompleta(id);
+    }
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM ficha WHERE id_ficha = ?", [id], (error) =>
+            error ? reject(error) : resolve()
         );
-
     });
-
 };
 
 
