@@ -92,6 +92,29 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 
 ## Estado actual y precauciones
 
-La rama actual solo prepara metadatos y documentación. **Todavía no implementa el motor de sincronización ni garantiza operación offline integrada con el proyecto principal.**
+### Protocolo incremental implementado en la rama de trabajo
 
-No ejecutar el script en producción, no habilitar sincronización contra datos reales y no fusionar/desplegar estas ramas hasta completar las pruebas y la revisión.
+- La outbox registra cambios de plantillas, menús, fichas, etiquetas y asociaciones ficha-etiqueta tanto en SQLite como en PostgreSQL, siempre que el esquema de sincronización haya sido preparado.
+- El endpoint remoto `POST /api/sync/v1/exchange` recibe lotes autenticados mediante `SYNC_SHARED_SECRET`, aplica eventos idempotentes, conserva conflictos y devuelve eventos posteriores al cursor del dispositivo.
+- El cliente SQLite consulta su outbox, envía hasta 100 eventos por intercambio, recibe cambios remotos y se reintenta cada 30 segundos cuando están configuradas `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`.
+- Los eventos aplicados se registran con su UUID original para evitar ciclos y duplicaciones.
+- Los cambios concurrentes con versiones incompatibles se guardan en `sync_conflictos`; no se sobrescribe silenciosamente la fila local.
+- Los padres se resuelven por `sync_id`, nunca por IDs enteros locales.
+
+### Límites que siguen pendientes
+
+- La transferencia binaria de multimedia a/desde Supabase Storage todavía no está conectada al protocolo. Los eventos multimedia quedan fuera de los lotes hasta implementar y verificar esa transferencia.
+- La reconciliación inicial de identidades históricas no está automatizada. Los registros existentes con `sync_id` NULL no se deben sincronizar hasta generar, revisar y aplicar un manifiesto compartido.
+- Relaciones entre fichas y configuración todavía no forman parte del protocolo incremental.
+- La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
+- La suite debe aprobar CI después de cada cambio del protocolo y se necesitan pruebas de integración con PostgreSQL descartable.
+
+### Configuración y despliegue
+
+- En el servidor remoto PostgreSQL: configurar `SYNC_SHARED_SECRET` con un secreto aleatorio de al menos 32 caracteres.
+- En cada instalación SQLite: configurar el mismo `SYNC_SHARED_SECRET` y `SYNC_REMOTE_URL` con la URL base del servidor remoto (por ejemplo `https://tu-servidor.example`).
+- Preparar el esquema por separado en copias descartables de SQLite y PostgreSQL mediante `npm run sync:preparar`, seleccionando explícitamente `MODO_SERVIDOR` y la base de pruebas correspondiente.
+- El script de preparación agrega columnas/tablas; no ejecutarlo contra bases reales sin backup, aprobación y plan de reversión.
+- No desplegar esta rama ni apuntar instalaciones reales al endpoint hasta completar la reconciliación inicial, multimedia, pruebas PostgreSQL y revisión de seguridad.
+
+La rama no está lista para producción ni para sincronizar los datos reales del museo. No se ejecutó ninguna migración contra Supabase ni se alteró `main`.
