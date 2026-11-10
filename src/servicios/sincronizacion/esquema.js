@@ -28,14 +28,18 @@ async function estaPreparado(tablas) {
                 return false;
             }
         }
+        const tablasAuxiliares = ["sync_eventos", "sync_dispositivos", "sync_conflictos"];
         if (esModoLocal) {
-            const filas = await all("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_eventos'");
-            return filas.length === 1;
+            const filas = await all(
+                `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${tablasAuxiliares.map(() => "?").join(", ")})`,
+                tablasAuxiliares
+            );
+            return filas.length === tablasAuxiliares.length;
         }
         const filas = await all(
-            "SELECT to_regclass('public.sync_eventos') AS tabla"
+            "SELECT to_regclass('public.sync_eventos') AS eventos, to_regclass('public.sync_dispositivos') AS dispositivos, to_regclass('public.sync_conflictos') AS conflictos"
         );
-        return Boolean(filas[0]?.tabla);
+        return Boolean(filas[0]?.eventos && filas[0]?.dispositivos && filas[0]?.conflictos);
     } catch {
         return false;
     }
