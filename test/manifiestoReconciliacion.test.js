@@ -5,7 +5,8 @@ const {
   normalizarRegistro,
   huella,
   prepararFilas,
-  agruparPorHuella
+  agruparPorHuella,
+  uuidPropuesto
 } = require("../scripts/generar-manifiesto-reconciliacion");
 
 test("canonicaliza objetos independientemente del orden de sus claves", () => {
@@ -47,4 +48,14 @@ test("marca grupos duplicados como ambiguos al agrupar huellas", () => {
   ]);
   assert.equal(grupos.get("abc").length, 2);
   assert.equal(grupos.get("def").length, 1);
+});
+
+
+test("propone un UUID estable por entidad y huella de contenido", () => {
+  const primero = uuidPropuesto("plantilla", "abc123");
+  const segundo = uuidPropuesto("plantilla", "abc123");
+  const otro = uuidPropuesto("menu", "abc123");
+  assert.equal(primero, segundo);
+  assert.notEqual(primero, otro);
+  assert.match(primero, /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 });
