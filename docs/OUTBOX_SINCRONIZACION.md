@@ -8,7 +8,7 @@ La rama incorpora la base transaccional de outbox y una primera integración fun
 
 ## Preparación local acotada
 
-El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha` y `etiqueta`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
+El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha`, `etiqueta` y `ficha_etiqueta`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
 
 Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
 
@@ -27,6 +27,10 @@ Si cualquiera de esos pasos falla, la transacción debe revertirse. No llamar al
 `src/modelos/ficha.js` registra INSERT y UPDATE para fichas nuevas o reconciliadas. El payload referencia al menú mediante `menu_sync_id`, nunca mediante el ID entero local. Si el menú o la ficha histórica no tiene identidad reconciliada, la operación continúa localmente sin emitir un evento inválido.
 
 Para fichas sincronizadas, la eliminación se representa como tombstone: se conserva la fila, se marca `sync_deleted_at`, se incrementa la versión y se registra DELETE en la misma transacción. Las consultas habituales de fichas excluyen tombstones. Las fichas históricas sin identidad mantienen el borrado local anterior.
+
+## Integración de relaciones ficha-etiqueta
+
+`src/modelos/fichaEtiquetaModelo.js` registra altas, bajas lógicas y reactivaciones de asociaciones cuando la ficha y todas las etiquetas involucradas ya tienen identidades reconciliadas. Cada relación recibe un UUID propio y versión. El payload utiliza `ficha_sync_id` y `etiqueta_sync_id`. Si se intenta modificar una relación histórica sin identidad, o asociar una etiqueta no reconciliada a una ficha sincronizada, la transacción se bloquea. Las consultas habituales excluyen relaciones tombstone.
 
 ## Integración de etiquetas
 
@@ -50,7 +54,7 @@ Para menús sincronizados, la eliminación se representa como tombstone, increme
 
 ## Pruebas y CI
 
-`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js`, `test/sincronizacionPlantillaOutboxSQLite.test.js` y `test/sincronizacionEtiquetaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
+`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js`, `test/sincronizacionPlantillaOutboxSQLite.test.js` y `test/sincronizacionEtiquetaOutboxSQLite.test.js` y `test/sincronizacionFichaEtiquetaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
 
 ## Pendiente antes de una sincronización real
 
