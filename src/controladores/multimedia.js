@@ -1,4 +1,5 @@
 const Multimedia = require("../modelos/multimedia");
+const { createHash } = require("node:crypto");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
 const cachePublico = require("../middleware/cachePublico");
 const tiposMultimedia = new Set(["imagen", "video", "audio", "pdf"]);
@@ -37,6 +38,28 @@ const validarDatosMultimedia = (cuerpo, archivoRequerido = false) => {
     }
 
     return null;
+};
+
+const obtenerMetadatosSubida = (archivo, rutaPublica) => {
+    if (!archivo?.buffer) return {};
+    let storage_key = null;
+    try {
+        const url = new URL(rutaPublica);
+        const proyecto = new URL(process.env.SUPABASE_URL);
+        const bucket = process.env.SUPABASE_BUCKET || "multimedia";
+        const prefijo = `/storage/v1/object/public/${bucket}/`;
+        if (url.origin === proyecto.origin && url.pathname.startsWith(prefijo)) {
+            storage_key = decodeURIComponent(url.pathname.slice(prefijo.length));
+        }
+    } catch {
+        // En modo local los archivos se procesan desde la ruta SQLite local.
+    }
+    return {
+        checksum_sha256: createHash("sha256").update(archivo.buffer).digest("hex"),
+        mime_type: archivo.mimetype || null,
+        tamano_bytes: archivo.size ?? archivo.buffer.length,
+        storage_key
+    };
 };
 
 const limpiarArchivoSubido = async (ruta) => {
@@ -128,6 +151,7 @@ const crearMultimedia = async(req,res)=>{
             activo: cuerpo.activo ?? 1,
             mime_type: req.file.mimetype,
             tamano_bytes: req.file.size,
+            ...obtenerMetadatosSubida(req.file, rutaSubida),
             // creado es timestamptz en PostgreSQL: guardar el instante con zona UTC explícita.
             creado: new Date().toISOString(),
             // actualizado es TEXT y la interfaz espera la hora local argentina.
@@ -226,6 +250,12 @@ const actualizarMultimedia = async(req,res)=>{
             activo: cuerpo.activo ?? multimediaActual.activo,
             mime_type: req.file?.mimetype || multimediaActual.mime_type || null,
             tamano_bytes: req.file?.size ?? multimediaActual.tamano_bytes ?? null,
+            storage_key: req.file
+                ? obtenerMetadatosSubida(req.file, rutaNuevaSubida).storage_key
+                : multimediaActual.storage_key ?? null,
+            checksum_sha256: req.file
+                ? obtenerMetadatosSubida(req.file, rutaNuevaSubida).checksum_sha256
+                : multimediaActual.checksum_sha256 ?? null,
             actualizado: fechaArgentina()
         };
 
