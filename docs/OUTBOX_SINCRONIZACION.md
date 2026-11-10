@@ -4,7 +4,7 @@
 
 La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia locales. Las operaciones replicables se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
 
-El protocolo incremental de eventos hacia/desde PostgreSQL ya tiene una primera implementación: intercambio autenticado por lotes, cursor por dispositivo, aplicación idempotente y registro de conflictos. No se ha completado la reconciliación inicial ni la transferencia binaria multimedia. No desplegar ni conectar a datos reales.
+El protocolo incremental de eventos hacia/desde PostgreSQL ya tiene una primera implementación: intercambio autenticado por lotes, cursor por dispositivo, aplicación idempotente, registro de conflictos y transferencia binaria multimedia con checksum. No se ha completado la reconciliación inicial ni la limpieza segura de objetos antiguos. No desplegar ni conectar a datos reales.
 
 ## Preparación local acotada
 
@@ -52,11 +52,11 @@ Para menús sincronizados, la eliminación se representa como tombstone, increme
 
 Para archivos locales dentro de `imagenes/multimedia`, el modelo calcula SHA-256 leyendo los bytes del archivo y genera una clave lógica estable a partir del UUID de multimedia. Las consultas habituales excluyen tombstones. Los archivos y registros históricos bajo fichas sin identidad continúan siendo locales y no generan eventos incompletos.
 
-La carga real del archivo a Supabase, la verificación del checksum remoto, la confirmación de eventos y la limpieza segura de objetos reemplazados quedan para la capa de transporte; esta integración todavía no sube archivos ni ejecuta operaciones remotas.
+El cliente local conserva una copia inmutable por versión en `database/.sync-pending`, sube el archivo mediante el endpoint autenticado y comprueba SHA-256. Los nodos receptores descargan el objeto mediante el endpoint autenticado, verifican el checksum y lo guardan en su directorio multimedia local. Los objetos antiguos se conservan deliberadamente hasta implementar un recolector que respete los cursores de todas las réplicas.
 
 ## Protocolo incremental
 
-`src/servicios/sincronizacion/protocolo.js` aplica eventos por UUID, resuelve relaciones mediante UUID del padre, evita duplicados y registra conflictos de versión en `sync_conflictos`. El protocolo habilita por ahora `plantilla`, `menu`, `ficha`, `etiqueta` y `ficha_etiqueta`.
+`src/servicios/sincronizacion/protocolo.js` aplica eventos por UUID, resuelve relaciones mediante UUID del padre, evita duplicados y registra conflictos de versión en `sync_conflictos`. El protocolo habilita `plantilla`, `menu`, `ficha`, `etiqueta`, `ficha_etiqueta` y `multimedia`.
 
 `src/rutas/sincronizacion.js` expone `POST /api/sync/v1/exchange` únicamente en el nodo PostgreSQL. Requiere `SYNC_SHARED_SECRET` (mínimo 32 caracteres), valida que los eventos pertenezcan al dispositivo autenticado y limita los lotes. No utiliza ni expone la clave service-role.
 
@@ -64,7 +64,7 @@ La carga real del archivo a Supabase, la verificación del checksum remoto, la c
 
 El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox, dispositivos y conflictos en la base seleccionada; además agrega campos de integridad multimedia. Exige la doble confirmación `SYNC_ALLOW_SCHEMA_MIGRATION=true` y `SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE`; en modo local también exige `DATABASE_SQLITE_PATH`. Ejecutarlo solo contra copias descartables durante esta etapa.
 
-**Límites actuales:** multimedia no se envía/descarga como archivo binario; sus eventos quedan pendientes fuera del lote. La reconciliación inicial de registros históricos con `sync_id` nulo no está automatizada. `relacion_ficha` y `configuracion` no están incluidas en el protocolo. La resolución de conflictos todavía no tiene interfaz administrativa.
+**Límites actuales:** la reconciliación inicial de registros históricos con `sync_id` nulo no está automatizada. Los objetos antiguos de Storage no se eliminan todavía; se conservan para no romper réplicas desconectadas. `relacion_ficha` y `configuracion` no están incluidas en el protocolo. La resolución de conflictos todavía no tiene interfaz administrativa.
 
 ## Helper e identidad local
 
@@ -80,7 +80,7 @@ El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox
 
 - Ejecutar y aprobar la suite de CI.
 - Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
-- Implementar carga/descarga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
+- Implementar garbage collection de objetos Storage antiguos después de confirmar recepción por todas las réplicas.
 - Incorporar `relacion_ficha` y `configuracion` al protocolo incremental.
 - Agregar interfaz y operación explícita de resolución de conflictos.
 - Añadir pruebas de integración contra PostgreSQL descartable.
