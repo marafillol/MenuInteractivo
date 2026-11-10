@@ -2,13 +2,13 @@
 
 ## Estado actual de esta rama
 
-La rama incorpora la base transaccional de outbox y una primera integración funcional, limitada a altas, modificaciones y bajas lógicas de fichas locales cuyo menú ya tiene un `sync_id` reconciliado.
+La rama incorpora la base transaccional de outbox y una primera integración funcional para fichas y menús locales. Las operaciones se replican solo cuando la entidad y sus referencias padre ya tienen `sync_id` reconciliados.
 
 **Todavía no implementa transporte de eventos hacia/desde Supabase, reconciliación inicial ni sincronización completa. No desplegar como sincronización funcional.**
 
 ## Preparación local acotada
 
-El script `scripts/preparar-outbox-fichas-local.js` prepara únicamente las columnas de sincronización de `menu` y `ficha`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
+El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu` y `ficha`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
 
 Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
 
@@ -28,6 +28,12 @@ Si cualquiera de esos pasos falla, la transacción debe revertirse. No llamar al
 
 Para fichas sincronizadas, la eliminación se representa como tombstone: se conserva la fila, se marca `sync_deleted_at`, se incrementa la versión y se registra DELETE en la misma transacción. Las consultas habituales de fichas excluyen tombstones. Las fichas históricas sin identidad mantienen el borrado local anterior.
 
+## Integración de menús
+
+`src/modelos/menu.js` registra INSERT y UPDATE para menús cuya plantilla ya tiene identidad reconciliada. El payload referencia a la plantilla mediante `plantilla_sync_id`. Si la plantilla no está reconciliada, el alta sigue siendo local y no genera un evento con una referencia local.
+
+Para menús sincronizados, la eliminación se representa como tombstone, incrementa la versión y registra DELETE dentro de la misma transacción. Las consultas habituales excluyen los menús eliminados. Si una modificación o baja de un menú sincronizado apunta a una plantilla sin identidad reconciliada, se bloquea para evitar divergencia silenciosa. La eliminación conserva la validación de que no existan fichas asociadas.
+
 ## Helper e identidad local
 
 `src/servicios/sincronizacion/outbox.js` inserta un evento con UUID, dispositivo de origen, entidad, operación, UUID compartido, versiones y payload opcional. Propaga los errores para que la transacción exterior haga rollback.
@@ -36,7 +42,7 @@ Para fichas sincronizadas, la eliminación se representa como tombstone: se cons
 
 ## Pruebas y CI
 
-`test/sincronizacionFichaOutboxSQLite.test.js` usa una base temporal y cubre INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y el caso de un menú sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
+`test/sincronizacionFichaOutboxSQLite.test.js` y `test/sincronizacionMenuOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
 
 ## Pendiente antes de una sincronización real
 
