@@ -271,13 +271,15 @@ class Etiqueta {
             }
 
             const relaciones = await consultar(`
-                SELECT ficha.sync_id
+                SELECT ficha.sync_id AS ficha_sync_id,
+                    ficha_etiqueta.sync_id AS relacion_sync_id
                 FROM ficha_etiqueta
                 INNER JOIN ficha ON ficha.id_ficha = ficha_etiqueta.id_ficha
                 WHERE ficha_etiqueta.id_etiqueta = ?
+                    AND ficha_etiqueta.sync_deleted_at IS NULL
             `, [id]);
-            if (relaciones.rows.some((fila) => !fila.sync_id)) {
-                throw new Error("No se puede eliminar una etiqueta sincronizada mientras tenga fichas relacionadas sin identidad reconciliada.");
+            if (relaciones.rows.some((fila) => !fila.ficha_sync_id || !fila.relacion_sync_id)) {
+                throw new Error("No se puede eliminar una etiqueta sincronizada mientras tenga asociaciones o fichas relacionadas sin identidad reconciliada.");
             }
 
             const versionBase = Number(etiqueta.sync_version || 1);
@@ -292,7 +294,8 @@ class Etiqueta {
                 syncId: etiqueta.sync_id, versionBase, versionResultado,
                 payload: {
                     nombre: etiqueta.nombre,
-                    fichas_sync_ids: relaciones.rows.map((fila) => fila.sync_id),
+                    fichas_sync_ids: relaciones.rows.map((fila) => fila.ficha_sync_id),
+                    relaciones_sync_ids: relaciones.rows.map((fila) => fila.relacion_sync_id),
                     deleted_at: eliminadoEn
                 }
             });
