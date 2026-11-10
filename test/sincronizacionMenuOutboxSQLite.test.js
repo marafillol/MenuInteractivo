@@ -73,7 +73,7 @@ test("menús registran INSERT, UPDATE y DELETE atómicos en la outbox SQLite", (
                     throw new Error("El UPDATE del menú no hizo rollback");
                 }
 
-                const borrado = await Menu.eliminarSiVacio(id);
+                const borrado = await Menu.eliminar(id);
                 if (!borrado.eliminado || !borrado.pendienteSincronizacion) throw new Error("No se creó tombstone del menú");
                 menu = (await all("SELECT visible, sync_deleted_at, sync_version FROM menu WHERE id_menu = ?", [id]))[0];
                 if (menu.visible !== 0 || !menu.sync_deleted_at || menu.sync_version !== 3) {
