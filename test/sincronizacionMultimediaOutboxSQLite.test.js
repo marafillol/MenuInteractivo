@@ -169,8 +169,8 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /"eventos":\\["INSERT","UPDATE","DELETE"\\]/);
-        const resumen = JSON.parse(operacion.stdout.trim().split("\\n").at(-1));
+        const resumen = JSON.parse(operacion.stdout.trim().split("\n").at(-1));
+        assert.deepEqual(resumen.eventos, ["INSERT", "UPDATE", "DELETE"]);
         fs.rmSync(path.join(proyecto, "database", ".sync-pending", resumen.syncId), {
             recursive: true, force: true
         });
