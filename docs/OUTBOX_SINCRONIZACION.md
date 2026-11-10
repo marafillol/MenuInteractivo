@@ -4,7 +4,7 @@
 
 La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia locales. Las operaciones replicables se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
 
-**Todavía no implementa transporte de eventos hacia/desde Supabase, reconciliación inicial ni sincronización completa. No desplegar como sincronización funcional.**
+El protocolo incremental de eventos hacia/desde PostgreSQL ya tiene una primera implementación: intercambio autenticado por lotes, cursor por dispositivo, aplicación idempotente y registro de conflictos. No se ha completado la reconciliación inicial ni la transferencia binaria multimedia. No desplegar ni conectar a datos reales.
 
 ## Preparación local acotada
 
@@ -54,6 +54,18 @@ Para archivos locales dentro de `imagenes/multimedia`, el modelo calcula SHA-256
 
 La carga real del archivo a Supabase, la verificación del checksum remoto, la confirmación de eventos y la limpieza segura de objetos reemplazados quedan para la capa de transporte; esta integración todavía no sube archivos ni ejecuta operaciones remotas.
 
+## Protocolo incremental
+
+`src/servicios/sincronizacion/protocolo.js` aplica eventos por UUID, resuelve relaciones mediante UUID del padre, evita duplicados y registra conflictos de versión en `sync_conflictos`. El protocolo habilita por ahora `plantilla`, `menu`, `ficha`, `etiqueta` y `ficha_etiqueta`.
+
+`src/rutas/sincronizacion.js` expone `POST /api/sync/v1/exchange` únicamente en el nodo PostgreSQL. Requiere `SYNC_SHARED_SECRET` (mínimo 32 caracteres), valida que los eventos pertenezcan al dispositivo autenticado y limita los lotes. No utiliza ni expone la clave service-role.
+
+`src/servicios/sincronizacion/cliente.js` permite al nodo SQLite enviar eventos pendientes, recibir eventos posteriores al cursor y reintentar periódicamente cada 30 segundos cuando existen `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`. El inicio automático no prepara ni altera el esquema: si falta la migración, no realiza intercambios.
+
+El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox, dispositivos y conflictos en la base seleccionada; además agrega campos de integridad multimedia. Debe ejecutarse explícitamente y solo contra copias descartables durante esta etapa.
+
+**Límites actuales:** multimedia no se envía/descarga como archivo binario; sus eventos quedan pendientes fuera del lote. La reconciliación inicial de registros históricos con `sync_id` nulo no está automatizada. `relacion_ficha` y `configuracion` no están incluidas en el protocolo. La resolución de conflictos todavía no tiene interfaz administrativa.
+
 ## Helper e identidad local
 
 `src/servicios/sincronizacion/outbox.js` inserta un evento con UUID, dispositivo de origen, entidad, operación, UUID compartido, versiones y payload opcional. Propaga los errores para que la transacción exterior haga rollback.
@@ -68,8 +80,9 @@ La carga real del archivo a Supabase, la verificación del checksum remoto, la c
 
 - Ejecutar y aprobar la suite de CI.
 - Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
-- Definir protocolo de envío/recepción idempotente, coalescencia de eventos pendientes, cursores, confirmaciones y conflictos.
-- Implementar carga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
+- Implementar carga/descarga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
+- Incorporar `relacion_ficha` y `configuracion` al protocolo incremental.
+- Agregar interfaz y operación explícita de resolución de conflictos.
 - Añadir pruebas de integración contra PostgreSQL descartable.
 - Revisar compatibilidad de controladores y respuestas de eliminación ante tombstones.
 
