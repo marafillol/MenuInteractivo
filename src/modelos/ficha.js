@@ -436,7 +436,12 @@ const eliminarCompleta = async (id) => {
 
         // Solo se crea un tombstone para fichas con identidad ya reconciliada.
         // Las fichas antiguas sin sync_id mantienen el borrado local histórico.
-        if (outboxActiva && ficha.sync_id) {
+        const menu = outboxActiva
+            ? await consultar("SELECT sync_id FROM menu WHERE id_menu = ?", [ficha.id_menu])
+            : { rows: [] };
+        const menuSyncId = menu.rows[0]?.sync_id;
+
+        if (outboxActiva && ficha.sync_id && menuSyncId) {
             const versionBase = Number(ficha.sync_version || 1);
             const versionResultado = versionBase + 1;
             const eliminadoEn = new Date().toISOString();
@@ -450,7 +455,7 @@ const eliminarCompleta = async (id) => {
                 dispositivoId, entidad: "ficha", operacion: "DELETE",
                 syncId: ficha.sync_id, versionBase, versionResultado,
                 payload: {
-                    titulo: ficha.titulo, id_menu: ficha.id_menu,
+                    titulo: ficha.titulo, menu_sync_id: menuSyncId,
                     deleted_at: eliminadoEn
                 }
             });
