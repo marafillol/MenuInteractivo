@@ -3,7 +3,9 @@ const assert = require("node:assert/strict");
 const Module = require("node:module");
 
 const rutaModulo = require.resolve("../src/config/almacenamientoSupabase");
+const rutaModoServidor = require.resolve("../src/config/modoServidor");
 const moduloAnterior = require.cache[rutaModulo];
+const modoServidorAnterior = require.cache[rutaModoServidor];
 const entornoAnterior = {
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -51,9 +53,12 @@ Module._load = function (solicitud, padre, esPrincipal) {
 let almacenamiento;
 try {
     delete require.cache[rutaModulo];
+    delete require.cache[rutaModoServidor];
     almacenamiento = require("../src/config/almacenamientoSupabase");
 } finally {
     Module._load = cargarOriginal;
+    if (modoServidorAnterior) require.cache[rutaModoServidor] = modoServidorAnterior;
+    else delete require.cache[rutaModoServidor];
     for (const [nombre, valor] of Object.entries(entornoAnterior)) {
         if (valor === undefined) delete process.env[nombre];
         else process.env[nombre] = valor;
@@ -62,6 +67,7 @@ try {
 
 test("acepta SUPABASE_SECRET_KEY como alternativa a SUPABASE_SERVICE_ROLE_KEY", () => {
     const moduloCacheadoAntes = require.cache[rutaModulo];
+    const modoCacheadoAntes = require.cache[rutaModoServidor];
     const entorno = {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -94,12 +100,15 @@ test("acepta SUPABASE_SECRET_KEY como alternativa a SUPABASE_SERVICE_ROLE_KEY", 
         };
 
         delete require.cache[rutaModulo];
+        delete require.cache[rutaModoServidor];
         const moduloAlternativo = require("../src/config/almacenamientoSupabase");
         assert.equal(moduloAlternativo.estaConfigurado, true);
     } finally {
         Module._load = loadAnterior;
         delete require.cache[rutaModulo];
+        delete require.cache[rutaModoServidor];
         if (moduloCacheadoAntes) require.cache[rutaModulo] = moduloCacheadoAntes;
+        if (modoCacheadoAntes) require.cache[rutaModoServidor] = modoCacheadoAntes;
         for (const [nombre, valor] of Object.entries(entorno)) {
             if (valor === undefined) delete process.env[nombre];
             else process.env[nombre] = valor;
@@ -110,6 +119,8 @@ test("acepta SUPABASE_SECRET_KEY como alternativa a SUPABASE_SERVICE_ROLE_KEY", 
 test.after(() => {
     if (moduloAnterior) require.cache[rutaModulo] = moduloAnterior;
     else delete require.cache[rutaModulo];
+    if (modoServidorAnterior) require.cache[rutaModoServidor] = modoServidorAnterior;
+    else delete require.cache[rutaModoServidor];
 });
 
 test("elimina solamente una ruta pública del bucket configurado", async () => {
