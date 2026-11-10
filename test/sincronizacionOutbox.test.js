@@ -22,6 +22,8 @@ test("registra el evento usando el ejecutor transaccional y un UUID", async () =
     assert.match(eventId, /^[0-9a-f-]{36}$/i);
     assert.match(llamada.sql, /INSERT INTO sync_eventos/);
     assert.match(llamada.sql, /evento_id, origen_device_id/);
+    assert.doesNotMatch(llamada.sql, /aplicado/);
+    assert.equal(llamada.valores.length, 8);
     assert.equal(llamada.valores[0], eventId);
     assert.equal(llamada.valores[1], "device-1");
     assert.equal(llamada.valores[2], "ficha");
