@@ -2,6 +2,7 @@ const db = require("../../database");
 const { esModoLocal } = require("../../config/modoServidor");
 const { obtenerIdDispositivo } = require("./dispositivo");
 const { ENTIDADES, procesarLote } = require("./protocolo");
+const { estaPreparado } = require("./esquema");
 
 const CLAVE_CURSOR = "sync.cursor.supabase";
 const LIMITE_LOTE = 100;
@@ -78,6 +79,10 @@ async function sincronizarUnaVez() {
         return { estado: "sin_configurar" };
     }
     if (typeof fetch !== "function") throw new Error("Este entorno de Node.js no incluye fetch.");
+
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        return { estado: "esquema_pendiente" };
+    }
 
     const deviceId = await obtenerIdDispositivo();
     const cursor = await leerCursor();
