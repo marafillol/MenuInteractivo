@@ -2,7 +2,7 @@
 
 ## Estado actual de esta rama
 
-La rama incorpora la base transaccional de outbox y una primera integración funcional para fichas y menús locales. Las operaciones se replican solo cuando la entidad y sus referencias padre ya tienen `sync_id` reconciliados.
+La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús y fichas locales. Las operaciones se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
 
 **Todavía no implementa transporte de eventos hacia/desde Supabase, reconciliación inicial ni sincronización completa. No desplegar como sincronización funcional.**
 
@@ -28,6 +28,10 @@ Si cualquiera de esos pasos falla, la transacción debe revertirse. No llamar al
 
 Para fichas sincronizadas, la eliminación se representa como tombstone: se conserva la fila, se marca `sync_deleted_at`, se incrementa la versión y se registra DELETE en la misma transacción. Las consultas habituales de fichas excluyen tombstones. Las fichas históricas sin identidad mantienen el borrado local anterior.
 
+## Integración de plantillas
+
+`src/modelos/plantilla.js` registra INSERT, UPDATE y DELETE lógico en la outbox local. Las plantillas son la raíz de esta jerarquía de contenido, por lo que sus eventos no dependen de una identidad padre. La eliminación conserva la validación de que no existan menús asociados; cuando la plantilla está sincronizada, se marca tombstone en lugar de borrarla físicamente.
+
 ## Integración de menús
 
 `src/modelos/menu.js` registra INSERT y UPDATE para menús cuya plantilla ya tiene identidad reconciliada. El payload referencia a la plantilla mediante `plantilla_sync_id`. Si la plantilla no está reconciliada, el alta sigue siendo local y no genera un evento con una referencia local.
@@ -42,7 +46,7 @@ Para menús sincronizados, la eliminación se representa como tombstone, increme
 
 ## Pruebas y CI
 
-`test/sincronizacionFichaOutboxSQLite.test.js` y `test/sincronizacionMenuOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
+`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js` y `test/sincronizacionPlantillaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
 
 ## Pendiente antes de una sincronización real
 
