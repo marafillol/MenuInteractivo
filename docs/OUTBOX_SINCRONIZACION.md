@@ -10,7 +10,7 @@ El protocolo incremental de eventos hacia/desde PostgreSQL ya tiene una primera 
 
 El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha`, `etiqueta`, `ficha_etiqueta` y `multimedia`, sus índices y la tabla `sync_eventos` en SQLite local. Para multimedia agrega SHA-256, MIME, tamaño, clave lógica de Storage y campos auxiliares de seguimiento; no mueve ni sube archivos durante la preparación. Rechaza el modo Supabase.
 
-Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
+Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. El script rechaza la ruta predeterminada del museo. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
 
 ## Contrato de escritura
 
@@ -62,7 +62,7 @@ La carga real del archivo a Supabase, la verificación del checksum remoto, la c
 
 `src/servicios/sincronizacion/cliente.js` permite al nodo SQLite enviar eventos pendientes, recibir eventos posteriores al cursor y reintentar periódicamente cada 30 segundos cuando existen `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`. El inicio automático no prepara ni altera el esquema: si falta la migración, no realiza intercambios.
 
-El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox, dispositivos y conflictos en la base seleccionada; además agrega campos de integridad multimedia. Debe ejecutarse explícitamente y solo contra copias descartables durante esta etapa.
+El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox, dispositivos y conflictos en la base seleccionada; además agrega campos de integridad multimedia. Exige la doble confirmación `SYNC_ALLOW_SCHEMA_MIGRATION=true` y `SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE`; en modo local también exige `DATABASE_SQLITE_PATH`. Ejecutarlo solo contra copias descartables durante esta etapa.
 
 **Límites actuales:** multimedia no se envía/descarga como archivo binario; sus eventos quedan pendientes fuera del lote. La reconciliación inicial de registros históricos con `sync_id` nulo no está automatizada. `relacion_ficha` y `configuracion` no están incluidas en el protocolo. La resolución de conflictos todavía no tiene interfaz administrativa.
 
