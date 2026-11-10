@@ -8,13 +8,15 @@ const entornoAnterior = {
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
-    SUPABASE_BUCKET: process.env.SUPABASE_BUCKET
+    SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
+    MODO_SERVIDOR: process.env.MODO_SERVIDOR
 };
 
 const llamadas = [];
 let errorAlEliminar = null;
 const urlPrueba = "https://proyecto-prueba.supabase.co";
 
+process.env.MODO_SERVIDOR = "supabase";
 process.env.SUPABASE_URL = urlPrueba;
 process.env.SUPABASE_SERVICE_ROLE_KEY = "credencial-falsa-de-prueba";
 delete process.env.SUPABASE_SECRET_KEY;
@@ -64,12 +66,14 @@ test("acepta SUPABASE_SECRET_KEY como alternativa a SUPABASE_SERVICE_ROLE_KEY", 
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
-        SUPABASE_BUCKET: process.env.SUPABASE_BUCKET
+        SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
+        MODO_SERVIDOR: process.env.MODO_SERVIDOR
     };
     const loadAnterior = Module._load;
     const claveSecretaPrueba = "clave-secreta-falsa-de-prueba";
 
     try {
+        process.env.MODO_SERVIDOR = "supabase";
         process.env.SUPABASE_URL = urlPrueba;
         delete process.env.SUPABASE_SERVICE_ROLE_KEY;
         process.env.SUPABASE_SECRET_KEY = claveSecretaPrueba;
