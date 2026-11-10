@@ -126,7 +126,7 @@ const obtenerPorMenu = async (id_menu) => {
         SELECT plantilla.* FROM menu
         INNER JOIN plantilla ON menu.id_plantilla = plantilla.id_plantilla
         WHERE menu.id_menu = ? ${filtro}
-    `, [id_menu], (error, fila) => error ? reject(error) : resolve(fila));
+    `, [id_menu], (error, fila) => error ? reject(error) : resolve(fila)));
 };
 
 // =======================================================
