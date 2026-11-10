@@ -76,6 +76,20 @@ function normalizarRegistro(tabla, registro) {
   }
   return canonicalizar(salida);
 }
+function uuidPropuesto(tabla, hash) {
+  const bytes = crypto.createHash("sha1")
+    .update("museo-malvinas-sync:" + tabla + ":" + hash)
+    .digest()
+    .subarray(0, 16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x50;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = bytes.toString("hex");
+  return [
+    hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16),
+    hex.slice(16, 20), hex.slice(20)
+  ].join("-");
+}
+
 function huella(tabla, registro, excluir) {
   const ignorar = new Set([...excluir, ...METADATOS_SYNC]);
   const normalizado = normalizarRegistro(tabla, registro);
@@ -222,7 +236,12 @@ async function main() {
           cantidad_postgres: filasRemotas.length
         };
         if (filasLocal.length === 1 && filasRemotas.length === 1) {
-          compartidas.push({ ...candidato, estado: "candidato_revision_manual" });
+          compartidas.push({
+            ...candidato,
+            sync_id_propuesto: uuidPropuesto(tabla, hash),
+            aprobado: false,
+            estado: "candidato_revision_manual"
+          });
         } else {
           ambiguas.push({ ...candidato, estado: "ambiguo_por_duplicidad" });
         }
@@ -281,5 +300,6 @@ module.exports = {
   normalizarRegistro,
   huella,
   prepararFilas,
-  agruparPorHuella
+  agruparPorHuella,
+  uuidPropuesto
 };
