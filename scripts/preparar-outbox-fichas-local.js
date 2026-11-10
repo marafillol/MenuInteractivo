@@ -52,6 +52,21 @@ async function preparar() {
             'CREATE UNIQUE INDEX IF NOT EXISTS "ux_ficha_etiqueta_sync_id" ON "ficha_etiqueta" (sync_id)'
         );
 
+        const columnasRelacionFicha = await consultar('PRAGMA table_info("relacion_ficha")');
+        const existentesRelacionFicha = new Set(columnasRelacionFicha.rows.map((columna) => columna.name));
+        for (const [nombre, tipo] of [
+            ["sync_id", "TEXT"],
+            ["sync_version", "INTEGER NOT NULL DEFAULT 1"],
+            ["sync_deleted_at", "TEXT"]
+        ]) {
+            if (!existentesRelacionFicha.has(nombre)) {
+                await consultar(`ALTER TABLE "relacion_ficha" ADD COLUMN "${nombre}" ${tipo}`);
+            }
+        }
+        await consultar(
+            'CREATE UNIQUE INDEX IF NOT EXISTS "ux_relacion_ficha_sync_id" ON "relacion_ficha" (sync_id)'
+        );
+
         const columnasMultimedia = await consultar('PRAGMA table_info("multimedia")');
         const existentesMultimedia = new Set(columnasMultimedia.rows.map((columna) => columna.name));
         const columnasNuevasMultimedia = [
