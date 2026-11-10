@@ -30,10 +30,16 @@ El esquema esperado corresponde al script de preparación existente:
 - `creado`
 - `aplicado`
 
+## Identidad local del dispositivo
+
+`src/servicios/sincronizacion/dispositivo.js` obtiene un UUID persistente para la instalación SQLite y lo guarda en `configuracion` bajo la clave `sync.device_id`. La lectura y creación ocurren dentro de `db.withTransaction()`, que en SQLite utiliza `BEGIN IMMEDIATE`; así las solicitudes concurrentes reutilizan el mismo UUID.
+
+El servicio rechaza el modo Supabase para evitar que varias instalaciones compartan una identidad global. Si encuentra un valor existente inválido, falla sin reemplazarlo, para no desvincular eventos históricos.
+
 ## Lo que falta antes de usarlo
 
 - Migración aditiva del esquema, con validaciones y rollback.
-- Identidad persistente del dispositivo y generación/reconciliación de `sync_id`.
+- Generación/reconciliación de `sync_id` para las entidades existentes.
 - Integrar escritura + versión + evento en cada modelo y sus operaciones especiales.
 - Definir eventos para relaciones y configuración.
 - Protocolo de envío/recepción idempotente, cursores, confirmaciones y conflictos.
