@@ -28,10 +28,12 @@ const ENTIDADES = [
   { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"] },
   { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"] },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
-  { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true },
-  { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true },
+  { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"] },
+  { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"] },
   { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true },
-  { tabla: "configuracion", pk: ["clave"], excluir: ["actualizado"], configuracion: true }
+  // Configuración queda fuera del manifiesto de contenido hasta definir una
+  // lista permitida: sus valores podrían contener datos sensibles.
+  { tabla: "configuracion", pk: ["clave"], soloConteo: true }
 ];
 
 const METADATOS_SYNC = ["sync_id", "sync_version", "sync_deleted_at"];
@@ -98,7 +100,9 @@ function prepararFilas(filas, entidad) {
   return filas.map(fila => ({
     clave_local: Object.fromEntries(entidad.pk.map(k => [k, fila[k]])),
     huella_contenido: entidad.relacion ? null : huella(entidad.tabla, fila, entidad.excluir),
-    valores: canonicalizar(fila)
+    ...(entidad.referencias ? {
+      referencias: Object.fromEntries(entidad.referencias.map(k => [k, fila[k]]))
+    } : {})
   }));
 }
 function agruparPorHuella(filas) {
@@ -162,8 +166,9 @@ async function main() {
 
     for (const entidad of ENTIDADES) {
       const tabla = entidad.tabla;
-      const localRaw = await allSQLite(sqlite, 'SELECT * FROM "' + tabla + '"');
-      const remotoRaw = await allPostgres(pg, 'SELECT * FROM public."' + tabla + '"');
+      const columnas = entidad.soloConteo ? entidad.pk.join(", ") : "*";
+      const localRaw = await allSQLite(sqlite, 'SELECT ' + columnas + ' FROM "' + tabla + '"');
+      const remotoRaw = await allPostgres(pg, 'SELECT ' + columnas + ' FROM public."' + tabla + '"');
 
       for (const [origen, filas] of [["SQLite", localRaw], ["PostgreSQL", remotoRaw]]) {
         for (const fila of filas) {
@@ -171,6 +176,15 @@ async function main() {
             throw new Error("Esquema inesperado en " + origen + "." + tabla + "; faltan: " + entidad.pk.join(", "));
           }
         }
+      }
+
+      if (entidad.soloConteo) {
+        informe.entidades[tabla] = {
+          clave_primaria: entidad.pk,
+          estado: "pendiente_lista_permitida; valores_no_leidos_ni_exportados",
+          conteos: { sqlite: localRaw.length, postgres: remotoRaw.length }
+        };
+        continue;
       }
 
       const local = prepararFilas(localRaw, entidad);
