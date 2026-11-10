@@ -94,7 +94,7 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 
 ### Protocolo incremental implementado en la rama de trabajo
 
-- La outbox registra cambios de plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia tanto en SQLite como en PostgreSQL, siempre que el esquema de sincronización haya sido preparado.
+- La outbox registra cambios de plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta, relaciones entre fichas y multimedia tanto en SQLite como en PostgreSQL, siempre que el esquema de sincronización haya sido preparado.
 - El endpoint remoto `POST /api/sync/v1/exchange` recibe lotes autenticados mediante `SYNC_SHARED_SECRET`, aplica eventos idempotentes, conserva conflictos y devuelve eventos posteriores al cursor del dispositivo.
 - El cliente SQLite consulta su outbox, envía hasta 100 eventos por intercambio, recibe cambios remotos y se reintenta cada 30 segundos cuando están configuradas `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`.
 - Los eventos aplicados se registran con su UUID original para evitar ciclos y duplicaciones.
