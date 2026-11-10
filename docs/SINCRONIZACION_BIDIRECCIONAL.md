@@ -113,7 +113,7 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 
 - En el servidor remoto PostgreSQL: configurar `SYNC_SHARED_SECRET` con un secreto aleatorio de al menos 32 caracteres.
 - En cada instalación SQLite: configurar el mismo `SYNC_SHARED_SECRET` y `SYNC_REMOTE_URL` con la URL base del servidor remoto (por ejemplo `https://tu-servidor.example`).
-- Preparar el esquema por separado en copias descartables de SQLite y PostgreSQL mediante `npm run sync:preparar`, seleccionando explícitamente `MODO_SERVIDOR` y la base de pruebas correspondiente.
+- Preparar el esquema por separado en copias descartables de SQLite y PostgreSQL mediante `npm run sync:preparar`, seleccionando explícitamente `MODO_SERVIDOR` y la base de pruebas correspondiente. El script exige `SYNC_ALLOW_SCHEMA_MIGRATION=true` y `SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE`; en modo local también exige `DATABASE_SQLITE_PATH`.
 - El script de preparación agrega columnas/tablas; no ejecutarlo contra bases reales sin backup, aprobación y plan de reversión.
 - No desplegar esta rama ni apuntar instalaciones reales al endpoint hasta completar la reconciliación inicial, multimedia, pruebas PostgreSQL y revisión de seguridad.
 
