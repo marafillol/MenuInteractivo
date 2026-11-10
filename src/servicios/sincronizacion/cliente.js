@@ -51,7 +51,7 @@ function obtenerPayload(evento) {
 function obtenerRutaStaging(evento) {
     const payload = obtenerPayload(evento);
     const extension = path.extname(String(payload.storage_key || ""));
-    if (!/^\\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión del archivo pendiente no es válida.");
+    if (!/^\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión del archivo pendiente no es válida.");
     const raiz = path.resolve(__dirname, "../../../database/.sync-pending");
     const ruta = path.resolve(raiz, evento.sync_id, `v${evento.version_resultado}${extension}`);
     if (!ruta.startsWith(raiz + path.sep)) throw new Error("La ruta de staging multimedia no es válida.");
@@ -75,7 +75,7 @@ async function subirMultimediaPendiente(evento, url, secreto) {
         type: payload.mime_type || "application/octet-stream"
     }), path.basename(ruta));
 
-    const endpoint = url.replace(/\\/exchange\\/?$/i, "/media/upload");
+    const endpoint = url.replace(/\/exchange\/?$/i, "/media/upload");
     const respuesta = await fetch(endpoint, {
         method: "POST",
         headers: { authorization: `Bearer ${secreto}` },
@@ -103,7 +103,7 @@ async function prepararMultimediaEntrante(evento, url, secreto) {
 
     const tipo = String(payload.tipo_multi || "archivo").replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
     const extension = path.extname(String(payload.storage_key || ""));
-    if (!/^\\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión multimedia recibida no es válida.");
+    if (!/^\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión multimedia recibida no es válida.");
     const raizProyecto = path.resolve(__dirname, "../../../");
     const carpeta = path.join(raizProyecto, "imagenes", "multimedia", tipo);
     await fs.promises.mkdir(carpeta, { recursive: true });
