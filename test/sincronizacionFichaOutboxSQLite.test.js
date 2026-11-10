@@ -57,12 +57,7 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 if (eventos.some(evento => evento.sync_id !== ficha.sync_id)) throw new Error("El sync_id no coincide");
                 if (eventos[1].version_base !== 1 || eventos[1].version_resultado !== 2) throw new Error("Versionado incorrecto");
 
-                await run(`
-                    CREATE TRIGGER forzar_fallo_outbox_update
-                    BEFORE INSERT ON sync_eventos
-                    WHEN NEW.operacion = 'UPDATE'
-                    BEGIN SELECT RAISE(ABORT, 'fallo de outbox intencional'); END
-                `);
+                await run("CREATE TRIGGER forzar_fallo_outbox_update BEFORE INSERT ON sync_eventos WHEN NEW.operacion = 'UPDATE' BEGIN SELECT RAISE(ABORT, 'fallo de outbox intencional'); END");
                 let rollbackDetectado = false;
                 try {
                     await Ficha.actualizar(id, {
