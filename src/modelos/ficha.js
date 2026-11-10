@@ -235,8 +235,7 @@ const actualizar = async (id, datos) => {
             const menuActual = await consultar("SELECT sync_id FROM menu WHERE id_menu = ?", [datos.id_menu]);
             const menuSyncId = menuActual.rows[0]?.sync_id;
             if (!menuSyncId) {
-                await consultar(sql, valores);
-                return;
+                throw new Error("No se puede modificar una ficha sincronizada hacia un menú sin identidad reconciliada.");
             }
             const syncId = anterior.sync_id;
             const versionBase = Number(anterior.sync_version || 1);
@@ -440,6 +439,9 @@ const eliminarCompleta = async (id) => {
             ? await consultar("SELECT sync_id FROM menu WHERE id_menu = ?", [ficha.id_menu])
             : { rows: [] };
         const menuSyncId = menu.rows[0]?.sync_id;
+        if (outboxActiva && ficha.sync_id && !menuSyncId) {
+            throw new Error("No se puede eliminar una ficha sincronizada sin la identidad reconciliada de su menú.");
+        }
 
         if (outboxActiva && ficha.sync_id && menuSyncId) {
             const versionBase = Number(ficha.sync_version || 1);
