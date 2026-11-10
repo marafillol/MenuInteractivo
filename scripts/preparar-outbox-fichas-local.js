@@ -53,8 +53,7 @@ async function preparar() {
             ["checksum_sha256", 'TEXT'],
             ["mime_type", 'TEXT'],
             ["tamano_bytes", 'INTEGER'],
-            ["storage_key", 'TEXT'],
-            ["sync_previous_path", 'TEXT']
+            ["storage_key", 'TEXT']
         ];
         for (const [nombre, tipo] of columnasNuevasMultimedia) {
             if (!existentesMultimedia.has(nombre)) {
