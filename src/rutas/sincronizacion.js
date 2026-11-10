@@ -22,13 +22,20 @@ function credencialValida(req) {
     return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
 }
 
+function storageKeyValida(storageKey) {
+    if (typeof storageKey !== "string" || !storageKey.startsWith("multimedia/")) return false;
+    const segmentos = storageKey.split("/");
+    return segmentos.length >= 3 && segmentos.every((segmento) =>
+        /^[a-zA-Z0-9._-]+$/.test(segmento) && segmento !== "." && segmento !== ".."
+    );
+}
+
 router.post("/media/upload", upload.single("file"), async (req, res) => {
     if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
     if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
 
     const { storage_key, checksum_sha256, mime_type } = req.body || {};
-    if (!req.file || typeof storage_key !== "string" ||
-        !/^multimedia\\/[a-z0-9_-]+\\/[0-9a-f-]+\\/v[0-9]+\\.[a-z0-9]{1,10}$/i.test(storage_key) ||
+    if (!req.file || !storageKeyValida(storage_key) ||
         !/^[a-f0-9]{64}$/i.test(String(checksum_sha256 || ""))) {
         return res.status(400).json({ error: "Archivo o manifiesto multimedia inválido." });
     }
@@ -48,7 +55,7 @@ router.get("/media/download", async (req, res) => {
     if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
     if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
     const storageKey = String(req.query?.key || "");
-    if (!/^multimedia\\/[a-z0-9_-]+\\/[0-9a-f-]+\\/v[0-9]+\\.[a-z0-9]{1,10}$/i.test(storageKey)) {
+    if (!storageKeyValida(storageKey)) {
         return res.status(400).json({ error: "La clave multimedia no es válida." });
     }
     try {
