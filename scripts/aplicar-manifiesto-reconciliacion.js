@@ -10,7 +10,7 @@ const path = require("node:path");
 const sqlite3 = require("sqlite3");
 const { Client } = require("pg");
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ENTIDADES = {
     plantilla: { pk: ["id_plantilla"] },
     etiqueta: { pk: ["id_etiqueta"] },
@@ -54,9 +54,9 @@ function candidatosAprobados(manifiesto, target) {
     return aprobados;
 }
 
-function wherePk(config, clave) {
+function wherePk(config, clave, tabla) {
     if (!clave || config.pk.some((campo) => !Object.prototype.hasOwnProperty.call(clave, campo))) {
-        throw new Error("La clave primaria del manifiesto no coincide con el esquema de " + config.tabla + ".");
+        throw new Error("La clave primaria del manifiesto no coincide con el esquema de " + tabla + ".");
     }
     return {
         sql: config.pk.map((campo) => campo + " = ?").join(" AND "),
@@ -72,17 +72,22 @@ function crearSqlite(ruta) {
     const run = (sql, valores = []) => new Promise((resolve, reject) =>
         db.run(sql, valores, function (error) { error ? reject(error) : resolve(this); })
     );
+    const consultar = async (sql, valores = []) => {
+        if (/^\\s*SELECT\\b/i.test(sql)) return { rows: await all(sql, valores) };
+        const resultado = await run(sql, valores);
+        return { rows: [], rowCount: resultado.changes || 0 };
+    };
     const close = () => new Promise((resolve, reject) =>
         db.close((error) => error ? reject(error) : resolve())
     );
-    return { all, run, close };
+    return { consultar, close };
 }
 
 async function aplicar(consultar, candidato) {
     const definicion = ENTIDADES[candidato.entidad];
     if (!definicion) throw new Error("Entidad no permitida: " + candidato.entidad);
     const tabla = candidato.entidad;
-    const clave = wherePk(definicion, candidato.clave);
+    const clave = wherePk(definicion, candidato.clave, tabla);
     const filas = await consultar("SELECT * FROM " + tabla + " WHERE " + clave.sql, clave.valores);
     const fila = filas.rows ? filas.rows[0] : filas[0];
     if (!fila) throw new Error("No existe la fila " + tabla + " indicada en el manifiesto.");
@@ -144,7 +149,7 @@ async function main() {
             await db.run("BEGIN IMMEDIATE");
             transaccion = true;
             const aplicados = [];
-            for (const candidato of candidatos) aplicados.push(await aplicar(db.all, candidato));
+            for (const candidato of candidatos) aplicados.push(await aplicar(db.consultar, candidato));
             await db.run("COMMIT");
             transaccion = false;
             console.log(JSON.stringify({ target, aplicados }, null, 2));
@@ -164,10 +169,11 @@ async function main() {
         await client.query("BEGIN");
         transaccion = true;
         await client.query("SET LOCAL statement_timeout = '30s'");
-        const consultar = async (sql, valores = []) => client.query(
-            sql.replace(/\\?/g, (match) => match),
-            valores
-        );
+        const consultar = async (sql, valores = []) => {
+            let indice = 0;
+            const sqlPostgres = sql.replace(/\\?/g, () => "$" + (++indice));
+            return client.query(sqlPostgres, valores);
+        };
         const aplicados = [];
         for (const candidato of candidatos) aplicados.push(await aplicar(consultar, candidato));
         await client.query("COMMIT");
