@@ -75,13 +75,12 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                 });
                 assert.equal((await aplicar(relacion)).estado, "aplicado");
 
-                const filas = await all(`
-                    SELECT f.titulo, m.nombre AS menu, p.nombre AS plantilla
-                    FROM ficha f
-                    JOIN menu m ON m.id_menu = f.id_menu
-                    JOIN plantilla p ON p.id_plantilla = m.id_plantilla
-                    WHERE f.sync_id = ?
-                `, [uuid(3)]);
+                const filas = await all(
+                    "SELECT f.titulo, m.nombre AS menu, p.nombre AS plantilla " +
+                    "FROM ficha f JOIN menu m ON m.id_menu = f.id_menu " +
+                    "JOIN plantilla p ON p.id_plantilla = m.id_plantilla WHERE f.sync_id = ?",
+                    [uuid(3)]
+                );
                 if (filas.length !== 1 || filas[0].titulo !== "Ficha compartida" ||
                     filas[0].menu !== "Menú compartido" || filas[0].plantilla !== "Plantilla compartida") {
                     throw new Error("No se resolvieron las referencias por UUID");
