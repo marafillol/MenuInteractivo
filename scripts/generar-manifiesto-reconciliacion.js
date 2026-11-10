@@ -159,7 +159,9 @@ async function main() {
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
         "Las tablas de relaciones se enumeran pero no se emparejan hasta reconciliar sus extremos.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
-        "No se leen ni exportan usuarios, credenciales, sesiones o tokens."
+        "No se leen ni exportan usuarios, credenciales, sesiones o tokens.",
+        "No se exportan valores completos de registros: solo claves, huellas y referencias necesarias.",
+        "Configuración se cuenta sin leer ni exportar sus valores hasta definir una lista permitida."
       ],
       entidades: {}
     };
