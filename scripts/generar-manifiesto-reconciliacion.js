@@ -317,5 +317,6 @@ module.exports = {
   huella,
   prepararFilas,
   agruparPorHuella,
-  uuidPropuesto
+  uuidPropuesto,
+  ENTIDADES
 };
