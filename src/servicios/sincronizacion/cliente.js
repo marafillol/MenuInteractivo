@@ -126,8 +126,13 @@ async function limpiarStagingConfirmado(eventos, idsConfirmados) {
     for (const evento of eventos) {
         if (!confirmados.has(evento.evento_id) ||
             evento.entidad !== "multimedia" || evento.operacion === "DELETE") continue;
-        try { await fs.promises.unlink(obtenerRutaStaging(evento)); }
-        catch (error) { if (error.code !== "ENOENT") throw error; }
+        const ruta = obtenerRutaStaging(evento);
+        try {
+            await fs.promises.unlink(ruta);
+            await fs.promises.rmdir(path.dirname(ruta));
+        } catch (error) {
+            if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error.code)) throw error;
+        }
     }
 }
 
