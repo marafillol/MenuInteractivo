@@ -264,7 +264,8 @@ const actualizarMultimedia = async(req,res)=>{
         guardado = true;
 
         let advertencia = null;
-        if (rutaNuevaSubida && rutaAnterior && rutaAnterior !== rutaNuevaSubida) {
+        const conservarArchivoParaReplicas = Boolean(multimediaActual.sync_id);
+        if (rutaNuevaSubida && rutaAnterior && rutaAnterior !== rutaNuevaSubida && !conservarArchivoParaReplicas) {
             try {
                 await eliminarArchivo(rutaAnterior);
             } catch {
@@ -315,11 +316,13 @@ const eliminarMultimedia = async(req,res)=>{
         cachePublico.invalidar(["fichas"]);
 
         let advertencia = null;
-        try {
-            await eliminarArchivo(multimediaActual.ruta_archivo);
-        } catch {
-            advertencia = "El registro se eliminó, pero no se pudo eliminar el archivo del almacenamiento.";
-            console.error("No se pudo limpiar el archivo multimedia eliminado.");
+        if (!multimediaActual.sync_id) {
+            try {
+                await eliminarArchivo(multimediaActual.ruta_archivo);
+            } catch {
+                advertencia = "El registro se eliminó, pero no se pudo eliminar el archivo del almacenamiento.";
+                console.error("No se pudo limpiar el archivo multimedia eliminado.");
+            }
         }
 
         res.json({
