@@ -178,9 +178,10 @@ async function procesarLote(consultar, eventos, opciones) {
     for (const evento of eventos) {
         try {
             const resultado = await aplicarEvento(consultar, evento, opciones);
-            if (resultado.estado === "aplicado" || resultado.estado === "duplicado") {
+            if (resultado.estado === "aplicado" || resultado.estado === "duplicado" || resultado.estado === "conflicto") {
                 confirmados.push(evento.evento_id);
-            } else {
+            }
+            if (resultado.estado !== "aplicado" && resultado.estado !== "duplicado") {
                 rechazados.push({ evento_id: evento.evento_id, ...resultado });
             }
         } catch (error) {
