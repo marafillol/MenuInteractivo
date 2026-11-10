@@ -3,6 +3,7 @@ const { esModoSupabase } = require("../config/modoServidor");
 const db = require("../database");
 const { secretoValido, ENTIDADES, procesarLote } = require("../servicios/sincronizacion/protocolo");
 const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -18,6 +19,10 @@ router.post("/exchange", async (req, res) => {
     const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
     if (!secreto || secreto.length < 32 || !secretoValido(token, secreto)) {
         return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        return res.status(503).json({ error: "El esquema de sincronización todavía no está preparado en el servidor." });
     }
 
     const deviceId = req.body?.device_id;
