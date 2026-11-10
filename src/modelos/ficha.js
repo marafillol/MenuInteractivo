@@ -261,15 +261,6 @@ const actualizar = async (id, datos) => {
             const syncId = anterior.sync_id || randomUUID();
             const versionBase = Number(anterior.sync_version || 1);
             const versionResultado = versionBase + 1;
-            const asignaciones = [
-                "sync_id = ?", "sync_version = ?", "sync_deleted_at = NULL"
-            ];
-            const parametros = [syncId, versionResultado];
-            const sqlConSync = sql.replace(
-                " WHERE id_ficha = ?",
-                ", " + asignaciones.join(", ") + " WHERE id_ficha = ?"
-            );
-            parametros.push(...valores);
             // Los metadatos se agregan al final del UPDATE, antes del WHERE.
             const consultaFinal = sql.replace(
                 " WHERE id_ficha = ?",
