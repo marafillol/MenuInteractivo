@@ -117,7 +117,7 @@ async function subirMultimediaPendiente(evento, url, secreto) {
 async function prepararMultimediaEntrante(evento, url, secreto) {
     if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return parsearPayload(evento);
     const payload = obtenerPayload(evento);
-    const endpoint = url.replace(/\\/exchange\\/?$/i, "/media/download") +
+    const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
         "?key=" + encodeURIComponent(payload.storage_key || "");
     const respuesta = await fetch(endpoint, {
         headers: { authorization: `Bearer ${secreto}` },
