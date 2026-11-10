@@ -75,6 +75,19 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                 });
                 assert.equal((await aplicar(relacion)).estado, "aplicado");
 
+                const segundaFicha = evento(6, "ficha", "INSERT", uuid(6), 0, 1, {
+                    menu_sync_id: uuid(2), titulo: "Segunda ficha",
+                    resumen: null, texto: null, imagen: null, datos_json: "{}", visible: 1
+                });
+                assert.equal((await aplicar(segundaFicha)).estado, "aplicado");
+
+                const relacionFichas = evento(7, "relacion_ficha", "INSERT", uuid(7), 0, 1, {
+                    ficha_origen_sync_id: uuid(3),
+                    ficha_destino_sync_id: uuid(6),
+                    tipo_relacion: "relacionada"
+                });
+                assert.equal((await aplicar(relacionFichas)).estado, "aplicado");
+
                 const filas = await all(
                     "SELECT f.titulo, m.nombre AS menu, p.nombre AS plantilla " +
                     "FROM ficha f JOIN menu m ON m.id_menu = f.id_menu " +
@@ -88,7 +101,12 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                 const relaciones = await all("SELECT * FROM ficha_etiqueta WHERE sync_id = ?", [uuid(5)]);
                 if (relaciones.length !== 1) throw new Error("No se aplicó la relación ficha-etiqueta");
 
-                const conflicto = evento(6, "ficha", "UPDATE", uuid(3), 0, 2, {
+                const relacionGuardada = await all("SELECT tipo_relacion FROM relacion_ficha WHERE sync_id = ?", [uuid(7)]);
+                if (relacionGuardada.length !== 1 || relacionGuardada[0].tipo_relacion !== "relacionada") {
+                    throw new Error("No se aplicó la relación entre fichas");
+                }
+
+                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 0, 2, {
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
                 assert.equal((await aplicar(conflicto)).estado, "conflicto");
@@ -101,14 +119,14 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("El conflicto no quedó registrado");
                 }
                 const recibidos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (recibidos[0].cantidad !== 5) throw new Error("Los eventos aplicados no se registraron como recibidos");
+                if (recibidos[0].cantidad !== 7) throw new Error("Los eventos aplicados no se registraron como recibidos");
 
-                process.stdout.write(JSON.stringify({ entidades: 5, conflictos: conflictos.length }) + "\\n");
+                process.stdout.write(JSON.stringify({ entidades: 7, conflictos: conflictos.length }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /"entidades":5,"conflictos":1/);
+        assert.match(operacion.stdout, /"entidades":7,"conflictos":1/);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
