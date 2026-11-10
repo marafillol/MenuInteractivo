@@ -23,7 +23,8 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
         ...process.env,
         MODO_SERVIDOR: "local",
         LOCAL_AUTH_SECRET: "clave-temporal-integracion-multimedia-2026",
-        DATABASE_SQLITE_PATH: rutaDb
+        DATABASE_SQLITE_PATH: rutaDb,
+        MULTIMEDIA_TEST_DIR: rutaRelativa
     };
     const ejecutar = (args) => spawnSync(process.execPath, args, {
         cwd: proyecto, env, encoding: "utf8"
@@ -57,8 +58,8 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
                     1, "Ficha", "33333333-3333-4333-8333-333333333333"
                 ]);
 
-                const rutaInicialRelativa = "imagenes/multimedia/imagen/placeholder/inicial.png";
-                const rutaNuevaRelativa = "imagenes/multimedia/imagen/placeholder/actualizada.png";
+                const rutaInicialRelativa = process.env.MULTIMEDIA_TEST_DIR + "/inicial.png";
+                const rutaNuevaRelativa = process.env.MULTIMEDIA_TEST_DIR + "/actualizada.png";
                 const inicial = fs.readFileSync(path.join(process.cwd(), rutaInicialRelativa));
                 const nueva = fs.readFileSync(path.join(process.cwd(), rutaNuevaRelativa));
                 const id = await Multimedia.crear({
