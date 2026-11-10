@@ -50,7 +50,6 @@ function consultarPromesa(sql, valores = []) {
 async function outboxMultimediaDisponible() {
     if (!await estaPreparado(["multimedia", "ficha"])) return false;
     try {
-        const columnas = await estaPreparado(["multimedia"]);
         const { columnasDe } = require("../servicios/sincronizacion/esquema");
         const filas = await columnasDe("multimedia");
         const nombres = new Set(filas.map((columna) => columna.name));
