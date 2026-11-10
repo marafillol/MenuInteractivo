@@ -90,6 +90,19 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 const visibles = await Ficha.obtenerFichas();
                 if (visibles.some(fila => fila.id_ficha === id)) throw new Error("La ficha eliminada sigue visible en las consultas");
 
+                // Una ficha cuyo menú aún no fue reconciliado debe seguir
+                // funcionando offline, pero no puede emitir un evento inválido.
+                await run("UPDATE menu SET sync_id = NULL WHERE id_menu = 1");
+                const localId = await Ficha.crear({
+                    id_menu: 1, titulo: "Ficha solo local", resumen: null,
+                    texto: null, imagen: null, datos_json: null, visible: 1
+                });
+                const local = (await all("SELECT sync_id FROM ficha WHERE id_ficha = ?", [localId]))[0];
+                const eventosTrasLocal = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
+                if (local.sync_id !== null || eventosTrasLocal[0].cantidad !== 3) {
+                    throw new Error("Una ficha con menú no reconciliado generó un evento o UUID inválido");
+                }
+
                 process.stdout.write(JSON.stringify({ id, syncId: ficha.sync_id, eventos: totalEventos }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
