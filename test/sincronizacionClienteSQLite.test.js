@@ -163,7 +163,6 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                     throw new Error("El archivo recibido no coincide con su checksum");
                 }
                 await fs.promises.unlink(rutaEntrada);
-                await fs.promises.rmdir(path.dirname(rutaEntrada));
 
                 process.stdout.write(JSON.stringify({ enviados: resultado.enviados, recibidos: resultado.recibidos }) + "\\\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
