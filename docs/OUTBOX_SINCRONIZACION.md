@@ -2,13 +2,13 @@
 
 ## Estado actual de esta rama
 
-La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús y fichas locales. Las operaciones se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
+La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia locales. Las operaciones replicables se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
 
 **Todavía no implementa transporte de eventos hacia/desde Supabase, reconciliación inicial ni sincronización completa. No desplegar como sincronización funcional.**
 
 ## Preparación local acotada
 
-El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha`, `etiqueta` y `ficha_etiqueta`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
+El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha`, `etiqueta`, `ficha_etiqueta` y `multimedia`, sus índices y la tabla `sync_eventos` en SQLite local. Para multimedia agrega SHA-256, MIME, tamaño, clave lógica de Storage y campos auxiliares de seguimiento; no mueve ni sube archivos durante la preparación. Rechaza el modo Supabase.
 
 Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
 
@@ -46,6 +46,14 @@ Para fichas sincronizadas, la eliminación se representa como tombstone: se cons
 
 Para menús sincronizados, la eliminación se representa como tombstone, incrementa la versión y registra DELETE dentro de la misma transacción. Las consultas habituales excluyen los menús eliminados. Si una modificación o baja de un menú sincronizado apunta a una plantilla sin identidad reconciliada, se bloquea para evitar divergencia silenciosa. La eliminación conserva la validación de que no existan fichas asociadas.
 
+## Integración de multimedia y archivos
+
+`src/modelos/multimedia.js` registra INSERT, UPDATE y DELETE lógico cuando la ficha asociada tiene identidad reconciliada. El payload referencia la ficha mediante `ficha_sync_id` y transporta descripción, tipo, miniatura, estado, `storage_key`, `checksum_sha256`, `mime_type` y `tamano_bytes`. Nunca incluye `ruta_archivo` local.
+
+Para archivos locales dentro de `imagenes/multimedia`, el modelo calcula SHA-256 leyendo los bytes del archivo y genera una clave lógica estable a partir del UUID de multimedia. Las consultas habituales excluyen tombstones. Los archivos y registros históricos bajo fichas sin identidad continúan siendo locales y no generan eventos incompletos.
+
+La carga real del archivo a Supabase, la verificación del checksum remoto, la confirmación de eventos y la limpieza segura de objetos reemplazados quedan para la capa de transporte; esta integración todavía no sube archivos ni ejecuta operaciones remotas.
+
 ## Helper e identidad local
 
 `src/servicios/sincronizacion/outbox.js` inserta un evento con UUID, dispositivo de origen, entidad, operación, UUID compartido, versiones y payload opcional. Propaga los errores para que la transacción exterior haga rollback.
@@ -60,7 +68,9 @@ Para menús sincronizados, la eliminación se representa como tombstone, increme
 
 - Ejecutar y aprobar la suite de CI.
 - Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
-- Integrar menús, plantillas, etiquetas, relaciones, configuración y multimedia.
+- Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
+- Definir protocolo de envío/recepción idempotente, cursores, confirmaciones y conflictos.
+- Añadir carga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
 - Definir protocolo de envío/recepción idempotente, cursores, confirmaciones y conflictos.
 - Añadir pruebas de integración contra PostgreSQL descartable.
 - Revisar compatibilidad de controladores y respuestas de eliminación ante tombstones.
