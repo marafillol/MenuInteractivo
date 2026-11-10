@@ -60,8 +60,8 @@ const validarStorageKey = (storageKey) => {
         throw new Error("La clave de almacenamiento no es válida.");
     }
     const segmentos = storageKey.split("/");
-    if (segmentos.some((segmento) =>
-        !segmento || segmento === "." || segmento === ".." || segmento.includes("\\")
+    if (segmentos.length < 3 || segmentos.some((segmento) =>
+        !/^[a-zA-Z0-9._-]+$/.test(segmento) || segmento === "." || segmento === ".."
     )) {
         throw new Error("La clave de almacenamiento no es válida.");
     }
