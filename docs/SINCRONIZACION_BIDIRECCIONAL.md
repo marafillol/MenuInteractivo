@@ -105,7 +105,7 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 ### Límites que siguen pendientes
 
 - La limpieza/garbage collection de objetos Storage antiguos todavía no está implementada: se conservan para no borrar archivos antes de que las réplicas reciban los eventos.
-- La reconciliación inicial de identidades históricas no está automatizada. Los registros existentes con `sync_id` NULL no se deben sincronizar hasta generar, revisar y aplicar un manifiesto compartido.
+- Hay herramientas de solo lectura para generar un manifiesto y un aplicador manual idempotente para candidatos aprobados. Todavía no se han ejecutado sobre copias reales; los registros con `sync_id` NULL no se deben sincronizar hasta completar esa revisión y aplicación en ambas copias.
 - Relaciones entre fichas y configuración todavía no forman parte del protocolo incremental.
 - La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
 - La suite debe aprobar CI después de cada cambio del protocolo y se necesitan pruebas de integración con PostgreSQL descartable.
