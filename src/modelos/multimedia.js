@@ -88,7 +88,7 @@ async function obtenerMetadatosArchivo(datos, syncId, anterior = {}) {
         checksum_sha256: createHash("sha256").update(contenido).digest("hex"),
         mime_type: datos.mime_type ?? anterior.mime_type ?? null,
         tamano_bytes: contenido.length,
-        storage_key: `multimedia/${tipo}/${syncId}${extension}`
+        storage_key: syncId ? `multimedia/${tipo}/${syncId}${extension}` : null
     };
 }
 
@@ -172,7 +172,7 @@ const crear = async (datos) => {
                 datos.id_ficha, datos.descripcion, datos.ruta_archivo,
                 datos.tipo_multi, datos.miniatura, datos.activo, datos.creado,
                 metadatos.checksum_sha256, metadatos.mime_type,
-                metadatos.tamano_bytes, metadatos.storage_key
+                metadatos.tamano_bytes, null
             ]);
             return local.lastID;
         }
@@ -266,7 +266,7 @@ const actualizar = async (id, datos) => {
                 datos.id_ficha, datos.descripcion, datos.ruta_archivo,
                 datos.tipo_multi, datos.miniatura, datos.activo, datos.actualizado,
                 metadatosLocales.checksum_sha256, metadatosLocales.mime_type,
-                metadatosLocales.tamano_bytes, metadatosLocales.storage_key, id
+                metadatosLocales.tamano_bytes, null, id
             ]);
             return;
         }
