@@ -174,42 +174,15 @@ const actualizar = async (id, datos) => {
 // - No eliminar si posee fichas asociadas.
 //
 
-const eliminar = (id) => {
-
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.run(
-            `
-            DELETE FROM menu
-            WHERE id_menu = ?
-            `,
-            [id],
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve();
-
-                }
-
-            }
-
+const eliminar = async (id) => {
+    if (await outboxMenuDisponible()) {
+        return eliminarSiVacio(id);
+    }
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM menu WHERE id_menu = ?", [id], (error) =>
+            error ? reject(error) : resolve()
         );
-
-
     });
-
-
 };
 
 
@@ -293,52 +266,18 @@ const crear = async (datos) => {
 // Información completa del menú.
 //
 
-const obtenerPorId = (id) => {
-
+const obtenerPorId = async (id) => {
+    const filtro = await outboxMenuDisponible() ? "AND menu.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
-
-        db.get(
-
-            `
-
+        db.get(`
             SELECT
-                menu.*,
-                plantilla.nombre AS nombre_plantilla,
-                (
-                    SELECT COUNT(*)
-                    FROM ficha
-                    WHERE ficha.id_menu = menu.id_menu
-                ) AS cantidad_fichas
+                menu.*, plantilla.nombre AS nombre_plantilla,
+                (SELECT COUNT(*) FROM ficha WHERE ficha.id_menu = menu.id_menu) AS cantidad_fichas
             FROM menu
-            LEFT JOIN plantilla
-                ON menu.id_plantilla = plantilla.id_plantilla
-            WHERE menu.id_menu = ?
-
-            `,
-
-            [id],
-
-            (error, fila) => {
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve(fila);
-
-                }
-
-            }
-
-        );
-
+            LEFT JOIN plantilla ON menu.id_plantilla = plantilla.id_plantilla
+            WHERE menu.id_menu = ? ${filtro}
+        `, [id], (error, fila) => error ? reject(error) : resolve(fila));
     });
-
 };
 
 
