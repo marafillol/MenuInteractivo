@@ -6,7 +6,8 @@ const {
   huella,
   prepararFilas,
   agruparPorHuella,
-  uuidPropuesto
+  uuidPropuesto,
+  ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
 
 test("canonicaliza objetos independientemente del orden de sus claves", () => {
@@ -58,4 +59,17 @@ test("propone un UUID estable por entidad y huella de contenido", () => {
   assert.equal(primero, segundo);
   assert.notEqual(primero, otro);
   assert.match(primero, /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+});
+
+
+test("no habilita candidatos de menú, ficha o multimedia sin reconciliar dependencias", () => {
+  for (const tabla of ["menu", "ficha", "multimedia"]) {
+    assert.equal(ENTIDADES.find(e => e.tabla === tabla).requiereDependencia, true);
+  }
+});
+
+test("multimedia no se considera reconciliable antes de verificar su ficha y checksum", () => {
+  const multimedia = ENTIDADES.find(e => e.tabla === "multimedia");
+  assert.equal(multimedia.requiereDependencia, true);
+  assert.equal(multimedia.multimedia, true);
 });
