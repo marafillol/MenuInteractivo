@@ -251,10 +251,30 @@ const actualizar = async (id, datos) => {
             throw new Error("No se puede mover multimedia sincronizada a una ficha sin identidad reconciliada.");
         }
 
+        if (!fichaSyncId) {
+            if (anterior.sync_id) {
+                throw new Error("No se puede modificar multimedia sincronizada hacia una ficha sin identidad reconciliada.");
+            }
+            const metadatosLocales = await obtenerMetadatosArchivo(datos, randomUUID(), anterior);
+            await consultar(`
+                UPDATE multimedia SET
+                    id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
+                    miniatura = ?, activo = ?, actualizado = ?,
+                    checksum_sha256 = ?, mime_type = ?, tamano_bytes = ?, storage_key = ?
+                WHERE id_multi = ?
+            `, [
+                datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+                datos.tipo_multi, datos.miniatura, datos.activo, datos.actualizado,
+                metadatosLocales.checksum_sha256, metadatosLocales.mime_type,
+                metadatosLocales.tamano_bytes, metadatosLocales.storage_key, id
+            ]);
+            return;
+        }
+
         const syncId = anterior.sync_id || randomUUID();
         const metadatos = await obtenerMetadatosArchivo(datos, syncId, anterior);
         const versionBase = Number(anterior.sync_version || 1);
-        const versionResultado = versionBase + 1;
+        const versionResultado = anterior.sync_id ? versionBase + 1 : 1;
         await consultar(`
             UPDATE multimedia SET
                 id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
@@ -269,7 +289,6 @@ const actualizar = async (id, datos) => {
             metadatos.mime_type, metadatos.tamano_bytes, metadatos.storage_key, id
         ]);
 
-        if (!fichaSyncId) return;
         await registrarEvento(consultar, {
             dispositivoId, entidad: "multimedia",
             operacion: anterior.sync_id ? "UPDATE" : "INSERT",
