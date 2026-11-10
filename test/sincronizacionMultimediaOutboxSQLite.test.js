@@ -141,6 +141,20 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
                 const visibles = await Multimedia.obtenerMultimedia();
                 if (visibles.some(item => item.id_multi === id)) throw new Error("Multimedia eliminada sigue visible");
 
+                await run("INSERT INTO ficha (id_menu, titulo) VALUES (?, ?)", [1, "Ficha histórica sin sync_id"]);
+                const localId = await Multimedia.crear({
+                    id_ficha: 2, descripcion: "Multimedia local histórica",
+                    ruta_archivo: rutaInicialRelativa, tipo_multi: "imagen",
+                    miniatura: "🖼️", activo: 1, creado: new Date().toISOString(),
+                    mime_type: "image/png", tamano_bytes: inicial.length
+                });
+                const local = (await all("SELECT sync_id, storage_key, checksum_sha256 FROM multimedia WHERE id_multi = ?", [localId]))[0];
+                const cantidadEventos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos WHERE entidad = 'multimedia'");
+                if (local.sync_id !== null || local.storage_key !== null || local.checksum_sha256 !== checksumInicial) {
+                    throw new Error("Multimedia bajo ficha histórica recibió identidad o storage_key inválidos");
+                }
+                if (cantidadEventos[0].cantidad !== 3) throw new Error("Multimedia local no reconciliada generó evento inválido");
+
                 process.stdout.write(JSON.stringify({ id, eventos: eventos.map(e => e.operacion) }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
