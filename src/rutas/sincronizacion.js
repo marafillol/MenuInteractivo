@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const { createHash } = require("node:crypto");
 const { esModoSupabase } = require("../config/modoServidor");
 const db = require("../database");
 const { secretoValido, ENTIDADES, procesarLote } = require("../servicios/sincronizacion/protocolo");
@@ -8,16 +10,63 @@ const { estaPreparado } = require("../servicios/sincronizacion/esquema");
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_EVENTOS = 100;
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 }
+});
+
+function credencialValida(req) {
+    const secreto = process.env.SYNC_SHARED_SECRET;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.match(/^Bearer\\s+(.+)$/i)?.[1];
+    return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
+}
+
+router.post("/media/upload", upload.single("file"), async (req, res) => {
+    if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
+    if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
+
+    const { storage_key, checksum_sha256, mime_type } = req.body || {};
+    if (!req.file || typeof storage_key !== "string" ||
+        !/^multimedia\\/[a-z0-9_-]+\\/[0-9a-f-]+\\/v[0-9]+\\.[a-z0-9]{1,10}$/i.test(storage_key) ||
+        !/^[a-f0-9]{64}$/i.test(String(checksum_sha256 || ""))) {
+        return res.status(400).json({ error: "Archivo o manifiesto multimedia inválido." });
+    }
+
+    try {
+        const almacenamiento = require("../config/almacenamientoSupabase");
+        const publicUrl = await almacenamiento.subirArchivoSincronizado(
+            storage_key, req.file.buffer, mime_type || req.file.mimetype, checksum_sha256
+        );
+        return res.json({ storage_key, public_url: publicUrl, checksum_sha256 });
+    } catch (error) {
+        return res.status(422).json({ error: error.message });
+    }
+});
+
+router.get("/media/download", async (req, res) => {
+    if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
+    if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    const storageKey = String(req.query?.key || "");
+    if (!/^multimedia\\/[a-z0-9_-]+\\/[0-9a-f-]+\\/v[0-9]+\\.[a-z0-9]{1,10}$/i.test(storageKey)) {
+        return res.status(400).json({ error: "La clave multimedia no es válida." });
+    }
+    try {
+        const almacenamiento = require("../config/almacenamientoSupabase");
+        const archivo = await almacenamiento.descargarArchivoSincronizado(storageKey);
+        res.set("content-type", "application/octet-stream");
+        return res.send(archivo);
+    } catch {
+        return res.status(404).json({ error: "No se encontró el archivo multimedia remoto." });
+    }
+});
 
 router.post("/exchange", async (req, res) => {
     if (!esModoSupabase) {
         return res.status(404).json({ error: "El receptor de sincronización no está activo en este nodo." });
     }
 
-    const secreto = process.env.SYNC_SHARED_SECRET;
-    const authorization = req.headers.authorization || "";
-    const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
-    if (!secreto || secreto.length < 32 || !secretoValido(token, secreto)) {
+    if (!credencialValida(req)) {
         return res.status(401).json({ error: "Credencial de sincronización inválida." });
     }
 
@@ -56,7 +105,26 @@ router.post("/exchange", async (req, res) => {
                     activo = TRUE, ultimo_contacto = CURRENT_TIMESTAMP
             `, [deviceId, `Nodo ${deviceId.slice(0, 8)}`, cursor]);
 
-            const lote = await procesarLote(consultar, eventos, { registrarRecepcion: true });
+            const almacenamiento = require("../config/almacenamientoSupabase");
+            const eventosPreparados = await Promise.all(eventos.map(async (evento) => {
+                if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return evento;
+                const payload = evento.payload_json && typeof evento.payload_json === "object"
+                    ? evento.payload_json
+                    : JSON.parse(evento.payload_json || "{}");
+                const archivo = await almacenamiento.descargarArchivoSincronizado(payload.storage_key);
+                const checksum = createHash("sha256").update(archivo).digest("hex");
+                if (checksum !== payload.checksum_sha256) {
+                    throw new Error("El checksum multimedia remoto no coincide.");
+                }
+                return {
+                    ...evento,
+                    payload_json: {
+                        ...payload,
+                        ruta_archivo: almacenamiento.obtenerUrlPublica(payload.storage_key)
+                    }
+                };
+            }));
+            const lote = await procesarLote(consultar, eventosPreparados, { registrarRecepcion: true });
             const entidades = Object.keys(ENTIDADES);
             const placeholders = entidades.map((_, indice) => `$${indice + 2}`).join(", ");
             const pagina = await consultar(
