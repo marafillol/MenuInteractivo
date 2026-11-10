@@ -1,5 +1,5 @@
 require("dotenv").config();
-const db = require("../src/database");
+
 const { esModoSupabase, esModoLocal } = require("../src/config/modoServidor");
 
 if (process.env.SYNC_ALLOW_SCHEMA_MIGRATION !== "true" ||
