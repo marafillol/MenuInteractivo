@@ -29,7 +29,7 @@ async function registrarEvento(consultar, {
 
     await consultar(
         `INSERT INTO sync_eventos (
-            event_id, dispositivo_origen, entidad, operacion, sync_id,
+            evento_id, origen_device_id, entidad, operacion, sync_id,
             version_base, version_resultado, payload_json, creado, aplicado
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 0)`,
         [
