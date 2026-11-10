@@ -8,6 +8,7 @@ const { ENTIDADES, procesarLote } = require("./protocolo");
 const { estaPreparado } = require("./esquema");
 
 const CLAVE_CURSOR = "sync.cursor.supabase";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LIMITE_LOTE = 100;
 let temporizador = null;
 let enCurso = false;
@@ -49,6 +50,10 @@ function obtenerPayload(evento) {
 }
 
 function obtenerRutaStaging(evento) {
+    if (!UUID_RE.test(String(evento.sync_id || "")) ||
+        !Number.isSafeInteger(Number(evento.version_resultado)) || Number(evento.version_resultado) < 1) {
+        throw new Error("La identidad o versión del archivo pendiente no es válida.");
+    }
     const payload = obtenerPayload(evento);
     const extension = path.extname(String(payload.storage_key || ""));
     if (!/^\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión del archivo pendiente no es válida.");
@@ -116,6 +121,10 @@ async function subirMultimediaPendiente(evento, url, secreto) {
 
 async function prepararMultimediaEntrante(evento, url, secreto) {
     if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return parsearPayload(evento);
+    if (!UUID_RE.test(String(evento.sync_id || "")) ||
+        !Number.isSafeInteger(Number(evento.version_resultado)) || Number(evento.version_resultado) < 1) {
+        throw new Error("La identidad o versión del archivo remoto no es válida.");
+    }
     const payload = obtenerPayload(evento);
     const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
         "?key=" + encodeURIComponent(payload.storage_key || "");
