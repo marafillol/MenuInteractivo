@@ -34,7 +34,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
             const all = (sql, values = []) => new Promise((resolve, reject) =>
                 db.all(sql, values, (error, rows) => error ? reject(error) : resolve(rows))
             );
-            const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+            const uuid = n => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
             const evento = (n, entidad, operacion, sync_id, version_base, version_resultado, payload) => ({
                 evento_id: uuid(100 + n), origen_device_id: uuid(999), entidad, operacion,
                 sync_id, version_base, version_resultado, payload_json: payload
