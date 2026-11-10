@@ -23,6 +23,15 @@ const ENTIDADES = {
         campos: ["nombre", "descripcion", "activo"],
         requeridos: ["nombre"]
     },
+    multimedia: {
+        tabla: "multimedia",
+        campos: [
+            "descripcion", "ruta_archivo", "tipo_multi", "miniatura", "activo",
+            "checksum_sha256", "mime_type", "tamano_bytes", "storage_key", "creado", "actualizado"
+        ],
+        padre: { campo: "ficha_sync_id", tabla: "ficha", id: "id_ficha", destino: "id_ficha" },
+        requeridos: ["ruta_archivo", "tipo_multi", "storage_key", "checksum_sha256"]
+    },
     ficha_etiqueta: {
         tabla: "ficha_etiqueta",
         campos: ["creado"],
