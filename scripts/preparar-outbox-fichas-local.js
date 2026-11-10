@@ -29,6 +29,21 @@ async function preparar() {
             await consultar('ALTER TABLE "ficha" ADD COLUMN "sync_deleted_at" TEXT');
         }
 
+        const columnasEtiqueta = await consultar('PRAGMA table_info("etiqueta")');
+        const existentesEtiqueta = new Set(columnasEtiqueta.rows.map((columna) => columna.name));
+        if (!existentesEtiqueta.has("sync_id")) {
+            await consultar('ALTER TABLE "etiqueta" ADD COLUMN "sync_id" TEXT');
+        }
+        if (!existentesEtiqueta.has("sync_version")) {
+            await consultar('ALTER TABLE "etiqueta" ADD COLUMN "sync_version" INTEGER NOT NULL DEFAULT 1');
+        }
+        if (!existentesEtiqueta.has("sync_deleted_at")) {
+            await consultar('ALTER TABLE "etiqueta" ADD COLUMN "sync_deleted_at" TEXT');
+        }
+        await consultar(
+            'CREATE UNIQUE INDEX IF NOT EXISTS "ux_etiqueta_sync_id" ON "etiqueta" (sync_id)'
+        );
+
         const columnasPlantilla = await consultar('PRAGMA table_info("plantilla")');
         const existentesPlantilla = new Set(columnasPlantilla.rows.map((columna) => columna.name));
         if (!existentesPlantilla.has("sync_id")) {
