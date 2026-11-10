@@ -32,6 +32,15 @@ const ENTIDADES = {
         padre: { campo: "ficha_sync_id", tabla: "ficha", id: "id_ficha", destino: "id_ficha" },
         requeridos: ["ruta_archivo", "tipo_multi", "storage_key", "checksum_sha256"]
     },
+    relacion_ficha: {
+        tabla: "relacion_ficha",
+        campos: ["tipo_relacion"],
+        padres: [
+            { campo: "ficha_origen_sync_id", tabla: "ficha", id: "id_ficha", destino: "id_ficha_origen" },
+            { campo: "ficha_destino_sync_id", tabla: "ficha", id: "id_ficha", destino: "id_ficha_destino" }
+        ],
+        requeridos: ["tipo_relacion"]
+    },
     ficha_etiqueta: {
         tabla: "ficha_etiqueta",
         campos: ["creado"],
