@@ -130,6 +130,32 @@ async function preparar() {
         await consultar(
             'CREATE INDEX IF NOT EXISTS ix_sync_eventos_pendientes ON sync_eventos (aplicado, id_evento)'
         );
+        await consultar(`
+            CREATE TABLE IF NOT EXISTS sync_dispositivos (
+                device_id TEXT PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                cursor_ultimo INTEGER NOT NULL DEFAULT 0,
+                activo INTEGER NOT NULL DEFAULT 1,
+                creado TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ultimo_contacto TEXT
+            )
+        `);
+        await consultar(`
+            CREATE TABLE IF NOT EXISTS sync_conflictos (
+                conflicto_id TEXT PRIMARY KEY,
+                entidad TEXT NOT NULL,
+                sync_id TEXT NOT NULL,
+                version_local_json TEXT NOT NULL,
+                version_remota_json TEXT NOT NULL,
+                detectado TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                resuelto INTEGER NOT NULL DEFAULT 0,
+                resolucion TEXT
+            )
+        `);
+        await consultar(
+            'CREATE INDEX IF NOT EXISTS ix_sync_conflictos_pendientes ON sync_conflictos (resuelto, detectado)'
+        );
+
     });
 }
 
