@@ -1,6 +1,14 @@
 require("dotenv").config();
 
 const { esModoLocal } = require("../src/config/modoServidor");
+
+if (!esModoLocal) {
+    throw new Error("Esta preparación solo admite MODO_SERVIDOR=local.");
+}
+if (!process.env.DATABASE_SQLITE_PATH) {
+    throw new Error("Definí DATABASE_SQLITE_PATH apuntando a una copia descartable; no se permite usar la base predeterminada del museo.");
+}
+
 const db = require("../src/database");
 
 /**
