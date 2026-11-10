@@ -28,7 +28,7 @@ function consultar(ruta, sql) {
     });
 }
 
-test("aplica solo candidatos aprobados, en orden de dependencias e idempotentemente", () => {
+test("aplica solo candidatos aprobados, en orden de dependencias e idempotentemente", async () => {
     const directorio = fs.mkdtempSync(path.join(os.tmpdir(), "museo-reconciliacion-aplicar-"));
     const rutaDb = path.join(directorio, "copia.db");
     const rutaManifiesto = path.join(directorio, "manifiesto.json");
