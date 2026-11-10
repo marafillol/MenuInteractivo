@@ -126,6 +126,8 @@ const crearMultimedia = async(req,res)=>{
             tipo_multi: cuerpo.tipo_multi,
             miniatura: miniaturaPorTipo(cuerpo.tipo_multi),
             activo: cuerpo.activo ?? 1,
+            mime_type: req.file.mimetype,
+            tamano_bytes: req.file.size,
             // creado es timestamptz en PostgreSQL: guardar el instante con zona UTC explícita.
             creado: new Date().toISOString(),
             // actualizado es TEXT y la interfaz espera la hora local argentina.
@@ -222,6 +224,8 @@ const actualizarMultimedia = async(req,res)=>{
                 ? miniaturaPorTipo(cuerpo.tipo_multi)
                 : multimediaActual.miniatura,
             activo: cuerpo.activo ?? multimediaActual.activo,
+            mime_type: req.file?.mimetype || multimediaActual.mime_type || null,
+            tamano_bytes: req.file?.size ?? multimediaActual.tamano_bytes ?? null,
             actualizado: fechaArgentina()
         };
 
