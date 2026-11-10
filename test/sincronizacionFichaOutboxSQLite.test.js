@@ -38,7 +38,6 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 await db.preparar();
                 await run("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla test", "{}"]);
                 await run("INSERT INTO menu (nombre, id_plantilla) VALUES (?, ?)", ["Menu test", 1]);
-                await run("ALTER TABLE menu ADD COLUMN sync_id TEXT");
                 await run("UPDATE menu SET sync_id = ? WHERE id_menu = 1", ["11111111-1111-4111-8111-111111111111"]);
                 const id = await Ficha.crear({
                     id_menu: 1, titulo: "Ficha offline", resumen: "Resumen",
