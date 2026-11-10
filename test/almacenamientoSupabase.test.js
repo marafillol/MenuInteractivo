@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const Module = require("node:module");
+const { createHash } = require("node:crypto");
 
 const rutaModulo = require.resolve("../src/config/almacenamientoSupabase");
 const rutaModoServidor = require.resolve("../src/config/modoServidor");
@@ -16,6 +17,7 @@ const entornoAnterior = {
 
 const llamadas = [];
 let errorAlEliminar = null;
+let contenidoStorage = Buffer.from("archivo remoto de prueba");
 const urlPrueba = "https://proyecto-prueba.supabase.co";
 
 process.env.MODO_SERVIDOR = "supabase";
@@ -38,6 +40,17 @@ Module._load = function (solicitud, padre, esPrincipal) {
                                 async remove(rutas) {
                                     llamadas.push({ nombreBucket, rutas });
                                     return { error: errorAlEliminar };
+                                },
+                                async upload(ruta, contenido, opciones) {
+                                    llamadas.push({ nombreBucket, ruta, contenido: Buffer.from(contenido), opciones });
+                                    return { error: null };
+                                },
+                                async download(ruta) {
+                                    llamadas.push({ nombreBucket, descarga: ruta });
+                                    return { data: new Blob([contenidoStorage]), error: null };
+                                },
+                                getPublicUrl(ruta) {
+                                    return { data: { publicUrl: urlPrueba + "/storage/v1/object/public/" + nombreBucket + "/" + ruta } };
                                 }
                             };
                         }
@@ -121,6 +134,39 @@ test.after(() => {
     else delete require.cache[rutaModulo];
     if (modoServidorAnterior) require.cache[rutaModoServidor] = modoServidorAnterior;
     else delete require.cache[rutaModoServidor];
+});
+
+test("sube multimedia con clave estable y verifica SHA-256", async () => {
+    llamadas.length = 0;
+    const contenido = Buffer.from("archivo sincronizado");
+    const checksum = createHash("sha256").update(contenido).digest("hex");
+    const clave = "multimedia/imagen/11111111-1111-4111-8111-111111111111/v1.png";
+    const url = await almacenamiento.subirArchivoSincronizado(clave, contenido, "image/png", checksum);
+    assert.equal(url, urlPrueba + "/storage/v1/object/public/multimedia/" + clave);
+    const subida = llamadas.find((llamada) => llamada.ruta === clave);
+    assert.equal(subida.nombreBucket, "multimedia");
+    assert.deepEqual(subida.contenido, contenido);
+    assert.equal(subida.opciones.contentType, "image/png");
+    await assert.rejects(
+        almacenamiento.subirArchivoSincronizado(clave, contenido, "image/png", "0".repeat(64)),
+        /checksum del archivo no coincide/
+    );
+});
+
+test("descarga multimedia desde la clave lógica del bucket", async () => {
+    llamadas.length = 0;
+    contenidoStorage = Buffer.from("archivo descargado");
+    const clave = "multimedia/video/22222222-2222-4222-8222-222222222222/v2.mp4";
+    const contenido = await almacenamiento.descargarArchivoSincronizado(clave);
+    assert.deepEqual(contenido, contenidoStorage);
+    assert.deepEqual(llamadas, [{ nombreBucket: "multimedia", descarga: clave }]);
+});
+
+test("rechaza claves de Storage fuera del espacio multimedia", async () => {
+    await assert.rejects(
+        almacenamiento.descargarArchivoSincronizado("../privado"),
+        /clave de almacenamiento no es válida/
+    );
 });
 
 test("elimina solamente una ruta pública del bucket configurado", async () => {
