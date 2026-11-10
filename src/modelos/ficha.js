@@ -61,37 +61,16 @@ async function outboxFichaDisponible() {
 // Lista de fichas con información del menú.
 //
 
-const obtenerFichas = () => {
-
+const obtenerFichas = async () => {
+    const filtro = await outboxFichaDisponible() ? "WHERE ficha.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
-
-        db.all(
-            `
-            SELECT
-                ficha.*,
-                menu.nombre AS menu
+        db.all(`
+            SELECT ficha.*, menu.nombre AS menu
             FROM ficha
-            LEFT JOIN menu
-            ON ficha.id_menu = menu.id_menu
-            `,
-            [],
-            (error, filas) => {
-
-                if (error) {
-
-                    reject(error);
-
-                } else {
-
-                    resolve(filas);
-
-                }
-
-            }
-        );
-
+            LEFT JOIN menu ON ficha.id_menu = menu.id_menu
+            ${filtro}
+        `, [], (error, filas) => error ? reject(error) : resolve(filas));
     });
-
 };
 
 
@@ -113,38 +92,16 @@ const obtenerFichas = () => {
 // Lista de fichas asociadas al menú.
 //
 
-const obtenerFichasPorMenu = (id_menu) => {
-
+const obtenerFichasPorMenu = async (id_menu) => {
+    const filtroSync = await outboxFichaDisponible() ? "AND ficha.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
-
-        db.all(
-            `
-            SELECT
-                ficha.*,
-                menu.nombre AS menu
+        db.all(`
+            SELECT ficha.*, menu.nombre AS menu
             FROM ficha
-            LEFT JOIN menu
-            ON ficha.id_menu = menu.id_menu
-            WHERE ficha.id_menu = ?
-            `,
-            [id_menu],
-            (error, filas) => {
-
-                if (error) {
-
-                    reject(error);
-
-                } else {
-
-                    resolve(filas);
-
-                }
-
-            }
-        );
-
+            LEFT JOIN menu ON ficha.id_menu = menu.id_menu
+            WHERE ficha.id_menu = ? ${filtroSync}
+        `, [id_menu], (error, filas) => error ? reject(error) : resolve(filas));
     });
-
 };
 
 
@@ -258,7 +215,14 @@ const actualizar = async (id, datos) => {
             );
             const anterior = actual.rows[0];
             if (!anterior) return;
-            const syncId = anterior.sync_id || randomUUID();
+            // Las fichas anteriores a la reconciliación conservan sync_id NULL.
+            // Se pueden editar localmente, pero no se emite un evento con un UUID
+            // inventado que no coincida con la ficha equivalente del servidor.
+            if (!anterior.sync_id) {
+                await consultar(sql, valores);
+                return;
+            }
+            const syncId = anterior.sync_id;
             const versionBase = Number(anterior.sync_version || 1);
             const versionResultado = versionBase + 1;
             // Los metadatos se agregan al final del UPDATE, antes del WHERE.
@@ -353,47 +317,13 @@ const eliminar = (id) => {
 // Una ficha encontrada.
 //
 
-const obtenerPorId = (id)=>{
-
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.get(
-
-            `
-            SELECT *
-            FROM ficha
-            WHERE id_ficha = ?
-            `,
-
-            [id],
-
-
-            (error,fila)=>{
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve(fila);
-
-                }
-
-
-            }
-
-        );
-
-
+const obtenerPorId = async (id) => {
+    const filtro = await outboxFichaDisponible() ? "AND sync_deleted_at IS NULL" : "";
+    return new Promise((resolve, reject) => {
+        db.get(`
+            SELECT * FROM ficha WHERE id_ficha = ? ${filtro}
+        `, [id], (error, fila) => error ? reject(error) : resolve(fila));
     });
-
-
 };
 
 
@@ -494,16 +424,51 @@ const eliminarRelaciones = (id_ficha)=>{
 // por los controladores.
 //
 
-const eliminarCompleta = async (id) => db.withTransaction(async (consultar) => {
-    const resultado = await consultar("SELECT COUNT(*) AS cantidad FROM multimedia WHERE id_ficha = ?", [id]);
-    const cantidad = Number(resultado.rows[0]?.cantidad || 0);
-    if (cantidad > 0) return { eliminada: false, multimedia: cantidad };
+const eliminarCompleta = async (id) => {
+    const outboxActiva = await outboxFichaDisponible();
+    const dispositivoId = outboxActiva ? await obtenerIdDispositivo() : null;
+    return db.withTransaction(async (consultar) => {
+        const consultaFicha = await consultar("SELECT * FROM ficha WHERE id_ficha = ?", [id]);
+        const ficha = consultaFicha.rows[0];
+        if (!ficha || (outboxActiva && ficha.sync_deleted_at)) {
+            return { eliminada: false, multimedia: 0 };
+        }
 
-    await consultar("DELETE FROM relacion_ficha WHERE id_ficha_origen = ? OR id_ficha_destino = ?", [id, id]);
-    await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [id]);
-    const eliminacion = await consultar("DELETE FROM ficha WHERE id_ficha = ?", [id]);
-    return { eliminada: eliminacion.rowCount > 0, multimedia: 0 };
-});
+        const resultado = await consultar(
+            "SELECT COUNT(*) AS cantidad FROM multimedia WHERE id_ficha = ?", [id]
+        );
+        const cantidad = Number(resultado.rows[0]?.cantidad || 0);
+        if (cantidad > 0) return { eliminada: false, multimedia: cantidad };
+
+        // Solo se crea un tombstone para fichas con identidad ya reconciliada.
+        // Las fichas antiguas sin sync_id mantienen el borrado local histórico.
+        if (outboxActiva && ficha.sync_id) {
+            const versionBase = Number(ficha.sync_version || 1);
+            const versionResultado = versionBase + 1;
+            const eliminadoEn = new Date().toISOString();
+            await consultar(`
+                UPDATE ficha
+                SET visible = 0, sync_deleted_at = ?, sync_version = ?,
+                    actualizado = datetime('now','-3 hours')
+                WHERE id_ficha = ?
+            `, [eliminadoEn, versionResultado, id]);
+            await registrarEvento(consultar, {
+                dispositivoId, entidad: "ficha", operacion: "DELETE",
+                syncId: ficha.sync_id, versionBase, versionResultado,
+                payload: {
+                    titulo: ficha.titulo, id_menu: ficha.id_menu,
+                    deleted_at: eliminadoEn
+                }
+            });
+            return { eliminada: true, multimedia: 0, pendienteSincronizacion: true };
+        }
+
+        await consultar("DELETE FROM relacion_ficha WHERE id_ficha_origen = ? OR id_ficha_destino = ?", [id, id]);
+        await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [id]);
+        const eliminacion = await consultar("DELETE FROM ficha WHERE id_ficha = ?", [id]);
+        return { eliminada: eliminacion.rowCount > 0, multimedia: 0 };
+    });
+};
 
 module.exports = {
 
