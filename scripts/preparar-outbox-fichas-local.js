@@ -29,6 +29,21 @@ async function preparar() {
             await consultar('ALTER TABLE "ficha" ADD COLUMN "sync_deleted_at" TEXT');
         }
 
+        const columnasPlantilla = await consultar('PRAGMA table_info("plantilla")');
+        const existentesPlantilla = new Set(columnasPlantilla.rows.map((columna) => columna.name));
+        if (!existentesPlantilla.has("sync_id")) {
+            await consultar('ALTER TABLE "plantilla" ADD COLUMN "sync_id" TEXT');
+        }
+        if (!existentesPlantilla.has("sync_version")) {
+            await consultar('ALTER TABLE "plantilla" ADD COLUMN "sync_version" INTEGER NOT NULL DEFAULT 1');
+        }
+        if (!existentesPlantilla.has("sync_deleted_at")) {
+            await consultar('ALTER TABLE "plantilla" ADD COLUMN "sync_deleted_at" TEXT');
+        }
+        await consultar(
+            'CREATE UNIQUE INDEX IF NOT EXISTS "ux_plantilla_sync_id" ON "plantilla" (sync_id)'
+        );
+
         const columnasMenu = await consultar('PRAGMA table_info("menu")');
         const existentesMenu = new Set(columnasMenu.rows.map((columna) => columna.name));
         if (!existentesMenu.has("sync_id")) {
