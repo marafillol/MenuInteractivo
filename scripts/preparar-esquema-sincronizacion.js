@@ -1,6 +1,16 @@
 require("dotenv").config();
 const db = require("../src/database");
-const { esModoSupabase } = require("../src/config/modoServidor");
+const { esModoSupabase, esModoLocal } = require("../src/config/modoServidor");
+
+if (process.env.SYNC_ALLOW_SCHEMA_MIGRATION !== "true" ||
+    process.env.SYNC_SCHEMA_CONFIRMATION !== "I_HAVE_A_BACKUP_AND_APPROVE") {
+  throw new Error("Migración bloqueada. Requiere SYNC_ALLOW_SCHEMA_MIGRATION=true y SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE.");
+}
+if (esModoLocal && !process.env.DATABASE_SQLITE_PATH) {
+  throw new Error("En modo local, DATABASE_SQLITE_PATH debe apuntar a una copia descartable.");
+}
+
+const db = require("../src/database");
 
 const entidades = [
   ["plantilla", "id_plantilla"], ["menu", "id_menu"], ["ficha", "id_ficha"],
