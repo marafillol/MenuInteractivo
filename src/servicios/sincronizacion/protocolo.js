@@ -1,5 +1,7 @@
 const { randomUUID, timingSafeEqual } = require("node:crypto");
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const ENTIDADES = {
     plantilla: {
         tabla: "plantilla",
@@ -107,8 +109,13 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
         return { estado: "no_soportado", motivo: "Entidad todavía no habilitada para el protocolo." };
     }
     if (!["INSERT", "UPDATE", "DELETE"].includes(evento.operacion) ||
-        !evento.evento_id || !evento.sync_id ||
-        !Number.isInteger(Number(evento.version_resultado))) {
+        !UUID_RE.test(String(evento.evento_id || "")) ||
+        !UUID_RE.test(String(evento.origen_device_id || "")) ||
+        !UUID_RE.test(String(evento.sync_id || "")) ||
+        !Number.isSafeInteger(Number(evento.version_resultado)) ||
+        Number(evento.version_resultado) < 1 ||
+        !Number.isSafeInteger(Number(evento.version_base ?? 0)) ||
+        Number(evento.version_base ?? 0) < 0) {
         throw new Error("Sobre de sincronización inválido.");
     }
 
