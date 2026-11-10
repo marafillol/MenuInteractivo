@@ -59,7 +59,7 @@ async function outboxMultimediaDisponible() {
     }
 }
 
-async function obtenerMetadatosArchivo(datos, syncId, anterior = {}) {
+async function obtenerMetadatosArchivo(datos, syncId, anterior = {}, version = 1) {
     const ruta = String(datos.ruta_archivo || "");
     const raizProyecto = path.resolve(__dirname, "../..");
     const rutaAbsoluta = path.resolve(raizProyecto, ruta);
@@ -68,7 +68,8 @@ async function obtenerMetadatosArchivo(datos, syncId, anterior = {}) {
     const esArchivoLocalSeguro = Boolean(ruta) &&
         !path.isAbsolute(ruta) &&
         relativa !== "" &&
-        !relativa.startsWith("..") &&
+        relativa !== ".." &&
+        !relativa.startsWith(".." + path.sep) &&
         !path.isAbsolute(relativa);
 
     if (!esArchivoLocalSeguro) {
@@ -82,17 +83,28 @@ async function obtenerMetadatosArchivo(datos, syncId, anterior = {}) {
 
     const contenido = await fs.promises.readFile(rutaAbsoluta);
     const extensionOriginal = path.extname(rutaAbsoluta).toLowerCase();
-    const extension = /^\.[a-z0-9]{1,10}$/.test(extensionOriginal) ? extensionOriginal : "";
-    const tipo = String(datos.tipo_multi || anterior.tipo_multi || "archivo").replace(/[^a-z0-9_-]/gi, "").toLowerCase();
+    const extension = /^\\.[a-z0-9]{1,10}$/.test(extensionOriginal) ? extensionOriginal : "";
+    const tipo = String(datos.tipo_multi || anterior.tipo_multi || "archivo")
+        .replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
+    let storageKey = null;
+
+    if (syncId) {
+        const carpetaPendiente = path.join(raizProyecto, "database", ".sync-pending", syncId);
+        await fs.promises.mkdir(carpetaPendiente, { recursive: true });
+        await fs.promises.writeFile(
+            path.join(carpetaPendiente, `v${version}${extension}`),
+            contenido
+        );
+        storageKey = `multimedia/${tipo}/${syncId}/v${version}${extension}`;
+    }
+
     return {
         checksum_sha256: createHash("sha256").update(contenido).digest("hex"),
         mime_type: datos.mime_type ?? anterior.mime_type ?? null,
         tamano_bytes: contenido.length,
-        storage_key: syncId ? `multimedia/${tipo}/${syncId}${extension}` : null
+        storage_key: storageKey
     };
 }
-
-
 
 
 
@@ -158,10 +170,10 @@ const crear = async (datos) => {
 
     const dispositivoId = await obtenerIdDispositivo();
     const syncId = randomUUID();
-    const metadatos = await obtenerMetadatosArchivo(datos, syncId);
     return db.withTransaction(async (consultar) => {
         const ficha = await consultar("SELECT sync_id FROM ficha WHERE id_ficha = ?", [datos.id_ficha]);
         const fichaSyncId = ficha.rows[0]?.sync_id;
+        const metadatos = await obtenerMetadatosArchivo(datos, fichaSyncId ? syncId : null, {}, 1);
         if (!fichaSyncId) {
             const local = await consultar(`
                 INSERT INTO multimedia (
@@ -255,7 +267,7 @@ const actualizar = async (id, datos) => {
             if (anterior.sync_id) {
                 throw new Error("No se puede modificar multimedia sincronizada hacia una ficha sin identidad reconciliada.");
             }
-            const metadatosLocales = await obtenerMetadatosArchivo(datos, randomUUID(), anterior);
+            const metadatosLocales = await obtenerMetadatosArchivo(datos, null, anterior);
             await consultar(`
                 UPDATE multimedia SET
                     id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
@@ -272,9 +284,9 @@ const actualizar = async (id, datos) => {
         }
 
         const syncId = anterior.sync_id || randomUUID();
-        const metadatos = await obtenerMetadatosArchivo(datos, syncId, anterior);
         const versionBase = Number(anterior.sync_version || 1);
         const versionResultado = anterior.sync_id ? versionBase + 1 : 1;
+        const metadatos = await obtenerMetadatosArchivo(datos, syncId, anterior, versionResultado);
         await consultar(`
             UPDATE multimedia SET
                 id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
