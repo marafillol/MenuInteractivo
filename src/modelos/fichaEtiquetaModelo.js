@@ -44,7 +44,7 @@ async function outboxRelacionDisponible() {
     if (
         !esModoLocal ||
         typeof db.withTransaction !== "function" ||
-        typeof db.open !== "function"
+        db.constructor?.name !== "Database"
     ) return false;
     try {
         const columnas = await consultarPromesa('PRAGMA table_info("ficha_etiqueta")');
