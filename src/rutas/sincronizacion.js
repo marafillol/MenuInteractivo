@@ -103,34 +103,27 @@ router.post("/exchange", async (req, res) => {
     }
 
     try {
-        const resultado = await db.withTransaction(async (consultar) => {
-            const dispositivo = await obtenerIdDispositivo();
-            await consultar(`
-                INSERT INTO sync_dispositivos (device_id, nombre, cursor_ultimo, activo, ultimo_contacto)
-                VALUES (?, ?, ?, TRUE, CURRENT_TIMESTAMP)
-                ON CONFLICT (device_id) DO UPDATE SET
-                    activo = TRUE, ultimo_contacto = CURRENT_TIMESTAMP
-            `, [deviceId, `Nodo ${deviceId.slice(0, 8)}`, cursor]);
-
-            const almacenamiento = require("../config/almacenamientoSupabase");
-            const eventosPreparados = await Promise.all(eventos.map(async (evento) => {
-                if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return evento;
-                const payload = evento.payload_json && typeof evento.payload_json === "object"
-                    ? evento.payload_json
-                    : JSON.parse(evento.payload_json || "{}");
-                const archivo = await almacenamiento.descargarArchivoSincronizado(payload.storage_key);
-                const checksum = createHash("sha256").update(archivo).digest("hex");
-                if (checksum !== payload.checksum_sha256) {
-                    throw new Error("El checksum multimedia remoto no coincide.");
+        const dispositivo = await obtenerIdDispositivo();
+        const almacenamiento = require("../config/almacenamientoSupabase");
+        const eventosPreparados = await Promise.all(eventos.map(async (evento) => {
+            if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return evento;
+            const payload = evento.payload_json && typeof evento.payload_json === "object"
+                ? evento.payload_json
+                : JSON.parse(evento.payload_json || "{}");
+            const archivo = await almacenamiento.descargarArchivoSincronizado(payload.storage_key);
+            const checksum = createHash("sha256").update(archivo).digest("hex");
+            if (checksum !== payload.checksum_sha256) {
+                throw new Error("El checksum multimedia remoto no coincide.");
+            }
+            return {
+                ...evento,
+                payload_json: {
+                    ...payload,
+                    ruta_archivo: almacenamiento.obtenerUrlPublica(payload.storage_key)
                 }
-                return {
-                    ...evento,
-                    payload_json: {
-                        ...payload,
-                        ruta_archivo: almacenamiento.obtenerUrlPublica(payload.storage_key)
-                    }
-                };
-            }));
+            };
+        }));
+        const resultado = await db.withTransaction(async (consultar) => {
             const lote = await procesarLote(consultar, eventosPreparados, { registrarRecepcion: true });
             const entidades = Object.keys(ENTIDADES);
             const placeholders = entidades.map((_, indice) => `$${indice + 2}`).join(", ");
