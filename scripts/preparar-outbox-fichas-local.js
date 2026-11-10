@@ -29,6 +29,21 @@ async function preparar() {
             await consultar('ALTER TABLE "ficha" ADD COLUMN "sync_deleted_at" TEXT');
         }
 
+        const columnasRelacion = await consultar('PRAGMA table_info("ficha_etiqueta")');
+        const existentesRelacion = new Set(columnasRelacion.rows.map((columna) => columna.name));
+        if (!existentesRelacion.has("sync_id")) {
+            await consultar('ALTER TABLE "ficha_etiqueta" ADD COLUMN "sync_id" TEXT');
+        }
+        if (!existentesRelacion.has("sync_version")) {
+            await consultar('ALTER TABLE "ficha_etiqueta" ADD COLUMN "sync_version" INTEGER NOT NULL DEFAULT 1');
+        }
+        if (!existentesRelacion.has("sync_deleted_at")) {
+            await consultar('ALTER TABLE "ficha_etiqueta" ADD COLUMN "sync_deleted_at" TEXT');
+        }
+        await consultar(
+            'CREATE UNIQUE INDEX IF NOT EXISTS "ux_ficha_etiqueta_sync_id" ON "ficha_etiqueta" (sync_id)'
+        );
+
         const columnasEtiqueta = await consultar('PRAGMA table_info("etiqueta")');
         const existentesEtiqueta = new Set(columnasEtiqueta.rows.map((columna) => columna.name));
         if (!existentesEtiqueta.has("sync_id")) {
