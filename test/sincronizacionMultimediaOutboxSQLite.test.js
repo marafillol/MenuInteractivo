@@ -70,6 +70,11 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
                 });
 
                 let fila = (await all("SELECT * FROM multimedia WHERE id_multi = ?", [id]))[0];
+                const syncIdInicial = fila.sync_id;
+                const archivoStaging = path.join(process.cwd(), "database", ".sync-pending", syncIdInicial, "v1.png");
+                if (!fs.readFileSync(archivoStaging).equals(inicial)) {
+                    throw new Error("No se conservó una copia inmutable del archivo pendiente");
+                }
                 let eventos = await all("SELECT operacion, entidad, sync_id, version_base, version_resultado, payload_json FROM sync_eventos WHERE entidad = 'multimedia' ORDER BY id_evento");
                 const checksumInicial = crypto.createHash("sha256").update(inicial).digest("hex");
                 if (!fila.sync_id || fila.sync_version !== 1 || fila.checksum_sha256 !== checksumInicial) {
@@ -121,6 +126,10 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
                 if (fila.sync_version !== 2 || fila.checksum_sha256 !== checksumNuevo || fila.ruta_archivo !== rutaNuevaRelativa) {
                     throw new Error("Metadatos UPDATE de multimedia incorrectos");
                 }
+                const archivoStagingV2 = path.join(process.cwd(), "database", ".sync-pending", syncIdInicial, "v2.png");
+                if (!fs.readFileSync(archivoStagingV2).equals(nueva)) {
+                    throw new Error("No se conservó la versión nueva del archivo pendiente");
+                }
                 eventos = await all("SELECT operacion, version_base, version_resultado, payload_json FROM sync_eventos WHERE entidad = 'multimedia' ORDER BY id_evento");
                 if (eventos.length !== 2 || eventos[1].operacion !== "UPDATE" || eventos[1].version_base !== 1 || eventos[1].version_resultado !== 2) {
                     throw new Error("Evento UPDATE de multimedia incorrecto");
@@ -155,13 +164,19 @@ test("multimedia registra eventos con checksum y storage_key, sin rutas locales"
                 }
                 if (cantidadEventos[0].cantidad !== 3) throw new Error("Multimedia local no reconciliada generó evento inválido");
 
-                process.stdout.write(JSON.stringify({ id, eventos: eventos.map(e => e.operacion) }) + "\\n");
+                process.stdout.write(JSON.stringify({ id, syncId: syncIdInicial, eventos: eventos.map(e => e.operacion) }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
         assert.match(operacion.stdout, /"eventos":\["INSERT","UPDATE","DELETE"\]/);
     } finally {
+        try {
+            const salida = fs.existsSync(path.join(directorio, "prueba.db"))
+                ? null
+                : null;
+            void salida;
+        } catch {}
         fs.rmSync(directorio, { recursive: true, force: true });
         fs.rmSync(rutaArchivos, { recursive: true, force: true });
     }
