@@ -1,4 +1,7 @@
 const db = require("../../database");
+const fs = require("node:fs");
+const path = require("node:path");
+const { createHash } = require("node:crypto");
 const { esModoLocal } = require("../../config/modoServidor");
 const { obtenerIdDispositivo } = require("./dispositivo");
 const { ENTIDADES, procesarLote } = require("./protocolo");
@@ -38,6 +41,94 @@ async function leerCursor() {
         throw new Error("El cursor local de sincronización no es válido.");
     }
     return cursor;
+}
+
+function obtenerPayload(evento) {
+    if (evento.payload_json && typeof evento.payload_json === "object") return evento.payload_json;
+    try { return JSON.parse(evento.payload_json || "{}"); } catch { return {}; }
+}
+
+function obtenerRutaStaging(evento) {
+    const payload = obtenerPayload(evento);
+    const extension = path.extname(String(payload.storage_key || ""));
+    if (!/^\\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión del archivo pendiente no es válida.");
+    const raiz = path.resolve(__dirname, "../../../database/.sync-pending");
+    const ruta = path.resolve(raiz, evento.sync_id, `v${evento.version_resultado}${extension}`);
+    if (!ruta.startsWith(raiz + path.sep)) throw new Error("La ruta de staging multimedia no es válida.");
+    return ruta;
+}
+
+async function subirMultimediaPendiente(evento, url, secreto) {
+    if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return;
+    const payload = obtenerPayload(evento);
+    const ruta = obtenerRutaStaging(evento);
+    const contenido = await fs.promises.readFile(ruta);
+    const checksum = createHash("sha256").update(contenido).digest("hex");
+    if (checksum !== payload.checksum_sha256) {
+        throw new Error("El archivo multimedia pendiente no coincide con su checksum.");
+    }
+    const formulario = new FormData();
+    formulario.append("storage_key", payload.storage_key);
+    formulario.append("checksum_sha256", payload.checksum_sha256);
+    formulario.append("mime_type", payload.mime_type || "application/octet-stream");
+    formulario.append("file", new Blob([contenido], {
+        type: payload.mime_type || "application/octet-stream"
+    }), path.basename(ruta));
+
+    const endpoint = url.replace(/\\/exchange\\/?$/i, "/media/upload");
+    const respuesta = await fetch(endpoint, {
+        method: "POST",
+        headers: { authorization: `Bearer ${secreto}` },
+        body: formulario,
+        signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(60000) : undefined
+    });
+    if (!respuesta.ok) throw new Error(`No se pudo transferir multimedia (HTTP ${respuesta.status}).`);
+}
+
+async function prepararMultimediaEntrante(evento, url, secreto) {
+    if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return parsearPayload(evento);
+    const payload = obtenerPayload(evento);
+    const endpoint = url.replace(/\\/exchange\\/?$/i, "/media/download") +
+        "?key=" + encodeURIComponent(payload.storage_key || "");
+    const respuesta = await fetch(endpoint, {
+        headers: { authorization: `Bearer ${secreto}` },
+        signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(60000) : undefined
+    });
+    if (!respuesta.ok) throw new Error(`No se pudo descargar multimedia (HTTP ${respuesta.status}).`);
+    const contenido = Buffer.from(await respuesta.arrayBuffer());
+    const checksum = createHash("sha256").update(contenido).digest("hex");
+    if (checksum !== payload.checksum_sha256) {
+        throw new Error("El checksum de multimedia recibida no coincide.");
+    }
+
+    const tipo = String(payload.tipo_multi || "archivo").replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
+    const extension = path.extname(String(payload.storage_key || ""));
+    if (!/^\\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión multimedia recibida no es válida.");
+    const raizProyecto = path.resolve(__dirname, "../../../");
+    const carpeta = path.join(raizProyecto, "imagenes", "multimedia", tipo);
+    await fs.promises.mkdir(carpeta, { recursive: true });
+    const nombre = `${evento.sync_id}-v${evento.version_resultado}${extension}`;
+    const destino = path.join(carpeta, nombre);
+    const temporal = destino + ".sync-tmp";
+    await fs.promises.writeFile(temporal, contenido);
+    await fs.promises.rename(temporal, destino);
+    return {
+        ...evento,
+        payload_json: {
+            ...payload,
+            ruta_archivo: path.relative(raizProyecto, destino).split(path.sep).join("/")
+        }
+    };
+}
+
+async function limpiarStagingConfirmado(eventos, idsConfirmados) {
+    const confirmados = new Set(idsConfirmados);
+    for (const evento of eventos) {
+        if (!confirmados.has(evento.evento_id) ||
+            evento.entidad !== "multimedia" || evento.operacion === "DELETE") continue;
+        try { await fs.promises.unlink(obtenerRutaStaging(evento)); }
+        catch (error) { if (error.code !== "ENOENT") throw error; }
+    }
 }
 
 async function guardarConfirmaciones(ids) {
@@ -95,6 +186,10 @@ async function sincronizarUnaVez() {
         Object.keys(ENTIDADES)
     );
 
+    for (const evento of pendientes) {
+        await subirMultimediaPendiente(parsearPayload(evento), url, secreto);
+    }
+
     const respuesta = await fetch(url, {
         method: "POST",
         headers: {
@@ -118,7 +213,12 @@ async function sincronizarUnaVez() {
     }
 
     await guardarConfirmaciones(datos.acknowledged);
-    await aplicarEventosEntrantes(datos.events, Number(datos.next_cursor));
+    await limpiarStagingConfirmado(pendientes, datos.acknowledged);
+    const eventosEntrantes = [];
+    for (const evento of datos.events) {
+        eventosEntrantes.push(await prepararMultimediaEntrante(evento, url, secreto));
+    }
+    await aplicarEventosEntrantes(eventosEntrantes, Number(datos.next_cursor));
 
     return {
         estado: "sincronizado",
