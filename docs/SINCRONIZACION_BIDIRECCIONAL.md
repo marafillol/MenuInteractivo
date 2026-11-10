@@ -94,16 +94,17 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 
 ### Protocolo incremental implementado en la rama de trabajo
 
-- La outbox registra cambios de plantillas, menús, fichas, etiquetas y asociaciones ficha-etiqueta tanto en SQLite como en PostgreSQL, siempre que el esquema de sincronización haya sido preparado.
+- La outbox registra cambios de plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia tanto en SQLite como en PostgreSQL, siempre que el esquema de sincronización haya sido preparado.
 - El endpoint remoto `POST /api/sync/v1/exchange` recibe lotes autenticados mediante `SYNC_SHARED_SECRET`, aplica eventos idempotentes, conserva conflictos y devuelve eventos posteriores al cursor del dispositivo.
 - El cliente SQLite consulta su outbox, envía hasta 100 eventos por intercambio, recibe cambios remotos y se reintenta cada 30 segundos cuando están configuradas `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`.
 - Los eventos aplicados se registran con su UUID original para evitar ciclos y duplicaciones.
 - Los cambios concurrentes con versiones incompatibles se guardan en `sync_conflictos`; no se sobrescribe silenciosamente la fila local.
+- Los archivos multimedia se conservan en staging inmutable por UUID/versión, se suben a Supabase Storage y se descargan en cada nodo con verificación SHA-256.
 - Los padres se resuelven por `sync_id`, nunca por IDs enteros locales.
 
 ### Límites que siguen pendientes
 
-- La transferencia binaria de multimedia a/desde Supabase Storage todavía no está conectada al protocolo. Los eventos multimedia quedan fuera de los lotes hasta implementar y verificar esa transferencia.
+- La limpieza/garbage collection de objetos Storage antiguos todavía no está implementada: se conservan para no borrar archivos antes de que las réplicas reciban los eventos.
 - La reconciliación inicial de identidades históricas no está automatizada. Los registros existentes con `sync_id` NULL no se deben sincronizar hasta generar, revisar y aplicar un manifiesto compartido.
 - Relaciones entre fichas y configuración todavía no forman parte del protocolo incremental.
 - La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
