@@ -29,6 +29,29 @@
 //
 
 const db = require("../database");
+const { randomUUID } = require("node:crypto");
+const { esModoLocal } = require("../config/modoServidor");
+const { registrarEvento } = require("../servicios/sincronizacion/outbox");
+const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
+
+function consultarPromesa(sql, valores = []) {
+    return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
+        error ? reject(error) : resolve(filas)
+    ));
+}
+
+async function outboxRelacionDisponible() {
+    if (!esModoLocal || typeof db.withTransaction !== "function") return false;
+    try {
+        const columnas = await consultarPromesa('PRAGMA table_info("ficha_etiqueta")');
+        const nombres = new Set(columnas.map((columna) => columna.name));
+        if (!["sync_id", "sync_version", "sync_deleted_at"].every((nombre) => nombres.has(nombre))) return false;
+        const tablas = await consultarPromesa("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_eventos'");
+        return tablas.length === 1;
+    } catch {
+        return false;
+    }
+}
 
 
 
@@ -156,68 +179,164 @@ class FichaEtiqueta {
     // - etiquetas: arreglo con IDs de etiquetas.
     //
 
-        static reemplazar(idFicha, etiquetas) {
+    static async reemplazar(idFicha, etiquetas) {
         if (!Number.isSafeInteger(Number(idFicha)) || Number(idFicha) <= 0) {
-            return Promise.reject(new TypeError("La ficha debe tener un ID entero positivo."));
+            throw new TypeError("La ficha debe tener un ID entero positivo.");
         }
         if (!Array.isArray(etiquetas)) {
-            return Promise.reject(new TypeError("Las etiquetas deben enviarse como una lista."));
+            throw new TypeError("Las etiquetas deben enviarse como una lista.");
         }
         if (!etiquetas.every((id) => Number.isSafeInteger(Number(id)) && Number(id) > 0)) {
-            return Promise.reject(new TypeError("Cada etiqueta debe tener un ID entero positivo."));
+            throw new TypeError("Cada etiqueta debe tener un ID entero positivo.");
         }
 
-        // PostgreSQL usa una transacción real: un error revierte el DELETE y las inserciones.
-        if (typeof db.withTransaction === "function") {
-            return db.withTransaction(async (consultar) => {
-                await consultar(
-                    "DELETE FROM ficha_etiqueta WHERE id_ficha = ?",
-                    [idFicha]
-                );
+        const idsDeseados = [...new Set(etiquetas.map(Number))];
+        if (!await outboxRelacionDisponible()) {
+            if (typeof db.withTransaction === "function") {
+                return db.withTransaction(async (consultar) => {
+                    await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [idFicha]);
+                    for (const idEtiqueta of idsDeseados) {
+                        await consultar(
+                            "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)",
+                            [idFicha, idEtiqueta]
+                        );
+                    }
+                    return true;
+                });
+            }
+            return new Promise((resolve, reject) => {
+                db.serialize(() => {
+                    db.run("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [idFicha], (error) => {
+                        if (error) return reject(error);
+                        if (idsDeseados.length === 0) return resolve(true);
+                        const sentencia = db.prepare(
+                            "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)"
+                        );
+                        idsDeseados.forEach((idEtiqueta) => sentencia.run(idFicha, idEtiqueta));
+                        sentencia.finalize((errorFinal) => errorFinal ? reject(errorFinal) : resolve(true));
+                    });
+                });
+            });
+        }
 
-                for (const idEtiqueta of etiquetas) {
+        const dispositivoId = await obtenerIdDispositivo();
+        return db.withTransaction(async (consultar) => {
+            const fichaResultado = await consultar(
+                "SELECT sync_id FROM ficha WHERE id_ficha = ?", [idFicha]
+            );
+            const fichaSyncId = fichaResultado.rows[0]?.sync_id;
+
+            // Las fichas históricas sin identidad compartida conservan el
+            // reemplazo local tradicional hasta la reconciliación inicial.
+            if (!fichaSyncId) {
+                await consultar("DELETE FROM ficha_etiqueta WHERE id_ficha = ?", [idFicha]);
+                for (const idEtiqueta of idsDeseados) {
                     await consultar(
                         "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)",
                         [idFicha, idEtiqueta]
                     );
                 }
-
                 return true;
-            });
-        }
+            }
 
-        // Compatibilidad con SQLite, que mantiene su API de callbacks.
-        return new Promise((resolve, reject) => {
-            db.serialize(() => {
-                db.run(
-                    "DELETE FROM ficha_etiqueta WHERE id_ficha = ?",
-                    [idFicha],
-                    (error) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
-
-                        if (etiquetas.length === 0) {
-                            resolve(true);
-                            return;
-                        }
-
-                        const sentencia = db.prepare(
-                            "INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)"
-                        );
-
-                        etiquetas.forEach((idEtiqueta) => {
-                            sentencia.run(idFicha, idEtiqueta);
-                        });
-
-                        sentencia.finalize((errorFinal) => {
-                            if (errorFinal) reject(errorFinal);
-                            else resolve(true);
-                        });
-                    }
+            let etiquetasSync = [];
+            if (idsDeseados.length > 0) {
+                const placeholders = idsDeseados.map(() => "?").join(", ");
+                const resultadoEtiquetas = await consultar(
+                    `SELECT id_etiqueta, sync_id FROM etiqueta
+                     WHERE id_etiqueta IN (${placeholders}) AND sync_deleted_at IS NULL`,
+                    idsDeseados
                 );
-            });
+                etiquetasSync = resultadoEtiquetas.rows;
+                if (etiquetasSync.length !== idsDeseados.length || etiquetasSync.some((fila) => !fila.sync_id)) {
+                    throw new Error("No se pueden sincronizar asociaciones con etiquetas que aún no tienen identidad reconciliada.");
+                }
+            }
+
+            const actualesResultado = await consultar(`
+                SELECT fe.*, e.sync_id AS etiqueta_sync_id
+                FROM ficha_etiqueta fe
+                INNER JOIN etiqueta e ON e.id_etiqueta = fe.id_etiqueta
+                WHERE fe.id_ficha = ?
+            `, [idFicha]);
+            const actuales = actualesResultado.rows;
+            const porEtiqueta = new Map(actuales.map((fila) => [Number(fila.id_etiqueta), fila]));
+            const deseadas = new Set(idsDeseados);
+
+            for (const actual of actuales) {
+                if (actual.sync_deleted_at) continue;
+                if (!actual.sync_id) {
+                    throw new Error("La ficha tiene asociaciones históricas sin identidad reconciliada; debe reconciliarse antes de reemplazar etiquetas.");
+                }
+                if (deseadas.has(Number(actual.id_etiqueta))) continue;
+
+                const versionBase = Number(actual.sync_version || 1);
+                const versionResultado = versionBase + 1;
+                const eliminadoEn = new Date().toISOString();
+                await consultar(`
+                    UPDATE ficha_etiqueta SET sync_deleted_at = ?, sync_version = ?
+                    WHERE id_ficha = ? AND id_etiqueta = ?
+                `, [eliminadoEn, versionResultado, idFicha, actual.id_etiqueta]);
+                await registrarEvento(consultar, {
+                    dispositivoId, entidad: "ficha_etiqueta", operacion: "DELETE",
+                    syncId: actual.sync_id, versionBase, versionResultado,
+                    payload: {
+                        ficha_sync_id: fichaSyncId,
+                        etiqueta_sync_id: actual.etiqueta_sync_id,
+                        deleted_at: eliminadoEn
+                    }
+                });
+            }
+
+            for (const idEtiqueta of idsDeseados) {
+                const etiqueta = etiquetasSync.find((fila) => Number(fila.id_etiqueta) === idEtiqueta);
+                const actual = porEtiqueta.get(idEtiqueta);
+                if (actual && !actual.sync_deleted_at) {
+                    if (!actual.sync_id) {
+                        throw new Error("La asociación existente aún no tiene identidad reconciliada.");
+                    }
+                    continue;
+                }
+
+                if (actual && actual.sync_deleted_at) {
+                    if (!actual.sync_id) {
+                        throw new Error("La asociación eliminada no tiene identidad reconciliada.");
+                    }
+                    const versionBase = Number(actual.sync_version || 1);
+                    const versionResultado = versionBase + 1;
+                    await consultar(`
+                        UPDATE ficha_etiqueta
+                        SET sync_deleted_at = NULL, sync_version = ?
+                        WHERE id_ficha = ? AND id_etiqueta = ?
+                    `, [versionResultado, idFicha, idEtiqueta]);
+                    await registrarEvento(consultar, {
+                        dispositivoId, entidad: "ficha_etiqueta", operacion: "UPDATE",
+                        syncId: actual.sync_id, versionBase, versionResultado,
+                        payload: {
+                            ficha_sync_id: fichaSyncId,
+                            etiqueta_sync_id: etiqueta.sync_id,
+                            deleted_at: null
+                        }
+                    });
+                    continue;
+                }
+
+                const syncId = randomUUID();
+                await consultar(`
+                    INSERT INTO ficha_etiqueta (
+                        id_ficha, id_etiqueta, sync_id, sync_version, sync_deleted_at
+                    ) VALUES (?, ?, ?, 1, NULL)
+                `, [idFicha, idEtiqueta, syncId]);
+                await registrarEvento(consultar, {
+                    dispositivoId, entidad: "ficha_etiqueta", operacion: "INSERT",
+                    syncId, versionBase: 0, versionResultado: 1,
+                    payload: {
+                        ficha_sync_id: fichaSyncId,
+                        etiqueta_sync_id: etiqueta.sync_id
+                    }
+                });
+            }
+            return true;
         });
     }
 
