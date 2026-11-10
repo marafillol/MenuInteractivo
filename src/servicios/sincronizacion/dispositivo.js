@@ -4,9 +4,8 @@ const CLAVE_DEVICE_ID = "sync.device_id";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Crea el servicio de identidad de una instalación local.
- * La identidad se persiste en configuracion dentro de una transacción
- * SQLite BEGIN IMMEDIATE, por lo que llamadas concurrentes comparten el UUID.
+ * Crea una identidad estable por instalación/nodo. SQLite y PostgreSQL
+ * persisten el UUID en configuracion para identificar el origen de eventos.
  */
 function crearServicioDispositivo({ db, esModoLocal, generarUUID = randomUUID }) {
     if (!db || typeof db.withTransaction !== "function") {
@@ -14,12 +13,6 @@ function crearServicioDispositivo({ db, esModoLocal, generarUUID = randomUUID })
     }
 
     async function obtenerIdDispositivo() {
-        if (esModoLocal !== true) {
-            throw new Error(
-                "El device_id solo se obtiene desde una instalación local SQLite; no debe compartirse desde Supabase."
-            );
-        }
-
         return db.withTransaction(async (consultar) => {
             const resultado = await consultar(
                 "SELECT valor FROM configuracion WHERE clave = ?",
@@ -42,11 +35,19 @@ function crearServicioDispositivo({ db, esModoLocal, generarUUID = randomUUID })
             }
 
             await consultar(
-                "INSERT INTO configuracion (clave, valor, actualizado) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                "INSERT INTO configuracion (clave, valor, actualizado) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT (clave) DO NOTHING",
                 [CLAVE_DEVICE_ID, nuevo]
             );
 
-            return nuevo;
+            const confirmado = await consultar(
+                "SELECT valor FROM configuracion WHERE clave = ?",
+                [CLAVE_DEVICE_ID]
+            );
+            const idPersistido = confirmado.rows[0]?.valor;
+            if (typeof idPersistido !== "string" || !UUID_RE.test(idPersistido)) {
+                throw new Error("No se pudo persistir una identidad válida para este nodo.");
+            }
+            return idPersistido;
         });
     }
 
