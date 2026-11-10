@@ -1,6 +1,6 @@
 # Manifiesto de reconciliación inicial SQLite ↔ PostgreSQL
 
-**Estado:** borrador de diseño; no ejecutable  
+**Estado:** herramientas de generación y aplicación manual disponibles; todavía no ejecutadas sobre datos reales  
 **Rama de referencia:** `fix/sqlite-integrity-hardening`  
 **Objetivo:** identificar correspondencias entre los datos existentes en SQLite y PostgreSQL antes de asignar UUID compartidos (`sync_id`).
 
@@ -126,3 +126,36 @@ La aprobación debe ser explícita y versionada. Se recomienda guardar el manifi
 ## 9. Estado
 
 **Diseño propuesto; no implementado.** Este documento no agrega columnas, no genera UUID, no lee ni escribe Supabase y no realiza sincronización. La siguiente tarea técnica será construir un generador de manifiesto en modo solo lectura que opere exclusivamente sobre copias locales de ambas bases.
+
+
+## 6. Herramientas implementadas (solo copias)
+
+### Generación de candidatos, solo lectura
+
+`scripts/generar-manifiesto-reconciliacion.js` abre SQLite en modo `OPEN_READONLY` y PostgreSQL dentro de una transacción `READ ONLY`. Produce candidatos únicos, ambiguos y registros sin pareja. Cada candidato único recibe un `sync_id_propuesto` determinista basado en entidad y huella, pero siempre con `aprobado: false`.
+
+Variables:
+- `RECONCILIACION_SQLITE_PATH`: archivo de una copia SQLite.
+- `RECONCILIACION_POSTGRES_URL`: conexión a una copia PostgreSQL.
+- `RECONCILIACION_SALIDA`: archivo de salida opcional; no sobrescribe un manifiesto existente.
+
+### Aplicación de candidatos aprobados
+
+`scripts/aplicar-manifiesto-reconciliacion.js` aplica solo los candidatos cuyo campo `aprobado` haya sido cambiado manualmente a `true`. Debe ejecutarse dos veces, con el mismo manifiesto aprobado: una vez sobre la copia SQLite y otra sobre la copia PostgreSQL.
+
+Requiere:
+- `RECONCILIACION_MANIFIESTO_APROBADO`: ruta al manifiesto revisado.
+- `RECONCILIACION_TARGET=sqlite` o `postgres`.
+- `RECONCILIACION_CONFIRMAR_APLICACION=true`.
+- `RECONCILIACION_DESTINO_ES_COPIA=true`.
+- `RECONCILIACION_SQLITE_PATH` o `RECONCILIACION_POSTGRES_URL`, según el destino.
+
+El aplicador:
+- Rechaza candidatos ambiguos o no aprobados.
+- Comprueba UUID, claves locales, colisiones y dependencias padre.
+- Procesa primero plantillas y etiquetas, después menús, fichas y multimedia.
+- Es idempotente: permite repetir el mismo manifiesto en cada copia.
+- No emite eventos outbox porque las filas emparejadas representan el mismo contenido inicial.
+- No aplica relaciones, configuración, registros solo-locales o solo-remotos; esos casos requieren un plan específico.
+
+**No ejecutar estas herramientas contra producción ni contra Supabase real.** Todavía se necesita obtener copias consistentes, comparar los resultados, revisar manualmente cada candidato y conservar los manifiestos y backups usados.
