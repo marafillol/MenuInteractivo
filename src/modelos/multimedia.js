@@ -83,7 +83,7 @@ async function obtenerMetadatosArchivo(datos, syncId, anterior = {}, version = 1
 
     const contenido = await fs.promises.readFile(rutaAbsoluta);
     const extensionOriginal = path.extname(rutaAbsoluta).toLowerCase();
-    const extension = /^\\.[a-z0-9]{1,10}$/.test(extensionOriginal) ? extensionOriginal : "";
+    const extension = /^\.[a-z0-9]{1,10}$/.test(extensionOriginal) ? extensionOriginal : "";
     const tipo = String(datos.tipo_multi || anterior.tipo_multi || "archivo")
         .replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
     let storageKey = null;
