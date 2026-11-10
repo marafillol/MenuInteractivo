@@ -73,14 +73,14 @@ function crearSqlite(ruta) {
         db.run(sql, valores, function (error) { error ? reject(error) : resolve(this); })
     );
     const consultar = async (sql, valores = []) => {
-        if (/^\\s*SELECT\\b/i.test(sql)) return { rows: await all(sql, valores) };
+        if (/^\s*SELECT\b/i.test(sql)) return { rows: await all(sql, valores) };
         const resultado = await run(sql, valores);
         return { rows: [], rowCount: resultado.changes || 0 };
     };
     const close = () => new Promise((resolve, reject) =>
         db.close((error) => error ? reject(error) : resolve())
     );
-    return { consultar, close };
+    return { consultar, run, close };
 }
 
 async function aplicar(consultar, candidato) {
@@ -171,7 +171,7 @@ async function main() {
         await client.query("SET LOCAL statement_timeout = '30s'");
         const consultar = async (sql, valores = []) => {
             let indice = 0;
-            const sqlPostgres = sql.replace(/\\?/g, () => "$" + (++indice));
+            const sqlPostgres = sql.replace(/\?/g, () => "$" + (++indice));
             return client.query(sqlPostgres, valores);
         };
         const aplicados = [];
