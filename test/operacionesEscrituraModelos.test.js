@@ -53,11 +53,14 @@ const dbFalso = {
     },
 
     all(sql, parametros, callback) {
-        llamadas.push({
-            tipo: "all",
-            sql: String(sql),
-            parametros: parametros || []
-        });
+        const consulta = String(sql);
+        if (!/PRAGMA table_info|sqlite_master/i.test(consulta)) {
+            llamadas.push({
+                tipo: "all",
+                sql: consulta,
+                parametros: parametros || []
+            });
+        }
         if (callback) callback(null, []);
     },
 

@@ -33,6 +33,21 @@
 //
 
 const db = require("../database");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
+const { randomUUID } = require("node:crypto");
+const { esModoLocal } = require("../config/modoServidor");
+const { registrarEvento } = require("../servicios/sincronizacion/outbox");
+const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
+
+function consultarPromesa(sql, valores = []) {
+    return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
+        error ? reject(error) : resolve(filas)
+    ));
+}
+
+async function outboxPlantillaDisponible() {
+    return estaPreparado(["plantilla"]);
+}
 
 
 
@@ -47,32 +62,13 @@ const db = require("../database");
 // el administrador siempre se puedan editar y previsualizar.
 // La visibilidad pública se controla por separado.
 
-const obtenerPlantillas = () => {
-    return new Promise((resolve, reject) => {
-        db.all(
-            `
-            SELECT *
-            FROM plantilla
-            ORDER BY nombre
-            `,
-            [],
-            (error, filas) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(filas);
-                }
-            }
-        );
-    });
+const obtenerPlantillas = async () => {
+    const filtro = await outboxPlantillaDisponible() ? "WHERE sync_deleted_at IS NULL" : "";
+    return new Promise((resolve, reject) => db.all(
+        `SELECT * FROM plantilla ${filtro} ORDER BY nombre`,
+        [], (error, filas) => error ? reject(error) : resolve(filas)
+    ));
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // OBTENER PLANTILLA POR ID
@@ -88,51 +84,13 @@ const obtenerPlantillas = () => {
 // Información completa de la plantilla.
 //
 
-const obtenerPorId = (id)=>{
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.get(
-
-            `
-            SELECT *
-            FROM plantilla
-            WHERE id_plantilla = ?
-            `,
-
-            [id],
-
-
-            (error,fila)=>{
-
-
-                if(error){
-
-                    reject(error);
-
-                }else{
-
-                    resolve(fila);
-
-                }
-
-            }
-
-
-        );
-
-
-    });
-
+const obtenerPorId = async (id) => {
+    const filtro = await outboxPlantillaDisponible() ? "AND sync_deleted_at IS NULL" : "";
+    return new Promise((resolve, reject) => db.get(
+        `SELECT * FROM plantilla WHERE id_plantilla = ? ${filtro}`,
+        [id], (error, fila) => error ? reject(error) : resolve(fila)
+    ));
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // OBTENER PLANTILLA POR MENÚ
@@ -154,57 +112,14 @@ const obtenerPorId = (id)=>{
 // La plantilla utilizada por ese menú.
 //
 
-const obtenerPorMenu = (id_menu)=>{
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.get(
-
-            `
-            SELECT
-                plantilla.*
-            FROM menu
-
-            INNER JOIN plantilla
-                ON menu.id_plantilla = plantilla.id_plantilla
-
-            WHERE menu.id_menu = ?
-            `,
-
-
-            [id_menu],
-
-
-            (error,fila)=>{
-
-
-                if(error){
-
-                    reject(error);
-
-                }else{
-
-                    resolve(fila);
-
-                }
-
-            }
-
-
-        );
-
-
-    });
-
+const obtenerPorMenu = async (id_menu) => {
+    const filtro = await outboxPlantillaDisponible() ? "AND plantilla.sync_deleted_at IS NULL" : "";
+    return new Promise((resolve, reject) => db.get(`
+        SELECT plantilla.* FROM menu
+        INNER JOIN plantilla ON menu.id_plantilla = plantilla.id_plantilla
+        WHERE menu.id_menu = ? ${filtro}
+    `, [id_menu], (error, fila) => error ? reject(error) : resolve(fila)));
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // CREAR PLANTILLA
@@ -222,76 +137,38 @@ const obtenerPorMenu = (id_menu)=>{
 // ID generado de la nueva plantilla.
 //
 
-const crear = (datos)=>{
+const crear = async (datos) => {
+    const valores = [datos.nombre, datos.descripcion, datos.plantilla_json, datos.activo];
+    const sql = `
+        INSERT INTO plantilla (nombre, descripcion, plantilla_json, activo)
+        VALUES (?, ?, ?, ?)
+    `;
+    if (!await outboxPlantillaDisponible()) {
+        return new Promise((resolve, reject) => db.run(sql, valores, function(error) {
+            if (error) reject(error);
+            else resolve(this.lastID);
+        }));
+    }
 
-    return new Promise((resolve,reject)=>{
-
-
-        db.run(
-
-            `
-            INSERT INTO plantilla
-            (
-
-                nombre,
-                descripcion,
-                plantilla_json,
-                activo
-
-            )
-
-            VALUES
-
-            (
-
-                ?, ?, ?, ?
-
-            )
-            `,
-
-
-            [
-
-                datos.nombre,
-
-                datos.descripcion,
-
-                datos.plantilla_json,
-
-                datos.activo
-
-            ],
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }else{
-
-                    resolve(this.lastID);
-
-                }
-
+    const dispositivoId = await obtenerIdDispositivo();
+    const syncId = randomUUID();
+    return db.withTransaction(async (consultar) => {
+        const insercion = await consultar(`
+            INSERT INTO plantilla (
+                nombre, descripcion, plantilla_json, activo, sync_id, sync_version, sync_deleted_at
+            ) VALUES (?, ?, ?, ?, ?, 1, NULL)
+        `, [...valores, syncId]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "plantilla", operacion: "INSERT",
+            syncId, versionBase: 0, versionResultado: 1,
+            payload: {
+                nombre: datos.nombre, descripcion: datos.descripcion ?? null,
+                plantilla_json: datos.plantilla_json, activo: datos.activo ?? 1
             }
-
-
-        );
-
-
+        });
+        return insercion.lastID;
     });
-
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // ACTUALIZAR PLANTILLA
@@ -307,72 +184,46 @@ const crear = (datos)=>{
 // - Fecha de actualización.
 //
 
-const actualizar = (id,datos)=>{
+const actualizar = async (id, datos) => {
+    const valores = [datos.nombre, datos.descripcion, datos.plantilla_json, datos.activo, id];
+    const sql = `
+        UPDATE plantilla SET nombre = ?, descripcion = ?, plantilla_json = ?,
+            activo = ?, actualizado = CURRENT_TIMESTAMP
+        WHERE id_plantilla = ?
+    `;
+    if (!await outboxPlantillaDisponible()) {
+        return new Promise((resolve, reject) => db.run(sql, valores, (error) =>
+            error ? reject(error) : resolve()
+        ));
+    }
 
-    return new Promise((resolve,reject)=>{
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM plantilla WHERE id_plantilla = ?", [id]);
+        const anterior = consulta.rows[0];
+        if (!anterior || anterior.sync_deleted_at) return;
+        if (!anterior.sync_id) {
+            await consultar(sql, valores);
+            return;
+        }
 
-
-        db.run(
-
-            `
-            UPDATE plantilla
-
-            SET
-
-                nombre = ?,
-                descripcion = ?,
-                plantilla_json = ?,
-                activo = ?,
-                actualizado = CURRENT_TIMESTAMP
-
+        const versionBase = Number(anterior.sync_version || 1);
+        const versionResultado = versionBase + 1;
+        await consultar(`
+            UPDATE plantilla SET nombre = ?, descripcion = ?, plantilla_json = ?,
+                activo = ?, actualizado = CURRENT_TIMESTAMP, sync_version = ?
             WHERE id_plantilla = ?
-            `,
-
-
-            [
-
-                datos.nombre,
-
-                datos.descripcion,
-
-                datos.plantilla_json,
-
-                datos.activo,
-
-                id
-
-            ],
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }else{
-
-                    resolve();
-
-                }
-
+        `, [datos.nombre, datos.descripcion, datos.plantilla_json, datos.activo, versionResultado, id]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "plantilla", operacion: "UPDATE",
+            syncId: anterior.sync_id, versionBase, versionResultado,
+            payload: {
+                nombre: datos.nombre, descripcion: datos.descripcion ?? null,
+                plantilla_json: datos.plantilla_json, activo: datos.activo ?? anterior.activo
             }
-
-
-        );
-
-
+        });
     });
-
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // ELIMINAR PLANTILLA
@@ -386,57 +237,16 @@ const actualizar = (id,datos)=>{
 // Actualmente realiza eliminación física mediante DELETE.
 //
 
-const eliminar = (id) => {
-
-
-    return new Promise((resolve, reject)=>{
-
-
-        db.run(
-
-            `
-            DELETE FROM plantilla
-            WHERE id_plantilla = ?
-            `,
-
-            [id],
-
-
-            function(err){
-
-
-                if(err){
-
-                    reject(err);
-
-                    return;
-
-                }
-
-
-                resolve({
-
-                    eliminado: this.changes > 0
-
-                });
-
-
-            }
-
-
-        );
-
-
-    });
-
+const eliminar = async (id) => {
+    if (await outboxPlantillaDisponible()) return eliminarSiNoUtilizada(id);
+    return new Promise((resolve, reject) => db.run(
+        "DELETE FROM plantilla WHERE id_plantilla = ?", [id],
+        function(error) {
+            if (error) reject(error);
+            else resolve({ eliminado: this.changes > 0 });
+        }
+    ));
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // CONTAR MENÚS QUE UTILIZAN UNA PLANTILLA
@@ -505,15 +315,50 @@ const contarMenus = (id_plantilla)=>{
 // desde los controladores.
 //
 
-const eliminarSiNoUtilizada = async (id) => db.withTransaction(async (consultar) => {
-    const plantilla = await consultar("SELECT * FROM plantilla WHERE id_plantilla = ?", [id]);
-    if (!plantilla.rows.length) return { encontrada: false, cantidad: 0 };
-    const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM menu WHERE id_plantilla = ?", [id]);
-    const cantidad = Number(conteo.rows[0]?.cantidad || 0);
-    if (cantidad > 0) return { encontrada: true, plantilla: plantilla.rows[0], cantidad };
-    await consultar("DELETE FROM plantilla WHERE id_plantilla = ?", [id]);
-    return { encontrada: true, plantilla: plantilla.rows[0], cantidad: 0, eliminada: true };
-});
+const eliminarSiNoUtilizada = async (id) => {
+    if (!await outboxPlantillaDisponible()) {
+        return db.withTransaction(async (consultar) => {
+            const consulta = await consultar("SELECT * FROM plantilla WHERE id_plantilla = ?", [id]);
+            if (!consulta.rows.length) return { encontrada: false, cantidad: 0 };
+            const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM menu WHERE id_plantilla = ?", [id]);
+            const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+            if (cantidad > 0) return { encontrada: true, plantilla: consulta.rows[0], cantidad };
+            await consultar("DELETE FROM plantilla WHERE id_plantilla = ?", [id]);
+            return { encontrada: true, plantilla: consulta.rows[0], cantidad: 0, eliminada: true };
+        });
+    }
+
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM plantilla WHERE id_plantilla = ?", [id]);
+        const plantilla = consulta.rows[0];
+        if (!plantilla || plantilla.sync_deleted_at) return { encontrada: false, cantidad: 0 };
+        const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM menu WHERE id_plantilla = ?", [id]);
+        const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+        if (cantidad > 0) return { encontrada: true, plantilla, cantidad };
+        if (!plantilla.sync_id) {
+            await consultar("DELETE FROM plantilla WHERE id_plantilla = ?", [id]);
+            return { encontrada: true, plantilla, cantidad: 0, eliminada: true };
+        }
+
+        const versionBase = Number(plantilla.sync_version || 1);
+        const versionResultado = versionBase + 1;
+        const eliminadoEn = new Date().toISOString();
+        await consultar(`
+            UPDATE plantilla SET activo = 0, sync_deleted_at = ?,
+                sync_version = ?, actualizado = CURRENT_TIMESTAMP
+            WHERE id_plantilla = ?
+        `, [eliminadoEn, versionResultado, id]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "plantilla", operacion: "DELETE",
+            syncId: plantilla.sync_id, versionBase, versionResultado,
+            payload: {
+                nombre: plantilla.nombre, deleted_at: eliminadoEn
+            }
+        });
+        return { encontrada: true, plantilla, cantidad: 0, eliminada: true, pendienteSincronizacion: true };
+    });
+};
 
 module.exports = {
 

@@ -1,6 +1,16 @@
 require("dotenv").config();
+
+const { esModoSupabase, esModoLocal } = require("../src/config/modoServidor");
+
+if (process.env.SYNC_ALLOW_SCHEMA_MIGRATION !== "true" ||
+    process.env.SYNC_SCHEMA_CONFIRMATION !== "I_HAVE_A_BACKUP_AND_APPROVE") {
+  throw new Error("Migración bloqueada. Requiere SYNC_ALLOW_SCHEMA_MIGRATION=true y SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE.");
+}
+if (esModoLocal && !process.env.DATABASE_SQLITE_PATH) {
+  throw new Error("En modo local, DATABASE_SQLITE_PATH debe apuntar a una copia descartable.");
+}
+
 const db = require("../src/database");
-const { esModoSupabase } = require("../src/config/modoServidor");
 
 const entidades = [
   ["plantilla", "id_plantilla"], ["menu", "id_menu"], ["ficha", "id_ficha"],
@@ -41,6 +51,12 @@ async function main() {
     "CREATE TABLE IF NOT EXISTS sync_conflictos (conflicto_id TEXT PRIMARY KEY, entidad TEXT NOT NULL, sync_id TEXT NOT NULL, version_local_json TEXT NOT NULL, version_remota_json TEXT NOT NULL, detectado TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, resuelto INTEGER NOT NULL DEFAULT 0, resolucion TEXT)",
     "CREATE TABLE IF NOT EXISTS sync_conflictos (conflicto_id UUID PRIMARY KEY, entidad TEXT NOT NULL, sync_id UUID NOT NULL, version_local_json JSONB NOT NULL, version_remota_json JSONB NOT NULL, detectado TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, resuelto BOOLEAN NOT NULL DEFAULT FALSE, resolucion TEXT)"
   );
+  // Metadatos necesarios para verificar archivos multimedia sin copiar rutas locales.
+  await addColumn("multimedia", "checksum_sha256", "TEXT");
+  await addColumn("multimedia", "mime_type", "TEXT");
+  await addColumn("multimedia", "tamano_bytes", "BIGINT");
+  await addColumn("multimedia", "storage_key", "TEXT");
+  await addColumn("multimedia", "sync_previous_path", "TEXT");
   await run("CREATE INDEX IF NOT EXISTS ix_sync_eventos_pendientes ON sync_eventos (aplicado, id_evento)");
   await run("CREATE INDEX IF NOT EXISTS ix_sync_conflictos_pendientes ON sync_conflictos (resuelto, detectado)");
   console.log("Esquema preparado. Los sync_id existentes quedan NULL hasta reconciliar ambas bases mediante un manifiesto compartido.");

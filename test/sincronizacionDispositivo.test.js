@@ -25,10 +25,7 @@ function crearDbFalso() {
                         return { rows: valor === undefined ? [] : [{ valor }], rowCount: valor === undefined ? 0 : 1 };
                     }
                     if (/^INSERT INTO configuracion/i.test(sql.trim())) {
-                        if (configuracion.has(valores[0])) {
-                            throw new Error("UNIQUE constraint failed");
-                        }
-                        configuracion.set(valores[0], valores[1]);
+                        if (!configuracion.has(valores[0])) configuracion.set(valores[0], valores[1]);
                         return { rows: [], rowCount: 1 };
                     }
                     throw new Error("SQL inesperado en prueba: " + sql);
@@ -83,12 +80,19 @@ test("dos solicitudes simultáneas reciben la misma identidad y crean una sola f
     assert.equal(db.configuracion.size, 1);
 });
 
-test("no genera una identidad compartida cuando la aplicación está en modo Supabase", async () => {
+test("genera una identidad propia y persistente para el nodo PostgreSQL", async () => {
     const db = crearDbFalso();
-    const servicio = crearServicioDispositivo({ db, esModoLocal: false });
+    const esperado = randomUUID();
+    const servicio = crearServicioDispositivo({
+        db,
+        esModoLocal: false,
+        generarUUID: () => esperado
+    });
 
-    await assert.rejects(servicio.obtenerIdDispositivo(), /solo se obtiene desde una instalación local SQLite/);
-    assert.equal(db.configuracion.size, 0);
+    assert.equal(await servicio.obtenerIdDispositivo(), esperado);
+    assert.equal(await servicio.obtenerIdDispositivo(), esperado);
+    assert.equal(db.configuracion.get(CLAVE_DEVICE_ID), esperado);
+    assert.equal(db.configuracion.size, 1);
 });
 
 test("no reemplaza una identidad local existente si está dañada", async () => {

@@ -1,0 +1,123 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const sqlite3 = require("sqlite3");
+
+const proyecto = path.resolve(__dirname, "..");
+const UUIDS = {
+    plantilla: "00000000-0000-5000-8000-000000000001",
+    menu: "00000000-0000-5000-8000-000000000002",
+    ficha: "00000000-0000-5000-8000-000000000003"
+};
+
+function ejecutar(args, env) {
+    return spawnSync(process.execPath, args, {
+        cwd: proyecto, env, encoding: "utf8"
+    });
+}
+
+function consultar(ruta, sql) {
+    return new Promise((resolve, reject) => {
+        const db = new sqlite3.Database(ruta, sqlite3.OPEN_READONLY);
+        db.all(sql, [], (error, filas) => {
+            db.close(() => error ? reject(error) : resolve(filas));
+        });
+    });
+}
+
+test("aplica solo candidatos aprobados, en orden de dependencias e idempotentemente", async () => {
+    const directorio = fs.mkdtempSync(path.join(os.tmpdir(), "museo-reconciliacion-aplicar-"));
+    const rutaDb = path.join(directorio, "copia.db");
+    const rutaManifiesto = path.join(directorio, "manifiesto.json");
+    const env = {
+        ...process.env,
+        MODO_SERVIDOR: "local",
+        LOCAL_AUTH_SECRET: "clave-temporal-reconciliacion-2026",
+        DATABASE_SQLITE_PATH: rutaDb,
+        RECONCILIACION_SQLITE_PATH: rutaDb,
+        RECONCILIACION_MANIFIESTO_APROBADO: rutaManifiesto,
+        RECONCILIACION_TARGET: "sqlite",
+        RECONCILIACION_CONFIRMAR_APLICACION: "true",
+        RECONCILIACION_DESTINO_ES_COPIA: "true"
+    };
+
+    try {
+        const esquema = ejecutar(["scripts/preparar-outbox-fichas-local.js"], env);
+        assert.equal(esquema.status, 0, esquema.stderr || esquema.stdout);
+
+        const datos = ejecutar(["-e", `
+            const db = require("./src/database");
+            const run = (sql, values = []) => new Promise((resolve, reject) =>
+                db.run(sql, values, error => error ? reject(error) : resolve())
+            );
+            (async () => {
+                await db.preparar();
+                await run("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla", "{}"]);
+                await run("INSERT INTO menu (nombre, id_plantilla, visible) VALUES (?, ?, ?)", ["Menú", 1, 1]);
+                await run("INSERT INTO ficha (id_menu, titulo, visible) VALUES (?, ?, ?)", [1, "Ficha", 1]);
+                await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
+            })().catch(error => { console.error(error); process.exitCode = 1; });
+        `], env);
+        assert.equal(datos.status, 0, datos.stderr || datos.stdout);
+
+        const candidato = (syncId, local, remoto) => ({
+            sync_id_propuesto: syncId,
+            aprobado: true,
+            claves_sqlite: [local],
+            claves_postgres: [remoto]
+        });
+        fs.writeFileSync(rutaManifiesto, JSON.stringify({
+            formato: 2,
+            modo: "solo_lectura",
+            entidades: {
+                plantilla: { candidatos_unicos: [candidato(UUIDS.plantilla, { id_plantilla: 1 }, { id_plantilla: 11 })] },
+                menu: { candidatos_unicos: [candidato(UUIDS.menu, { id_menu: 1 }, { id_menu: 12 })] },
+                ficha: { candidatos_unicos: [candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 })] }
+            }
+        }));
+
+        const primero = ejecutar(["scripts/aplicar-manifiesto-reconciliacion.js"], env);
+        assert.equal(primero.status, 0, primero.stderr || primero.stdout);
+        const segundo = ejecutar(["scripts/aplicar-manifiesto-reconciliacion.js"], env);
+        assert.equal(segundo.status, 0, segundo.stderr || segundo.stdout);
+
+        const [plantilla, menu, ficha] = [
+            await consultar(rutaDb, "SELECT sync_id FROM plantilla WHERE id_plantilla = 1"),
+            await consultar(rutaDb, "SELECT sync_id FROM menu WHERE id_menu = 1"),
+            await consultar(rutaDb, "SELECT sync_id FROM ficha WHERE id_ficha = 1")
+        ];
+        assert.equal(plantilla[0].sync_id, UUIDS.plantilla);
+        assert.equal(menu[0].sync_id, UUIDS.menu);
+        assert.equal(ficha[0].sync_id, UUIDS.ficha);
+    } finally {
+        fs.rmSync(directorio, { recursive: true, force: true });
+    }
+});
+
+test("rechaza aplicar un manifiesto sin doble confirmación de copia", () => {
+    const directorio = fs.mkdtempSync(path.join(os.tmpdir(), "museo-reconciliacion-bloqueo-"));
+    const rutaDb = path.join(directorio, "copia.db");
+    const rutaManifiesto = path.join(directorio, "manifiesto.json");
+    fs.writeFileSync(rutaManifiesto, JSON.stringify({
+        formato: 2, modo: "solo_lectura",
+        entidades: { plantilla: { candidatos_unicos: [{
+            aprobado: true, sync_id_propuesto: UUIDS.plantilla,
+            claves_sqlite: [{ id_plantilla: 1 }], claves_postgres: [{ id_plantilla: 11 }]
+        }] } }
+    }));
+    try {
+        const resultado = ejecutar(["scripts/aplicar-manifiesto-reconciliacion.js"], {
+            ...process.env,
+            RECONCILIACION_MANIFIESTO_APROBADO: rutaManifiesto,
+            RECONCILIACION_TARGET: "sqlite",
+            RECONCILIACION_SQLITE_PATH: rutaDb
+        });
+        assert.notEqual(resultado.status, 0);
+        assert.match(resultado.stderr, /Aplicación bloqueada/);
+    } finally {
+        fs.rmSync(directorio, { recursive: true, force: true });
+    }
+});
