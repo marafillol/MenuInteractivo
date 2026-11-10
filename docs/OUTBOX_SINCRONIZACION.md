@@ -2,7 +2,7 @@
 
 ## Estado actual de esta rama
 
-La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta y multimedia locales. Las operaciones replicables se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
+La rama incorpora la base transaccional de outbox y una primera integración funcional para plantillas, menús, fichas, etiquetas, asociaciones ficha-etiqueta, relaciones entre fichas y multimedia locales. Las operaciones replicables se registran transaccionalmente; las referencias padre deben tener `sync_id` reconciliados.
 
 El protocolo incremental de eventos hacia/desde PostgreSQL ya tiene una primera implementación: intercambio autenticado por lotes, cursor por dispositivo, aplicación idempotente, registro de conflictos y transferencia binaria multimedia con checksum. No se ha completado la reconciliación inicial ni la limpieza segura de objetos antiguos. No desplegar ni conectar a datos reales.
 
@@ -56,7 +56,7 @@ El cliente local conserva una copia inmutable por versión en `database/.sync-pe
 
 ## Protocolo incremental
 
-`src/servicios/sincronizacion/protocolo.js` aplica eventos por UUID, resuelve relaciones mediante UUID del padre, evita duplicados y registra conflictos de versión en `sync_conflictos`. El protocolo habilita `plantilla`, `menu`, `ficha`, `etiqueta`, `ficha_etiqueta` y `multimedia`.
+`src/servicios/sincronizacion/protocolo.js` aplica eventos por UUID, resuelve relaciones mediante UUID del padre, evita duplicados y registra conflictos de versión en `sync_conflictos`. El protocolo habilita `plantilla`, `menu`, `ficha`, `etiqueta`, `ficha_etiqueta`, `relacion_ficha` y `multimedia`.
 
 `src/rutas/sincronizacion.js` expone `POST /api/sync/v1/exchange` únicamente en el nodo PostgreSQL. Requiere `SYNC_SHARED_SECRET` (mínimo 32 caracteres), valida que los eventos pertenezcan al dispositivo autenticado y limita los lotes. No utiliza ni expone la clave service-role.
 
@@ -81,7 +81,7 @@ El script `scripts/preparar-esquema-sincronizacion.js` prepara metadatos, outbox
 - Ejecutar y aprobar la suite de CI.
 - Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
 - Implementar garbage collection de objetos Storage antiguos después de confirmar recepción por todas las réplicas.
-- Incorporar `relacion_ficha` y `configuracion` al protocolo incremental.
+- Incorporar configuración mediante una lista permitida explícita.
 - Agregar interfaz y operación explícita de resolución de conflictos.
 - Añadir pruebas de integración contra PostgreSQL descartable.
 - Revisar compatibilidad de controladores y respuestas de eliminación ante tombstones.
