@@ -58,11 +58,40 @@ function obtenerRutaStaging(evento) {
     return ruta;
 }
 
+async function obtenerBytesPendientes(evento, ruta, payload) {
+    try {
+        return await fs.promises.readFile(ruta);
+    } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+    }
+
+    // Compatibilidad con eventos creados antes del staging por versión:
+    // se recupera el archivo actual solo si su checksum coincide exactamente.
+    const filas = await all("SELECT ruta_archivo FROM multimedia WHERE sync_id = ?", [evento.sync_id]);
+    const rutaLocal = String(filas[0]?.ruta_archivo || "");
+    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
+    const absoluta = path.resolve(raizProyecto, rutaLocal);
+    const relativa = path.relative(raizMultimedia, absoluta);
+    if (!rutaLocal || path.isAbsolute(rutaLocal) || relativa === "" ||
+        relativa === ".." || relativa.startsWith(".." + path.sep) || path.isAbsolute(relativa)) {
+        throw new Error("No existe una copia local verificable del archivo multimedia pendiente.");
+    }
+    const contenido = await fs.promises.readFile(absoluta);
+    const checksum = createHash("sha256").update(contenido).digest("hex");
+    if (checksum !== payload.checksum_sha256) {
+        throw new Error("El archivo local cambió y ya no coincide con el evento multimedia pendiente.");
+    }
+    await fs.promises.mkdir(path.dirname(ruta), { recursive: true });
+    await fs.promises.writeFile(ruta, contenido);
+    return contenido;
+}
+
 async function subirMultimediaPendiente(evento, url, secreto) {
     if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return;
     const payload = obtenerPayload(evento);
     const ruta = obtenerRutaStaging(evento);
-    const contenido = await fs.promises.readFile(ruta);
+    const contenido = await obtenerBytesPendientes(evento, ruta, payload);
     const checksum = createHash("sha256").update(contenido).digest("hex");
     if (checksum !== payload.checksum_sha256) {
         throw new Error("El archivo multimedia pendiente no coincide con su checksum.");
