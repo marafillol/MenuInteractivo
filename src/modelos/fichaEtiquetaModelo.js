@@ -29,6 +29,7 @@
 //
 
 const db = require("../database");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
 const { randomUUID } = require("node:crypto");
 const { esModoLocal } = require("../config/modoServidor");
 const { registrarEvento } = require("../servicios/sincronizacion/outbox");
@@ -41,20 +42,7 @@ function consultarPromesa(sql, valores = []) {
 }
 
 async function outboxRelacionDisponible() {
-    if (
-        !esModoLocal ||
-        typeof db.withTransaction !== "function" ||
-        db.constructor?.name !== "Database"
-    ) return false;
-    try {
-        const columnas = await consultarPromesa('PRAGMA table_info("ficha_etiqueta")');
-        const nombres = new Set(columnas.map((columna) => columna.name));
-        if (!["sync_id", "sync_version", "sync_deleted_at"].every((nombre) => nombres.has(nombre))) return false;
-        const tablas = await consultarPromesa("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_eventos'");
-        return tablas.length === 1;
-    } catch {
-        return false;
-    }
+    return estaPreparado(["ficha_etiqueta","ficha","etiqueta"]);
 }
 
 
