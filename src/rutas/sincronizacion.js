@@ -18,7 +18,7 @@ const upload = multer({
 function credencialValida(req) {
     const secreto = process.env.SYNC_SHARED_SECRET;
     const authorization = req.headers.authorization || "";
-    const token = authorization.match(/^Bearer\\s+(.+)$/i)?.[1];
+    const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
     return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
 }
 
