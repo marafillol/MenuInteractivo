@@ -8,7 +8,7 @@ La rama incorpora la base transaccional de outbox y una primera integración fun
 
 ## Preparación local acotada
 
-El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu` y `ficha`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
+El script `scripts/preparar-outbox-fichas-local.js` prepara las columnas de sincronización de `plantilla`, `menu`, `ficha` y `etiqueta`, sus índices y la tabla `sync_eventos` en SQLite local. Rechaza el modo Supabase.
 
 Debe ejecutarse explícitamente con `MODO_SERVIDOR=local` y `DATABASE_SQLITE_PATH` apuntando a una copia descartable de la base. No ejecutar sobre la base real del museo sin backup y una decisión explícita de migración. Los `sync_id` existentes quedan NULL: no se inventan identificadores para registros históricos.
 
@@ -28,6 +28,10 @@ Si cualquiera de esos pasos falla, la transacción debe revertirse. No llamar al
 
 Para fichas sincronizadas, la eliminación se representa como tombstone: se conserva la fila, se marca `sync_deleted_at`, se incrementa la versión y se registra DELETE en la misma transacción. Las consultas habituales de fichas excluyen tombstones. Las fichas históricas sin identidad mantienen el borrado local anterior.
 
+## Integración de etiquetas
+
+`src/modelos/etiquetaModelo.js` registra INSERT y UPDATE para etiquetas locales y DELETE lógico para etiquetas sincronizadas. Si una etiqueta sincronizada todavía está asociada a fichas sin identidad reconciliada, la eliminación se bloquea; de lo contrario, el evento DELETE incluye los `fichas_sync_ids` relacionados. Las asociaciones se conservan localmente mientras la etiqueta queda inactiva y marcada como tombstone, evitando borrar vínculos antes de su futura replicación.
+
 ## Integración de plantillas
 
 `src/modelos/plantilla.js` registra INSERT, UPDATE y DELETE lógico en la outbox local. Las plantillas son la raíz de esta jerarquía de contenido, por lo que sus eventos no dependen de una identidad padre. La eliminación conserva la validación de que no existan menús asociados; cuando la plantilla está sincronizada, se marca tombstone en lugar de borrarla físicamente.
@@ -46,7 +50,7 @@ Para menús sincronizados, la eliminación se representa como tombstone, increme
 
 ## Pruebas y CI
 
-`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js` y `test/sincronizacionPlantillaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
+`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js`, `test/sincronizacionPlantillaOutboxSQLite.test.js` y `test/sincronizacionEtiquetaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE y referencias padre sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
 
 ## Pendiente antes de una sincronización real
 
