@@ -21,6 +21,29 @@
 //
 
 const db = require("../database");
+const { randomUUID } = require("node:crypto");
+const { esModoLocal } = require("../config/modoServidor");
+const { registrarEvento } = require("../servicios/sincronizacion/outbox");
+const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
+
+function consultarPromesa(sql, valores = []) {
+    return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
+        error ? reject(error) : resolve(filas)
+    ));
+}
+
+async function outboxFichaDisponible() {
+    if (!esModoLocal || typeof db.withTransaction !== "function") return false;
+    try {
+        const columnas = await consultarPromesa('PRAGMA table_info("ficha")');
+        const nombres = new Set(columnas.map((columna) => columna.name));
+        if (!["sync_id", "sync_version", "sync_deleted_at"].every((nombre) => nombres.has(nombre))) return false;
+        const tablas = await consultarPromesa("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_eventos'");
+        return tablas.length === 1;
+    } catch {
+        return false;
+    }
+}
 
 
 
@@ -148,91 +171,48 @@ const obtenerFichasPorMenu = (id_menu) => {
 // ID generado de la nueva ficha.
 //
 
-const crear = (datos) => {
+const crear = async (datos) => {
+    const { id_menu, titulo, resumen, texto, imagen, datos_json, visible } = datos;
+    const valores = [
+        id_menu, titulo, resumen || null, texto || null,
+        imagen || null, datos_json || null, visible ?? 1
+    ];
+
+    if (await outboxFichaDisponible()) {
+        const dispositivoId = await obtenerIdDispositivo();
+        const syncId = randomUUID();
+        return db.withTransaction(async (consultar) => {
+            const insercion = await consultar(`
+                INSERT INTO ficha (
+                    id_menu, titulo, resumen, texto, imagen, datos_json,
+                    visible, creado, sync_id, sync_version, sync_deleted_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL)
+            `, [...valores, syncId]);
+            const id = insercion.lastID;
+            await registrarEvento(consultar, {
+                dispositivoId, entidad: "ficha", operacion: "INSERT",
+                syncId, versionBase: 0, versionResultado: 1,
+                payload: {
+                    id_menu, titulo, resumen: resumen || null, texto: texto || null,
+                    imagen: imagen || null, datos_json: datos_json || null,
+                    visible: visible ?? 1
+                }
+            });
+            return id;
+        });
+    }
 
     return new Promise((resolve, reject) => {
-
-
-        const {
-
-            id_menu,
-
-            titulo,
-
-            resumen,
-
-            texto,
-
-            imagen,
-
-            datos_json,
-
-            visible
-
-        } = datos;
-
-
-
-        db.run(
-            `
-            INSERT INTO ficha
-            (
-                id_menu,
-                titulo,
-                resumen,
-                texto,
-                imagen,
-                datos_json,
-                visible,
-                creado
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?,datetime('now','-3 hours'))
-            `,
-            [
-
-                id_menu,
-
-                titulo,
-
-                resumen || null,
-
-                texto || null,
-
-                imagen || null,
-
-                datos_json || null,
-
-                visible ?? 1
-
-            ],
-
-            function(error) {
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve(this.lastID);
-
-                }
-
-            }
-
-        );
-
+        db.run(`
+            INSERT INTO ficha (
+                id_menu, titulo, resumen, texto, imagen, datos_json, visible, creado
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'))
+        `, valores, function(error) {
+            if (error) reject(error);
+            else resolve(this.lastID);
+        });
     });
-
 };
-
-
-
-
-
 
 // =======================================================
 // ACTUALIZAR FICHA
@@ -252,129 +232,74 @@ const crear = (datos) => {
 // una nueva imagen.
 //
 
-const actualizar = (id, datos) => {
+const actualizar = async (id, datos) => {
+    let sql = `
+        UPDATE ficha SET
+            id_menu = ?, titulo = ?, resumen = ?, texto = ?,
+            visible = ?, datos_json = ?,
+            actualizado = datetime('now','-3 hours')
+    `;
+    const valores = [
+        datos.id_menu, datos.titulo, datos.resumen, datos.texto,
+        datos.visible, datos.datos_json
+    ];
+    if (datos.imagen) {
+        sql += ", imagen = ?";
+        valores.push(datos.imagen);
+    }
+    sql += " WHERE id_ficha = ?";
+    valores.push(id);
 
-    return new Promise((resolve,reject)=>{
-
-
-        let sql = `
-
-            UPDATE ficha
-
-            SET
-
-                id_menu = ?,
-
-                titulo = ?,
-
-                resumen = ?,
-
-                texto = ?,
-
-                visible = ?,
-
-                datos_json = ?,
-
-                actualizado = datetime('now','-3 hours')
-
-        `;
-
-
-
-        let valores = [
-
-            datos.id_menu,
-
-            datos.titulo,
-
-            datos.resumen,
-
-            datos.texto,
-
-            datos.visible,
-
-            datos.datos_json
-
-        ];
-
-
-
-
-
-        // Si llega una imagen nueva,
-        // se agrega al UPDATE.
-        //
-        // Si no llega imagen,
-        // conserva la existente.
-
-        if(datos.imagen){
-
-
-            sql += `,
-
-                imagen = ?
-
-            `;
-
-
-            valores.push(datos.imagen);
-
-
-        }
-
-
-
-
-
-        sql += `
-
-            WHERE id_ficha = ?
-
-        `;
-
-
-        valores.push(id);
-
-
-
-
-
-        db.run(
-
-            sql,
-
-            valores,
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
+    if (await outboxFichaDisponible()) {
+        const dispositivoId = await obtenerIdDispositivo();
+        return db.withTransaction(async (consultar) => {
+            const actual = await consultar(
+                "SELECT * FROM ficha WHERE id_ficha = ?", [id]
+            );
+            const anterior = actual.rows[0];
+            if (!anterior) return;
+            const syncId = anterior.sync_id || randomUUID();
+            const versionBase = Number(anterior.sync_version || 1);
+            const versionResultado = versionBase + 1;
+            const asignaciones = [
+                "sync_id = ?", "sync_version = ?", "sync_deleted_at = NULL"
+            ];
+            const parametros = [syncId, versionResultado];
+            const sqlConSync = sql.replace(
+                " WHERE id_ficha = ?",
+                ", " + asignaciones.join(", ") + " WHERE id_ficha = ?"
+            );
+            parametros.push(...valores);
+            // Los metadatos se agregan al final del UPDATE, antes del WHERE.
+            const consultaFinal = sql.replace(
+                " WHERE id_ficha = ?",
+                ", sync_id = ?, sync_version = ?, sync_deleted_at = NULL WHERE id_ficha = ?"
+            );
+            await consultar(consultaFinal, [
+                ...valores.slice(0, datos.imagen ? 7 : 6),
+                syncId, versionResultado, id
+            ]);
+            await registrarEvento(consultar, {
+                dispositivoId, entidad: "ficha", operacion: "UPDATE",
+                syncId, versionBase, versionResultado,
+                payload: {
+                    id_menu: datos.id_menu, titulo: datos.titulo,
+                    resumen: datos.resumen ?? null, texto: datos.texto ?? null,
+                    imagen: datos.imagen || anterior.imagen || null,
+                    datos_json: datos.datos_json ?? null,
+                    visible: datos.visible ?? anterior.visible
                 }
+            });
+        });
+    }
 
-                else{
-
-                    resolve();
-
-                }
-
-
-            }
-
-        );
-
-
+    return new Promise((resolve, reject) => {
+        db.run(sql, valores, function(error) {
+            if (error) reject(error);
+            else resolve();
+        });
     });
-
 };
-
-
-
-
-
 
 // =======================================================
 // ELIMINAR FICHA
