@@ -62,16 +62,14 @@ La carga real del archivo a Supabase, la verificación del checksum remoto, la c
 
 ## Pruebas y CI
 
-`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js`, `test/sincronizacionPlantillaOutboxSQLite.test.js` y `test/sincronizacionEtiquetaOutboxSQLite.test.js` y `test/sincronizacionFichaEtiquetaOutboxSQLite.test.js` usan bases temporales y cubren INSERT, UPDATE, rollback ante fallo de outbox, tombstone DELETE, reactivación de asociaciones y referencias sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
+`test/sincronizacionFichaOutboxSQLite.test.js`, `test/sincronizacionMenuOutboxSQLite.test.js`, `test/sincronizacionPlantillaOutboxSQLite.test.js`, `test/sincronizacionEtiquetaOutboxSQLite.test.js`, `test/sincronizacionFichaEtiquetaOutboxSQLite.test.js` y `test/sincronizacionMultimediaOutboxSQLite.test.js` usan bases SQLite temporales y cubren INSERT, UPDATE, rollback ante fallos de outbox, tombstones, reactivación de asociaciones, checksum SHA-256 y referencias sin identidad reconciliada. El workflow `.github/workflows/test-sync-ficha.yml` ejecuta `npm ci` y `npm test`.
 
 ## Pendiente antes de una sincronización real
 
 - Ejecutar y aprobar la suite de CI.
 - Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
-- Diseñar y ejecutar una reconciliación de identidades compartidas entre SQLite y PostgreSQL.
-- Definir protocolo de envío/recepción idempotente, cursores, confirmaciones y conflictos.
-- Añadir carga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
-- Definir protocolo de envío/recepción idempotente, cursores, confirmaciones y conflictos.
+- Definir protocolo de envío/recepción idempotente, coalescencia de eventos pendientes, cursores, confirmaciones y conflictos.
+- Implementar carga binaria a Supabase Storage, verificación remota de checksum y limpieza segura de objetos.
 - Añadir pruebas de integración contra PostgreSQL descartable.
 - Revisar compatibilidad de controladores y respuestas de eliminación ante tombstones.
 
