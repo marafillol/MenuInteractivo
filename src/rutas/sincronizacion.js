@@ -124,6 +124,12 @@ router.post("/exchange", async (req, res) => {
             };
         }));
         const resultado = await db.withTransaction(async (consultar) => {
+            await consultar(`
+                INSERT INTO sync_dispositivos (device_id, nombre, cursor_ultimo, activo, ultimo_contacto)
+                VALUES (?, ?, ?, TRUE, CURRENT_TIMESTAMP)
+                ON CONFLICT (device_id) DO UPDATE SET
+                    activo = TRUE, ultimo_contacto = CURRENT_TIMESTAMP
+            `, [deviceId, `Nodo ${deviceId.slice(0, 8)}`, cursor]);
             const lote = await procesarLote(consultar, eventosPreparados, { registrarRecepcion: true });
             const entidades = Object.keys(ENTIDADES);
             const placeholders = entidades.map((_, indice) => `$${indice + 2}`).join(", ");
