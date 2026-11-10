@@ -25,12 +25,12 @@ const OUTPUT = process.env.RECONCILIACION_SALIDA ||
 // Las dependencias se validarán en una etapa posterior con mapas aprobados.
 const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
-  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"] },
-  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"] },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"], requiereDependencia: true },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"], requiereDependencia: true },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"] },
-  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true },
+  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, requiereDependencia: true },
   // Configuración queda fuera del manifiesto de contenido hasta definir una
   // lista permitida: sus valores podrían contener datos sensibles.
   { tabla: "configuracion", pk: ["clave"], soloConteo: true }
@@ -171,6 +171,8 @@ async function main() {
         "JSON y booleanos se normalizan para reducir diferencias de representación entre SQLite y PostgreSQL.",
         "Los metadatos sync_id, sync_version y sync_deleted_at no participan en las huellas.",
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
+        "Menús, fichas y multimedia quedan pendientes: no se comparan hijos sin identidad de padre reconciliada.",
+        "Multimedia no recibe candidatos hasta verificar checksum_sha256 y la identidad de su ficha padre en ambas copias.",
         "Las tablas de relaciones se enumeran pero no se emparejan hasta reconciliar sus extremos.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
         "No se leen ni exportan usuarios, credenciales, sesiones o tokens.",
@@ -210,6 +212,20 @@ async function main() {
 
       const local = prepararFilas(localRaw, entidad);
       const remoto = prepararFilas(remotoRaw, entidad);
+      if (entidad.requiereDependencia) {
+        informe.entidades[tabla] = {
+          clave_primaria: entidad.pk,
+          campos_excluidos_de_huella: entidad.excluir,
+          estado: "pendiente_de_reconciliar_dependencias",
+          motivo: tabla === "multimedia"
+            ? "No se propone identidad sin reconciliar primero la ficha padre y verificar checksum_sha256 en ambas copias."
+            : "No se comparan registros hijos por contenido aislado: primero debe aprobarse la identidad de su registro padre.",
+          conteos: { sqlite: local.length, postgres: remoto.length },
+          pendientes_sqlite: local.map(f => f.clave_local),
+          pendientes_postgres: remoto.map(f => f.clave_local)
+        };
+        continue;
+      }
       if (entidad.relacion) {
         informe.entidades[tabla] = {
           clave_primaria: entidad.pk,
