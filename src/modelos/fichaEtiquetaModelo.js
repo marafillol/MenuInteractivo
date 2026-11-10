@@ -41,7 +41,11 @@ function consultarPromesa(sql, valores = []) {
 }
 
 async function outboxRelacionDisponible() {
-    if (!esModoLocal || typeof db.withTransaction !== "function") return false;
+    if (
+        !esModoLocal ||
+        typeof db.withTransaction !== "function" ||
+        typeof db.open !== "function"
+    ) return false;
     try {
         const columnas = await consultarPromesa('PRAGMA table_info("ficha_etiqueta")');
         const nombres = new Set(columnas.map((columna) => columna.name));
