@@ -38,6 +38,8 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 await db.preparar();
                 await run("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla test", "{}"]);
                 await run("INSERT INTO menu (nombre, id_plantilla) VALUES (?, ?)", ["Menu test", 1]);
+                await run("ALTER TABLE menu ADD COLUMN sync_id TEXT");
+                await run("UPDATE menu SET sync_id = ? WHERE id_menu = 1", ["11111111-1111-4111-8111-111111111111"]);
                 const id = await Ficha.crear({
                     id_menu: 1, titulo: "Ficha offline", resumen: "Resumen",
                     texto: "Texto", imagen: null, datos_json: "{}", visible: 1
@@ -55,7 +57,41 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 if (eventos[0].operacion !== "INSERT" || eventos[1].operacion !== "UPDATE") throw new Error("Operaciones incorrectas");
                 if (eventos.some(evento => evento.sync_id !== ficha.sync_id)) throw new Error("El sync_id no coincide");
                 if (eventos[1].version_base !== 1 || eventos[1].version_resultado !== 2) throw new Error("Versionado incorrecto");
-                process.stdout.write(JSON.stringify({ id, syncId: ficha.sync_id, eventos }) + "\\n");
+
+                await run(`
+                    CREATE TRIGGER forzar_fallo_outbox_update
+                    BEFORE INSERT ON sync_eventos
+                    WHEN NEW.operacion = 'UPDATE'
+                    BEGIN SELECT RAISE(ABORT, 'fallo de outbox intencional'); END
+                `);
+                let rollbackDetectado = false;
+                try {
+                    await Ficha.actualizar(id, {
+                        id_menu: 1, titulo: "No debe persistir", resumen: "x",
+                        texto: "x", datos_json: "{}", visible: 1
+                    });
+                } catch (error) {
+                    rollbackDetectado = /fallo de outbox intencional/.test(error.message);
+                }
+                if (!rollbackDetectado) throw new Error("No se propagó el fallo de outbox");
+                await run("DROP TRIGGER forzar_fallo_outbox_update");
+                const trasRollback = (await all("SELECT titulo, sync_version FROM ficha WHERE id_ficha = ?", [id]))[0];
+                if (trasRollback.titulo !== "Ficha editada" || trasRollback.sync_version !== 2) {
+                    throw new Error("La modificación no se revirtió junto con el evento");
+                }
+
+                const borrado = await Ficha.eliminarCompleta(id);
+                if (!borrado.eliminada || !borrado.pendienteSincronizacion) throw new Error("No se creó tombstone");
+                const tombstone = (await all("SELECT sync_deleted_at, sync_version FROM ficha WHERE id_ficha = ?", [id]))[0];
+                if (!tombstone.sync_deleted_at || tombstone.sync_version !== 3) throw new Error("Tombstone incorrecto");
+                const totalEventos = await all("SELECT operacion, version_resultado FROM sync_eventos ORDER BY id_evento");
+                if (totalEventos.length !== 3 || totalEventos[2].operacion !== "DELETE" || totalEventos[2].version_resultado !== 3) {
+                    throw new Error("Evento de borrado lógico incorrecto");
+                }
+                const visibles = await Ficha.obtenerFichas();
+                if (visibles.some(fila => fila.id_ficha === id)) throw new Error("La ficha eliminada sigue visible en las consultas");
+
+                process.stdout.write(JSON.stringify({ id, syncId: ficha.sync_id, eventos: totalEventos }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
