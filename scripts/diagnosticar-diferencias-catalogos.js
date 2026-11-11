@@ -63,7 +63,7 @@ function canonico(value) {
   return value;
 }
 function normalizar(tabla, campo, valor) {
-  if (TABLAS[tabla].booleanos.includes(campo) && (valor === 0 || valor === 1)) return Boolean(valor);
+  if (TABLAS[tabla].booleanos.includes(campo) && (valor === 0 || valor === 1 || valor === "0" || valor === "1")) return valor === 1 || valor === "1";
   if (TABLAS[tabla].json.includes(campo) && typeof valor === "string") {
     try { return canonico(JSON.parse(valor)); } catch { return valor; }
   }
@@ -92,10 +92,10 @@ function normalizarId(valor) {
 }
 async function columnasPostgres(client, tabla) {
   const { rows } = await client.query(
-    "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 ORDER BY ordinal_position",
+    "SELECT column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 ORDER BY ordinal_position",
     [tabla]
   );
-  return rows.map(row => row.column_name);
+  return rows;
 }
 
 async function main() {
@@ -116,7 +116,7 @@ async function main() {
       modo: "solo_lectura",
       sqlite: path.basename(SQLITE_PATH),
       postgres: "museo_reconciliacion_prueba",
-      aviso: "No contiene valores de registros; solo tipos, longitudes y huellas SHA-256.",
+      aviso: "No contiene valores de registros; solo tipos, longitudes y huellas SHA-256. activo normaliza 0/1 numérico o textual.",
       tablas: {}
     };
 
@@ -126,7 +126,7 @@ async function main() {
       const columnasSqlite = await allSQLite(sqlite, `PRAGMA table_info("${tabla}")`);
       const columnas = [...new Set([
         ...columnasSqlite.map(c => c.name),
-        ...(await columnasPostgres(pg, tabla))
+        ...(await columnasPostgres(pg, tabla)).map(c => c.column_name)
       ])];
       const mapaSqlite = new Map(filasSqlite.map(f => [normalizarId(f[config.pk]), f]));
       const mapaPg = new Map(filasPg.map(f => [normalizarId(f[config.pk]), f]));
@@ -170,6 +170,7 @@ async function main() {
         cantidad_postgres: filasPg.length,
         columnas_sqlite: columnasSqlite.map(c => c.name),
         columnas_postgres: await columnasPostgres(pg, tabla),
+        tipos_sqlite: columnasSqlite.map(c => ({ columna: c.name, tipo: c.type, notnull: c.notnull, default: c.dflt_value })),
         resumen_campos: resumenCampos,
         registros
       };
