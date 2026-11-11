@@ -51,7 +51,8 @@ La aplicación usa la ruta indicada por `DATABASE_SQLITE_PATH`. Si se omite, el 
 Primero crear el archivo vacío de destino (si no existe):
 
 ```powershell
-node -e "const D=require('sqlite3').verbose().Database; const db=new D(process.env.DATABASE_SQLITE_PATH); db.close();"
+$env:DATABASE_SQLITE_PATH = "C:\MuseoDatos\museo-local.db"
+node -e "require('dotenv').config(); const db=require('./src/database'); db.preparar().then(()=>db.close()).catch(e=>{console.error(e);process.exitCode=1;});"
 ```
 
 En la misma sesión de PowerShell, cargar las variables de autorización de esquema solo para esta preparación local:
