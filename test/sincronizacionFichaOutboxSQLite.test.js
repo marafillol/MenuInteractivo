@@ -74,13 +74,38 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                     throw new Error("La modificación no se revirtió junto con el evento");
                 }
 
+                // Preparar asociaciones ya reconciliadas para comprobar que
+                // el borrado de la ficha también propaga sus tombstones.
+                await run("INSERT INTO ficha (id_menu, titulo, sync_id, sync_version) VALUES (?, ?, ?, 1)", [
+                    1, "Ficha relacionada", "55555555-5555-4555-8555-555555555555"
+                ]);
+                await run("INSERT INTO etiqueta (nombre, sync_id, sync_version) VALUES (?, ?, 1)", [
+                    "Etiqueta test", "66666666-6666-4666-8666-666666666666"
+                ]);
+                await run("INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion, sync_id, sync_version) VALUES (?, ?, ?, ?, 1)", [
+                    id, 2, "relacionada", "77777777-7777-4777-8777-777777777777"
+                ]);
+                await run("INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta, sync_id, sync_version) VALUES (?, ?, ?, 1)", [
+                    id, 1, "88888888-8888-4888-8888-888888888888"
+                ]);
+
                 const borrado = await Ficha.eliminarCompleta(id);
                 if (!borrado.eliminada || !borrado.pendienteSincronizacion) throw new Error("No se creó tombstone");
                 const tombstone = (await all("SELECT sync_deleted_at, sync_version FROM ficha WHERE id_ficha = ?", [id]))[0];
                 if (!tombstone.sync_deleted_at || tombstone.sync_version !== 3) throw new Error("Tombstone incorrecto");
-                const totalEventos = await all("SELECT operacion, version_resultado FROM sync_eventos ORDER BY id_evento");
-                if (totalEventos.length !== 3 || totalEventos[2].operacion !== "DELETE" || totalEventos[2].version_resultado !== 3) {
-                    throw new Error("Evento de borrado lógico incorrecto");
+                const totalEventos = await all("SELECT entidad, operacion, version_resultado FROM sync_eventos ORDER BY id_evento");
+                const bajas = totalEventos.slice(2);
+                if (bajas.length !== 3 ||
+                    bajas[0].entidad !== "relacion_ficha" || bajas[0].operacion !== "DELETE" || bajas[0].version_resultado !== 2 ||
+                    bajas[1].entidad !== "ficha_etiqueta" || bajas[1].operacion !== "DELETE" || bajas[1].version_resultado !== 2 ||
+                    bajas[2].entidad !== "ficha" || bajas[2].operacion !== "DELETE" || bajas[2].version_resultado !== 3) {
+                    throw new Error("El borrado debe emitir primero los tombstones de relaciones y etiquetas, y luego el de la ficha");
+                }
+                const relacionesBorradas = await all("SELECT sync_deleted_at, sync_version FROM relacion_ficha WHERE id_ficha_origen = ?", [id]);
+                const etiquetasBorradas = await all("SELECT sync_deleted_at, sync_version FROM ficha_etiqueta WHERE id_ficha = ?", [id]);
+                if (!relacionesBorradas[0]?.sync_deleted_at || relacionesBorradas[0].sync_version !== 2 ||
+                    !etiquetasBorradas[0]?.sync_deleted_at || etiquetasBorradas[0].sync_version !== 2) {
+                    throw new Error("Las asociaciones no quedaron tombstoneadas");
                 }
                 const visibles = await Ficha.obtenerFichas();
                 if (visibles.some(fila => fila.id_ficha === id)) throw new Error("La ficha eliminada sigue visible en las consultas");
