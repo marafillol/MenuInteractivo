@@ -8,6 +8,7 @@ on:
       - fix/sync-client-conflict-and-media-cleanup
       - fix/ficha-delete-related-tombstones
       - integration/sync-bidireccional-validacion
+      - feature/modo-offline-local-sync-main
   push:
     branches:
       - feature/sync-ficha-outbox
