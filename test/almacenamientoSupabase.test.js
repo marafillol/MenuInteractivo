@@ -17,6 +17,7 @@ const entornoAnterior = {
 
 const llamadas = [];
 let errorAlEliminar = null;
+let errorAlSubir = null;
 let contenidoStorage = Buffer.from("archivo remoto de prueba");
 const urlPrueba = "https://proyecto-prueba.supabase.co";
 
@@ -43,7 +44,7 @@ Module._load = function (solicitud, padre, esPrincipal) {
                                 },
                                 async upload(ruta, contenido, opciones) {
                                     llamadas.push({ nombreBucket, ruta, contenido: Buffer.from(contenido), opciones });
-                                    return { error: null };
+                                    return { error: errorAlSubir };
                                 },
                                 async download(ruta) {
                                     llamadas.push({ nombreBucket, descarga: ruta });
@@ -147,10 +148,32 @@ test("sube multimedia con clave estable y verifica SHA-256", async () => {
     assert.equal(subida.nombreBucket, "multimedia");
     assert.deepEqual(subida.contenido, contenido);
     assert.equal(subida.opciones.contentType, "image/png");
+    assert.equal(subida.opciones.upsert, false);
     await assert.rejects(
         almacenamiento.subirArchivoSincronizado(clave, contenido, "image/png", "0".repeat(64)),
         /checksum del archivo no coincide/
     );
+});
+
+test("un reintento de Storage acepta solo un objeto existente con el mismo SHA-256", async () => {
+    llamadas.length = 0;
+    const contenido = Buffer.from("objeto inmutable");
+    const checksum = createHash("sha256").update(contenido).digest("hex");
+    const clave = "multimedia/imagen/33333333-3333-4333-8333-333333333333/v1.png";
+    contenidoStorage = Buffer.from(contenido);
+    errorAlSubir = { message: "already exists" };
+    await assert.doesNotReject(
+        almacenamiento.subirArchivoSincronizado(clave, contenido, "image/png", checksum)
+    );
+    assert.ok(llamadas.some(llamada => llamada.descarga === clave));
+
+    llamadas.length = 0;
+    contenidoStorage = Buffer.from("contenido diferente");
+    await assert.rejects(
+        almacenamiento.subirArchivoSincronizado(clave, contenido, "image/png", checksum),
+        /clave de Storage ya existe con contenido diferente/
+    );
+    errorAlSubir = null;
 });
 
 test("descarga multimedia desde la clave lógica del bucket", async () => {
