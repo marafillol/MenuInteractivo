@@ -141,3 +141,11 @@ Esta validación usa el dump SQL completo, a diferencia de la prueba de CI que u
 - No desplegar esta rama ni apuntar instalaciones reales al endpoint hasta completar la reconciliación inicial, multimedia, pruebas PostgreSQL y revisión de seguridad.
 
 La rama no está lista para producción ni para sincronizar los datos reales del museo. No se ejecutó ninguna migración contra Supabase ni se integró esta rama de sincronización en `main`.
+
+
+### Comparación previa contra Supabase vivo (solo lectura)
+
+Se agregó `scripts/auditar-supabase-vs-backup-2026-11-10.sql`. Ejecuta únicamente consultas `SELECT` y compara las claves primarias y relaciones del snapshot del 10/11/2026 con las tablas actuales de Supabase. También lista qué columnas de sincronización y metadatos de Storage existen hoy.
+
+Ejecutar manualmente en el SQL Editor del proyecto Supabase, revisar los tres resultados y guardarlos antes de considerar cualquier backfill. Las filas agregadas después del backup pueden ser cambios legítimos; las claves ausentes o relaciones distintas requieren reconciliación individual. Esta auditoría no asigna UUID, no actualiza filas y no cambia Storage.
+
