@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - integration/sync-bidireccional-validacion
+      - feature/bootstrap-supabase-seguro
   pull_request:
     branches:
       - main
+      - integration/sync-bidireccional-validacion
 
 permissions:
   contents: read

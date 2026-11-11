@@ -106,3 +106,50 @@ test("el esquema PostgreSQL de sincronización se prepara sin asignar identidade
     "la preparación no debe alterar IDs existentes"
   );
 });
+
+
+test("la instantánea de bootstrap captura contenido, relaciones y cursor en una transacción de solo lectura", async () => {
+  const ids = {
+    plantilla: "10000000-0000-4000-8000-000000000001",
+    menu: "10000000-0000-4000-8000-000000000002",
+    ficha: "10000000-0000-4000-8000-000000000003",
+    etiqueta: "10000000-0000-4000-8000-000000000004",
+    fichaEtiqueta: "10000000-0000-4000-8000-000000000005",
+    relacion: "10000000-0000-4000-8000-000000000006",
+    multimedia: "10000000-0000-4000-8000-000000000007",
+    evento: "10000000-0000-4000-8000-000000000008",
+    dispositivo: "10000000-0000-4000-8000-000000000009"
+  };
+
+  await client.query("UPDATE public.plantilla SET sync_id = $1 WHERE id_plantilla = 4", [ids.plantilla]);
+  await client.query("UPDATE public.menu SET sync_id = $1 WHERE id_menu = 23", [ids.menu]);
+  await client.query("UPDATE public.ficha SET sync_id = $1 WHERE id_ficha = 88", [ids.ficha]);
+  await client.query("UPDATE public.etiqueta SET sync_id = $1 WHERE id_etiqueta = 12", [ids.etiqueta]);
+  await client.query("UPDATE public.ficha_etiqueta SET sync_id = $1 WHERE id_ficha = 88 AND id_etiqueta = 12", [ids.fichaEtiqueta]);
+  await client.query("UPDATE public.relacion_ficha SET sync_id = $1 WHERE id_relacion = 8", [ids.relacion]);
+  await client.query(
+    "UPDATE public.multimedia SET sync_id = $1, storage_key = $2, checksum_sha256 = $3, mime_type = $4, tamano_bytes = $5 WHERE id_multi = 48",
+    [ids.multimedia, "multimedia/imagen/" + ids.multimedia + "/v1.png", "a".repeat(64), "image/png", 12]
+  );
+  await client.query(
+    "INSERT INTO public.sync_eventos (evento_id, origen_device_id, entidad, operacion, sync_id, version_base, version_resultado, payload_json) VALUES ($1, $2, 'plantilla', 'INSERT', $3, 0, 1, '{}'::jsonb)",
+    [ids.evento, ids.dispositivo, ids.plantilla]
+  );
+
+  const db = require("../src/database");
+  const { crearSnapshot } = require("../src/servicios/sincronizacion/bootstrap");
+  const snapshot = await db.withTransaction(crearSnapshot);
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.cursor, 1);
+  assert.equal(snapshot.data.plantilla.length, 1);
+  assert.equal(snapshot.data.menu[0].sync_id, ids.menu);
+  assert.equal(snapshot.data.ficha[0].id_usuario, null);
+  assert.equal(snapshot.data.ficha_etiqueta[0].sync_id, ids.fichaEtiqueta);
+  assert.equal(snapshot.data.relacion_ficha[0].sync_id, ids.relacion);
+  assert.equal(snapshot.data.multimedia[0].storage_key, "multimedia/imagen/" + ids.multimedia + "/v1.png");
+  assert.equal(snapshot.data.multimedia[0].checksum_sha256, "a".repeat(64));
+
+  const filas = await client.query("SELECT COUNT(*)::int AS cantidad FROM public.sync_eventos");
+  assert.equal(filas.rows[0].cantidad, 1, "la captura no debe escribir eventos en PostgreSQL");
+});

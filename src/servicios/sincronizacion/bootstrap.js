@@ -144,6 +144,36 @@ function validarSnapshot(snapshot) {
     };
 }
 
+async function crearSnapshot(consultar) {
+    // Debe ser la primera consulta de la transacción para fijar el aislamiento.
+    await consultar("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+    // Bloquea escrituras de contenido/outbox hasta capturar filas y cursor juntos.
+    await consultar(
+        `LOCK TABLE ${[...TABLAS, "sync_eventos"].join(", ")} IN SHARE MODE`
+    );
+
+    const data = {};
+    for (const tabla of TABLAS) {
+        const resultado = await consultar(`SELECT * FROM ${tabla} ORDER BY 1`);
+        data[tabla] = resultado.rows.map((fila) => {
+            // Los usuarios y sus IDs locales no forman parte de la réplica de contenido.
+            if (tabla === "ficha") return { ...fila, id_usuario: null };
+            return fila;
+        });
+    }
+    const cursorResultado = await consultar(
+        "SELECT COALESCE(MAX(id_evento), 0)::bigint AS cursor FROM sync_eventos"
+    );
+    const snapshot = {
+        version: 1,
+        cursor: Number(cursorResultado.rows[0]?.cursor || 0),
+        generado_en: new Date().toISOString(),
+        data
+    };
+    validarSnapshot(snapshot);
+    return snapshot;
+}
+
 async function comprobarBaseLocalVacia(consultar) {
     for (const tabla of TABLAS) {
         const resultado = await consultar(`SELECT COUNT(*) AS cantidad FROM ${tabla}`);
@@ -211,6 +241,7 @@ module.exports = {
     CLAVE_ESTADO,
     CLAVE_CURSOR,
     validarSnapshot,
+    crearSnapshot,
     comprobarBaseLocalVacia,
     aplicarSnapshot
 };
