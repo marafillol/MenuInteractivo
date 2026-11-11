@@ -51,7 +51,9 @@ function obtenerRutaRelativaAuditable(valor) {
         const posicion = url.pathname.indexOf(marcador);
         if (url.protocol !== "https:" || posicion < 0) return null;
         const objeto = decodeURIComponent(url.pathname.slice(posicion + marcador.length));
-        if (!objeto || objeto.startsWith("/") || objeto.includes("\\0")) return null;
+        const segmentos = objeto.split("/");
+        if (!objeto || objeto.startsWith("/") || objeto.includes("\\0") ||
+            segmentos.some(segmento => !segmento || segmento === "." || segmento === "..")) return null;
         return objeto;
     } catch {
         return null;
