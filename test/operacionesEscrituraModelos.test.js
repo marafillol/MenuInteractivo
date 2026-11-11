@@ -390,13 +390,18 @@ test("reemplazar etiquetas usa la transacción PostgreSQL si está disponible", 
         const resultado = await FichaEtiqueta.reemplazar(34, [2, 5]);
 
         assert.equal(resultado, true);
-        assert.equal(llamadas[0].tipo, "transaction.begin");
-        assert.match(llamadas[1].sql, /DELETE FROM ficha_etiqueta/i);
-        assert.deepEqual(llamadas[1].parametros, [34]);
-        assert.match(llamadas[2].sql, /INSERT INTO ficha_etiqueta/i);
-        assert.deepEqual(llamadas[2].parametros, [34, 2]);
-        assert.deepEqual(llamadas[3].parametros, [34, 5]);
-        assert.equal(llamadas.at(-1).tipo, "transaction.commit");
+        // La comprobación de esquema puede consultar SQLite/PostgreSQL antes
+        // de abrir la transacción; validar el orden dentro de la transacción.
+        const operacionesTransaccionales = llamadas.filter((llamada) =>
+            llamada.tipo.startsWith("transaction.")
+        );
+        assert.equal(operacionesTransaccionales[0].tipo, "transaction.begin");
+        assert.match(operacionesTransaccionales[1].sql, /DELETE FROM ficha_etiqueta/i);
+        assert.deepEqual(operacionesTransaccionales[1].parametros, [34]);
+        assert.match(operacionesTransaccionales[2].sql, /INSERT INTO ficha_etiqueta/i);
+        assert.deepEqual(operacionesTransaccionales[2].parametros, [34, 2]);
+        assert.deepEqual(operacionesTransaccionales[3].parametros, [34, 5]);
+        assert.equal(operacionesTransaccionales.at(-1).tipo, "transaction.commit");
     } finally {
         delete dbFalso.withTransaction;
     }
