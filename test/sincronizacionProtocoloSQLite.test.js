@@ -149,3 +149,60 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
         fs.rmSync(directorio, { recursive: true, force: true });
     }
 });
+
+
+test("el protocolo rechaza saltos y retrocesos de versión antes de modificar contenido", () => {
+    const directorio = fs.mkdtempSync(path.join(os.tmpdir(), "museo-versiones-sync-"));
+    const rutaDb = path.join(directorio, "versiones.db");
+    const env = {
+        ...process.env,
+        MODO_SERVIDOR: "local",
+        LOCAL_AUTH_SECRET: "clave-temporal-versiones-sync-2026",
+        DATABASE_SQLITE_PATH: rutaDb
+    };
+    const ejecutar = (args) => spawnSync(process.execPath, args, {
+        cwd: proyecto, env, encoding: "utf8"
+    });
+
+    try {
+        const esquema = ejecutar(["scripts/preparar-outbox-fichas-local.js"]);
+        assert.equal(esquema.status, 0, esquema.stderr || esquema.stdout);
+        const operacion = ejecutar(["-e", `
+            const assert = require("node:assert/strict");
+            const db = require("./src/database");
+            const { aplicarEvento } = require("./src/servicios/sincronizacion/protocolo");
+            const uuid = n => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
+            const all = (sql, values = []) => new Promise((resolve, reject) =>
+                db.all(sql, values, (error, rows) => error ? reject(error) : resolve(rows))
+            );
+            (async () => {
+                await db.preparar();
+                const base = {
+                    origen_device_id: uuid(99), entidad: "plantilla",
+                    sync_id: uuid(1), version_base: 0, version_resultado: 1,
+                    operacion: "INSERT",
+                    payload_json: { nombre: "Original", plantilla_json: "{}", activo: 1 }
+                };
+                await db.withTransaction(q => aplicarEvento(q, { ...base, evento_id: uuid(10) }));
+                for (const [n, resultado] of [[11, 3], [12, 1]]) {
+                    await assert.rejects(
+                        db.withTransaction(q => aplicarEvento(q, {
+                            ...base, evento_id: uuid(n), operacion: "UPDATE",
+                            version_base: 1, version_resultado: resultado,
+                            payload_json: { nombre: "No debe aplicarse" }
+                        })),
+                        /versión resultado debe ser exactamente/
+                    );
+                }
+                const filas = await all("SELECT nombre, sync_version FROM plantilla WHERE sync_id = ?", [uuid(1)]);
+                assert.equal(filas.length, 1);
+                assert.equal(filas[0].nombre, "Original");
+                assert.equal(filas[0].sync_version, 1);
+                await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
+            })().catch(error => { console.error(error); process.exitCode = 1; });
+        `]);
+        assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
+    } finally {
+        fs.rmSync(directorio, { recursive: true, force: true });
+    }
+});
