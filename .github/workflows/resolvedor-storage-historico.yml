@@ -1,0 +1,17 @@
+name: Probar resolvedor histórico de Storage
+
+on:
+  push:
+    branches:
+      - feature/bootstrap-resolver-storage-historico
+
+jobs:
+  resolver-historico:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ejecutar pruebas del resolvedor
+        run: node --test test/resolverStorageHistorico.test.js

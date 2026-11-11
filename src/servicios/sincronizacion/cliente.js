@@ -7,6 +7,7 @@ const { obtenerIdDispositivo } = require("./dispositivo");
 const { ENTIDADES, procesarLote } = require("./protocolo");
 const { estaPreparado } = require("./esquema");
 const { validarSnapshot, comprobarBaseLocalVacia, aplicarSnapshot, CLAVE_ESTADO } = require("./bootstrap");
+const { aplicarMapaSnapshot, esClaveHistoricaPermitida } = require("./resolverStorageHistorico");
 
 const CLAVE_CURSOR = "sync.cursor.supabase";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -183,12 +184,17 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
         if (!/^[a-f0-9]{64}$/i.test(String(payload.imagen_checksum_sha256 || ""))) {
             throw new Error("El checksum de la portada remota no tiene formato válido.");
         }
-        const rutaStaging = obtenerRutaStagingPortada(payload);
         const storageKey = payload.imagen_storage_key;
-        const extension = path.extname(storageKey);
+        const extension = path.extname(storageKey).toLowerCase();
         const coincidencia = storageKey.match(/^multimedia\/covers\/(menu|ficha)\/([0-9a-f-]{36})\.(jpg|jpeg|png|webp|gif|avif)$/i);
-        if (!coincidencia || !UUID_RE.test(coincidencia[2])) {
+        const esPortadaNueva = Boolean(coincidencia && UUID_RE.test(coincidencia[2]));
+        const idEntidad = evento.entidad === "menu" ? payload.id_menu : payload.id_ficha;
+        const esPortadaHistorica = esClaveHistoricaPermitida(evento.entidad, idEntidad, storageKey);
+        if (!esPortadaNueva && !esPortadaHistorica) {
             throw new Error("La clave de almacenamiento de la portada remota no es válida.");
+        }
+        if (!/^\.(jpg|jpeg|png|webp|gif|avif)$/i.test(extension)) {
+            throw new Error("La extensión de la portada remota no es válida.");
         }
         const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
             "?key=" + encodeURIComponent(storageKey);
@@ -206,7 +212,9 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
         const raizProyecto = path.resolve(__dirname, "../../../");
         const carpeta = path.join(raizProyecto, "imagenes", evento.entidad === "menu" ? "menus" : "fichas");
         await fs.promises.mkdir(carpeta, { recursive: true });
-        const nombre = `portada-${coincidencia[2]}${extension}`;
+        const nombre = esPortadaNueva
+            ? `portada-${coincidencia[2]}${extension}`
+            : `historico-${idEntidad}${extension}`;
         const destino = path.join(carpeta, nombre);
         let existia = true;
         try {
@@ -453,12 +461,13 @@ async function inicializarDesdeServidor() {
         body: "{}",
         signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(120000) : undefined
     });
-    const datos = await respuesta.json().catch(() => ({}));
+    let datos = await respuesta.json().catch(() => ({}));
     if (!respuesta.ok) {
         const error = new Error(datos.error || ("No se pudo obtener la instantánea (HTTP " + respuesta.status + ")."));
         error.code = datos.code || "BOOTSTRAP_REMOTO_ERROR";
         throw error;
     }
+    datos = aplicarMapaSnapshot(datos);
     validarSnapshot(datos);
     const archivosNuevos = [];
     const idsDescargados = [];

@@ -1,3 +1,5 @@
+const { esClaveHistoricaPermitida, aplicarMapaSnapshot } = require("./resolverStorageHistorico");
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const TABLAS = [
@@ -58,12 +60,15 @@ function validarHash(valor) {
     return typeof valor === "string" && /^[a-f0-9]{64}$/i.test(valor);
 }
 
-function validarStorageKey(valor) {
-    if (typeof valor !== "string" || !valor.startsWith("multimedia/")) return false;
-    const partes = valor.split("/");
-    return partes.length >= 3 && partes.every((parte) =>
-        /^[a-zA-Z0-9._-]+$/.test(parte) && parte !== "." && parte !== ".."
-    );
+function validarStorageKey(valor, entidad, id) {
+    if (typeof valor !== "string") return false;
+    if (valor.startsWith("multimedia/")) {
+        const partes = valor.split("/");
+        if (partes.length >= 3 && partes.every((parte) =>
+            /^[a-zA-Z0-9._-]+$/.test(parte) && parte !== "." && parte !== ".."
+        )) return true;
+    }
+    return esClaveHistoricaPermitida(entidad, id, valor);
 }
 
 function validarSnapshot(snapshot) {
@@ -106,26 +111,26 @@ function validarSnapshot(snapshot) {
 
     for (const fila of snapshot.data.menu) {
         comprobarPadre("menu", fila.id_plantilla, "plantilla", "id_plantilla", "Un menú");
-        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de menú históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
-        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Una portada de menú tiene metadatos de Storage inválidos.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
     for (const fila of snapshot.data.ficha) {
         comprobarPadre("ficha", fila.id_menu, "menu", "id_menu", "Una ficha");
-        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de fichas históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
-        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Una portada de ficha tiene metadatos de Storage inválidos.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
     for (const fila of snapshot.data.multimedia) {
         comprobarPadre("multimedia", fila.id_ficha, "ficha", "id_ficha", "Un archivo multimedia");
         if (!fila.sync_deleted_at &&
-            (!validarStorageKey(fila.storage_key) || !validarHash(fila.checksum_sha256))) {
+            (!validarStorageKey(fila.storage_key, "multimedia", fila.id_multi) || !validarHash(fila.checksum_sha256))) {
             throw errorBootstrap("Hay archivos multimedia activos sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
@@ -170,8 +175,9 @@ async function crearSnapshot(consultar) {
         generado_en: new Date().toISOString(),
         data
     };
-    validarSnapshot(snapshot);
-    return snapshot;
+    const snapshotNormalizado = aplicarMapaSnapshot(snapshot);
+    validarSnapshot(snapshotNormalizado);
+    return snapshotNormalizado;
 }
 
 async function comprobarBaseLocalVacia(consultar) {
