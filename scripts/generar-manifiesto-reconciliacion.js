@@ -36,7 +36,7 @@ function validarDestinoSeguro(connectionString) {
   const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
   const puertoPermitido = destino.port === "5433";
   const basePermitida =
-    destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
+    destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
   if (
     !hostPermitido ||
     !puertoPermitido ||
