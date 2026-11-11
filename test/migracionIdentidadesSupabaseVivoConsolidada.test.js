@@ -11,7 +11,7 @@ function validarDestino(value) {
   const u = new URL(String(value || ''));
   assert.ok(['127.0.0.1','localhost'].includes(u.hostname));
   assert.equal(u.port, '5432');
-  assert.equal(u.pathname.replace(/^\\/+/, ''), 'museo_backup_real_test');
+  assert.equal(u.pathname.slice(1), 'museo_backup_real_test');
 }
 
 test('identidades consolidadas para 59 fichas y 39 asociaciones del Supabase vivo', {skip: !url}, async () => {
@@ -33,7 +33,7 @@ test('identidades consolidadas para 59 fichas y 39 asociaciones del Supabase viv
 
     const sql = fs.readFileSync(path.join(__dirname,'../migraciones/migracion-identidades-supabase-vivo-consolidada-candidata.sql'),'utf8');
     assert.match(sql.trim(), /ROLLBACK;$/);
-    await client.query(sql.replace(/ROLLBACK;\\s*$/, 'COMMIT;'));
+    await client.query(sql.slice(0, sql.lastIndexOf('ROLLBACK;')) + 'COMMIT;');
 
     const expected = {plantilla:3,menu:3,ficha:59,etiqueta:5,multimedia:21,relacion_ficha:1,ficha_etiqueta:39};
     for (const [table,total] of Object.entries(expected)) {
