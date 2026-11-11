@@ -31,6 +31,14 @@ const TABLAS = {
     ignorar: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado", "sync_id", "sync_version", "sync_deleted_at"],
     json: ["datos_json"],
     booleanos: ["visible"]
+  },
+  // Se excluyen rutas y claves físicas; se conservan checksum, tamaño,
+  // MIME y demás metadatos para comparar solo huellas, nunca valores.
+  multimedia: {
+    pk: "id_multi",
+    ignorar: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "storage_key", "sync_previous_path", "creado", "actualizado", "sync_id", "sync_version", "sync_deleted_at"],
+    json: [],
+    booleanos: ["activo"]
   }
 };
 
