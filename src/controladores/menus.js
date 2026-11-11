@@ -1,6 +1,7 @@
 ﻿const Menu = require("../modelos/menu");
 const Ficha = require("../modelos/ficha");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
+const { prepararPortada } = require("../servicios/sincronizacion/portadas");
 const cachePublico = require("../middleware/cachePublico");
 const limpiarArchivoSubido = async (ruta) => {
     if (!ruta) return;
@@ -51,13 +52,15 @@ const crearMenu = async(req,res)=>{
             return res.status(400).json({ error:"Debe seleccionar una plantilla." });
         }
 
-        imagenSubida = await subirArchivo(req.file, "menus");
+        const portada = req.file ? await prepararPortada(req.file, "menu") : null;
+        imagenSubida = portada?.imagen || await subirArchivo(req.file, "menus");
         const datosMenu = {
             nombre,
             descripcion: req.body.descripcion?.trim() || null,
             id_plantilla,
             visible: req.body.visible,
-            imagen: imagenSubida
+            imagen: imagenSubida,
+            ...(portada || {})
         };
 
         const id = await Menu.crear(datosMenu);
@@ -141,8 +144,10 @@ const actualizarMenu = async(req,res)=>{
         };
 
         if(req.file){
-            imagenNueva = await subirArchivo(req.file, "menus");
+            const portada = await prepararPortada(req.file, "menu");
+            imagenNueva = portada?.imagen || await subirArchivo(req.file, "menus");
             datos.imagen = imagenNueva;
+            if (portada) Object.assign(datos, portada);
         }
 
         await Menu.actualizar(req.params.id, datos);
