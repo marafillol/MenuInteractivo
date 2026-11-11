@@ -6,6 +6,8 @@ const db = require("../database");
 const { secretoValido, ENTIDADES, procesarLote } = require("../servicios/sincronizacion/protocolo");
 const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
 const { estaPreparado } = require("../servicios/sincronizacion/esquema");
+const { crearSnapshot } = require("../servicios/sincronizacion/bootstrap");
+const { esStorageKeyHistorica } = require("../servicios/sincronizacion/resolverStorageHistorico");
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -22,18 +24,28 @@ function credencialValida(req) {
     return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
 }
 
-function storageKeyValida(storageKey) {
-    if (typeof storageKey !== "string" || !storageKey.startsWith("multimedia/")) return false;
-    const segmentos = storageKey.split("/");
-    return segmentos.length >= 3 && segmentos.every((segmento) =>
-        /^[a-zA-Z0-9._-]+$/.test(segmento) && segmento !== "." && segmento !== ".."
-    );
+function storageKeyValida(storageKey, permitirHistorico = false) {
+    if (typeof storageKey !== "string") return false;
+    if (storageKey.startsWith("multimedia/")) {
+        const segmentos = storageKey.split("/");
+        if (segmentos.length >= 3 && segmentos.every((segmento) =>
+            /^[a-zA-Z0-9._-]+$/.test(segmento) && segmento !== "." && segmento !== ".."
+        )) return true;
+    }
+    return permitirHistorico && esStorageKeyHistorica(storageKey);
 }
 
-router.post("/media/upload", upload.single("file"), async (req, res) => {
-    if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
-    if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
-
+router.post("/media/upload", (req, res, next) => {
+    // Validar el secreto antes de que Multer lea y almacene el cuerpo binario.
+    // Así una petición anónima no puede consumir hasta 50 MB de memoria por intento.
+    if (!esModoSupabase) {
+        return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
+    }
+    if (!credencialValida(req)) {
+        return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+    return next();
+}, upload.single("file"), async (req, res) => {
     const { storage_key, checksum_sha256, mime_type } = req.body || {};
     if (!req.file || !storageKeyValida(storage_key) ||
         !/^[a-f0-9]{64}$/i.test(String(checksum_sha256 || ""))) {
@@ -55,7 +67,7 @@ router.get("/media/download", async (req, res) => {
     if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
     if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
     const storageKey = String(req.query?.key || "");
-    if (!storageKeyValida(storageKey)) {
+    if (!storageKeyValida(storageKey, true)) {
         return res.status(400).json({ error: "La clave multimedia no es válida." });
     }
     try {
@@ -65,6 +77,29 @@ router.get("/media/download", async (req, res) => {
         return res.send(archivo);
     } catch {
         return res.status(404).json({ error: "No se encontró el archivo multimedia remoto." });
+    }
+});
+
+router.post("/bootstrap/snapshot", async (req, res) => {
+    if (!esModoSupabase) {
+        return res.status(404).json({ error: "La instantánea remota no está activa en este nodo." });
+    }
+    if (!credencialValida(req)) {
+        return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        return res.status(503).json({ error: "El esquema de sincronización todavía no está preparado en el servidor." });
+    }
+
+    try {
+        const snapshot = await db.withTransaction(crearSnapshot);
+        return res.json(snapshot);
+    } catch (error) {
+        if (["SNAPSHOT_INCOMPLETO", "SNAPSHOT_MULTIMEDIA_INCOMPLETO"].includes(error.code)) {
+            return res.status(409).json({ error: error.message, code: error.code });
+        }
+        console.error("[sync] No se pudo generar la instantánea; código=", error.code || "sin_codigo");
+        return res.status(503).json({ error: "No se pudo generar una instantánea consistente." });
     }
 });
 

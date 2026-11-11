@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { createHash } = require("node:crypto");
 const { esModoSupabase } = require("./modoServidor");
+const { esStorageKeyHistorica } = require("../servicios/sincronizacion/resolverStorageHistorico");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
 const urlProyectoConfigurada = process.env.SUPABASE_URL;
@@ -82,16 +83,33 @@ const subirArchivoSincronizado = async (storageKey, contenido, mimeType, checksu
     if (checksum !== checksumEsperado) {
         throw new Error("El checksum del archivo no coincide con el manifiesto de sincronización.");
     }
+    // Las claves de sincronización son inmutables por contenido/versión.
+    // Nunca reemplazar silenciosamente un objeto que ya exista en Storage:
+    // si el reintento encuentra la misma clave, aceptar solo bytes idénticos.
     const { error } = await supabase.storage.from(bucket).upload(storageKey, buffer, {
         contentType: mimeType || "application/octet-stream",
-        upsert: true
+        upsert: false
     });
-    if (error) throw new Error("No se pudo guardar el archivo sincronizado en Storage.");
+    if (error) {
+        const { data, error: errorDescarga } = await supabase.storage.from(bucket).download(storageKey);
+        if (errorDescarga || !data) {
+            throw new Error("No se pudo guardar ni verificar el archivo sincronizado en Storage.");
+        }
+        const existente = Buffer.from(await data.arrayBuffer());
+        const checksumExistente = createHash("sha256").update(existente).digest("hex");
+        if (checksumExistente !== checksum) {
+            throw new Error("La clave de Storage ya existe con contenido diferente; se bloqueó el reemplazo.");
+        }
+    }
     return obtenerUrlPublica(storageKey);
 };
 
 const descargarArchivoSincronizado = async (storageKey) => {
-    validarStorageKey(storageKey);
+    try {
+        validarStorageKey(storageKey);
+    } catch (error) {
+        if (!esStorageKeyHistorica(storageKey)) throw error;
+    }
     if (!supabase) throw new Error("El almacenamiento remoto no está configurado.");
     const { data, error } = await supabase.storage.from(bucket).download(storageKey);
     if (error || !data) throw new Error("No se pudo descargar el archivo sincronizado de Storage.");

@@ -6,6 +6,8 @@ const { esModoLocal } = require("../../config/modoServidor");
 const { obtenerIdDispositivo } = require("./dispositivo");
 const { ENTIDADES, procesarLote } = require("./protocolo");
 const { estaPreparado } = require("./esquema");
+const { validarSnapshot, comprobarBaseLocalVacia, aplicarSnapshot, CLAVE_ESTADO } = require("./bootstrap");
+const { aplicarMapaSnapshot, esClaveHistoricaPermitida } = require("./resolverStorageHistorico");
 
 const CLAVE_CURSOR = "sync.cursor.supabase";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -182,12 +184,17 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
         if (!/^[a-f0-9]{64}$/i.test(String(payload.imagen_checksum_sha256 || ""))) {
             throw new Error("El checksum de la portada remota no tiene formato válido.");
         }
-        const rutaStaging = obtenerRutaStagingPortada(payload);
         const storageKey = payload.imagen_storage_key;
-        const extension = path.extname(storageKey);
+        const extension = path.extname(storageKey).toLowerCase();
         const coincidencia = storageKey.match(/^multimedia\/covers\/(menu|ficha)\/([0-9a-f-]{36})\.(jpg|jpeg|png|webp|gif|avif)$/i);
-        if (!coincidencia || !UUID_RE.test(coincidencia[2])) {
+        const esPortadaNueva = Boolean(coincidencia && UUID_RE.test(coincidencia[2]));
+        const idEntidad = evento.entidad === "menu" ? payload.id_menu : payload.id_ficha;
+        const esPortadaHistorica = esClaveHistoricaPermitida(evento.entidad, idEntidad, storageKey);
+        if (!esPortadaNueva && !esPortadaHistorica) {
             throw new Error("La clave de almacenamiento de la portada remota no es válida.");
+        }
+        if (!/^\.(jpg|jpeg|png|webp|gif|avif)$/i.test(extension)) {
+            throw new Error("La extensión de la portada remota no es válida.");
         }
         const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
             "?key=" + encodeURIComponent(storageKey);
@@ -205,7 +212,9 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
         const raizProyecto = path.resolve(__dirname, "../../../");
         const carpeta = path.join(raizProyecto, "imagenes", evento.entidad === "menu" ? "menus" : "fichas");
         await fs.promises.mkdir(carpeta, { recursive: true });
-        const nombre = `portada-${coincidencia[2]}${extension}`;
+        const nombre = esPortadaNueva
+            ? `portada-${coincidencia[2]}${extension}`
+            : `historico-${idEntidad}${extension}`;
         const destino = path.join(carpeta, nombre);
         let existia = true;
         try {
@@ -218,8 +227,15 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
             existia = false;
         }
         if (!existia) {
+            // Un corte del proceso puede dejar un temporal de un intento anterior.
+            // No se lo reutiliza ni se sobrescribe: se retira y se reintenta en el
+            // siguiente ciclo, manteniendo el destino final intacto.
             const temporal = destino + ".sync-tmp";
-            await fs.promises.writeFile(temporal, contenido, { flag: "wx" });
+            await fs.promises.writeFile(temporal, contenido, { flag: "wx" }).catch(async (error) => {
+                if (error.code !== "EEXIST") throw error;
+                await fs.promises.unlink(temporal).catch(() => {});
+                throw new Error("Se encontró una descarga temporal anterior de portada; se limpió para reintentar sin sobrescribir.");
+            });
             await fs.promises.rename(temporal, destino);
             archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
         }
@@ -259,7 +275,13 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
     const destino = path.join(carpeta, nombre);
     const temporal = destino + ".sync-tmp";
     let existia = true;
-    try { await fs.promises.access(destino); } catch (error) {
+    try {
+        const actual = await fs.promises.readFile(destino);
+        const checksumExistente = createHash("sha256").update(actual).digest("hex");
+        if (checksumExistente !== checksum) {
+            throw new Error("Ya existe un archivo multimedia con el mismo nombre pero distinto contenido.");
+        }
+    } catch (error) {
         if (error.code !== "ENOENT") throw error;
         existia = false;
     }
@@ -405,7 +427,7 @@ async function aplicarEventosEntrantes(eventos, cursor) {
         );
         const errores = resultado.rechazados.filter((item) => item.estado === "error" || item.estado === "no_soportado");
         if (errores.length) {
-            throw new Error("Hay eventos remotos pendientes de reconciliar; se conserva el cursor para reintentar.");
+            throw new Error("Hay eventos remotos pendientes de reconciliar; se conserva el cursor para reintentar. " + errores.map((item) => item.entidad + "[" + item.sync_id + "]:" + (item.motivo || item.estado)).join("; "));
         }
         await consultar(
             `INSERT INTO configuracion (clave, valor, actualizado)
@@ -417,8 +439,77 @@ async function aplicarEventosEntrantes(eventos, cursor) {
     });
 }
 
+async function leerEstadoInicializacion() {
+    const filas = await all("SELECT valor FROM configuracion WHERE clave = ?", [CLAVE_ESTADO]);
+    return filas[0]?.valor || null;
+}
+
+function obtenerUrlBootstrap(url = obtenerUrlIntercambio()) {
+    if (!url) return null;
+    return url.replace(/\/exchange\/?$/i, "/bootstrap/snapshot");
+}
+
+async function inicializarDesdeServidor() {
+    if (!esModoLocal) throw new Error("La inicialización offline solo se ejecuta desde SQLite local.");
+    const url = obtenerUrlIntercambio();
+    const secreto = process.env.SYNC_SHARED_SECRET;
+    if (!url || !secreto || secreto.length < 32) {
+        throw new Error("Faltan SYNC_REMOTE_URL o SYNC_SHARED_SECRET para inicializar la copia offline.");
+    }
+    if (await leerEstadoInicializacion() === "completo") return { estado: "ya_inicializado" };
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        throw new Error("El esquema local de sincronización todavía no está preparado.");
+    }
+    await db.withTransaction(comprobarBaseLocalVacia);
+
+    const respuesta = await fetch(obtenerUrlBootstrap(url), {
+        method: "POST",
+        headers: { authorization: "Bearer " + secreto, "content-type": "application/json" },
+        body: "{}",
+        signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(120000) : undefined
+    });
+    let datos = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+        const error = new Error(datos.error || ("No se pudo obtener la instantánea (HTTP " + respuesta.status + ")."));
+        error.code = datos.code || "BOOTSTRAP_REMOTO_ERROR";
+        throw error;
+    }
+    datos = aplicarMapaSnapshot(datos);
+    validarSnapshot(datos);
+    const archivosNuevos = [];
+    const idsDescargados = [];
+    try {
+        for (const tabla of ["menu", "ficha", "multimedia"]) {
+            for (const fila of datos.data[tabla]) {
+                if (fila.sync_deleted_at) continue;
+                const tienePortada = ["menu", "ficha"].includes(tabla) && fila.imagen_storage_key;
+                const esArchivo = tabla === "multimedia";
+                if (!tienePortada && !esArchivo) continue;
+                const evento = {
+                    evento_id: "bootstrap-" + tabla + "-" + fila.sync_id,
+                    entidad: tabla,
+                    operacion: "INSERT",
+                    sync_id: fila.sync_id,
+                    version_resultado: Number(fila.sync_version),
+                    payload_json: { ...fila }
+                };
+                const preparado = await prepararMultimediaEntrante(evento, url, secreto, archivosNuevos);
+                if (tabla === "multimedia") fila.ruta_archivo = preparado.payload_json.ruta_archivo;
+                else fila.imagen = preparado.payload_json.imagen;
+                idsDescargados.push(evento.evento_id);
+            }
+        }
+        const resultado = await aplicarSnapshot(db, datos);
+        return { ...resultado, archivosPreparados: idsDescargados.length, generadoEn: datos.generado_en || null };
+    } catch (error) {
+        await limpiarDescargasNoAplicadas(archivosNuevos, archivosNuevos.map((archivo) => archivo.evento_id));
+        throw error;
+    }
+}
+
 async function sincronizarUnaVez() {
     if (!esModoLocal) throw new Error("El cliente de sincronización solo se ejecuta desde SQLite local.");
+    if (await leerEstadoInicializacion() !== "completo") return { estado: "inicializacion_pendiente" };
     const url = obtenerUrlIntercambio();
     const secreto = process.env.SYNC_SHARED_SECRET;
     if (!url || !secreto || secreto.length < 32) {
@@ -502,7 +593,22 @@ async function ejecutarCiclo() {
     if (enCurso || !esModoLocal || !obtenerUrlIntercambio() || !process.env.SYNC_SHARED_SECRET) return;
     enCurso = true;
     try {
-        const resultado = await sincronizarUnaVez();
+        // La primera instalación puede inicializarse automáticamente desde
+        // Supabase, que es la fuente de referencia durante el despliegue inicial.
+        // El bootstrap solo importa sobre una SQLite vacía y conserva cualquier
+        // contenido/outbox local: si ya hay datos, no reemplaza nada.
+        let resultado = await sincronizarUnaVez();
+        if (resultado.estado === "inicializacion_pendiente" &&
+            process.env.SYNC_AUTO_BOOTSTRAP === "true") {
+            try {
+                const inicializacion = await inicializarDesdeServidor();
+                console.log("[sync] Copia local inicializada desde Supabase:", inicializacion);
+                resultado = await sincronizarUnaVez();
+            } catch (error) {
+                console.warn("[sync] Inicialización automática pendiente; SQLite queda intacta:", error.message);
+                return;
+            }
+        }
         if (resultado.estado === "sincronizado" &&
             (resultado.enviados || resultado.recibidos || resultado.conflictos)) {
             console.log("[sync] Intercambio completado:", resultado);
@@ -531,6 +637,7 @@ function detenerSincronizacionAutomatica() {
 
 module.exports = {
     sincronizarUnaVez,
+    inicializarDesdeServidor,
     iniciarSincronizacionAutomatica,
     detenerSincronizacionAutomatica,
     obtenerRutaStagingPortada,

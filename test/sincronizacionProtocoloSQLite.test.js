@@ -27,7 +27,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
 
         const operacion = ejecutar(["-e", `
             const db = require("./src/database");
-            const { aplicarEvento } = require("./src/servicios/sincronizacion/protocolo");
+            const { aplicarEvento, procesarLote } = require("./src/servicios/sincronizacion/protocolo");
             const run = (sql, values = []) => new Promise((resolve, reject) =>
                 db.run(sql, values, error => error ? reject(error) : resolve())
             );
@@ -114,31 +114,115 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("No se aplicó la relación entre fichas");
                 }
 
-                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 0, 2, {
+                // El lote puede llegar con la ficha antes que su menú padre.
+                const fichaFueraDeOrden = evento(11, "ficha", "INSERT", uuid(8), 0, 1, {
+                    menu_sync_id: uuid(9), titulo: "Hija fuera de orden",
+                    resumen: null, texto: null, imagen: null, datos_json: "{}", visible: 1
+                });
+                const menuPadreTardio = evento(12, "menu", "INSERT", uuid(9), 0, 1, {
+                    plantilla_sync_id: uuid(1), nombre: "Menú padre tardío", visible: 1
+                });
+                const lote = await db.withTransaction(q => procesarLote(q, [
+                    fichaFueraDeOrden, menuPadreTardio
+                ]));
+                assert.deepEqual(lote.rechazados, []);
+                assert.deepEqual(lote.confirmados, [uuid(112), uuid(111)]);
+                const hijaGuardada = await all("SELECT titulo FROM ficha WHERE sync_id = ?", [uuid(8)]);
+                assert.equal(hijaGuardada[0].titulo, "Hija fuera de orden");
+
+                // Simula que este nodo ya avanzó localmente a la versión 2.
+                // El evento remoto todavía parte de la versión 1 y debe quedar en conflicto.
+                await run("UPDATE ficha SET titulo = ?, sync_version = 2 WHERE sync_id = ?", [
+                    "Edición local concurrente", uuid(3)
+                ]);
+                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 1, 2, {
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
                 assert.equal((await aplicar(conflicto)).estado, "conflicto");
+                assert.equal((await aplicar(conflicto)).estado, "duplicado",
+                    "un reintento del mismo conflicto no debe crear otra recepción");
                 const mismoResultadoOtraOperacion = evento(9, "ficha", "UPDATE", uuid(3), 0, 1, {
                     menu_sync_id: uuid(2), titulo: "Otro evento sobre versión ocupada", visible: 1
                 });
                 assert.equal((await aplicar(mismoResultadoOtraOperacion)).estado, "conflicto");
+                const borradoAusente = evento(10, "ficha", "DELETE", uuid(44), 0, 1, {});
+                assert.equal((await aplicar(borradoAusente)).estado, "conflicto");
+                assert.equal((await aplicar(borradoAusente)).estado, "duplicado",
+                    "un DELETE de una fila ausente tampoco debe duplicar conflictos al reintentar");
                 const original = await all("SELECT titulo, sync_version FROM ficha WHERE sync_id = ?", [uuid(3)]);
                 const conflictos = await all("SELECT entidad, sync_id, resuelto FROM sync_conflictos");
-                if (original[0].titulo !== "Ficha compartida" || original[0].sync_version !== 1) {
+                if (original[0].titulo !== "Edición local concurrente" || original[0].sync_version !== 2) {
                     throw new Error("El conflicto sobrescribió el contenido local");
                 }
-                if (conflictos.length !== 2 || conflictos.some(conflicto => conflicto.entidad !== "ficha")) {
+                if (conflictos.length !== 3 || conflictos.some(conflicto => conflicto.entidad !== "ficha")) {
                     throw new Error("El conflicto no quedó registrado");
                 }
                 const recibidos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (recibidos[0].cantidad !== 7) throw new Error("Los eventos aplicados no se registraron como recibidos");
+                if (recibidos[0].cantidad !== 12) throw new Error("No se registraron los eventos aplicados y los conflictos confirmados");
 
                 process.stdout.write(JSON.stringify({ entidades: 7, conflictos: conflictos.length }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /"entidades":7,"conflictos":2/);
+        assert.match(operacion.stdout, /"entidades":7,"conflictos":3/);
+    } finally {
+        fs.rmSync(directorio, { recursive: true, force: true });
+    }
+});
+
+
+test("el protocolo rechaza saltos y retrocesos de versión antes de modificar contenido", () => {
+    const directorio = fs.mkdtempSync(path.join(os.tmpdir(), "museo-versiones-sync-"));
+    const rutaDb = path.join(directorio, "versiones.db");
+    const env = {
+        ...process.env,
+        MODO_SERVIDOR: "local",
+        LOCAL_AUTH_SECRET: "clave-temporal-versiones-sync-2026",
+        DATABASE_SQLITE_PATH: rutaDb
+    };
+    const ejecutar = (args) => spawnSync(process.execPath, args, {
+        cwd: proyecto, env, encoding: "utf8"
+    });
+
+    try {
+        const esquema = ejecutar(["scripts/preparar-outbox-fichas-local.js"]);
+        assert.equal(esquema.status, 0, esquema.stderr || esquema.stdout);
+        const operacion = ejecutar(["-e", `
+            const assert = require("node:assert/strict");
+            const db = require("./src/database");
+            const { aplicarEvento } = require("./src/servicios/sincronizacion/protocolo");
+            const uuid = n => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
+            const all = (sql, values = []) => new Promise((resolve, reject) =>
+                db.all(sql, values, (error, rows) => error ? reject(error) : resolve(rows))
+            );
+            (async () => {
+                await db.preparar();
+                const base = {
+                    origen_device_id: uuid(99), entidad: "plantilla",
+                    sync_id: uuid(1), version_base: 0, version_resultado: 1,
+                    operacion: "INSERT",
+                    payload_json: { nombre: "Original", plantilla_json: "{}", activo: 1 }
+                };
+                await db.withTransaction(q => aplicarEvento(q, { ...base, evento_id: uuid(10) }));
+                for (const [n, resultado] of [[11, 3], [12, 1]]) {
+                    await assert.rejects(
+                        db.withTransaction(q => aplicarEvento(q, {
+                            ...base, evento_id: uuid(n), operacion: "UPDATE",
+                            version_base: 1, version_resultado: resultado,
+                            payload_json: { nombre: "No debe aplicarse" }
+                        })),
+                        /versión resultado debe ser exactamente/
+                    );
+                }
+                const filas = await all("SELECT nombre, sync_version FROM plantilla WHERE sync_id = ?", [uuid(1)]);
+                assert.equal(filas.length, 1);
+                assert.equal(filas[0].nombre, "Original");
+                assert.equal(filas[0].sync_version, 1);
+                await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
+            })().catch(error => { console.error(error); process.exitCode = 1; });
+        `]);
+        assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
