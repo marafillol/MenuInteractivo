@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - feature/sync-ficha-outbox
+      - fix/reconciliation-readonly-local-guard
 
 jobs:
   tests:
