@@ -586,7 +586,22 @@ async function ejecutarCiclo() {
     if (enCurso || !esModoLocal || !obtenerUrlIntercambio() || !process.env.SYNC_SHARED_SECRET) return;
     enCurso = true;
     try {
-        const resultado = await sincronizarUnaVez();
+        // La primera instalación puede inicializarse automáticamente desde
+        // Supabase, que es la fuente de referencia durante el despliegue inicial.
+        // El bootstrap solo importa sobre una SQLite vacía y conserva cualquier
+        // contenido/outbox local: si ya hay datos, no reemplaza nada.
+        let resultado = await sincronizarUnaVez();
+        if (resultado.estado === "inicializacion_pendiente" &&
+            process.env.SYNC_AUTO_BOOTSTRAP === "true") {
+            try {
+                const inicializacion = await inicializarDesdeServidor();
+                console.log("[sync] Copia local inicializada desde Supabase:", inicializacion);
+                resultado = await sincronizarUnaVez();
+            } catch (error) {
+                console.warn("[sync] Inicialización automática pendiente; SQLite queda intacta:", error.message);
+                return;
+            }
+        }
         if (resultado.estado === "sincronizado" &&
             (resultado.enviados || resultado.recibidos || resultado.conflictos)) {
             console.log("[sync] Intercambio completado:", resultado);
