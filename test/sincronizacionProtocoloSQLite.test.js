@@ -114,7 +114,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("No se aplicó la relación entre fichas");
                 }
 
-                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 0, 2, {
+                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 1, 2, {
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
                 assert.equal((await aplicar(conflicto)).estado, "conflicto");
