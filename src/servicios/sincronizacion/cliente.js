@@ -260,7 +260,13 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
     const destino = path.join(carpeta, nombre);
     const temporal = destino + ".sync-tmp";
     let existia = true;
-    try { await fs.promises.access(destino); } catch (error) {
+    try {
+        const actual = await fs.promises.readFile(destino);
+        const checksumExistente = createHash("sha256").update(actual).digest("hex");
+        if (checksumExistente !== checksum) {
+            throw new Error("Ya existe un archivo multimedia con el mismo nombre pero distinto contenido.");
+        }
+    } catch (error) {
         if (error.code !== "ENOENT") throw error;
         existia = false;
     }
