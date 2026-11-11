@@ -55,8 +55,8 @@ function validarDestinoSeguro(connectionString) {
 const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
-  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
-  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "imagen_storage_key", "imagen_mime_type", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_mime_type", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
   { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
@@ -181,6 +181,7 @@ function registrarMapaIdentidades(tabla, pk, filasLocal, filasRemoto, candidatos
 
 function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
   const pendientes = [];
+  const pendientesPortada = [];
   const preparadas = [];
   for (const fila of filas) {
     const idsPadres = [];
@@ -197,6 +198,10 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
     if (entidad.multimedia && !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))) {
       pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
       continue;
+    }
+    if (["menu", "ficha"].includes(entidad.tabla) && fila.imagen &&
+        !/^[a-f0-9]{64}$/i.test(String(fila.imagen_checksum_sha256 || ""))) {
+      pendientesPortada.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
     }
     if (entidad.tabla === "relacion_ficha" &&
         (fila.tipo_relacion === null || fila.tipo_relacion === undefined)) {
@@ -222,7 +227,7 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
       } : {})
     });
   }
-  return { filas: preparadas, pendientes };
+  return { filas: preparadas, pendientes, pendientesPortada };
 }
 
 async function main() {
@@ -318,6 +323,8 @@ async function main() {
       let remoto;
       let pendientesLocal = [];
       let pendientesRemoto = [];
+      let pendientesPortadaLocal = [];
+      let pendientesPortadaRemoto = [];
       if (entidad.padres?.length) {
         const preparadoLocal = prepararFilasConDependencias(localRaw, entidad, mapasIdentidad, "sqlite");
         const preparadoRemoto = prepararFilasConDependencias(remotoRaw, entidad, mapasIdentidad, "postgres");
@@ -325,6 +332,8 @@ async function main() {
         remoto = preparadoRemoto.filas;
         pendientesLocal = preparadoLocal.pendientes;
         pendientesRemoto = preparadoRemoto.pendientes;
+        pendientesPortadaLocal = preparadoLocal.pendientesPortada;
+        pendientesPortadaRemoto = preparadoRemoto.pendientesPortada;
       } else {
         local = prepararFilas(localRaw, entidad);
         remoto = prepararFilas(remotoRaw, entidad);
@@ -394,6 +403,8 @@ async function main() {
           conflictos_sync_id: conflictosSyncId.length,
           pendientes_dependencia_sqlite: pendientesLocal.length,
           pendientes_dependencia_postgres: pendientesRemoto.length,
+          pendientes_portada_sqlite: pendientesPortadaLocal.length,
+          pendientes_portada_postgres: pendientesPortadaRemoto.length,
           solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
           solo_postgres_por_contenido: remoto.filter(f => !hashesLocales.has(f.huella_contenido)).length
         },
@@ -402,6 +413,8 @@ async function main() {
           : "candidatos_generados",
         ...(pendientesLocal.length ? { pendientes_sqlite: pendientesLocal } : {}),
         ...(pendientesRemoto.length ? { pendientes_postgres: pendientesRemoto } : {}),
+        ...(pendientesPortadaLocal.length ? { portadas_pendientes_sqlite: pendientesPortadaLocal } : {}),
+        ...(pendientesPortadaRemoto.length ? { portadas_pendientes_postgres: pendientesPortadaRemoto } : {}),
         candidatos_unicos: compartidas,
         ambiguos: ambiguas,
         conflictos_sync_id: conflictosSyncId,
