@@ -9,6 +9,7 @@ const {
     esStorageKeyHistorica
 } = require("../src/servicios/sincronizacion/resolverStorageHistorico");
 const mapa = require("../src/servicios/sincronizacion/mapaStorageHistorico.json");
+const { validarSnapshot } = require("../src/servicios/sincronizacion/bootstrap");
 
 test("el mapa histórico contiene las 57 referencias verificadas", () => {
     assert.equal(validarMapaStorageHistorico(), true);
@@ -140,4 +141,37 @@ test("solo habilita descargas legacy para claves presentes en el mapa", () => {
     assert.equal(esClaveHistoricaPermitida("multimedia", 4, key), true);
     assert.equal(esClaveHistoricaPermitida("multimedia", 5, key), false);
     assert.equal(esStorageKeyHistorica("../privado.png"), false);
+});
+
+test("el bootstrap valida claves Storage legacy solo cuando coinciden con el mapa", () => {
+    const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+    const snapshot = {
+        version: 1,
+        cursor: 0,
+        data: {
+            plantilla: [{ id_plantilla: 1, sync_id: uuid(1), sync_version: 1 }],
+            menu: [{
+                id_menu: 1, id_plantilla: 1, imagen: mapa.entries["menu:1"][0],
+                imagen_storage_key: null, imagen_checksum_sha256: null,
+                sync_id: uuid(2), sync_version: 1, sync_deleted_at: null
+            }],
+            ficha: [{
+                id_ficha: 15, id_menu: 1, imagen: mapa.entries["ficha:15"][0],
+                imagen_storage_key: null, imagen_checksum_sha256: null,
+                sync_id: uuid(3), sync_version: 1, sync_deleted_at: null
+            }],
+            etiqueta: [],
+            ficha_etiqueta: [],
+            relacion_ficha: [],
+            multimedia: [{
+                id_multi: 4, id_ficha: 15, ruta_archivo: mapa.entries["multimedia:4"][0],
+                storage_key: null, checksum_sha256: null,
+                sync_id: uuid(4), sync_version: 1, sync_deleted_at: null
+            }]
+        }
+    };
+    const normalizado = aplicarMapaSnapshot(snapshot);
+    assert.doesNotThrow(() => validarSnapshot(normalizado));
+    normalizado.data.multimedia[0].storage_key = "imagenes/multimedia/otro.png";
+    assert.throws(() => validarSnapshot(normalizado), /clave de Storage y checksum verificables/);
 });
