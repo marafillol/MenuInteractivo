@@ -1,3 +1,5 @@
+const { esClaveHistoricaPermitida } = require("./resolverStorageHistorico");
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const TABLAS = [
@@ -106,10 +108,10 @@ function validarSnapshot(snapshot) {
 
     for (const fila of snapshot.data.menu) {
         comprobarPadre("menu", fila.id_plantilla, "plantilla", "id_plantilla", "Un menú");
-        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de menú históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
-        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Una portada de menú tiene metadatos de Storage inválidos.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
@@ -125,7 +127,7 @@ function validarSnapshot(snapshot) {
     for (const fila of snapshot.data.multimedia) {
         comprobarPadre("multimedia", fila.id_ficha, "ficha", "id_ficha", "Un archivo multimedia");
         if (!fila.sync_deleted_at &&
-            (!validarStorageKey(fila.storage_key) || !validarHash(fila.checksum_sha256))) {
+            (!validarStorageKey(fila.storage_key, "multimedia", fila.id_multi) || !validarHash(fila.checksum_sha256))) {
             throw errorBootstrap("Hay archivos multimedia activos sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
