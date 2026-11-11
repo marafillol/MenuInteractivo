@@ -62,6 +62,9 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
                 await run("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla", "{}"]);
                 await run("INSERT INTO menu (nombre, id_plantilla, visible) VALUES (?, ?, ?)", ["Menú", 1, 1]);
                 await run("INSERT INTO ficha (id_menu, titulo, visible) VALUES (?, ?, ?)", [1, "Ficha", 1]);
+                await run("INSERT INTO etiqueta (nombre, descripcion, activo) VALUES (?, ?, ?)", ["Historia", null, 1]);
+                await run("INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)", [1, 1]);
+                await run("INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)", [1, 1, "relacionada"]);
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `], env);
