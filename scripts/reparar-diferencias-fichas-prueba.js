@@ -135,6 +135,16 @@ async function main() {
     throw new Error("La fuente SQLite no coincide con la evidencia revisada para ficha 30; abortado.");
   }
 
+  // Por defecto solo prepara el plan. La escritura exige --apply explícito.
+  if (!process.argv.includes("--apply")) {
+    console.log("PLAN VALIDADO; no se modificó ninguna base.");
+    console.log("- Ficha 10: se restauraría únicamente texto (1414 caracteres).");
+    console.log("- Ficha 28: se restauraría únicamente datos_json (lugar de nacimiento: Tucumán).");
+    console.log("- Ficha 30: se restauraría únicamente datos_json (edad y lugar de nacimiento).");
+    console.log("Para aplicar: volver a ejecutar agregando --apply. Se exigirá un pg_dump previo.");
+    return;
+  }
+
   // Backup completo obligatorio. pg_dump solicita la contraseña si no hay .pgpass.
   const backup = crearBackup(destino);
 
