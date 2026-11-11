@@ -29,3 +29,8 @@ test("compara objetos JSON ignorando solo el orden de sus claves", () => {
   assert.equal(igualJson({ a: 1 }, {}), false);
   assert.deepEqual(canon({ z: { b: 1, a: 2 }, a: 0 }), { a: 0, z: { a: 2, b: 1 } });
 });
+
+test("compara datos_json cuando PostgreSQL lo devuelve como objeto o texto JSON", () => {
+  assert.equal(igualJson({}, "{}"), true);
+  assert.equal(igualJson({ Lugar: "Tucumán" }, '{"Lugar":"Tucumán"}'), true);
+});
