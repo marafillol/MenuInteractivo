@@ -101,6 +101,19 @@ test("normaliza JSON y booleanos entre representaciones SQLite y PostgreSQL", ()
   );
 });
 
+test("normaliza activo legado como número o texto y descripcion vacía como NULL en catálogos", () => {
+  for (const tabla of ["plantilla", "etiqueta"]) {
+    assert.deepEqual(
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: "", activo: 1 }),
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: null, activo: "1" })
+    );
+    assert.deepEqual(
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: null, activo: 0 }),
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: "", activo: "0" })
+    );
+  }
+});
+
 test("excluye IDs, dependencias y metadatos de sincronización de la huella", () => {
   const a = { id_ficha: 1, id_menu: 4, titulo: "Historia", sync_id: "a", sync_version: 1 };
   const b = { id_ficha: 99, id_menu: 8, titulo: "Historia", sync_id: "b", sync_version: 7 };
