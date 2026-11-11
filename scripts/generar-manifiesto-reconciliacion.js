@@ -59,7 +59,7 @@ const ENTIDADES = [
   { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
-  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
+  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "storage_key", "sync_previous_path", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
   // Configuración queda fuera del manifiesto de contenido hasta definir una
   // lista permitida: sus valores podrían contener datos sensibles.
   { tabla: "configuracion", pk: ["clave"], soloConteo: true }
