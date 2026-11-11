@@ -115,7 +115,7 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 - La tabla `configuracion` queda fuera del protocolo incremental por diseño.
 - La transferencia de nuevas portadas está implementada en esta rama de trabajo; falta validar el backfill de portadas históricas y la recuperación de archivos antiguos.
 - La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
-- La suite de CI aprobó las pruebas automatizadas, las pruebas de reconciliación en SQLite temporal y una integración de esquema contra PostgreSQL 17 descartable. Esta última crea una base museo_reconciliacion_prueba, ejecuta el preparador real y verifica tablas/columnas, secuencias, conservación de IDs históricos y exclusión de configuracion. No valida todavía el intercambio bidireccional completo ni la transferencia real de archivos entre dos copias.
+- La suite de CI aprobó las pruebas automatizadas, las pruebas de reconciliación en SQLite temporal y una integración de esquema contra PostgreSQL 17 descartable. Esta última crea una base museo_reconciliacion_prueba, ejecuta el preparador real y verifica tablas/columnas, secuencias, conservación de IDs históricos y exclusión de configuracion. También existe una prueba de integración HTTP entre un proceso cliente SQLite descartable y un servidor PostgreSQL descartable: valida cambios en ambos sentidos, subida y descarga de multimedia mediante rutas reales con SHA-256, reintento del mismo evento, conservación de la outbox ante un corte de conexión y registro de un conflicto concurrente sin sobrescritura. El adaptador de Storage de esa prueba es simulado en memoria; no se conecta a Supabase real.
 
 ### Configuración y despliegue
 
