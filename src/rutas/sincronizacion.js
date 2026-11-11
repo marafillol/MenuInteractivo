@@ -35,9 +35,16 @@ function storageKeyValida(storageKey, permitirHistorico = false) {
     return permitirHistorico && esStorageKeyHistorica(storageKey);
 }
 
-router.post("/media/upload", upload.single("file"), async (req, res) => {
-    if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
-    if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
+router.post("/media/upload", (req, res, next) => {
+    // Validar antes de que Multer procese el cuerpo binario.
+    if (!esModoSupabase) {
+        return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
+    }
+    if (!credencialValida(req)) {
+        return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+    return next();
+}, upload.single("file"), async (req, res) => {
 
     const { storage_key, checksum_sha256, mime_type } = req.body || {};
     if (!req.file || !storageKeyValida(storage_key) ||
