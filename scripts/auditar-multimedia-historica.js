@@ -40,6 +40,24 @@ function validarDestinoSeguro(connectionString) {
     }
 }
 
+function obtenerRutaRelativaAuditable(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return null;
+    if (!/^https:\/\//i.test(texto)) return texto;
+
+    try {
+        const url = new URL(texto);
+        const marcador = "/storage/v1/object/public/multimedia/";
+        const posicion = url.pathname.indexOf(marcador);
+        if (url.protocol !== "https:" || posicion < 0) return null;
+        const objeto = decodeURIComponent(url.pathname.slice(posicion + marcador.length));
+        if (!objeto || objeto.startsWith("/") || objeto.includes("\\0")) return null;
+        return objeto;
+    } catch {
+        return null;
+    }
+}
+
 function resolverRutaSegura(raiz, rutaRelativa) {
     const valor = String(rutaRelativa || "").trim();
     if (!valor || path.isAbsolute(valor) || /^[a-z]:[\\/]/i.test(valor) ||
@@ -89,13 +107,14 @@ async function auditarRegistro(registro, raiz) {
     let rutaUsada = null;
 
     for (const candidato of candidatos) {
-        const ruta = resolverRutaSegura(raiz, candidato.valor);
+        const rutaRelativa = obtenerRutaRelativaAuditable(candidato.valor);
+        const ruta = resolverRutaSegura(raiz, rutaRelativa);
         if (!ruta) continue;
         const resultado = await calcularArchivo(ruta, raiz);
         if (resultado.existe) {
             archivo = resultado;
             origen = candidato.origen;
-            rutaUsada = candidato.valor;
+            rutaUsada = rutaRelativa;
             break;
         }
     }
@@ -235,6 +254,7 @@ if (require.main === module) {
 module.exports = {
     validarDestinoSeguro,
     resolverRutaSegura,
+    obtenerRutaRelativaAuditable,
     calcularArchivo,
     auditarRegistro
 };
