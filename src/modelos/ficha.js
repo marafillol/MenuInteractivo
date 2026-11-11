@@ -126,6 +126,13 @@ const crear = async (datos) => {
         id_menu, titulo, resumen || null, texto || null,
         imagen || null, datos_json || null, visible ?? 1
     ];
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    const columnasPortada = tienePortada
+        ? ", imagen_storage_key, imagen_checksum_sha256, imagen_mime_type, imagen_tamano_bytes"
+        : "";
+    const valoresPortada = tienePortada
+        ? [datos.imagen_storage_key, datos.imagen_checksum_sha256, datos.imagen_mime_type, datos.imagen_tamano_bytes]
+        : [];
 
     if (await outboxFichaDisponible()) {
         const dispositivoId = await obtenerIdDispositivo();
@@ -136,24 +143,31 @@ const crear = async (datos) => {
             if (!menuSyncId) {
                 const insercionLocal = await consultar(`
                     INSERT INTO ficha (
-                        id_menu, titulo, resumen, texto, imagen, datos_json, visible, creado
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'))
-                `, valores);
+                        id_menu, titulo, resumen, texto, imagen, datos_json, visible${columnasPortada}, creado
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?${tienePortada ? ", ?, ?, ?, ?" : ""}, datetime('now','-3 hours'))
+                `, [...valores, ...valoresPortada]);
                 return insercionLocal.lastID;
             }
             const insercion = await consultar(`
                 INSERT INTO ficha (
                     id_menu, titulo, resumen, texto, imagen, datos_json,
-                    visible, creado, sync_id, sync_version, sync_deleted_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL)
-            `, [...valores, syncId]);
+                    visible, creado, sync_id, sync_version, sync_deleted_at${columnasPortada}
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL${tienePortada ? ", ?, ?, ?, ?" : ""})
+            `, [...valores, syncId, ...valoresPortada]);
             const id = insercion.lastID;
             await registrarEvento(consultar, {
                 dispositivoId, entidad: "ficha", operacion: "INSERT",
                 syncId, versionBase: 0, versionResultado: 1,
                 payload: {
                     menu_sync_id: menuSyncId, titulo, resumen: resumen || null, texto: texto || null,
-                    imagen: imagen || null, datos_json: datos_json || null,
+                    ...(tienePortada ? {
+                        imagen,
+                        imagen_storage_key: datos.imagen_storage_key,
+                        imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                        imagen_mime_type: datos.imagen_mime_type,
+                        imagen_tamano_bytes: datos.imagen_tamano_bytes
+                    } : { imagen: imagen || null }),
+                    datos_json: datos_json || null,
                     visible: visible ?? 1
                 }
             });
@@ -206,6 +220,12 @@ const actualizar = async (id, datos) => {
         sql += ", imagen = ?";
         valores.push(datos.imagen);
     }
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    if (tienePortada) {
+        sql += ", imagen_storage_key = ?, imagen_checksum_sha256 = ?, imagen_mime_type = ?, imagen_tamano_bytes = ?";
+        valores.push(datos.imagen_storage_key, datos.imagen_checksum_sha256,
+            datos.imagen_mime_type, datos.imagen_tamano_bytes);
+    }
     sql += " WHERE id_ficha = ?";
     valores.push(id);
 
@@ -247,7 +267,13 @@ const actualizar = async (id, datos) => {
                 payload: {
                     menu_sync_id: menuSyncId, titulo: datos.titulo,
                     resumen: datos.resumen ?? null, texto: datos.texto ?? null,
-                    imagen: datos.imagen || anterior.imagen || null,
+                    ...(tienePortada ? {
+                        imagen: datos.imagen,
+                        imagen_storage_key: datos.imagen_storage_key,
+                        imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                        imagen_mime_type: datos.imagen_mime_type,
+                        imagen_tamano_bytes: datos.imagen_tamano_bytes
+                    } : {}),
                     datos_json: datos.datos_json ?? null,
                     visible: datos.visible ?? anterior.visible
                 }
