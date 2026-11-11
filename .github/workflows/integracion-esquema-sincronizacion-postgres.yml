@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - integration/sync-bidireccional-validacion
+      - integration/sync-real-backup-validation
       - feature/bootstrap-supabase-seguro
   pull_request:
     branches:
@@ -53,3 +54,37 @@ jobs:
         run: npm run sync:preparar
       - name: Verificar esquema, metadatos y secuencias
         run: node --test test/integracionEsquemaPostgresSync.test.js
+
+
+  backfill-backup-real:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: museo_backup_real_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d museo_backup_real_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Validar backfill con claves reales del backup
+        env:
+          SYNC_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_backup_real_test
+        run: node --test test/migracionIdentidadesSupabaseBackupReal.test.js
+      - name: Validar resolvedor histórico de Storage
+        run: node --test test/resolverStorageHistorico.test.js
