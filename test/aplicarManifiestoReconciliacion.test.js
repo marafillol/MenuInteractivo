@@ -11,7 +11,10 @@ const proyecto = path.resolve(__dirname, "..");
 const UUIDS = {
     plantilla: "00000000-0000-5000-8000-000000000001",
     menu: "00000000-0000-5000-8000-000000000002",
-    ficha: "00000000-0000-5000-8000-000000000003"
+    ficha: "00000000-0000-5000-8000-000000000003",
+    etiqueta: "00000000-0000-5000-8000-000000000004",
+    ficha_etiqueta: "00000000-0000-5000-8000-000000000005",
+    relacion_ficha: "00000000-0000-5000-8000-000000000006"
 };
 
 function ejecutar(args, env) {
@@ -75,8 +78,11 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
             modo: "solo_lectura",
             entidades: {
                 plantilla: { candidatos_unicos: [candidato(UUIDS.plantilla, { id_plantilla: 1 }, { id_plantilla: 11 })] },
+                etiqueta: { candidatos_unicos: [candidato(UUIDS.etiqueta, { id_etiqueta: 1 }, { id_etiqueta: 14 })] },
                 menu: { candidatos_unicos: [candidato(UUIDS.menu, { id_menu: 1 }, { id_menu: 12 })] },
-                ficha: { candidatos_unicos: [candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 })] }
+                ficha: { candidatos_unicos: [candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 })] },
+                ficha_etiqueta: { candidatos_unicos: [candidato(UUIDS.ficha_etiqueta, { id_ficha: 1, id_etiqueta: 1 }, { id_ficha: 13, id_etiqueta: 14 })] },
+                relacion_ficha: { candidatos_unicos: [candidato(UUIDS.relacion_ficha, { id_relacion: 1 }, { id_relacion: 15 })] }
             }
         }));
 
@@ -85,14 +91,20 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
         const segundo = ejecutar(["scripts/aplicar-manifiesto-reconciliacion.js"], env);
         assert.equal(segundo.status, 0, segundo.stderr || segundo.stdout);
 
-        const [plantilla, menu, ficha] = [
+        const [plantilla, etiqueta, menu, ficha, fichaEtiqueta, relacionFicha] = [
             await consultar(rutaDb, "SELECT sync_id FROM plantilla WHERE id_plantilla = 1"),
+            await consultar(rutaDb, "SELECT sync_id FROM etiqueta WHERE id_etiqueta = 1"),
             await consultar(rutaDb, "SELECT sync_id FROM menu WHERE id_menu = 1"),
-            await consultar(rutaDb, "SELECT sync_id FROM ficha WHERE id_ficha = 1")
+            await consultar(rutaDb, "SELECT sync_id FROM ficha WHERE id_ficha = 1"),
+            await consultar(rutaDb, "SELECT sync_id FROM ficha_etiqueta WHERE id_ficha = 1 AND id_etiqueta = 1"),
+            await consultar(rutaDb, "SELECT sync_id FROM relacion_ficha WHERE id_relacion = 1")
         ];
         assert.equal(plantilla[0].sync_id, UUIDS.plantilla);
+        assert.equal(etiqueta[0].sync_id, UUIDS.etiqueta);
         assert.equal(menu[0].sync_id, UUIDS.menu);
         assert.equal(ficha[0].sync_id, UUIDS.ficha);
+        assert.equal(fichaEtiqueta[0].sync_id, UUIDS.ficha_etiqueta);
+        assert.equal(relacionFicha[0].sync_id, UUIDS.relacion_ficha);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
