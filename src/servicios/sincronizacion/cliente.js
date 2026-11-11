@@ -461,7 +461,7 @@ async function inicializarDesdeServidor() {
         body: "{}",
         signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(120000) : undefined
     });
-    const datos = await respuesta.json().catch(() => ({}));
+    let datos = await respuesta.json().catch(() => ({}));
     if (!respuesta.ok) {
         const error = new Error(datos.error || ("No se pudo obtener la instantánea (HTTP " + respuesta.status + ")."));
         error.code = datos.code || "BOOTSTRAP_REMOTO_ERROR";
