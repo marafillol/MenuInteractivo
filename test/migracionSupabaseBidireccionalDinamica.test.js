@@ -55,7 +55,7 @@ test('migración dinámica asigna UUIDv5 a filas históricas y altas nuevas, con
       menu: fixture.tables.menu.length,
       ficha: fixture.tables.ficha.length + 1,
       etiqueta: fixture.tables.etiqueta.length,
-      multimedia: fixture.tables.multimedia.length,
+      multimedia: fixture.tables.multimedia.length + 1,
       relacion_ficha: fixture.tables.relacion_ficha.length,
       ficha_etiqueta: fixture.ficha_etiqueta.length + 1
     };
@@ -68,7 +68,11 @@ test('migración dinámica asigna UUIDv5 a filas históricas y altas nuevas, con
     assert.equal(newFicha.length, 1);
     assert.equal(newAssociation.length, 1);
     const { rows: media } = await client.query("SELECT COUNT(*)::int AS n FROM public.multimedia WHERE storage_key IS NOT NULL AND checksum_sha256 ~ '^[a-f0-9]{64}$' AND tamano_bytes > 0 AND mime_type IS NOT NULL");
-    assert.equal(media[0].n, fixture.tables.multimedia.length);
+    assert.equal(media[0].n, fixture.tables.multimedia.length + 1);
+    const { rows: mediaNew } = await client.query("SELECT sync_id::text, storage_key, checksum_sha256 FROM public.multimedia WHERE id_multi=900");
+    assert.equal(mediaNew.length, 1);
+    assert.match(mediaNew[0].sync_id, /^[0-9a-f-]{36}$/i);
+    assert.equal(mediaNew[0].storage_key, 'multimedia/imagen/new-sync-id/v1.png');
     const { rows: covers } = await client.query("SELECT COUNT(*)::int AS n FROM public.ficha WHERE imagen IS NOT NULL AND imagen_storage_key IS NOT NULL AND imagen_checksum_sha256 ~ '^[a-f0-9]{64}$'");
     assert.equal(covers[0].n, 34);
   } finally {
