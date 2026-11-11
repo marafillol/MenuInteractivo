@@ -1,0 +1,177 @@
+-- CANDIDATO DE MIGRACION DINAMICA PARA SUPABASE. SOLO REVISION/PRUEBAS AISLADAS.
+-- No ejecutar en producción sin backup verificado y aprobación explícita.
+-- UUIDv5 determinista para todas las filas presentes al tomar el lock.
+-- Storage: solo claves, hashes, tamaños y MIME del mapa auditado el 2026-11-11.
+-- No renombra, mueve ni elimina objetos. Finaliza con ROLLBACK deliberado.
+BEGIN;
+SET LOCAL lock_timeout = '10s';
+SET LOCAL statement_timeout = '120s';
+DO $$ BEGIN
+ IF to_regprocedure('extensions.uuid_generate_v5(uuid,text)') IS NULL THEN RAISE EXCEPTION 'Falta extensions.uuid_generate_v5'; END IF;
+ IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name IN ('plantilla','menu','ficha','etiqueta','ficha_etiqueta','relacion_ficha','multimedia') AND column_name IN ('sync_id','sync_version','sync_deleted_at')) THEN RAISE EXCEPTION 'Hay metadatos sync parciales; no aplicar este candidato inicial'; END IF;
+ IF to_regclass('public.sync_eventos') IS NOT NULL OR to_regclass('public.sync_dispositivos') IS NOT NULL OR to_regclass('public.sync_conflictos') IS NOT NULL THEN RAISE EXCEPTION 'Ya existen tablas auxiliares sync; detener y revisar migración previa'; END IF;
+END $$;
+LOCK TABLE public.plantilla, public.menu, public.ficha, public.etiqueta, public.ficha_etiqueta, public.relacion_ficha, public.multimedia IN ACCESS EXCLUSIVE MODE;
+
+ALTER TABLE public.plantilla ADD COLUMN sync_id uuid;
+ALTER TABLE public.plantilla ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.plantilla ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.menu ADD COLUMN sync_id uuid;
+ALTER TABLE public.menu ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.menu ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.ficha ADD COLUMN sync_id uuid;
+ALTER TABLE public.ficha ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.ficha ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.etiqueta ADD COLUMN sync_id uuid;
+ALTER TABLE public.etiqueta ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.etiqueta ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.ficha_etiqueta ADD COLUMN sync_id uuid;
+ALTER TABLE public.ficha_etiqueta ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.ficha_etiqueta ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.relacion_ficha ADD COLUMN sync_id uuid;
+ALTER TABLE public.relacion_ficha ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.relacion_ficha ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.multimedia ADD COLUMN sync_id uuid;
+ALTER TABLE public.multimedia ADD COLUMN sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.multimedia ADD COLUMN sync_deleted_at timestamptz;
+
+ALTER TABLE public.menu ADD COLUMN imagen_storage_key text;
+ALTER TABLE public.menu ADD COLUMN imagen_checksum_sha256 text;
+ALTER TABLE public.menu ADD COLUMN imagen_mime_type text;
+ALTER TABLE public.menu ADD COLUMN imagen_tamano_bytes bigint;
+ALTER TABLE public.ficha ADD COLUMN imagen_storage_key text;
+ALTER TABLE public.ficha ADD COLUMN imagen_checksum_sha256 text;
+ALTER TABLE public.ficha ADD COLUMN imagen_mime_type text;
+ALTER TABLE public.ficha ADD COLUMN imagen_tamano_bytes bigint;
+ALTER TABLE public.multimedia ADD COLUMN checksum_sha256 text;
+ALTER TABLE public.multimedia ADD COLUMN mime_type text;
+ALTER TABLE public.multimedia ADD COLUMN tamano_bytes bigint;
+ALTER TABLE public.multimedia ADD COLUMN storage_key text;
+ALTER TABLE public.multimedia ADD COLUMN sync_previous_path text;
+
+CREATE TABLE public.sync_dispositivos (device_id uuid PRIMARY KEY, nombre text NOT NULL, cursor_ultimo bigint NOT NULL DEFAULT 0, activo boolean NOT NULL DEFAULT true, creado timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP, ultimo_contacto timestamptz);
+CREATE TABLE public.sync_eventos (id_evento bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, evento_id uuid NOT NULL UNIQUE, origen_device_id uuid NOT NULL, entidad text NOT NULL, operacion text NOT NULL, sync_id uuid NOT NULL, version_base integer, version_resultado integer NOT NULL, payload_json jsonb, creado timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP, aplicado boolean NOT NULL DEFAULT false);
+CREATE TABLE public.sync_conflictos (conflicto_id uuid PRIMARY KEY, entidad text NOT NULL, sync_id uuid NOT NULL, version_local_json jsonb NOT NULL, version_remota_json jsonb NOT NULL, detectado timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP, resuelto boolean NOT NULL DEFAULT false, resolucion text);
+
+UPDATE public.plantilla SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'plantilla:' || id_plantilla) WHERE sync_id IS NULL;
+
+UPDATE public.menu SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'menu:' || id_menu) WHERE sync_id IS NULL;
+
+UPDATE public.ficha SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'ficha:' || id_ficha) WHERE sync_id IS NULL;
+
+UPDATE public.etiqueta SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'etiqueta:' || id_etiqueta) WHERE sync_id IS NULL;
+
+UPDATE public.multimedia SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'multimedia:' || id_multi) WHERE sync_id IS NULL;
+
+UPDATE public.relacion_ficha SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'relacion_ficha:' || id_relacion) WHERE sync_id IS NULL;
+
+UPDATE public.ficha_etiqueta SET sync_id=extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'ficha_etiqueta:' || id_ficha || ':' || id_etiqueta) WHERE sync_id IS NULL;
+
+-- Alias exactos auditados: 21 registros multimedia.
+UPDATE public.multimedia AS dst SET storage_key=v.storage_key, checksum_sha256=v.sha256, tamano_bytes=v.bytes, mime_type=v.mime_type
+FROM (VALUES
+(4::bigint, 'imagenes/multimedia/imagen/1788718389061-CARLOS_MAZZOCHI_3__3_.png', '14db5629e17ee610e2c45c3539bb825b0761a5121637c2f6c4a59de405d90d7a', 873716, 'image/png', 'imagenes/multimedia/imagen/1788718389061-CARLOS MAZZOCHI 3 (3).png'),
+(5::bigint, 'imagenes/multimedia/imagen/1788718414732-CARLOS_MAZZOCHI_3__4_.png', '8be185f7f5eb2ae7aacf5bf095bccff39052137bdbad2691695e91236d8b0d92', 704636, 'image/png', 'imagenes/multimedia/imagen/1788718414732-CARLOS MAZZOCHI 3 (4).png'),
+(7::bigint, 'imagenes/multimedia/imagen/1788719320935-ERESMILDO_RIQUELME_2__2_.png', '1c852cbc62fc9c2660e047bc64020a8713c97e1cd31aafea191ec2587e5908f1', 617343, 'image/png', 'imagenes/multimedia/imagen/1788719320935-ERESMILDO RIQUELME 2 (2).png'),
+(8::bigint, 'imagenes/multimedia/imagen/1788719330926-ERESMILDO_RIQUELME_2__3_.png', 'cf721200126eeabedc92702a4fc330dba7d2fabc9b90042947e0a363444e5b22', 831739, 'image/png', 'imagenes/multimedia/imagen/1788719330926-ERESMILDO RIQUELME 2 (3).png'),
+(9::bigint, 'imagenes/multimedia/imagen/1788722078347-Captura_de_pantalla_2026-09-06_161034.png', '777b215662a7c6a47b8ddc1504dc873830f7704bd98b511fb5ab470eaf97b6eb', 136327, 'image/png', 'imagenes/multimedia/imagen/1788722078347-Captura de pantalla 2026-09-06 161034.png'),
+(11::bigint, 'imagenes/multimedia/imagen/1788724642645-JORGE_LUIS_HUCK2.png', 'b0c588122da31550517b51a4ff28eee9c56a2806c14ca04e187277cf8596800a', 60729, 'image/png', 'imagenes/multimedia/imagen/1788724642645-JORGE LUIS HUCK2.png'),
+(12::bigint, 'imagenes/multimedia/imagen/1788724652404-JORGE_LUIS_HUCK__3_.png', '955c6909ce61db871457e58628a86921c94d33ff5148acb553d70e53e425ae73', 841541, 'image/png', 'imagenes/multimedia/imagen/1788724652404-JORGE LUIS HUCK (3).png'),
+(13::bigint, 'imagenes/multimedia/imagen/1788724827515-JORGE_LUIS_HUCK_4.png', 'e937172a06b52b56c251b85ed5b25d15f37b13fed95b5aeccf280b2d6b262826', 98935, 'video/mp4', 'imagenes/multimedia/imagen/1788724827515-JORGE LUIS HUCK 4.png'),
+(14::bigint, 'imagenes/multimedia/imagen/1788725961801-Captura_de_pantalla_2026-09-06_171534.png', 'e12dad7e346f3eebcf1e3cb5b03264d4bd136d3934a46a291aa4643be0a21a45', 363314, 'image/png', 'imagenes/multimedia/imagen/1788725961801-Captura de pantalla 2026-09-06 171534.png'),
+(16::bigint, 'imagenes/multimedia/imagen/1788726215039-MIRAGE2.png', '2bdb4cd15a46807d9bb81a3169c49f83a09c6c24e221a3152eb2b33067d17d91', 193029, 'image/jpeg', 'imagenes/multimedia/imagen/1788726215039-MIRAGE2.png'),
+(1::bigint, 'imagenes/multimedia/imagen/1788718344122-CARLOS_MAZZOCHI_2.png', '4013a7aee574af1bc7cfa750068b2b9231f3678790eabb2b5c63781bbbaabdc2', 675564, 'image/png', 'imagenes/multimedia/imagen/1788718344122-CARLOS MAZZOCCHI 2.png'),
+(15::bigint, 'imagenes/multimedia/imagen/1788726203846-MIRAGE.png', 'a509f55644ef23ca987979ab7281937d198e295f4f07f63f0e9fd084a869ae23', 159309, 'video/mp4', 'imagenes/multimedia/imagen/1788726203846-MIRAGE.png'),
+(39::bigint, 'multimedia/pdf/1792599392155-Manual_de_Usuario_-_Museo_Malvinas.pdf', 'bb51f10527fb6251e106e27dcac95cf8d68fef883337d8d9c3675d17e26bddfd', 5021046, 'application/pdf', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/multimedia/pdf/1792599392155-Manual_de_Usuario_-_Museo_Malvinas.pdf'),
+(40::bigint, 'multimedia/imagen/1792679814337-CANDIA2.jpg', '8db6c40a11a006ade3ab55693e55938b6e2cf82618c5466c09cd339f6a94350a', 132305, 'image/jpeg', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/1792679814337-CANDIA2.jpg'),
+(6::bigint, 'imagenes/multimedia/imagen/1788719312215-ERESMILDO_RIQUELME_2__1_.png', '6756e8d4717955c5370409532114febca6e564ee310651863e6f0b1d6e56f9c6', 843320, 'image/png', 'imagenes/multimedia/imagen/1788719312215-ERESMILDO RIQUELME 2 (1).png'),
+(2::bigint, 'imagenes/multimedia/imagen/1788718368500-CARLOS_MAZZOCHI_3__1_.png', '59436fb6ebddab18bc126bb342d88c5efb5e1c45a291aa7cbdf49e1af395451b', 1060726, 'image/png', 'imagenes/multimedia/imagen/1788718368500-CARLOS MAZZOCHI 3 (1).png'),
+(10::bigint, 'imagenes/multimedia/videos/1788723756743-Eresmildo_Riquelme.mp4', 'f0b084f934fdb307f4f27ad4ddfb04793aff3dd389b7e8125bb2111dde00a013', 20174008, 'video/mp4', 'imagenes/multimedia/videos/1788723756743-Eresmildo Riquelme.mp4'),
+(41::bigint, 'multimedia/pdf/1792962519174-manual.pdf', 'bb51f10527fb6251e106e27dcac95cf8d68fef883337d8d9c3675d17e26bddfd', 5021046, 'application/pdf', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/multimedia/pdf/1792962519174-manual.pdf'),
+(42::bigint, 'multimedia/audio/1792962605953-WhatsApp_Ptt_2026-10-25_at_18.09.42.ogg', '3919c299c74472149e56a3158902dfb41c1e6181b96ed20cca6adf79a426655a', 4528, 'audio/ogg', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/multimedia/audio/1792962605953-WhatsApp_Ptt_2026-10-25_at_18.09.42.ogg'),
+(3::bigint, 'imagenes/multimedia/imagen/1788718379819-CARLOS_MAZZOCHI_3__2_.png', 'e549d8dba165a3257a617fdb389e62522cc12c208c3ea2556ee7e20679b60f1d', 875311, 'image/png', 'imagenes/multimedia/imagen/1788718379819-CARLOS MAZZOCHI 3 (2).png'),
+(48::bigint, 'multimedia/imagen/1793584509200-1940042.jpeg', '167624b4d97e2bc4471bb7bb28e0d8ce3278ec7ea01367ed1f92570bab7b9193', 99536, 'image/webp', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/1793584509200-1940042.jpeg')
+) AS v(id, storage_key, sha256, bytes, mime_type, referencia_original)
+WHERE dst.id_multi=v.id AND dst.storage_key IS NULL AND dst.ruta_archivo=v.referencia_original;
+
+-- Alias exactos auditados: 34 registros ficha.
+UPDATE public.ficha AS dst SET imagen_storage_key=v.storage_key, imagen_checksum_sha256=v.sha256, imagen_tamano_bytes=v.bytes, imagen_mime_type=v.mime_type
+FROM (VALUES
+(15::bigint, 'migracion/fichas/15-1788324777394-RAA_L_CIFUENTES.png', '6e678e3e469d4516acda9f757d8e3958e40a7906646d3c034d7a6aa69fd714ca', 97656, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/15-1788324777394-RAA_L_CIFUENTES.png'),
+(19::bigint, 'migracion/fichas/19-1788324294004-NORBERTO_GUYAQUIMIL.png', '0efd981dbc21bf08bb944ffeeaa770bb5dc95cf6657219285a9404e04ea97875', 64295, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/19-1788324294004-NORBERTO_GUYAQUIMIL.png'),
+(21::bigint, 'migracion/fichas/21-1788721954682-Captura_de_pantalla_2026-09-06_161031.png', '1bb0093688f36aef2621ff7908cf3cacd71f25b873cfa234b081ff08ab218ce1', 49149, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/21-1788721954682-Captura_de_pantalla_2026-09-06_161031.png'),
+(5::bigint, 'migracion/fichas/5-1788318387773-HA_CTOR_HUGO_BRAGA.png', '818d2cb6b90ddafd02a97b7439c0f11cbd4679f99437908803ac8038ce09df1a', 90840, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/5-1788318387773-HA_CTOR_HUGO_BRAGA.png'),
+(7::bigint, 'migracion/fichas/7-1788318448841-JORGE_LUIS_HUCK.png', 'ed9ae72e0e7fb3e515e710b7be3e920f3cfae84bb7cef51f8efdc80c75201f25', 33398, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/7-1788318448841-JORGE_LUIS_HUCK.png'),
+(11::bigint, 'migracion/fichas/11-1788318691723-LUIS_NORBERTO_ROJAS.png', 'dd4a051aa8e3aa921d84405576b1beedcc1e99cbabf78818c38f58aae5d288cd', 75265, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/11-1788318691723-LUIS_NORBERTO_ROJAS.png'),
+(12::bigint, 'migracion/fichas/12-1788318769624-LUIS_SERONI.png', 'e8d8f3c3e7f2c244a1fe6756cdc9bfef3249dfa4a8052ae16f2338c05727d86f', 86493, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/12-1788318769624-LUIS_SERONI.png'),
+(9::bigint, 'migracion/fichas/9-1788318632233-JOSA__OSCAR_FERRERO.png', '4cca6ce5100ce53e18bca4a1f6906604e04ea0fba6cae1066a4615324817804e', 80170, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/9-1788318632233-JOSA__OSCAR_FERRERO.png'),
+(20::bigint, 'migracion/fichas/20-1788720504700-EDGARDO_SUA_REZ__2_.png', '3ff3a7f5d913db0cbebbf29a6ff07cd542a2b24130f04d96587a095d40123d9d', 94874, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/20-1788720504700-EDGARDO_SUA_REZ__2_.png'),
+(10::bigint, 'migracion/fichas/10-1788318669067-JUAN_QUICHAN.png', '7fb8af55256366be269a6cae4bca1f92210166b7c3d3600ae9e85753d30d9390', 70249, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/10-1788318669067-JUAN_QUICHAN.png'),
+(13::bigint, 'migracion/fichas/13-1788318793398-MANUEL_LEZAMA.png', '7409aae9f5eb6ff00e2199aec11fb0fe8d93308e00a1ca3781b7b9344a5c7d28', 117741, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/13-1788318793398-MANUEL_LEZAMA.png'),
+(6::bigint, 'migracion/fichas/6-1788318424610-HA_CTOR_HUGO_RENZETTI.png', '357320d51e7116e17480ebf0a7a7c213985da29c2d169489146c95ae4c768aff', 98034, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/6-1788318424610-HA_CTOR_HUGO_RENZETTI.png'),
+(22::bigint, 'migracion/fichas/22-1788725773745-Captura_de_pantalla_2026-09-06_171520.png', '4fd6032dde16d4051a5c40380b302b1da2614ce22d9a0d200e8732296b94de50', 585708, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/22-1788725773745-Captura_de_pantalla_2026-09-06_171520.png'),
+(24::bigint, 'migracion/fichas/24-1788745368655-VA_CTOR_JOSA__RYNDYCZ.png', 'b65e07e11006748048da1b1a2c7c74a6baf6bdce843d96c51b167f7e175b9333', 85050, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/24-1788745368655-VA_CTOR_JOSA__RYNDYCZ.png'),
+(26::bigint, 'migracion/fichas/26-1788745530707-ROBERTO_OGIANO_CHIRINO.png', 'aba8dfa1342b2b59fdecaaa993a56aead98ab11db2a609a711ad383a65c13eb1', 99641, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/26-1788745530707-ROBERTO_OGIANO_CHIRINO.png'),
+(32::bigint, 'migracion/fichas/32-1788747523515-RUBEN_VA_CTOR_PABLOS.png', 'e18203918425e1658ff7dd99b2fd405d3d9d22d33b2a1bf2c533f664380c47dd', 64819, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/32-1788747523515-RUBEN_VA_CTOR_PABLOS.png'),
+(33::bigint, 'migracion/fichas/33-1788747818799-Captura_de_pantalla_2026-09-06_232253.png', 'a0ad8a0cde41a723de1a9729cfbc17097d5423860ee7db360aec67c91bebe728', 139844, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/33-1788747818799-Captura_de_pantalla_2026-09-06_232253.png'),
+(23::bigint, 'migracion/fichas/23-1788745340916-WALTER_DANIEL_LISO.png', 'b766b5eda619c937820066340fa69b6528c770460d237ddbc2f5efd33dd15dbd', 98520, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/23-1788745340916-WALTER_DANIEL_LISO.png'),
+(25::bigint, 'migracion/fichas/25-1788745412154-VA_CTOR_ALEJANDRO_OLIVERA.png', '9c8f3a7a0b2a7f09abc2a4c5da1ae57402cc4df56591fd5d797ad4e66bf14691', 81357, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/25-1788745412154-VA_CTOR_ALEJANDRO_OLIVERA.png'),
+(29::bigint, 'migracion/fichas/29-1788745716567-ORLANDO_RUBA_N_DOMA_NGUEZ.png', '1d30b8249bc21c98aa8438e5d7d69f1add4e191a48cef7751e9f4dd212231fac', 108851, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/29-1788745716567-ORLANDO_RUBA_N_DOMA_NGUEZ.png'),
+(28::bigint, 'migracion/fichas/28-1788745625873-RENA__ARNALDO_ROSALES.png', '571763c1570f2a2ad5f0c54cbf1a28c82ebc8ba7e864225f2b916e53ee02091b', 93151, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/28-1788745625873-RENA__ARNALDO_ROSALES.png'),
+(35::bigint, 'migracion/fichas/35-1788748588044-Captura_de_pantalla_2026-09-06_233521.png', '58845efd84d48a7e04c0f5b2ac1237d4351f857d54dacd62bcddacb68760894d', 53236, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/35-1788748588044-Captura_de_pantalla_2026-09-06_233521.png'),
+(59::bigint, 'fichas/1792607062465-20260307_201507_HDR.jpg', '416955635d03944732e6e1cd47fe21c005a9c7ec185da24db71e320c4c50e5ff', 2094242, 'image/jpeg', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/fichas/1792607062465-20260307_201507_HDR.jpg'),
+(18::bigint, 'migracion/fichas/18-1788323612248-PABLO_OSCAR_DELFINO.png', '3bdbeda786effbb190ab8c5ff0df23dd89ab6ca20db25f56de35b5e553beced2', 63933, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/18-1788323612248-PABLO_OSCAR_DELFINO.png'),
+(27::bigint, 'migracion/fichas/27-1788745580994-ROBERTO_DANIEL_BERDUGO.png', 'ff4a97499ff62de3403e901673530678bd37997173765b8bb5f3c42d5e66db48', 55372, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/27-1788745580994-ROBERTO_DANIEL_BERDUGO.png'),
+(34::bigint, 'migracion/fichas/34-1788748452675-Captura_de_pantalla_2026-09-06_233319.png', '8d733e785fb455b32004e7537ec22245995c5211026b6af27b58bb28c98be6ce', 294007, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/34-1788748452675-Captura_de_pantalla_2026-09-06_233319.png'),
+(2::bigint, 'migracion/fichas/2-1787880656169-ERESMILDO_RIQUELME.png', 'c55a7651857a24269c3a841b29801629043ead136b3bb9898570a6e1a0cc4012', 55404, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/2-1787880656169-ERESMILDO_RIQUELME.png'),
+(1::bigint, 'migracion/fichas/1-1787880623582-CARLOS_MAZZOCCHI.png', 'ca63e46a2f7bbb7028300e08cb9c01f9f92c0148d4b9d8ea62b1ef8dcef13796', 96636, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/1-1787880623582-CARLOS_MAZZOCCHI.png'),
+(14::bigint, 'migracion/fichas/14-1788318811647-MARCELO_NICOLA_S_HERRERA.png', '435aa45e543ccfe02f718e53f42f3a40b856b5e2ddf23853728799910746e7b0', 87324, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/14-1788318811647-MARCELO_NICOLA_S_HERRERA.png'),
+(36::bigint, 'migracion/fichas/36-1788748665584-Captura_de_pantalla_2026-09-06_233708.png', '313dacd72767e42d78630d6219a1ab4be8a4a621d2f1b41d174aa1aa24f815d0', 65338, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/36-1788748665584-Captura_de_pantalla_2026-09-06_233708.png'),
+(3::bigint, 'migracion/fichas/3-1788318166102-EULOGIO_VIVANCO.png', '09ca57172ae093eef0c86f3879ce0d4aa5af7278dcabd62fa40462a70e3e6753', 62106, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/3-1788318166102-EULOGIO_VIVANCO.png'),
+(4::bigint, 'migracion/fichas/4-1788318208891-GUILLERMO_TEA_FILO_OSYCKA.png', '6ea7660d74d861eff839ee804e9dddc9ed99a739e035efc69e59069d03ba8033', 70520, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/4-1788318208891-GUILLERMO_TEA_FILO_OSYCKA.png'),
+(8::bigint, 'migracion/fichas/8-1788318599481-JORGE_OMAR_HAMID.png', '7970f5f2a09dca1fe128501bf43a23b061de191d0c7310bfbe3ec84f354d77d1', 100925, 'image/png', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/migracion/fichas/8-1788318599481-JORGE_OMAR_HAMID.png'),
+(60::bigint, 'fichas/1792679732177-WhatsApp_Image_2025-09-18_at_14.43.41.jpeg', 'e1283cb9a7367e6f1cc7ecab84be07e9ea5f5d0c106cd77af57433788a4cf171', 50673, 'image/jpeg', 'https://aegtxapeleyvwmzdfzvx.supabase.co/storage/v1/object/public/multimedia/fichas/1792679732177-WhatsApp_Image_2025-09-18_at_14.43.41.jpeg')
+) AS v(id, storage_key, sha256, bytes, mime_type, referencia_original)
+WHERE dst.id_ficha=v.id AND dst.imagen_storage_key IS NULL AND dst.imagen=v.referencia_original;
+
+-- Alias exactos auditados: 2 registros menu.
+UPDATE public.menu AS dst SET imagen_storage_key=v.storage_key, imagen_checksum_sha256=v.sha256, imagen_tamano_bytes=v.bytes, imagen_mime_type=v.mime_type
+FROM (VALUES
+(2::bigint, 'imagenes/menus/1788725566392-JORGE LUIS HUCK2.png', 'b0c588122da31550517b51a4ff28eee9c56a2806c14ca04e187277cf8596800a', 60729, 'image/png', 'imagenes/menus/1788725566392-JORGE LUIS HUCK2.png'),
+(1::bigint, 'imagenes/menus/1787880556168-11cc508c-c4c3-4647-a343-a627305342e5.jpg', 'e51205c0435790407f595cb66462007b0c7b486df458e90bf69cb3b04d015144', 587614, 'image/jpeg', 'imagenes/menus/1787880556168-11cc508c-c4c3-4647-a343-a627305342e5.jpg')
+) AS v(id, storage_key, sha256, bytes, mime_type, referencia_original)
+WHERE dst.id_menu=v.id AND dst.imagen_storage_key IS NULL AND dst.imagen=v.referencia_original;
+
+DO $$ DECLARE t text; n bigint; BEGIN
+ FOREACH t IN ARRAY ARRAY['plantilla','menu','ficha','etiqueta','ficha_etiqueta','relacion_ficha','multimedia'] LOOP
+ EXECUTE format('SELECT count(*) FROM public.%I WHERE sync_id IS NULL OR sync_version < 1',t) INTO n;
+ IF n<>0 THEN RAISE EXCEPTION 'Identidades incompletas en %: %',t,n; END IF;
+ END LOOP;
+ IF EXISTS (SELECT 1 FROM public.multimedia WHERE storage_key IS NULL OR checksum_sha256 IS NULL OR tamano_bytes IS NULL OR mime_type IS NULL) THEN RAISE EXCEPTION 'Multimedia sin metadatos Storage verificados'; END IF;
+ IF EXISTS (SELECT 1 FROM public.ficha WHERE imagen IS NOT NULL AND (imagen_storage_key IS NULL OR imagen_checksum_sha256 IS NULL)) THEN RAISE EXCEPTION 'Portadas de ficha sin metadatos Storage verificados'; END IF;
+ IF EXISTS (SELECT 1 FROM public.menu WHERE imagen IS NOT NULL AND (imagen_storage_key IS NULL OR imagen_checksum_sha256 IS NULL)) THEN RAISE EXCEPTION 'Portadas de menú sin metadatos Storage verificados'; END IF;
+END $$;
+
+CREATE UNIQUE INDEX ux_plantilla_sync_id ON public.plantilla(sync_id);
+
+CREATE UNIQUE INDEX ux_menu_sync_id ON public.menu(sync_id);
+
+CREATE UNIQUE INDEX ux_ficha_sync_id ON public.ficha(sync_id);
+
+CREATE UNIQUE INDEX ux_etiqueta_sync_id ON public.etiqueta(sync_id);
+
+CREATE UNIQUE INDEX ux_ficha_etiqueta_sync_id ON public.ficha_etiqueta(sync_id);
+
+CREATE UNIQUE INDEX ux_relacion_ficha_sync_id ON public.relacion_ficha(sync_id);
+
+CREATE UNIQUE INDEX ux_multimedia_sync_id ON public.multimedia(sync_id);
+
+CREATE INDEX ix_sync_eventos_pendientes ON public.sync_eventos(aplicado,id_evento);
+CREATE INDEX ix_sync_conflictos_pendientes ON public.sync_conflictos(resuelto,detectado);
+ROLLBACK;
