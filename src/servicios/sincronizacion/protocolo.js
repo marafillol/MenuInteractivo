@@ -136,10 +136,9 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
     const versionBase = Number(evento.version_base || 0);
     const versionNueva = Number(evento.version_resultado);
 
-    if (actual && versionActual === versionNueva) {
-        if (registrarRecepcion) await guardarEventoRecibido(consultar, evento);
-        return { estado: "duplicado" };
-    }
+    // Solo el mismo evento_id demuestra que un reintento ya fue recibido.
+    // Dos eventos distintos que intentan escribir la misma versión son un
+    // conflicto, aunque version_resultado coincida.
     if (versionActual !== versionBase) {
         return registrarConflicto(consultar, evento, actual, payload);
     }
