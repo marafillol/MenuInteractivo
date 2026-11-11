@@ -114,6 +114,11 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("No se aplicó la relación entre fichas");
                 }
 
+                // Simula que este nodo ya avanzó localmente a la versión 2.
+                // El evento remoto todavía parte de la versión 1 y debe quedar en conflicto.
+                await run("UPDATE ficha SET titulo = ?, sync_version = 2 WHERE sync_id = ?", [
+                    "Edición local concurrente", uuid(3)
+                ]);
                 const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 1, 2, {
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
@@ -130,7 +135,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     "un DELETE de una fila ausente tampoco debe duplicar conflictos al reintentar");
                 const original = await all("SELECT titulo, sync_version FROM ficha WHERE sync_id = ?", [uuid(3)]);
                 const conflictos = await all("SELECT entidad, sync_id, resuelto FROM sync_conflictos");
-                if (original[0].titulo !== "Ficha compartida" || original[0].sync_version !== 1) {
+                if (original[0].titulo !== "Edición local concurrente" || original[0].sync_version !== 2) {
                     throw new Error("El conflicto sobrescribió el contenido local");
                 }
                 if (conflictos.length !== 3 || conflictos.some(conflicto => conflicto.entidad !== "ficha")) {
