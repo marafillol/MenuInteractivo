@@ -420,7 +420,7 @@ async function aplicarEventosEntrantes(eventos, cursor) {
         );
         const errores = resultado.rechazados.filter((item) => item.estado === "error" || item.estado === "no_soportado");
         if (errores.length) {
-            throw new Error("Hay eventos remotos pendientes de reconciliar; se conserva el cursor para reintentar. " + errores.map((item) => item.entidad + ":" + (item.motivo || item.estado)).join("; "));
+            throw new Error("Hay eventos remotos pendientes de reconciliar; se conserva el cursor para reintentar. " + errores.map((item) => item.entidad + "[" + item.sync_id + "]:" + (item.motivo || item.estado)).join("; "));
         }
         await consultar(
             `INSERT INTO configuracion (clave, valor, actualizado)
