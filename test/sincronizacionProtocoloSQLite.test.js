@@ -118,6 +118,8 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
                 assert.equal((await aplicar(conflicto)).estado, "conflicto");
+                assert.equal((await aplicar(conflicto)).estado, "duplicado",
+                    "un reintento del mismo conflicto no debe crear otra recepción");
                 const mismoResultadoOtraOperacion = evento(9, "ficha", "UPDATE", uuid(3), 0, 1, {
                     menu_sync_id: uuid(2), titulo: "Otro evento sobre versión ocupada", visible: 1
                 });
@@ -131,7 +133,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("El conflicto no quedó registrado");
                 }
                 const recibidos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (recibidos[0].cantidad !== 7) throw new Error("Los eventos aplicados no se registraron como recibidos");
+                if (recibidos[0].cantidad !== 9) throw new Error("No se registraron también las dos recepciones en conflicto");
 
                 process.stdout.write(JSON.stringify({ entidades: 7, conflictos: conflictos.length }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
