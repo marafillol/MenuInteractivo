@@ -313,12 +313,26 @@ FROM (SELECT DISTINCT relation_name FROM expected_links) e
 ORDER BY e.relation_name;
 
 -- Metadatos de sincronización/storage presentes hoy; no lee valores de contenido.
+-- Incluye metadatos de multimedia y portadas con los nombres reales del preparador.
 SELECT table_name, column_name, data_type
 FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name IN ('plantilla', 'menu', 'ficha', 'etiqueta', 'multimedia', 'relacion_ficha', 'ficha_etiqueta')
   AND (
     column_name LIKE 'sync_%'
-    OR column_name IN ('storage_key', 'checksum_sha256', 'mime_type', 'size_bytes')
+    OR column_name IN (
+      'storage_key', 'checksum_sha256', 'mime_type', 'tamano_bytes',
+      'imagen_storage_key', 'imagen_checksum_sha256', 'imagen_mime_type',
+      'imagen_tamano_bytes', 'size_bytes'
+    )
   )
 ORDER BY table_name, ordinal_position;
+
+-- Presencia de las tablas auxiliares requeridas por el protocolo.
+SELECT requerida.nombre AS tabla_requerida,
+       (actual.table_name IS NOT NULL) AS existe
+FROM (VALUES ('sync_eventos'), ('sync_dispositivos'), ('sync_conflictos')) AS requerida(nombre)
+LEFT JOIN information_schema.tables AS actual
+  ON actual.table_schema = 'public'
+ AND actual.table_name = requerida.nombre
+ORDER BY requerida.nombre;
