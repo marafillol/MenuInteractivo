@@ -1,52 +1,54 @@
--- Esquema extraído del DDL del backup Supabase del 2026-11-10.
--- Se conservan tipos, nulabilidad, PK, FK e índices; no se incluyen datos personales.
-CREATE TABLE public.plantilla (
- id_plantilla bigint NOT NULL,
- nombre text, descripcion text, plantilla_json jsonb, activo bigint,
- creado timestamp with time zone, actualizado text,
- CONSTRAINT plantilla_pkey PRIMARY KEY (id_plantilla)
-);
-CREATE TABLE public.menu (
- id_menu bigint NOT NULL, nombre text, descripcion text, imagen text,
- id_plantilla bigint, visible bigint, creado timestamp with time zone, actualizado text,
- CONSTRAINT menu_pkey PRIMARY KEY (id_menu),
- CONSTRAINT fk_menu_plantilla FOREIGN KEY (id_plantilla) REFERENCES public.plantilla(id_plantilla)
-);
-CREATE TABLE public.ficha (
- id_ficha bigint NOT NULL, id_menu bigint, titulo text, resumen text, texto text,
- imagen text, datos_json jsonb, visible bigint, id_usuario text,
- creado timestamp with time zone, actualizado text,
- CONSTRAINT ficha_pkey PRIMARY KEY (id_ficha),
- CONSTRAINT fk_ficha_menu FOREIGN KEY (id_menu) REFERENCES public.menu(id_menu)
-);
-CREATE TABLE public.etiqueta (
- id_etiqueta bigint NOT NULL, nombre text, descripcion text, activo bigint,
- CONSTRAINT etiqueta_pkey PRIMARY KEY (id_etiqueta)
-);
-CREATE TABLE public.multimedia (
- id_multi bigint NOT NULL, id_ficha bigint, descripcion text, ruta_archivo text,
- tipo_multi text, miniatura text, activo bigint, creado timestamp with time zone, actualizado text,
- CONSTRAINT multimedia_pkey PRIMARY KEY (id_multi),
- CONSTRAINT fk_multimedia_ficha FOREIGN KEY (id_ficha) REFERENCES public.ficha(id_ficha)
-);
-CREATE TABLE public.relacion_ficha (
- id_relacion integer NOT NULL, id_ficha_origen integer NOT NULL,
- id_ficha_destino integer NOT NULL, tipo_relacion text,
- CONSTRAINT relacion_ficha_pkey PRIMARY KEY (id_relacion),
- CONSTRAINT fk_relacion_ficha_origen FOREIGN KEY (id_ficha_origen) REFERENCES public.ficha(id_ficha),
- CONSTRAINT fk_relacion_ficha_destino FOREIGN KEY (id_ficha_destino) REFERENCES public.ficha(id_ficha)
-);
-CREATE TABLE public.ficha_etiqueta (
- id_ficha bigint NOT NULL, id_etiqueta bigint NOT NULL, creado timestamp with time zone,
- CONSTRAINT ficha_etiqueta_pkey PRIMARY KEY (id_ficha,id_etiqueta),
- CONSTRAINT fk_ficha_etiqueta_ficha FOREIGN KEY (id_ficha) REFERENCES public.ficha(id_ficha),
- CONSTRAINT fk_ficha_etiqueta_etiqueta FOREIGN KEY (id_etiqueta) REFERENCES public.etiqueta(id_etiqueta)
-);
-CREATE TABLE public.configuracion (
- clave text NOT NULL, valor text NOT NULL, actualizado timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
- CONSTRAINT configuracion_pkey PRIMARY KEY (clave)
-);
-CREATE TABLE public.configuracion_backup_tilde (
- clave text NOT NULL, valor jsonb, actualizado timestamp with time zone,
- CONSTRAINT configuracion_backup_tilde_pkey PRIMARY KEY (clave)
-);
+-- DDL fiel extraido del pg_dump PostgreSQL 17.6 del 2026-11-10.
+-- Incluye todas las tablas, columnas, secuencias, PK, UNIQUE, FK e indices.
+-- No contiene filas del respaldo.
+CREATE TABLE public.configuracion (clave text NOT NULL, valor text NOT NULL, actualizado timestamp without time zone DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE public.configuracion_backup_tilde (clave text NOT NULL, valor jsonb, actualizado timestamp with time zone);
+CREATE TABLE public.etiqueta (id_etiqueta bigint NOT NULL, nombre text, descripcion text, activo bigint);
+CREATE TABLE public.ficha (id_ficha bigint NOT NULL, id_menu bigint, titulo text, resumen text, texto text, imagen text, datos_json jsonb, visible bigint, id_usuario text, creado timestamp with time zone, actualizado text);
+CREATE TABLE public.ficha_etiqueta (id_ficha bigint NOT NULL, id_etiqueta bigint NOT NULL, creado timestamp with time zone);
+CREATE TABLE public.menu (id_menu bigint NOT NULL, nombre text, descripcion text, imagen text, id_plantilla bigint, visible bigint, creado timestamp with time zone, actualizado text);
+CREATE TABLE public.multimedia (id_multi bigint NOT NULL, id_ficha bigint, descripcion text, ruta_archivo text, tipo_multi text, miniatura text, activo bigint, creado timestamp with time zone, actualizado text);
+CREATE TABLE public.plantilla (id_plantilla bigint NOT NULL, nombre text, descripcion text, plantilla_json jsonb, activo bigint, creado timestamp with time zone, actualizado text);
+CREATE TABLE public.relacion_ficha (id_relacion integer NOT NULL, id_ficha_origen integer NOT NULL, id_ficha_destino integer NOT NULL, tipo_relacion text);
+CREATE TABLE public.usuario (id_usuario integer NOT NULL, firebase_uid text, nombre text NOT NULL, email text NOT NULL, rol text NOT NULL, activo integer DEFAULT 1, creado timestamp without time zone DEFAULT CURRENT_TIMESTAMP, actualizado timestamp without time zone DEFAULT CURRENT_TIMESTAMP, supabase_uid uuid);
+
+CREATE SEQUENCE public.etiqueta_id_etiqueta_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.ficha_id_ficha_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.menu_id_menu_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.multimedia_id_multi_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.plantilla_id_plantilla_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.relacion_ficha_id_relacion_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE public.usuario_id_usuario_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+ALTER SEQUENCE public.etiqueta_id_etiqueta_seq OWNED BY public.etiqueta.id_etiqueta;
+ALTER SEQUENCE public.ficha_id_ficha_seq OWNED BY public.ficha.id_ficha;
+ALTER SEQUENCE public.menu_id_menu_seq OWNED BY public.menu.id_menu;
+ALTER SEQUENCE public.multimedia_id_multi_seq OWNED BY public.multimedia.id_multi;
+ALTER SEQUENCE public.plantilla_id_plantilla_seq OWNED BY public.plantilla.id_plantilla;
+ALTER SEQUENCE public.relacion_ficha_id_relacion_seq OWNED BY public.relacion_ficha.id_relacion;
+ALTER SEQUENCE public.usuario_id_usuario_seq OWNED BY public.usuario.id_usuario;
+ALTER TABLE ONLY public.configuracion_backup_tilde ADD CONSTRAINT configuracion_backup_tilde_pkey PRIMARY KEY (clave);
+ALTER TABLE ONLY public.configuracion ADD CONSTRAINT configuracion_pkey PRIMARY KEY (clave);
+ALTER TABLE ONLY public.etiqueta ADD CONSTRAINT etiqueta_pkey PRIMARY KEY (id_etiqueta);
+ALTER TABLE ONLY public.ficha_etiqueta ADD CONSTRAINT ficha_etiqueta_pkey PRIMARY KEY (id_ficha, id_etiqueta);
+ALTER TABLE ONLY public.ficha ADD CONSTRAINT ficha_pkey PRIMARY KEY (id_ficha);
+ALTER TABLE ONLY public.menu ADD CONSTRAINT menu_pkey PRIMARY KEY (id_menu);
+ALTER TABLE ONLY public.multimedia ADD CONSTRAINT multimedia_pkey PRIMARY KEY (id_multi);
+ALTER TABLE ONLY public.plantilla ADD CONSTRAINT plantilla_pkey PRIMARY KEY (id_plantilla);
+ALTER TABLE ONLY public.relacion_ficha ADD CONSTRAINT relacion_ficha_pkey PRIMARY KEY (id_relacion);
+ALTER TABLE ONLY public.usuario ADD CONSTRAINT usuario_email_key UNIQUE (email);
+ALTER TABLE ONLY public.usuario ADD CONSTRAINT usuario_firebase_uid_key UNIQUE (firebase_uid);
+ALTER TABLE ONLY public.usuario ADD CONSTRAINT usuario_pkey PRIMARY KEY (id_usuario);
+ALTER TABLE ONLY public.ficha_etiqueta ADD CONSTRAINT fk_ficha_etiqueta_etiqueta FOREIGN KEY (id_etiqueta) REFERENCES public.etiqueta(id_etiqueta);
+ALTER TABLE ONLY public.ficha_etiqueta ADD CONSTRAINT fk_ficha_etiqueta_ficha FOREIGN KEY (id_ficha) REFERENCES public.ficha(id_ficha);
+ALTER TABLE ONLY public.ficha ADD CONSTRAINT fk_ficha_menu FOREIGN KEY (id_menu) REFERENCES public.menu(id_menu);
+ALTER TABLE ONLY public.menu ADD CONSTRAINT fk_menu_plantilla FOREIGN KEY (id_plantilla) REFERENCES public.plantilla(id_plantilla);
+ALTER TABLE ONLY public.multimedia ADD CONSTRAINT fk_multimedia_ficha FOREIGN KEY (id_ficha) REFERENCES public.ficha(id_ficha);
+ALTER TABLE ONLY public.relacion_ficha ADD CONSTRAINT fk_relacion_ficha_destino FOREIGN KEY (id_ficha_destino) REFERENCES public.ficha(id_ficha);
+ALTER TABLE ONLY public.relacion_ficha ADD CONSTRAINT fk_relacion_ficha_origen FOREIGN KEY (id_ficha_origen) REFERENCES public.ficha(id_ficha);
+CREATE INDEX idx_ficha_etiqueta_id_etiqueta ON public.ficha_etiqueta USING btree (id_etiqueta);
+CREATE INDEX idx_ficha_id_menu ON public.ficha USING btree (id_menu);
+CREATE INDEX idx_menu_id_plantilla ON public.menu USING btree (id_plantilla);
+CREATE INDEX idx_multimedia_ficha_activo ON public.multimedia USING btree (id_ficha, activo, id_multi);
+CREATE INDEX idx_relacion_ficha_destino ON public.relacion_ficha USING btree (id_ficha_destino);
+CREATE INDEX idx_relacion_ficha_origen ON public.relacion_ficha USING btree (id_ficha_origen);
+CREATE UNIQUE INDEX usuario_supabase_uid_unique ON public.usuario USING btree (supabase_uid);
