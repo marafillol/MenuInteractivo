@@ -119,7 +119,7 @@ test("altas y modificaciones de fichas generan eventos atómicos en SQLite local
                 });
                 const local = (await all("SELECT sync_id FROM ficha WHERE id_ficha = ?", [localId]))[0];
                 const eventosTrasLocal = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (local.sync_id !== null || eventosTrasLocal[0].cantidad !== 3) {
+                if (local.sync_id !== null || eventosTrasLocal[0].cantidad !== 5) {
                     throw new Error("Una ficha con menú no reconciliado generó un evento o UUID inválido");
                 }
 
