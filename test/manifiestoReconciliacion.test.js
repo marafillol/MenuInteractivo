@@ -114,6 +114,17 @@ test("normaliza activo legado como número o texto y descripcion vacía como NUL
   }
 });
 
+test("normaliza descripción multimedia vacía como NULL sin ocultar contenido real", () => {
+  assert.deepEqual(
+    normalizarRegistro("multimedia", { descripcion: "", tipo_multi: "pdf", activo: 1 }),
+    normalizarRegistro("multimedia", { descripcion: null, tipo_multi: "pdf", activo: "1" })
+  );
+  assert.notDeepEqual(
+    normalizarRegistro("multimedia", { descripcion: "Documento" }),
+    normalizarRegistro("multimedia", { descripcion: "" })
+  );
+});
+
 test("normaliza resumen y texto vacíos como NULL al comparar fichas", () => {
   assert.deepEqual(
     normalizarRegistro("ficha", { titulo: "Sala", resumen: "", texto: "", visible: 1 }),
