@@ -220,18 +220,45 @@ async function guardarEventoRecibido(consultar, evento) {
 async function procesarLote(consultar, eventos, opciones) {
     const confirmados = [];
     const rechazados = [];
-    for (const evento of eventos) {
-        try {
-            const resultado = await aplicarEvento(consultar, evento, opciones);
-            if (resultado.estado === "aplicado" || resultado.estado === "duplicado" || resultado.estado === "conflicto") {
-                confirmados.push(evento.evento_id);
+    let pendientes = [...eventos];
+
+    // Un lote puede traer una relación antes que su padre (por ejemplo,
+    // después de combinar eventos de varios nodos). Diferimos solo ese error
+    // recuperable y repetimos el pase si otro evento creó el padre.
+    while (pendientes.length) {
+        const diferidos = [];
+        let huboProgreso = false;
+
+        for (const evento of pendientes) {
+            try {
+                const resultado = await aplicarEvento(consultar, evento, opciones);
+                if (resultado.estado === "aplicado" || resultado.estado === "duplicado" || resultado.estado === "conflicto") {
+                    confirmados.push(evento.evento_id);
+                    huboProgreso = true;
+                }
+                if (resultado.estado !== "aplicado" && resultado.estado !== "duplicado") {
+                    rechazados.push({ evento_id: evento.evento_id, entidad: evento.entidad, sync_id: evento.sync_id, ...resultado });
+                }
+            } catch (error) {
+                if (error.message.startsWith("Falta reconciliar la entidad padre ")) {
+                    diferidos.push({ evento, motivo: error.message });
+                } else {
+                    rechazados.push({ evento_id: evento.evento_id, estado: "error", motivo: error.message });
+                }
             }
-            if (resultado.estado !== "aplicado" && resultado.estado !== "duplicado") {
-                rechazados.push({ evento_id: evento.evento_id, entidad: evento.entidad, sync_id: evento.sync_id, ...resultado });
-            }
-        } catch (error) {
-            rechazados.push({ evento_id: evento.evento_id, estado: "error", motivo: error.message });
         }
+
+        if (!diferidos.length) break;
+        if (!huboProgreso) {
+            for (const { evento, motivo } of diferidos) {
+                rechazados.push({
+                    evento_id: evento.evento_id, entidad: evento.entidad,
+                    sync_id: evento.sync_id, estado: "error", motivo
+                });
+            }
+            break;
+        }
+        pendientes = diferidos.map(({ evento }) => evento);
     }
     return { confirmados, rechazados };
 }
