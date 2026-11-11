@@ -10,6 +10,27 @@ const path = require("node:path");
 const sqlite3 = require("sqlite3");
 const { Client } = require("pg");
 
+function validarDestinoPostgresSeguro(connectionString) {
+    let destino;
+    try { destino = new URL(String(connectionString || "")); }
+    catch { throw new Error("URL de PostgreSQL inválida."); }
+    const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
+    const puertoPermitido = ["5432", "5433"].includes(destino.port);
+    const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
+    if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
+        !hostPermitido || !puertoPermitido || !basePermitida) {
+        throw new Error("Aplicación bloqueada: solo se permite la copia local museo_reconciliacion_prueba en localhost:5432 o localhost:5433.");
+    }
+}
+function validarDestinoSqliteSeguro(ruta) {
+    if (!ruta || !fs.existsSync(ruta)) throw new Error("Indicá una copia SQLite existente.");
+    const real = fs.realpathSync(ruta);
+    const activa = path.resolve(__dirname, "../database/museo.db");
+    if (real === activa || (fs.existsSync(activa) && real === fs.realpathSync(activa))) {
+        throw new Error("Aplicación bloqueada: no se permite modificar la SQLite activa del proyecto.");
+    }
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ENTIDADES = {
     plantilla: { pk: ["id_plantilla"] },
@@ -142,7 +163,7 @@ async function main() {
 
     if (target === "sqlite") {
         const ruta = process.env.RECONCILIACION_SQLITE_PATH;
-        if (!ruta || !fs.existsSync(ruta)) throw new Error("Indicá una copia SQLite existente.");
+        validarDestinoSqliteSeguro(ruta);
         const db = crearSqlite(ruta);
         let transaccion = false;
         try {
@@ -162,6 +183,7 @@ async function main() {
 
     const connectionString = process.env.RECONCILIACION_POSTGRES_URL;
     if (!connectionString) throw new Error("Indicá RECONCILIACION_POSTGRES_URL con una copia PostgreSQL.");
+    validarDestinoPostgresSeguro(connectionString);
     const client = new Client({ connectionString, connectionTimeoutMillis: 10000 });
     await client.connect();
     let transaccion = false;
@@ -192,4 +214,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { leerManifiesto, candidatosAprobados, wherePk, aplicar };
+module.exports = { leerManifiesto, candidatosAprobados, wherePk, aplicar, validarDestinoPostgresSeguro, validarDestinoSqliteSeguro };
