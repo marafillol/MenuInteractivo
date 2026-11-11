@@ -35,11 +35,25 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const ENTIDADES = {
     plantilla: { pk: ["id_plantilla"] },
     etiqueta: { pk: ["id_etiqueta"] },
-    menu: { pk: ["id_menu"], padre: { tabla: "plantilla", pk: "id_plantilla", fk: "id_plantilla" } },
-    ficha: { pk: ["id_ficha"], padre: { tabla: "menu", pk: "id_menu", fk: "id_menu" } },
-    multimedia: { pk: ["id_multi"], padre: { tabla: "ficha", pk: "id_ficha", fk: "id_ficha" }, requiereChecksum: true }
+    menu: { pk: ["id_menu"], padres: [{ tabla: "plantilla", pk: "id_plantilla", fk: "id_plantilla" }] },
+    ficha: { pk: ["id_ficha"], padres: [{ tabla: "menu", pk: "id_menu", fk: "id_menu" }] },
+    multimedia: { pk: ["id_multi"], padres: [{ tabla: "ficha", pk: "id_ficha", fk: "id_ficha" }], requiereChecksum: true },
+    ficha_etiqueta: {
+        pk: ["id_ficha", "id_etiqueta"],
+        padres: [
+            { tabla: "ficha", pk: "id_ficha", fk: "id_ficha" },
+            { tabla: "etiqueta", pk: "id_etiqueta", fk: "id_etiqueta" }
+        ]
+    },
+    relacion_ficha: {
+        pk: ["id_relacion"],
+        padres: [
+            { tabla: "ficha", pk: "id_ficha", fk: "id_ficha_origen" },
+            { tabla: "ficha", pk: "id_ficha", fk: "id_ficha_destino" }
+        ]
+    }
 };
-const ORDEN = ["plantilla", "etiqueta", "menu", "ficha", "multimedia"];
+const ORDEN = ["plantilla", "etiqueta", "menu", "ficha", "ficha_etiqueta", "relacion_ficha", "multimedia"];
 
 function leerManifiesto(ruta) {
     if (!ruta || !fs.existsSync(ruta)) throw new Error("Indicá RECONCILIACION_MANIFIESTO_APROBADO con un archivo existente.");
@@ -113,19 +127,19 @@ async function aplicar(consultar, candidato) {
     const fila = filas.rows ? filas.rows[0] : filas[0];
     if (!fila) throw new Error("No existe la fila " + tabla + " indicada en el manifiesto.");
 
-    if (definicion.padre) {
-        const padre = definicion.padre;
+    for (const padre of definicion.padres || []) {
         const padres = await consultar(
             "SELECT sync_id FROM " + padre.tabla + " WHERE " + padre.pk + " = ?",
             [fila[padre.fk]]
         );
         const filaPadre = padres.rows ? padres.rows[0] : padres[0];
         if (!filaPadre?.sync_id) {
-            throw new Error("Debe aprobar y aplicar primero la identidad padre de " + tabla + ".");
+            throw new Error("Debe aprobar y aplicar primero la identidad de cada extremo padre de " + tabla + ".");
         }
     }
-    if (definicion.requiereChecksum && !fila.checksum_sha256) {
-        throw new Error("La multimedia debe tener checksum SHA-256 verificado antes de reconciliarse.");
+    if (definicion.requiereChecksum &&
+        !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))) {
+        throw new Error("La multimedia necesita un checksum SHA-256 con formato válido antes de reconciliarse.");
     }
 
     const existentes = await consultar(
