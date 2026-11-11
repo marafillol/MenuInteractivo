@@ -10,6 +10,7 @@ const {
   validarDestinoSeguro,
   registrarMapaIdentidades,
   prepararFilasConDependencias,
+  evaluarPortada,
   ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
 
@@ -165,12 +166,26 @@ test("no equipara portadas por ruta: exige checksum común y reporta portadas pe
   assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
   assert.equal(local.pendientesPortada.length, 1);
   assert.equal(remoto.pendientesPortada.length, 1);
+  assert.equal(evaluarPortada(local.filas[0], remoto.filas[0]).estado, "portada_pendiente_checksum");
 
-  const checksumDistinto = prepararFilasConDependencias(
+  const conChecksumLocal = prepararFilasConDependencias(
+    [{ id_menu: 2, id_plantilla: 1, nombre: "Sala", visible: 1, imagen: "imagenes/menus/a.png", imagen_checksum_sha256: "a".repeat(64), imagen_tamano_bytes: 10 }],
+    entidad, mapas, "sqlite"
+  );
+  const checksumIgualRemoto = prepararFilasConDependencias(
     [{ id_menu: 8, id_plantilla: 9, nombre: "Sala", visible: true, imagen: "https://cdn.example/b.png", imagen_checksum_sha256: "a".repeat(64), imagen_tamano_bytes: 10 }],
     entidad, mapas, "postgres"
   );
-  assert.notEqual(local.filas[0].huella_contenido, checksumDistinto.filas[0].huella_contenido);
+  assert.equal(evaluarPortada(conChecksumLocal.filas[0], checksumIgualRemoto.filas[0]).estado,
+    "portada_verificada_por_checksum");
+
+  const checksumDistinto = prepararFilasConDependencias(
+    [{ id_menu: 8, id_plantilla: 9, nombre: "Sala", visible: true, imagen: "https://cdn.example/b.png", imagen_checksum_sha256: "b".repeat(64), imagen_tamano_bytes: 10 }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.filas[0].huella_contenido, checksumDistinto.filas[0].huella_contenido);
+  assert.equal(evaluarPortada(conChecksumLocal.filas[0], checksumDistinto.filas[0]).estado,
+    "conflicto_checksum_portada");
 });
 
 test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
