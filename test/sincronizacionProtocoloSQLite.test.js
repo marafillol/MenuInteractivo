@@ -106,20 +106,36 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("No se aplicó la relación entre fichas");
                 }
 
-                const conflicto = evento(8, "ficha", "UPDATE", uuid(3), 0, 2, {
+                // El primer cambio desde la versión 1 se aplica.
+                const primeraEdicion = evento(8, "ficha", "UPDATE", uuid(3), 1, 2, {
+                    menu_sync_id: uuid(2), titulo: "Primera edición", visible: 1
+                });
+                assert.equal((await aplicar(primeraEdicion)).estado, "aplicado");
+
+                // Otro evento distinto intenta aplicar la misma versión 2
+                // desde la misma versión base: debe ser conflicto, no duplicado.
+                const mismaVersion = evento(9, "ficha", "UPDATE", uuid(3), 1, 2, {
                     menu_sync_id: uuid(2), titulo: "Edición concurrente", visible: 1
                 });
-                assert.equal((await aplicar(conflicto)).estado, "conflicto");
+                assert.equal((await aplicar(mismaVersion)).estado, "conflicto");
+
+                // También se conserva el caso de una edición basada en una
+                // versión obsoleta.
+                const versionObsoleta = evento(10, "ficha", "UPDATE", uuid(3), 0, 2, {
+                    menu_sync_id: uuid(2), titulo: "Edición obsoleta", visible: 1
+                });
+                assert.equal((await aplicar(versionObsoleta)).estado, "conflicto");
+
                 const original = await all("SELECT titulo, sync_version FROM ficha WHERE sync_id = ?", [uuid(3)]);
                 const conflictos = await all("SELECT entidad, sync_id, resuelto FROM sync_conflictos");
-                if (original[0].titulo !== "Ficha compartida" || original[0].sync_version !== 1) {
-                    throw new Error("El conflicto sobrescribió el contenido local");
+                if (original[0].titulo !== "Primera edición" || original[0].sync_version !== 2) {
+                    throw new Error("Un evento concurrente sobrescribió la primera edición");
                 }
-                if (conflictos.length !== 1 || conflictos[0].entidad !== "ficha") {
-                    throw new Error("El conflicto no quedó registrado");
+                if (conflictos.length !== 2 || conflictos.some(fila => fila.entidad !== "ficha")) {
+                    throw new Error("Los dos conflictos no quedaron registrados");
                 }
                 const recibidos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (recibidos[0].cantidad !== 7) throw new Error("Los eventos aplicados no se registraron como recibidos");
+                if (recibidos[0].cantidad !== 8) throw new Error("Los eventos aplicados no se registraron como recibidos");
 
                 process.stdout.write(JSON.stringify({ entidades: 7, conflictos: conflictos.length }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
