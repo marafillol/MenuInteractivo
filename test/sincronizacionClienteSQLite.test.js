@@ -80,6 +80,11 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                     });
                 });
 
+                const carpetaMedia = path.join(process.cwd(), "imagenes", "multimedia", "imagen");
+                await fs.promises.mkdir(carpetaMedia, { recursive: true });
+                const archivoHuerfano = path.join(carpetaMedia, uuid(55) + "-v1.png");
+                await fs.promises.writeFile(archivoHuerfano, "archivo sin registro");
+
                 const bytesEntrada = Buffer.from("archivo multimedia de entrada");
                 const checksumEntrada = crypto.createHash("sha256").update(bytesEntrada).digest("hex");
                 const syncMediaEntrada = uuid(30);
@@ -170,6 +175,9 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 const rutaEntrada = path.resolve(process.cwd(), entrada[0].ruta_archivo);
                 if (!fs.readFileSync(rutaEntrada).equals(bytesEntrada)) {
                     throw new Error("El archivo recibido no coincide con su checksum");
+                }
+                if (fs.existsSync(archivoHuerfano)) {
+                    throw new Error("No se eliminó el archivo multimedia generado sin referencia");
                 }
                 await fs.promises.unlink(rutaEntrada);
 
