@@ -191,7 +191,7 @@ function normalizarClaveIdentidad(valor) {
   // Canonicalizamos enteros decimales sin ceros iniciales para emparejar
   // la misma clave primaria sin confundir claves textuales como "001".
   if (typeof valor === "number" && Number.isSafeInteger(valor)) return String(valor);
-  if (typeof valor === "string" && /^-?(0|[1-9]\\d*)$/.test(valor)) return valor;
+  if (typeof valor === "string" && /^-?(0|[1-9][0-9]*)$/.test(valor)) return valor;
   return valor;
 }
 function claveFila(fila, pk) {
