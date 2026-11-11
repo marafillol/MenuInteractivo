@@ -425,7 +425,7 @@ async function leerEstadoInicializacion() {
 
 function obtenerUrlBootstrap(url = obtenerUrlIntercambio()) {
     if (!url) return null;
-    return url.replace(/\\/exchange\\/?$/i, "/bootstrap/snapshot");
+    return url.replace(/\/exchange\/?$/i, "/bootstrap/snapshot");
 }
 
 async function inicializarDesdeServidor() {

@@ -18,7 +18,9 @@ test("bootstrap importa una instantánea completa en SQLite vacía y bloquea el 
         LOCAL_AUTH_SECRET: "clave-temporal-bootstrap-2026-123456789",
         DATABASE_SQLITE_PATH: rutaDb,
         SYNC_REMOTE_URL: "https://servidor-prueba.invalid",
-        SYNC_SHARED_SECRET: "secreto-temporal-bootstrap-2026-123456789012345"
+        SYNC_SHARED_SECRET: "secreto-temporal-bootstrap-2026-123456789012345",
+        SYNC_ALLOW_SCHEMA_MIGRATION: "true",
+        SYNC_SCHEMA_CONFIRMATION: "I_HAVE_A_BACKUP_AND_APPROVE"
     };
     const ejecutar = (args) => spawnSync(process.execPath, args, {
         cwd: proyecto, env, encoding: "utf8"
