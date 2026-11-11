@@ -1,7 +1,7 @@
 const test=require("node:test"),assert=require("node:assert/strict"),{spawnSync}=require("node:child_process"),express=require("express"),{Client}=require("pg"),crypto=require("node:crypto"),path=require("node:path"),fs=require("node:fs"),os=require("node:os");
 const ids={"plantilla":"90000000-0000-4000-8000-000000000010","menu":"90000000-0000-4000-8000-000000000011","ficha":"90000000-0000-4000-8000-000000000012","etiqueta":"90000000-0000-4000-8000-000000000013","multimedia":"90000000-0000-4000-8000-000000000014","evento":"90000000-0000-4000-8000-000000000015","device":"90000000-0000-4000-8000-000000000001"},storage=new Map();
 test("intercambio bidireccional HTTP SQLite/PostgreSQL con multimedia y SHA-256",async()=>{
- assert.ok(process.env.DATABASE_URL);const pg=new Client({connectionString:process.env.DATABASE_URL});await pg.connect();const db=require("../src/database"),app=express();app.use(express.json({limit:"2mb"}));
+ assert.ok(process.env.DATABASE_URL);process.env.SYNC_SHARED_SECRET="secreto-integracion-bidireccional-aislado-2026";const pg=new Client({connectionString:process.env.DATABASE_URL});await pg.connect();const db=require("../src/database"),app=express();app.use(express.json({limit:"2mb"}));
  const adapter={async subirArchivoSincronizado(k,b,m,h){const x=Buffer.from(b);assert.equal(crypto.createHash("sha256").update(x).digest("hex"),h);storage.set(k,x);return "https://storage.invalid/"+k;},async descargarArchivoSincronizado(k){if(!storage.has(k))throw Error("missing");return Buffer.from(storage.get(k));},obtenerUrlPublica:k=>"https://storage.invalid/"+k};
  const sp=require.resolve("../src/config/almacenamientoSupabase");require.cache[sp]={id:sp,filename:sp,loaded:true,exports:adapter};let server,temp;
  try{
