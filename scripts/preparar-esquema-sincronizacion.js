@@ -1,4 +1,6 @@
 require("dotenv").config();
+const fs = require("node:fs");
+const path = require("node:path");
 
 const { esModoSupabase, esModoLocal } = require("../src/config/modoServidor");
 
@@ -6,9 +8,32 @@ if (process.env.SYNC_ALLOW_SCHEMA_MIGRATION !== "true" ||
     process.env.SYNC_SCHEMA_CONFIRMATION !== "I_HAVE_A_BACKUP_AND_APPROVE") {
   throw new Error("Migración bloqueada. Requiere SYNC_ALLOW_SCHEMA_MIGRATION=true y SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE.");
 }
-if (esModoLocal && !process.env.DATABASE_SQLITE_PATH) {
-  throw new Error("En modo local, DATABASE_SQLITE_PATH debe apuntar a una copia descartable.");
+function validarDestinoDePreparacion() {
+  if (esModoLocal) {
+    const ruta = process.env.DATABASE_SQLITE_PATH;
+    if (!ruta || !fs.existsSync(ruta)) {
+      throw new Error("Migración bloqueada: DATABASE_SQLITE_PATH debe apuntar a un archivo SQLite de copia existente.");
+    }
+    const real = fs.realpathSync(ruta);
+    const activa = path.resolve(__dirname, "../database/museo.db");
+    if (real === activa || (fs.existsSync(activa) && real === fs.realpathSync(activa))) {
+      throw new Error("Migración bloqueada: no se permite preparar la SQLite activa del proyecto.");
+    }
+    return;
+  }
+
+  let destino;
+  try { destino = new URL(String(process.env.DATABASE_URL || "")); }
+  catch { throw new Error("Migración bloqueada: DATABASE_URL debe apuntar a la copia PostgreSQL local."); }
+  const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
+  const puertoPermitido = ["5432", "5433"].includes(destino.port);
+  const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
+  if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
+      !hostPermitido || !puertoPermitido || !basePermitida) {
+    throw new Error("Migración bloqueada: solo se permite museo_reconciliacion_prueba en localhost:5432 o localhost:5433; no se admiten bases remotas.");
+  }
 }
+validarDestinoDePreparacion();
 
 const db = require("../src/database");
 
