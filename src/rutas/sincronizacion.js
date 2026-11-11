@@ -106,22 +106,44 @@ router.post("/exchange", async (req, res) => {
         const dispositivo = await obtenerIdDispositivo();
         const almacenamiento = require("../config/almacenamientoSupabase");
         const eventosPreparados = await Promise.all(eventos.map(async (evento) => {
-            if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return evento;
+            if (evento.operacion === "DELETE") return evento;
             const payload = evento.payload_json && typeof evento.payload_json === "object"
                 ? evento.payload_json
                 : JSON.parse(evento.payload_json || "{}");
-            const archivo = await almacenamiento.descargarArchivoSincronizado(payload.storage_key);
-            const checksum = createHash("sha256").update(archivo).digest("hex");
-            if (checksum !== payload.checksum_sha256) {
-                throw new Error("El checksum multimedia remoto no coincide.");
-            }
-            return {
-                ...evento,
-                payload_json: {
-                    ...payload,
-                    ruta_archivo: almacenamiento.obtenerUrlPublica(payload.storage_key)
+
+            if (evento.entidad === "multimedia") {
+                const archivo = await almacenamiento.descargarArchivoSincronizado(payload.storage_key);
+                const checksum = createHash("sha256").update(archivo).digest("hex");
+                if (checksum !== payload.checksum_sha256) {
+                    throw new Error("El checksum multimedia remoto no coincide.");
                 }
-            };
+                return {
+                    ...evento,
+                    payload_json: {
+                        ...payload,
+                        ruta_archivo: almacenamiento.obtenerUrlPublica(payload.storage_key)
+                    }
+                };
+            }
+
+            if (["menu", "ficha"].includes(evento.entidad) && payload.imagen_storage_key) {
+                if (!/^[a-f0-9]{64}$/i.test(String(payload.imagen_checksum_sha256 || ""))) {
+                    throw new Error("El checksum de la portada no tiene formato válido.");
+                }
+                const archivo = await almacenamiento.descargarArchivoSincronizado(payload.imagen_storage_key);
+                const checksum = createHash("sha256").update(archivo).digest("hex");
+                if (checksum !== payload.imagen_checksum_sha256) {
+                    throw new Error("El checksum de la portada remota no coincide.");
+                }
+                return {
+                    ...evento,
+                    payload_json: {
+                        ...payload,
+                        imagen: almacenamiento.obtenerUrlPublica(payload.imagen_storage_key)
+                    }
+                };
+            }
+            return evento;
         }));
         const resultado = await db.withTransaction(async (consultar) => {
             await consultar(`

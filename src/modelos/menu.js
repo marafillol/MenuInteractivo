@@ -98,6 +98,21 @@ const actualizar = async (id, datos) => {
             id_plantilla = ?, visible = ?, actualizado = datetime('now','-3 hours')
         WHERE id_menu = ?
     `;
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    const sqlActualizar = tienePortada
+        ? `
+            UPDATE menu SET
+                nombre = ?, descripcion = ?, imagen = COALESCE(?, imagen),
+                id_plantilla = ?, visible = ?, imagen_storage_key = ?,
+                imagen_checksum_sha256 = ?, imagen_mime_type = ?, imagen_tamano_bytes = ?,
+                actualizado = datetime('now','-3 hours')
+            WHERE id_menu = ?
+        `
+        : sql;
+    const valoresActualizar = tienePortada
+        ? [...valores.slice(0, 5), datos.imagen_storage_key, datos.imagen_checksum_sha256,
+            datos.imagen_mime_type, datos.imagen_tamano_bytes, id]
+        : valores;
 
     if (!await outboxMenuDisponible()) {
         return new Promise((resolve, reject) => db.run(sql, valores, (error) =>
@@ -111,7 +126,7 @@ const actualizar = async (id, datos) => {
         const anterior = consulta.rows[0];
         if (!anterior || anterior.sync_deleted_at) return;
         if (!anterior.sync_id) {
-            await consultar(sql, valores);
+            await consultar(sqlActualizar, valoresActualizar);
             return;
         }
 
@@ -128,12 +143,15 @@ const actualizar = async (id, datos) => {
         await consultar(`
             UPDATE menu SET
                 nombre = ?, descripcion = ?, imagen = COALESCE(?, imagen),
-                id_plantilla = ?, visible = ?, actualizado = datetime('now','-3 hours'),
-                sync_version = ?
+                id_plantilla = ?, visible = ?,
+                ${tienePortada ? "imagen_storage_key = ?, imagen_checksum_sha256 = ?, imagen_mime_type = ?, imagen_tamano_bytes = ?," : ""}
+                actualizado = datetime('now','-3 hours'), sync_version = ?
             WHERE id_menu = ?
         `, [
-            datos.nombre, datos.descripcion, datos.imagen || null,
-            datos.id_plantilla, datos.visible, versionResultado, id
+            ...valores.slice(0, 5),
+            ...(tienePortada ? [datos.imagen_storage_key, datos.imagen_checksum_sha256,
+                datos.imagen_mime_type, datos.imagen_tamano_bytes] : []),
+            versionResultado, id
         ]);
         await registrarEvento(consultar, {
             dispositivoId, entidad: "menu", operacion: "UPDATE",
@@ -141,7 +159,13 @@ const actualizar = async (id, datos) => {
             payload: {
                 plantilla_sync_id: plantillaSyncId,
                 nombre: datos.nombre, descripcion: datos.descripcion || null,
-                imagen: datos.imagen || anterior.imagen || null,
+                ...(tienePortada ? {
+                    imagen: datos.imagen,
+                    imagen_storage_key: datos.imagen_storage_key,
+                    imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                    imagen_mime_type: datos.imagen_mime_type,
+                    imagen_tamano_bytes: datos.imagen_tamano_bytes
+                } : {}),
                 visible: datos.visible ?? anterior.visible
             }
         });
@@ -197,9 +221,16 @@ const eliminar = async (id) => {
 const crear = async (datos) => {
     const { nombre, descripcion, id_plantilla, visible, imagen } = datos;
     const valores = [nombre, descripcion || null, imagen || null, id_plantilla || null, visible ?? 1];
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    const columnasPortada = tienePortada
+        ? ", imagen_storage_key, imagen_checksum_sha256, imagen_mime_type, imagen_tamano_bytes"
+        : "";
+    const valoresPortada = tienePortada
+        ? [datos.imagen_storage_key, datos.imagen_checksum_sha256, datos.imagen_mime_type, datos.imagen_tamano_bytes]
+        : [];
     const sql = `
-        INSERT INTO menu (nombre, descripcion, imagen, id_plantilla, visible, creado)
-        VALUES (?, ?, ?, ?, ?, datetime('now','-3 hours'))
+        INSERT INTO menu (nombre, descripcion, imagen, id_plantilla, visible${columnasPortada}, creado)
+        VALUES (?, ?, ?, ?, ?${tienePortada ? ", ?, ?, ?, ?" : ""}, datetime('now','-3 hours'))
     `;
 
     if (!await outboxMenuDisponible()) {
@@ -217,22 +248,29 @@ const crear = async (datos) => {
         );
         const plantillaSyncId = plantilla.rows[0]?.sync_id;
         if (!plantillaSyncId) {
-            const insercionLocal = await consultar(sql, valores);
+            const insercionLocal = await consultar(sql, [...valores, ...valoresPortada]);
             return insercionLocal.lastID;
         }
 
         const insercion = await consultar(`
             INSERT INTO menu (
                 nombre, descripcion, imagen, id_plantilla, visible, creado,
-                sync_id, sync_version, sync_deleted_at
-            ) VALUES (?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL)
-        `, [...valores, syncId]);
+                sync_id, sync_version, sync_deleted_at${columnasPortada}
+            ) VALUES (?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL${tienePortada ? ", ?, ?, ?, ?" : ""})
+        `, [...valores, syncId, ...valoresPortada]);
         await registrarEvento(consultar, {
             dispositivoId, entidad: "menu", operacion: "INSERT",
             syncId, versionBase: 0, versionResultado: 1,
             payload: {
                 plantilla_sync_id: plantillaSyncId, nombre,
-                descripcion: descripcion || null, imagen: imagen || null,
+                descripcion: descripcion || null,
+                ...(tienePortada ? {
+                    imagen,
+                    imagen_storage_key: datos.imagen_storage_key,
+                    imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                    imagen_mime_type: datos.imagen_mime_type,
+                    imagen_tamano_bytes: datos.imagen_tamano_bytes
+                } : { imagen: imagen || null }),
                 visible: visible ?? 1
             }
         });

@@ -70,6 +70,10 @@ function candidatosAprobados(manifiesto, target) {
         const datos = manifiesto.entidades[entidad];
         for (const candidato of datos?.candidatos_unicos || []) {
             if (candidato.aprobado !== true) continue;
+            if (["menu", "ficha"].includes(entidad) &&
+                !["sin_portada", "portada_verificada_por_checksum"].includes(candidato.portada?.estado)) {
+                throw new Error("La portada de " + entidad + " debe verificarse o resolverse antes de aplicar su identidad.");
+            }
             if (!UUID_RE.test(String(candidato.sync_id_propuesto || ""))) {
                 throw new Error("El candidato aprobado de " + entidad + " no tiene un UUID v5 válido.");
             }

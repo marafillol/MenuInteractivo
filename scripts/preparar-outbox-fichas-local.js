@@ -145,6 +145,22 @@ async function preparar() {
         await consultar(
             'CREATE UNIQUE INDEX IF NOT EXISTS "ux_ficha_sync_id" ON "ficha" (sync_id)'
         );
+
+        for (const tabla of ["menu", "ficha"]) {
+            const columnasPortada = await consultar(`PRAGMA table_info("${tabla}")`);
+            const existentesPortada = new Set(columnasPortada.rows.map((columna) => columna.name));
+            for (const [nombre, tipo] of [
+                ["imagen_storage_key", "TEXT"],
+                ["imagen_checksum_sha256", "TEXT"],
+                ["imagen_mime_type", "TEXT"],
+                ["imagen_tamano_bytes", "INTEGER"]
+            ]) {
+                if (!existentesPortada.has(nombre)) {
+                    await consultar(`ALTER TABLE "${tabla}" ADD COLUMN "${nombre}" ${tipo}`);
+                }
+            }
+        }
+
         await consultar(`
             CREATE TABLE IF NOT EXISTS sync_eventos (
                 id_evento INTEGER PRIMARY KEY AUTOINCREMENT,

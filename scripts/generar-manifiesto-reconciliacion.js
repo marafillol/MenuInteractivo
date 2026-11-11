@@ -55,8 +55,8 @@ function validarDestinoSeguro(connectionString) {
 const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
-  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
-  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
   { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
@@ -149,6 +149,27 @@ function prepararFilas(filas, entidad) {
     } : {})
   }));
 }
+function evaluarPortada(local, remoto) {
+  const a = local?.portada || { existe: false, checksum: null, tamano_bytes: null };
+  const b = remoto?.portada || { existe: false, checksum: null, tamano_bytes: null };
+  if (!a.existe && !b.existe) return { estado: "sin_portada" };
+  if (a.checksum && b.checksum && a.tamano_bytes && b.tamano_bytes) {
+    if (a.checksum === b.checksum && a.tamano_bytes === b.tamano_bytes) {
+      return { estado: "portada_verificada_por_checksum", checksum_sha256: a.checksum };
+    }
+    return {
+      estado: "conflicto_checksum_portada",
+      checksum_sqlite: a.checksum,
+      checksum_postgres: b.checksum
+    };
+  }
+  return {
+    estado: a.existe !== b.existe ? "portada_presente_en_una_sola_copia" : "portada_pendiente_checksum",
+    checksum_sqlite: a.checksum,
+    checksum_postgres: b.checksum
+  };
+}
+
 function agruparPorHuella(filas) {
   const mapa = new Map();
   for (const fila of filas) {
@@ -181,6 +202,7 @@ function registrarMapaIdentidades(tabla, pk, filasLocal, filasRemoto, candidatos
 
 function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
   const pendientes = [];
+  const pendientesPortada = [];
   const preparadas = [];
   for (const fila of filas) {
     const idsPadres = [];
@@ -197,6 +219,10 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
     if (entidad.multimedia && !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))) {
       pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
       continue;
+    }
+    if (["menu", "ficha"].includes(entidad.tabla) && fila.imagen &&
+        !/^[a-f0-9]{64}$/i.test(String(fila.imagen_checksum_sha256 || ""))) {
+      pendientesPortada.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
     }
     if (entidad.tabla === "relacion_ficha" &&
         (fila.tipo_relacion === null || fila.tipo_relacion === undefined)) {
@@ -219,10 +245,20 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
       huella_contenido: hash,
       ...(entidad.referencias ? {
         referencias: Object.fromEntries(entidad.referencias.map((campo) => [campo, fila[campo]]))
+      } : {}),
+      ...( ["menu", "ficha"].includes(entidad.tabla) ? {
+        portada: {
+          existe: Boolean(fila.imagen),
+          checksum: /^[a-f0-9]{64}$/i.test(String(fila.imagen_checksum_sha256 || ""))
+            ? String(fila.imagen_checksum_sha256).toLowerCase() : null,
+          tamano_bytes: fila.imagen_tamano_bytes !== null && fila.imagen_tamano_bytes !== undefined &&
+            Number.isSafeInteger(Number(fila.imagen_tamano_bytes)) && Number(fila.imagen_tamano_bytes) > 0
+            ? Number(fila.imagen_tamano_bytes) : null
+        }
       } : {})
     });
   }
-  return { filas: preparadas, pendientes };
+  return { filas: preparadas, pendientes, pendientesPortada };
 }
 
 async function main() {
@@ -275,6 +311,7 @@ async function main() {
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
         "Menús, fichas y multimedia solo generan candidatos cuando la identidad de sus padres está disponible en ambas copias.",
         "Multimedia requiere una ficha padre reconciliada y un checksum_sha256 con formato hexadecimal de 64 caracteres; este manifiesto no verifica los bytes del archivo.",
+        "Las portadas de menú y ficha solo se consideran verificadas si ambas copias tienen checksum SHA-256; las referencias sin checksum se reportan por separado y no prueban igualdad binaria.",
         "Las relaciones se emparejan usando las identidades compartidas de todos sus extremos; ficha_etiqueta conserva su clave primaria compuesta.",
         "Los sync_id preexistentes se conservan como candidatos; identidades distintas entre copias se reportan como conflicto y nunca se sobrescriben.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
@@ -318,6 +355,8 @@ async function main() {
       let remoto;
       let pendientesLocal = [];
       let pendientesRemoto = [];
+      let pendientesPortadaLocal = [];
+      let pendientesPortadaRemoto = [];
       if (entidad.padres?.length) {
         const preparadoLocal = prepararFilasConDependencias(localRaw, entidad, mapasIdentidad, "sqlite");
         const preparadoRemoto = prepararFilasConDependencias(remotoRaw, entidad, mapasIdentidad, "postgres");
@@ -325,6 +364,8 @@ async function main() {
         remoto = preparadoRemoto.filas;
         pendientesLocal = preparadoLocal.pendientes;
         pendientesRemoto = preparadoRemoto.pendientes;
+        pendientesPortadaLocal = preparadoLocal.pendientesPortada;
+        pendientesPortadaRemoto = preparadoRemoto.pendientesPortada;
       } else {
         local = prepararFilas(localRaw, entidad);
         remoto = prepararFilas(remotoRaw, entidad);
@@ -371,6 +412,9 @@ async function main() {
           compartidas.push({
             ...candidato,
             sync_id_propuesto: syncId,
+            ...( ["menu", "ficha"].includes(tabla) ? {
+              portada: evaluarPortada(filasLocal[0], filasRemotas[0])
+            } : {}),
             aprobado: false,
             estado: idsExistentes.length
               ? "candidato_completar_identidad_existente"
@@ -394,14 +438,19 @@ async function main() {
           conflictos_sync_id: conflictosSyncId.length,
           pendientes_dependencia_sqlite: pendientesLocal.length,
           pendientes_dependencia_postgres: pendientesRemoto.length,
+          pendientes_portada_sqlite: pendientesPortadaLocal.length,
+          pendientes_portada_postgres: pendientesPortadaRemoto.length,
           solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
           solo_postgres_por_contenido: remoto.filter(f => !hashesLocales.has(f.huella_contenido)).length
         },
-        estado: pendientesLocal.length || pendientesRemoto.length
-          ? "parcial; requiere_reconciliar_dependencias"
+        estado: pendientesLocal.length || pendientesRemoto.length ||
+          pendientesPortadaLocal.length || pendientesPortadaRemoto.length
+          ? "parcial; requiere_reconciliar_dependencias_o_portadas"
           : "candidatos_generados",
         ...(pendientesLocal.length ? { pendientes_sqlite: pendientesLocal } : {}),
         ...(pendientesRemoto.length ? { pendientes_postgres: pendientesRemoto } : {}),
+        ...(pendientesPortadaLocal.length ? { portadas_pendientes_sqlite: pendientesPortadaLocal } : {}),
+        ...(pendientesPortadaRemoto.length ? { portadas_pendientes_postgres: pendientesPortadaRemoto } : {}),
         candidatos_unicos: compartidas,
         ambiguos: ambiguas,
         conflictos_sync_id: conflictosSyncId,
@@ -445,6 +494,7 @@ module.exports = {
   huella,
   prepararFilas,
   agruparPorHuella,
+  evaluarPortada,
   uuidPropuesto,
   validarDestinoSeguro,
   claveFila,

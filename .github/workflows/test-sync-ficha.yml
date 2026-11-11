@@ -8,6 +8,8 @@ on:
       - fix/sync-client-conflict-and-media-cleanup
       - fix/ficha-delete-related-tombstones
       - integration/sync-bidireccional-validacion
+      - feature/sync-menu-ficha-cover-images
+      - feature/reconciliacion-dependencias-relaciones
       - feature/modo-offline-local-sync-main
   push:
     branches:
