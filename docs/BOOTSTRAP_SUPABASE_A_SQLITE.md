@@ -96,3 +96,5 @@ La inicialización es explícita para que una SQLite histórica no se confunda c
 
 
 La inicialización debe realizarse antes de habilitar el equipo para recibir operaciones administrativas offline; el estado incompleto nunca autoriza el envío de su outbox.
+
+La suite PostgreSQL descartable también verifica la captura transaccional de la instantánea y que el endpoint no escriba eventos ni datos de contenido.
