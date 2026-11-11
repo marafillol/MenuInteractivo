@@ -21,6 +21,7 @@ test('migración dinámica asigna UUIDv5 a filas históricas y altas nuevas, con
   try {
     const schema = fs.readFileSync(path.join(__dirname, 'fixtures/esquema-backup-supabase-2026-11-10.sql'), 'utf8');
     await client.query(schema);
+    await client.query('CREATE SCHEMA IF NOT EXISTS extensions');
     await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions');
 
     const mapa = storage.entries;
