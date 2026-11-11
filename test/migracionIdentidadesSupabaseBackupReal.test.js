@@ -24,30 +24,8 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
     const client = new Client({ connectionString: url, ssl: false });
     await client.connect();
     try {
-        await client.query(`
-            DROP TABLE IF EXISTS public.ficha_etiqueta CASCADE;
-            DROP TABLE IF EXISTS public.relacion_ficha CASCADE;
-            DROP TABLE IF EXISTS public.multimedia CASCADE;
-            DROP TABLE IF EXISTS public.ficha CASCADE;
-            DROP TABLE IF EXISTS public.etiqueta CASCADE;
-            DROP TABLE IF EXISTS public.menu CASCADE;
-            DROP TABLE IF EXISTS public.plantilla CASCADE;
-            CREATE TABLE public.plantilla (id_plantilla BIGINT PRIMARY KEY);
-            CREATE TABLE public.menu (id_menu BIGINT PRIMARY KEY, id_plantilla BIGINT REFERENCES public.plantilla(id_plantilla));
-            CREATE TABLE public.ficha (id_ficha BIGINT PRIMARY KEY, id_menu BIGINT REFERENCES public.menu(id_menu));
-            CREATE TABLE public.etiqueta (id_etiqueta BIGINT PRIMARY KEY);
-            CREATE TABLE public.multimedia (id_multi BIGINT PRIMARY KEY, id_ficha BIGINT REFERENCES public.ficha(id_ficha));
-            CREATE TABLE public.relacion_ficha (
-                id_relacion BIGINT PRIMARY KEY,
-                id_ficha_origen BIGINT REFERENCES public.ficha(id_ficha),
-                id_ficha_destino BIGINT REFERENCES public.ficha(id_ficha)
-            );
-            CREATE TABLE public.ficha_etiqueta (
-                id_ficha BIGINT NOT NULL REFERENCES public.ficha(id_ficha),
-                id_etiqueta BIGINT NOT NULL REFERENCES public.etiqueta(id_etiqueta),
-                PRIMARY KEY (id_ficha, id_etiqueta)
-            );
-        `);
+        const schemaSql = fs.readFileSync(path.join(__dirname, 'fixtures/esquema-backup-supabase-2026-11-10.sql'), 'utf8');
+        await client.query(schemaSql);
 
         for (const id of fixture.tables.plantilla) {
             await client.query('INSERT INTO public.plantilla (id_plantilla) VALUES ($1)', [id]);
