@@ -94,3 +94,47 @@ test("rechaza claves históricas con traversal o separadores inseguros", () => {
     };
     assert.throws(() => validarMapaStorageHistorico(corrupto), /metadatos multimedia inválidos/);
 });
+
+test("completa metadatos históricos del snapshot sin cambiar referencias originales", () => {
+    const snapshot = {
+        version: 1,
+        cursor: 0,
+        data: {
+            multimedia: [{
+                id_multi: 4,
+                ruta_archivo: mapa.entries["multimedia:4"][0],
+                storage_key: null,
+                checksum_sha256: null,
+                sync_deleted_at: null
+            }],
+            ficha: [{
+                id_ficha: 15,
+                imagen: mapa.entries["ficha:15"][0],
+                imagen_storage_key: null,
+                imagen_checksum_sha256: null,
+                sync_deleted_at: null
+            }],
+            menu: [{
+                id_menu: 1,
+                imagen: mapa.entries["menu:1"][0],
+                imagen_storage_key: null,
+                imagen_checksum_sha256: null,
+                sync_deleted_at: null
+            }]
+        }
+    };
+    const resultado = aplicarMapaSnapshot(snapshot);
+    assert.equal(resultado.data.multimedia[0].storage_key, mapa.entries["multimedia:4"][1]);
+    assert.equal(resultado.data.multimedia[0].checksum_sha256, mapa.entries["multimedia:4"][2]);
+    assert.equal(resultado.data.ficha[0].imagen_storage_key, mapa.entries["ficha:15"][1]);
+    assert.equal(resultado.data.menu[0].imagen_storage_key, mapa.entries["menu:1"][1]);
+    assert.equal(snapshot.data.multimedia[0].storage_key, null);
+});
+
+test("solo habilita descargas legacy para claves presentes en el mapa", () => {
+    const key = mapa.entries["multimedia:4"][1];
+    assert.equal(esStorageKeyHistorica(key), true);
+    assert.equal(esClaveHistoricaPermitida("multimedia", 4, key), true);
+    assert.equal(esClaveHistoricaPermitida("multimedia", 5, key), false);
+    assert.equal(esStorageKeyHistorica("../privado.png"), false);
+});
