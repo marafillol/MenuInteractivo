@@ -80,7 +80,7 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
 
         const sql = fs.readFileSync(sqlPath, 'utf8');
         assert.match(sql.trim(), /ROLLBACK;$/);
-        await client.query(sql.replace(/ROLLBACK;\\s*$/, 'COMMIT;'));
+        await client.query(sql.replace(/ROLLBACK;\s*$/, 'COMMIT;'));
 
         const resultado = {};
         for (const tabla of [...Object.keys(fixture.tables), 'ficha_etiqueta']) {
