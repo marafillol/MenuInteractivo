@@ -215,6 +215,28 @@ test("la huella multimedia ignora rutas y storage_key, pero conserva el checksum
 });
 
 
+test("resuelve dependencias cuando SQLite entrega IDs numéricos y PostgreSQL strings", () => {
+  const mapas = {};
+  const syncId = "11111111-1111-5111-8111-111111111111";
+  registrarMapaIdentidades("plantilla", ["id_plantilla"],
+    [{ id_plantilla: 1 }], [{ id_plantilla: "1" }],
+    [{ claves_sqlite: [{ id_plantilla: 1 }], claves_postgres: [{ id_plantilla: "1" }], sync_id_propuesto: syncId }],
+    mapas
+  );
+  const entidad = ENTIDADES.find(e => e.tabla === "menu");
+  const local = prepararFilasConDependencias(
+    [{ id_menu: 2, id_plantilla: 1, nombre: "Sala", visible: 1 }],
+    entidad, mapas, "sqlite"
+  );
+  const remoto = prepararFilasConDependencias(
+    [{ id_menu: "8", id_plantilla: "1", nombre: "Sala", visible: true }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.pendientes.length, 0);
+  assert.equal(remoto.pendientes.length, 0);
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+});
+
 test("genera candidatos hijos solo cuando sus padres tienen identidad compartida", () => {
   const mapas = {};
   const idPlantilla = "11111111-1111-5111-8111-111111111111";
