@@ -10,13 +10,21 @@ const ENTIDADES = {
     },
     menu: {
         tabla: "menu",
-        campos: ["nombre", "descripcion", "imagen", "visible", "creado", "actualizado"],
+        campos: [
+            "nombre", "descripcion", "imagen", "imagen_storage_key",
+            "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes",
+            "visible", "creado", "actualizado"
+        ],
         padre: { campo: "plantilla_sync_id", tabla: "plantilla", id: "id_plantilla", destino: "id_plantilla" },
         requeridos: ["nombre"]
     },
     ficha: {
         tabla: "ficha",
-        campos: ["titulo", "resumen", "texto", "imagen", "datos_json", "visible", "creado", "actualizado"],
+        campos: [
+            "titulo", "resumen", "texto", "imagen", "imagen_storage_key",
+            "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes",
+            "datos_json", "visible", "creado", "actualizado"
+        ],
         padre: { campo: "menu_sync_id", tabla: "menu", id: "id_menu", destino: "id_menu" },
         requeridos: ["titulo"]
     },
