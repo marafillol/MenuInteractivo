@@ -319,11 +319,11 @@ async function sincronizarUnaVez() {
     await limpiarStagingConfirmado(pendientes, datos.acknowledged);
     const eventosEntrantes = [];
     const archivosNuevos = [];
-    for (const evento of datos.events) {
-        eventosEntrantes.push(await prepararMultimediaEntrante(evento, url, secreto, archivosNuevos));
-    }
     let resultadoEntrante;
     try {
+        for (const evento of datos.events) {
+            eventosEntrantes.push(await prepararMultimediaEntrante(evento, url, secreto, archivosNuevos));
+        }
         resultadoEntrante = await aplicarEventosEntrantes(eventosEntrantes, Number(datos.next_cursor));
     } catch (error) {
         await limpiarDescargasNoAplicadas(archivosNuevos, archivosNuevos.map((archivo) => archivo.evento_id));
