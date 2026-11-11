@@ -68,6 +68,47 @@ function extraerClaveUrl(referencia, datos = mapa) {
     return clave;
 }
 
+function esClaveHistoricaPermitida(entidad, id, storageKey, datos = mapa) {
+    const entrada = datos.entries[`${entidad}:${id}`];
+    return Boolean(entrada && entrada[1] === storageKey);
+}
+
+function aplicarMapaSnapshot(snapshot, datos = mapa) {
+    validarMapaStorageHistorico(datos);
+    if (!snapshot?.data || typeof snapshot.data !== "object") {
+        throw new Error("La instantánea no contiene datos para reconciliar rutas históricas.");
+    }
+    const data = { ...snapshot.data };
+    for (const tabla of ["multimedia", "ficha", "menu"]) {
+        if (!Array.isArray(data[tabla])) continue;
+        const entidad = tabla;
+        const idCampo = tabla === "multimedia" ? "id_multi" : tabla === "ficha" ? "id_ficha" : "id_menu";
+        const referenciaCampo = tabla === "multimedia" ? "ruta_archivo" : "imagen";
+        data[tabla] = data[tabla].map((fila) => {
+            if (!fila || fila.sync_deleted_at || !fila[referenciaCampo]) return fila;
+            const resuelto = resolverReferenciaHistorica({
+                entidad,
+                id: fila[idCampo],
+                referencia: fila[referenciaCampo],
+                storageKey: tabla === "multimedia" ? fila.storage_key : fila.imagen_storage_key,
+                checksumSha256: tabla === "multimedia" ? fila.checksum_sha256 : fila.imagen_checksum_sha256
+            }, datos);
+            if (!resuelto) return fila;
+            if (tabla === "multimedia") {
+                return { ...fila, storage_key: resuelto.storage_key,
+                    checksum_sha256: resuelto.checksum_sha256,
+                    mime_type: fila.mime_type || resuelto.mime_type,
+                    tamano_bytes: fila.tamano_bytes || resuelto.tamano_bytes };
+            }
+            return { ...fila, imagen_storage_key: resuelto.storage_key,
+                imagen_checksum_sha256: resuelto.checksum_sha256,
+                imagen_mime_type: fila.imagen_mime_type || resuelto.mime_type,
+                imagen_tamano_bytes: fila.imagen_tamano_bytes || resuelto.tamano_bytes };
+        });
+    }
+    return { ...snapshot, data };
+}
+
 function resolverReferenciaHistorica({ entidad, id, referencia, storageKey, checksumSha256 }, datos = mapa) {
     validarMapaStorageHistorico(datos);
     if (!["multimedia", "ficha", "menu"].includes(entidad) ||
