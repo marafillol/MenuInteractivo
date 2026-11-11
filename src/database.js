@@ -1,6 +1,8 @@
 require("dotenv").config();
+const { esModoSupabase } = require("./config/modoServidor");
 
-if (process.env.DATABASE_URL) {
+if (esModoSupabase) {
+    if (!process.env.DATABASE_URL) throw new Error("Falta DATABASE_URL para iniciar el modo Supabase.");
 
     module.exports = require("./databasePostgres");
 
@@ -18,7 +20,9 @@ const path = require("path");
 
 // Define la ruta absoluta donde se encuentra el archivo SQLite.
 // La base de datos utilizada por el sistema es museo.db.
-const dbPath = path.resolve(__dirname, "../database/museo.db");
+const dbPath = process.env.DATABASE_SQLITE_PATH
+    ? path.resolve(process.env.DATABASE_SQLITE_PATH)
+    : path.resolve(__dirname, "../database/museo.db");
 
 
 // =====================================================
@@ -357,9 +361,10 @@ db.serialize(() => {
 
 // Exporta la conexión para que los modelos puedan utilizarla
 // y ejecutar consultas sobre la base de datos.
-// Migra instalaciones SQLite existentes: conserva los perfiles, no las identidades del proveedor anterior.
-const consultarSQLite = (sql, parametros = []) => new Promise((resolve, reject) => {
-    db.all(sql, parametros, (error, filas) => error ? reject(error) : resolve(filas));
+// Migraciones aditivas: no reconstruyen ni eliminan la tabla usuario.
+// Así se conservan los perfiles existentes y se habilita el hash de contraseña local.
+const consultarSQLite = (sql) => new Promise((resolve, reject) => {
+    db.all(sql, [], (error, filas) => error ? reject(error) : resolve(filas));
 });
 const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
     db.run(sql, (error) => error ? reject(error) : resolve());
@@ -368,52 +373,15 @@ const ejecutarSQLite = (sql) => new Promise((resolve, reject) => {
 (async () => {
     try {
         const columnas = await consultarSQLite("PRAGMA table_info(usuario)");
-        const tieneIdentificadorAuthAnterior = columnas.some((columna) => columna.name.endsWith("_uid") && columna.name !== "supabase_uid");
-        const tieneSupabaseUid = columnas.some((columna) => columna.name === "supabase_uid");
-
-        if (!tieneIdentificadorAuthAnterior && !tieneSupabaseUid) {
+        const nombres = new Set(columnas.map((columna) => columna.name));
+        if (!nombres.has("supabase_uid")) {
             await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN supabase_uid TEXT");
-            return;
         }
-
-        if (!tieneIdentificadorAuthAnterior) {
-            return;
-        }
-
-        await ejecutarSQLite("PRAGMA foreign_keys = OFF");
-        await ejecutarSQLite("BEGIN IMMEDIATE");
-        try {
-            await ejecutarSQLite(`
-                CREATE TABLE usuario_migracion (
-                    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
-                    supabase_uid TEXT UNIQUE,
-                    nombre TEXT NOT NULL,
-                    email TEXT UNIQUE NOT NULL,
-                    rol TEXT NOT NULL,
-                    activo INTEGER DEFAULT 1,
-                    creado DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    actualizado DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            `);
-
-            const valorUid = tieneSupabaseUid ? "supabase_uid" : "NULL";
-            await ejecutarSQLite(`
-                INSERT INTO usuario_migracion
-                    (id_usuario, supabase_uid, nombre, email, rol, activo, creado, actualizado)
-                SELECT id_usuario, ${valorUid}, nombre, email, rol, activo, creado, actualizado
-                FROM usuario
-            `);
-            await ejecutarSQLite("DROP TABLE usuario");
-            await ejecutarSQLite("ALTER TABLE usuario_migracion RENAME TO usuario");
-            await ejecutarSQLite("COMMIT");
-        } catch (error) {
-            await ejecutarSQLite("ROLLBACK");
-            throw error;
-        } finally {
-            await ejecutarSQLite("PRAGMA foreign_keys = ON");
+        if (!nombres.has("password_hash")) {
+            await ejecutarSQLite("ALTER TABLE usuario ADD COLUMN password_hash TEXT");
         }
     } catch (error) {
-        console.error("No se pudo migrar la tabla local de usuarios; código=", error.code || "sin_codigo");
+        console.error("No se pudieron preparar las columnas de autenticación local; código=", error.code || "sin_codigo");
     }
 })();
 

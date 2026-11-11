@@ -5,6 +5,8 @@ const {
     estaSupabaseAuthConfigurado,
     obtenerClienteSupabaseAdmin
 } = require("../config/supabaseAuth");
+const { esModoLocal } = require("../config/modoServidor");
+const { hashearPassword } = require("../servicios/autenticacionLocal");
 
 const exigirClienteAuth = () => {
     if (!estaSupabaseAuthConfigurado) {
@@ -61,7 +63,7 @@ const obtenerUsuarioPorEmail = async(req,res)=>{
 
 const obtenerMiUsuario = async(req,res)=>{
     try {
-        const { supabase_uid, ...perfilPublico } = req.usuario;
+        const { supabase_uid, password_hash, ...perfilPublico } = req.usuario;
         res.json(perfilPublico);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -112,6 +114,25 @@ const crearUsuario = async (req, res) => {
             return res.status(400).json({
                 error: "Completá nombre, correo, una contraseña de al menos 6 caracteres y un rol válido."
             });
+        }
+
+        if (esModoLocal) {
+            const emailNormalizado = String(email).trim().toLowerCase();
+            const existente = await Usuario.obtenerPorEmail(emailNormalizado);
+
+            if (existente) {
+                return res.status(400).json({ error: "Ya existe un usuario con ese correo." });
+            }
+
+            await Usuario.crearUsuarioLocal({
+                nombre: String(nombre).trim(),
+                email: emailNormalizado,
+                rol,
+                activo: activo === undefined ? 1 : activo,
+                password_hash: await hashearPassword(password)
+            });
+
+            return res.status(201).json({ mensaje: "Usuario local creado correctamente." });
         }
 
         const cliente = exigirClienteAuth();
@@ -200,9 +221,9 @@ const actualizarUsuario = async (req, res) => {
         const emailNuevo = String(req.body.email || "").trim().toLowerCase();
         let authId = null;
         let cambioEmailAuth = false;
-        const cliente = exigirClienteAuth();
+        const cliente = esModoLocal ? null : exigirClienteAuth();
 
-        if (emailNuevo && emailNuevo !== emailAnterior) {
+        if (!esModoLocal && emailNuevo && emailNuevo !== emailAnterior) {
             authId = exigirUidSupabase(usuario);
             const { error } = await cliente.auth.admin.updateUserById(authId, {
                 email: emailNuevo
@@ -263,6 +284,11 @@ const eliminarUsuario = async (req, res) => {
             }
         }
 
+        if (esModoLocal) {
+            await Usuario.eliminarUsuario(id);
+            return res.json({ mensaje: "Usuario local eliminado correctamente." });
+        }
+
         const authId = exigirUidSupabase(usuario);
         const cliente = exigirClienteAuth();
 
@@ -310,6 +336,11 @@ const cambiarPassword = async (req, res) => {
         const usuario = await Usuario.obtenerPorId(req.params.id);
         if (!usuario) {
             return res.status(404).json({ error: "Usuario no encontrado." });
+        }
+
+        if (esModoLocal) {
+            await Usuario.actualizarPasswordHash(usuario.id_usuario, await hashearPassword(password));
+            return res.json({ mensaje: "Contraseña local actualizada." });
         }
 
         const authId = exigirUidSupabase(usuario);
