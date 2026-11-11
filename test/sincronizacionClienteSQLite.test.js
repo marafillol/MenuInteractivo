@@ -151,7 +151,8 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 };
 
                 const resultado = await cliente.sincronizarUnaVez();
-                if (resultado.enviados !== 2 || resultado.recibidos !== 2 || resultado.conflictos !== 1 || resultado.cursor !== 8) {
+                if (resultado.enviados !== 2 || resultado.recibidos !== 2 || resultado.conflictos !== 1 ||
+                    resultado.multimediaHuerfanaEliminada !== 1 || resultado.cursor !== 8) {
                     throw new Error("Resumen del intercambio incorrecto");
                 }
                 const subida = llamadas.find(item => item.tipo === "upload");
