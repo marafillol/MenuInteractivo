@@ -119,7 +119,7 @@ async function subirMultimediaPendiente(evento, url, secreto) {
     if (!respuesta.ok) throw new Error(`No se pudo transferir multimedia (HTTP ${respuesta.status}).`);
 }
 
-async function prepararMultimediaEntrante(evento, url, secreto) {
+async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos = []) {
     if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return parsearPayload(evento);
     if (!UUID_RE.test(String(evento.sync_id || "")) ||
         !Number.isSafeInteger(Number(evento.version_resultado)) || Number(evento.version_resultado) < 1) {
@@ -148,8 +148,18 @@ async function prepararMultimediaEntrante(evento, url, secreto) {
     const nombre = `${evento.sync_id}-v${evento.version_resultado}${extension}`;
     const destino = path.join(carpeta, nombre);
     const temporal = destino + ".sync-tmp";
-    await fs.promises.writeFile(temporal, contenido);
+    let existia = true;
+    try { await fs.promises.access(destino); } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+        existia = false;
+    }
+    await fs.promises.writeFile(temporal, contenido, { flag: "wx" }).catch(async (error) => {
+        if (error.code !== "EEXIST") throw error;
+        await fs.promises.unlink(temporal).catch(() => {});
+        throw new Error("Ya existe una descarga temporal para este archivo; se evita sobrescribirla.");
+    });
     await fs.promises.rename(temporal, destino);
+    if (!existia) archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
     return {
         ...evento,
         payload_json: {
@@ -185,8 +195,88 @@ async function guardarConfirmaciones(ids) {
     });
 }
 
-async function aplicarEventosEntrantes(eventos, cursor) {
+async function persistirConflictosRemotos(rechazados, eventosEnviados) {
+    const porEvento = new Map(eventosEnviados.map((evento) => [evento.evento_id, parsearPayload(evento)]));
+    const conflictos = rechazados.filter((item) => item?.estado === "conflicto" && porEvento.has(item.evento_id));
+    if (!conflictos.length) return 0;
+
     await db.withTransaction(async (consultar) => {
+        for (const rechazo of conflictos) {
+            const evento = porEvento.get(rechazo.evento_id);
+            const definicion = ENTIDADES[evento.entidad];
+            if (!definicion) continue;
+            const actual = await consultar(
+                `SELECT * FROM ${definicion.tabla} WHERE sync_id = ?`,
+                [evento.sync_id]
+            );
+            const hash = createHash("sha256").update(String(evento.evento_id)).digest("hex").slice(0, 32);
+            const conflictoId = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+            await consultar(`
+                INSERT INTO sync_conflictos (
+                    conflicto_id, entidad, sync_id, version_local_json,
+                    version_remota_json, detectado, resuelto, resolucion
+                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 0, ?)
+                ON CONFLICT (conflicto_id) DO NOTHING
+            `, [
+                conflictoId, evento.entidad, evento.sync_id,
+                JSON.stringify(actual.rows[0] || null),
+                JSON.stringify({
+                    evento_id: evento.evento_id,
+                    version_base: evento.version_base,
+                    version_resultado: evento.version_resultado,
+                    payload: obtenerPayload(evento),
+                    rechazo
+                }),
+                null
+            ]);
+        }
+    });
+    return conflictos.length;
+}
+
+async function limpiarDescargasNoAplicadas(archivos, idsNoAplicados) {
+    const noAplicados = new Set(idsNoAplicados);
+    for (const archivo of archivos) {
+        if (!noAplicados.has(archivo.evento_id)) continue;
+        try { await fs.promises.unlink(archivo.ruta); }
+        catch (error) { if (error.code !== "ENOENT") throw error; }
+    }
+}
+
+// Solo recolecta archivos generados por el cliente de sincronización
+// (UUID-vN.ext). Nunca toca URLs, rutas heredadas ni archivos subidos manualmente.
+async function limpiarMultimediaHuerfana() {
+    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
+    const filas = await all("SELECT ruta_archivo FROM multimedia WHERE ruta_archivo IS NOT NULL");
+    const referenciados = new Set(filas.map((fila) =>
+        path.resolve(raizProyecto, String(fila.ruta_archivo))
+    ));
+    let carpetas;
+    try { carpetas = await fs.promises.readdir(raizMultimedia, { withFileTypes: true }); }
+    catch (error) {
+        if (error.code === "ENOENT") return 0;
+        throw error;
+    }
+    let eliminados = 0;
+    for (const carpeta of carpetas) {
+        if (!carpeta.isDirectory() || !/^[a-z0-9_-]+$/i.test(carpeta.name)) continue;
+        const rutaCarpeta = path.join(raizMultimedia, carpeta.name);
+        const archivos = await fs.promises.readdir(rutaCarpeta, { withFileTypes: true });
+        for (const archivo of archivos) {
+            if (!archivo.isFile() ||
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-v[1-9][0-9]*\.[a-z0-9]{1,10}$/i.test(archivo.name)) continue;
+            const ruta = path.resolve(rutaCarpeta, archivo.name);
+            if (referenciados.has(ruta)) continue;
+            await fs.promises.unlink(ruta);
+            eliminados++;
+        }
+    }
+    return eliminados;
+}
+
+async function aplicarEventosEntrantes(eventos, cursor) {
+    return db.withTransaction(async (consultar) => {
         const resultado = await procesarLote(
             consultar,
             eventos.map(parsearPayload),
@@ -202,6 +292,7 @@ async function aplicarEventosEntrantes(eventos, cursor) {
              ON CONFLICT (clave) DO UPDATE SET valor = excluded.valor, actualizado = CURRENT_TIMESTAMP`,
             [CLAVE_CURSOR, String(cursor)]
         );
+        return resultado;
     });
 }
 
@@ -255,19 +346,33 @@ async function sincronizarUnaVez() {
         throw new Error("La respuesta del servidor de sincronización está incompleta.");
     }
 
+    await persistirConflictosRemotos(datos.rejected || [], pendientes);
     await guardarConfirmaciones(datos.acknowledged);
     await limpiarStagingConfirmado(pendientes, datos.acknowledged);
     const eventosEntrantes = [];
-    for (const evento of datos.events) {
-        eventosEntrantes.push(await prepararMultimediaEntrante(evento, url, secreto));
+    const archivosNuevos = [];
+    let resultadoEntrante;
+    try {
+        for (const evento of datos.events) {
+            eventosEntrantes.push(await prepararMultimediaEntrante(evento, url, secreto, archivosNuevos));
+        }
+        resultadoEntrante = await aplicarEventosEntrantes(eventosEntrantes, Number(datos.next_cursor));
+    } catch (error) {
+        await limpiarDescargasNoAplicadas(archivosNuevos, archivosNuevos.map((archivo) => archivo.evento_id));
+        throw error;
     }
-    await aplicarEventosEntrantes(eventosEntrantes, Number(datos.next_cursor));
+    const idsEnConflicto = resultadoEntrante.rechazados
+        .filter((item) => item.estado === "conflicto")
+        .map((item) => item.evento_id);
+    await limpiarDescargasNoAplicadas(archivosNuevos, idsEnConflicto);
+    const multimediaHuerfanaEliminada = await limpiarMultimediaHuerfana();
 
     return {
         estado: "sincronizado",
         enviados: datos.acknowledged.length,
         recibidos: datos.events.length,
         conflictos: (datos.rejected || []).filter((item) => item.estado === "conflicto").length,
+        multimediaHuerfanaEliminada,
         cursor: Number(datos.next_cursor)
     };
 }

@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - feature/sync-outbox-foundation
+      - feature/sync-ficha-outbox
+      - fix/sync-client-conflict-and-media-cleanup
+      - fix/ficha-delete-related-tombstones
   push:
     branches:
       - feature/sync-ficha-outbox

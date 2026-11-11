@@ -80,6 +80,11 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                     });
                 });
 
+                const carpetaMedia = path.join(process.cwd(), "imagenes", "multimedia", "imagen");
+                await fs.promises.mkdir(carpetaMedia, { recursive: true });
+                const archivoHuerfano = path.join(carpetaMedia, uuid(55) + "-v1.png");
+                await fs.promises.writeFile(archivoHuerfano, "archivo sin registro");
+
                 const bytesEntrada = Buffer.from("archivo multimedia de entrada");
                 const checksumEntrada = crypto.createHash("sha256").update(bytesEntrada).digest("hex");
                 const syncMediaEntrada = uuid(30);
@@ -113,7 +118,12 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                             return {
                                 device_id: uuid(999),
                                 acknowledged: solicitud.cuerpo.events.map(evento => evento.evento_id),
-                                rejected: [],
+                                rejected: [{
+                                    evento_id: solicitud.cuerpo.events[0].evento_id,
+                                    estado: "conflicto",
+                                    conflicto_id: uuid(990),
+                                    motivo: "Conflicto de versión de prueba"
+                                }],
                                 events: [
                                     {
                                         id_evento: 7, evento_id: uuid(701), origen_device_id: uuid(999),
@@ -141,7 +151,8 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 };
 
                 const resultado = await cliente.sincronizarUnaVez();
-                if (resultado.enviados !== 2 || resultado.recibidos !== 2 || resultado.cursor !== 8) {
+                if (resultado.enviados !== 2 || resultado.recibidos !== 2 || resultado.conflictos !== 1 ||
+                    resultado.multimediaHuerfanaEliminada !== 1 || resultado.cursor !== 8) {
                     throw new Error("Resumen del intercambio incorrecto");
                 }
                 const subida = llamadas.find(item => item.tipo === "upload");
@@ -154,13 +165,20 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 const entrada = await all("SELECT * FROM multimedia WHERE sync_id = ?", [syncMediaEntrada]);
                 const plantilla = await all("SELECT nombre FROM plantilla WHERE sync_id = ?", [uuid(702)]);
                 const cursor = await all("SELECT valor FROM configuracion WHERE clave = 'sync.cursor.supabase'");
+                const conflictos = await all("SELECT entidad, sync_id, resuelto, version_remota_json FROM sync_conflictos");
                 if (salida[0].aplicado !== 1 || entrada[0].checksum_sha256 !== checksumEntrada ||
-                    plantilla[0].nombre !== "Plantilla recibida" || cursor[0].valor !== "8") {
+                    plantilla[0].nombre !== "Plantilla recibida" || cursor[0].valor !== "8" ||
+                    conflictos.length !== 1 || conflictos[0].entidad !== "plantilla" ||
+                    conflictos[0].resuelto !== 0 ||
+                    !conflictos[0].version_remota_json.includes("Conflicto de versión de prueba")) {
                     throw new Error("El cliente no persistió el intercambio completo");
                 }
                 const rutaEntrada = path.resolve(process.cwd(), entrada[0].ruta_archivo);
                 if (!fs.readFileSync(rutaEntrada).equals(bytesEntrada)) {
                     throw new Error("El archivo recibido no coincide con su checksum");
+                }
+                if (fs.existsSync(archivoHuerfano)) {
+                    throw new Error("No se eliminó el archivo multimedia generado sin referencia");
                 }
                 await fs.promises.unlink(rutaEntrada);
 
