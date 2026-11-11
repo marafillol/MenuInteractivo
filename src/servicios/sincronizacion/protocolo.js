@@ -155,7 +155,11 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
     }
 
     if (evento.operacion === "DELETE") {
-        if (!actual) return registrarConflicto(consultar, evento, null, payload);
+        if (!actual) {
+            const conflicto = await registrarConflicto(consultar, evento, null, payload);
+            if (registrarRecepcion) await guardarEventoRecibido(consultar, evento);
+            return conflicto;
+        }
         const eliminadoEn = payload.deleted_at || new Date().toISOString();
         await consultar(
             `UPDATE ${tabla} SET sync_deleted_at = ?, sync_version = ?${tabla === "plantilla" || tabla === "etiqueta" || tabla === "multimedia" ? ", activo = 0" : ""} WHERE sync_id = ?`,
