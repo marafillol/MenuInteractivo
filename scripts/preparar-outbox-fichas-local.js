@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const path = require("node:path");
+const fs = require("node:fs");
 const { esModoLocal } = require("../src/config/modoServidor");
 
 if (!esModoLocal) {
@@ -7,6 +9,14 @@ if (!esModoLocal) {
 }
 if (!process.env.DATABASE_SQLITE_PATH) {
     throw new Error("Definí DATABASE_SQLITE_PATH apuntando a una copia descartable; no se permite usar la base predeterminada del museo.");
+}
+
+const rutaConfigurada = path.resolve(process.env.DATABASE_SQLITE_PATH);
+const rutaActiva = path.resolve(__dirname, "../database/museo.db");
+if (rutaConfigurada === rutaActiva ||
+    (fs.existsSync(rutaConfigurada) && fs.existsSync(rutaActiva) &&
+        fs.realpathSync(rutaConfigurada) === fs.realpathSync(rutaActiva))) {
+    throw new Error("Preparación bloqueada: no se permite modificar la SQLite activa del museo; usá una copia descartable.");
 }
 
 const db = require("../src/database");

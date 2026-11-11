@@ -54,12 +54,12 @@ function validarDestinoSeguro(connectionString) {
 // Las dependencias se validarán en una etapa posterior con mapas aprobados.
 const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
-  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"], requiereDependencia: true },
-  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"], requiereDependencia: true },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
-  { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"] },
-  { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"] },
-  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, requiereDependencia: true },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
+  { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
+  { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
+  { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
   // Configuración queda fuera del manifiesto de contenido hasta definir una
   // lista permitida: sus valores podrían contener datos sensibles.
   { tabla: "configuracion", pk: ["clave"], soloConteo: true }
@@ -142,6 +142,7 @@ function tieneClaves(fila, claves) {
 function prepararFilas(filas, entidad) {
   return filas.map(fila => ({
     clave_local: Object.fromEntries(entidad.pk.map(k => [k, fila[k]])),
+    sync_id_existente: fila.sync_id || null,
     huella_contenido: entidad.relacion ? null : huella(entidad.tabla, fila, entidad.excluir),
     ...(entidad.referencias ? {
       referencias: Object.fromEntries(entidad.referencias.map(k => [k, fila[k]]))
@@ -158,6 +159,72 @@ function agruparPorHuella(filas) {
   }
   return mapa;
 }
+function claveFila(fila, pk) {
+  return JSON.stringify(pk.map((campo) => fila[campo]));
+}
+
+function registrarMapaIdentidades(tabla, pk, filasLocal, filasRemoto, candidatos, mapas) {
+  const local = new Map();
+  const remoto = new Map();
+  for (const fila of filasLocal) {
+    if (fila.sync_id) local.set(claveFila(fila, pk), fila.sync_id);
+  }
+  for (const fila of filasRemoto) {
+    if (fila.sync_id) remoto.set(claveFila(fila, pk), fila.sync_id);
+  }
+  for (const candidato of candidatos) {
+    for (const clave of candidato.claves_sqlite) local.set(claveFila(clave, pk), candidato.sync_id_propuesto);
+    for (const clave of candidato.claves_postgres) remoto.set(claveFila(clave, pk), candidato.sync_id_propuesto);
+  }
+  mapas[tabla] = { sqlite: local, postgres: remoto };
+}
+
+function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
+  const pendientes = [];
+  const preparadas = [];
+  for (const fila of filas) {
+    const idsPadres = [];
+    for (const padre of entidad.padres || []) {
+      const mapa = mapas[padre.tabla]?.[fuente];
+      const identidad = mapa?.get(JSON.stringify([fila[padre.fk]]));
+      if (!identidad) {
+        pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
+        break;
+      }
+      idsPadres.push(identidad);
+    }
+    if (idsPadres.length !== (entidad.padres || []).length) continue;
+    if (entidad.multimedia && !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))) {
+      pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
+      continue;
+    }
+    if (entidad.tabla === "relacion_ficha" &&
+        (fila.tipo_relacion === null || fila.tipo_relacion === undefined)) {
+      pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
+      continue;
+    }
+    const padresNormalizados = entidad.tabla === "relacion_ficha"
+      ? [...idsPadres].sort()
+      : idsPadres;
+    const registro = { ...fila, __sync_parent_ids: padresNormalizados };
+    const hash = entidad.relacion
+      ? crypto.createHash("sha256").update(JSON.stringify(canonicalizar({
+          padres: padresNormalizados,
+          ...(entidad.tabla === "relacion_ficha" ? { tipo_relacion: fila.tipo_relacion } : {})
+        }))).digest("hex")
+      : huella(entidad.tabla, registro, entidad.excluir);
+    preparadas.push({
+      clave_local: Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])),
+      sync_id_existente: fila.sync_id || null,
+      huella_contenido: hash,
+      ...(entidad.referencias ? {
+        referencias: Object.fromEntries(entidad.referencias.map((campo) => [campo, fila[campo]]))
+      } : {})
+    });
+  }
+  return { filas: preparadas, pendientes };
+}
+
 async function main() {
   if (!SQLITE_PATH || !POSTGRES_URL) {
     throw new Error("Configurá RECONCILIACION_SQLITE_PATH y RECONCILIACION_POSTGRES_URL con copias descartables, nunca producción.");
@@ -206,9 +273,10 @@ async function main() {
         "JSON y booleanos se normalizan para reducir diferencias de representación entre SQLite y PostgreSQL.",
         "Los metadatos sync_id, sync_version y sync_deleted_at no participan en las huellas.",
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
-        "Menús, fichas y multimedia quedan pendientes: no se comparan hijos sin identidad de padre reconciliada.",
-        "Multimedia no recibe candidatos hasta verificar checksum_sha256 y la identidad de su ficha padre en ambas copias.",
-        "Las tablas de relaciones se enumeran pero no se emparejan hasta reconciliar sus extremos.",
+        "Menús, fichas y multimedia solo generan candidatos cuando la identidad de sus padres está disponible en ambas copias.",
+        "Multimedia requiere una ficha padre reconciliada y un checksum_sha256 con formato hexadecimal de 64 caracteres; este manifiesto no verifica los bytes del archivo.",
+        "Las relaciones se emparejan usando las identidades compartidas de todos sus extremos; ficha_etiqueta conserva su clave primaria compuesta.",
+        "Los sync_id preexistentes se conservan como candidatos; identidades distintas entre copias se reportan como conflicto y nunca se sobrescriben.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
         "No se leen ni exportan usuarios, credenciales, sesiones o tokens.",
         "No se exportan valores completos de registros: solo claves, huellas y referencias necesarias.",
@@ -217,6 +285,7 @@ async function main() {
       entidades: {}
     };
 
+    const mapasIdentidad = {};
     for (const entidad of ENTIDADES) {
       const tabla = entidad.tabla;
       const localRaw = entidad.soloConteo
@@ -245,37 +314,27 @@ async function main() {
         continue;
       }
 
-      const local = prepararFilas(localRaw, entidad);
-      const remoto = prepararFilas(remotoRaw, entidad);
-      if (entidad.requiereDependencia) {
-        informe.entidades[tabla] = {
-          clave_primaria: entidad.pk,
-          campos_excluidos_de_huella: entidad.excluir,
-          estado: "pendiente_de_reconciliar_dependencias",
-          motivo: tabla === "multimedia"
-            ? "No se propone identidad sin reconciliar primero la ficha padre y verificar checksum_sha256 en ambas copias."
-            : "No se comparan registros hijos por contenido aislado: primero debe aprobarse la identidad de su registro padre.",
-          conteos: { sqlite: local.length, postgres: remoto.length },
-          pendientes_sqlite: local.map(f => f.clave_local),
-          pendientes_postgres: remoto.map(f => f.clave_local)
-        };
-        continue;
-      }
-      if (entidad.relacion) {
-        informe.entidades[tabla] = {
-          clave_primaria: entidad.pk,
-          estado: "pendiente_de_reconciliar_extremos",
-          conteos: { sqlite: local.length, postgres: remoto.length },
-          filas_sqlite: local,
-          filas_postgres: remoto
-        };
-        continue;
+      let local;
+      let remoto;
+      let pendientesLocal = [];
+      let pendientesRemoto = [];
+      if (entidad.padres?.length) {
+        const preparadoLocal = prepararFilasConDependencias(localRaw, entidad, mapasIdentidad, "sqlite");
+        const preparadoRemoto = prepararFilasConDependencias(remotoRaw, entidad, mapasIdentidad, "postgres");
+        local = preparadoLocal.filas;
+        remoto = preparadoRemoto.filas;
+        pendientesLocal = preparadoLocal.pendientes;
+        pendientesRemoto = preparadoRemoto.pendientes;
+      } else {
+        local = prepararFilas(localRaw, entidad);
+        remoto = prepararFilas(remotoRaw, entidad);
       }
 
       const gruposLocal = agruparPorHuella(local);
       const gruposRemoto = agruparPorHuella(remoto);
       const compartidas = [];
       const ambiguas = [];
+      const conflictosSyncId = [];
       for (const [hash, filasLocal] of gruposLocal) {
         const filasRemotas = gruposRemoto.get(hash);
         if (!filasRemotas) continue;
@@ -287,11 +346,35 @@ async function main() {
           cantidad_postgres: filasRemotas.length
         };
         if (filasLocal.length === 1 && filasRemotas.length === 1) {
+          const idsExistentes = [...new Set([
+            filasLocal[0].sync_id_existente,
+            filasRemotas[0].sync_id_existente
+          ].filter(Boolean).map(String))];
+          if (idsExistentes.length > 1) {
+            conflictosSyncId.push({
+              ...candidato,
+              sync_id_sqlite: filasLocal[0].sync_id_existente,
+              sync_id_postgres: filasRemotas[0].sync_id_existente,
+              estado: "conflicto_identidades_existentes"
+            });
+            continue;
+          }
+          const syncId = idsExistentes[0] || uuidPropuesto(tabla, hash);
+          if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(syncId)) {
+            conflictosSyncId.push({
+              ...candidato,
+              sync_id_existente: syncId,
+              estado: "sync_id_existente_invalido"
+            });
+            continue;
+          }
           compartidas.push({
             ...candidato,
-            sync_id_propuesto: uuidPropuesto(tabla, hash),
+            sync_id_propuesto: syncId,
             aprobado: false,
-            estado: "candidato_revision_manual"
+            estado: idsExistentes.length
+              ? "candidato_completar_identidad_existente"
+              : "candidato_revision_manual"
           });
         } else {
           ambiguas.push({ ...candidato, estado: "ambiguo_por_duplicidad" });
@@ -302,22 +385,32 @@ async function main() {
       const hashesLocales = new Set(gruposLocal.keys());
       informe.entidades[tabla] = {
         clave_primaria: entidad.pk,
-        campos_excluidos_de_huella: entidad.excluir,
+        ...(entidad.excluir ? { campos_excluidos_de_huella: entidad.excluir } : {}),
         conteos: {
-          sqlite: local.length,
-          postgres: remoto.length,
+          sqlite: localRaw.length,
+          postgres: remotoRaw.length,
           candidatos_unicos: compartidas.length,
           grupos_ambiguos: ambiguas.length,
+          conflictos_sync_id: conflictosSyncId.length,
+          pendientes_dependencia_sqlite: pendientesLocal.length,
+          pendientes_dependencia_postgres: pendientesRemoto.length,
           solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
           solo_postgres_por_contenido: remoto.filter(f => !hashesLocales.has(f.huella_contenido)).length
         },
+        estado: pendientesLocal.length || pendientesRemoto.length
+          ? "parcial; requiere_reconciliar_dependencias"
+          : "candidatos_generados",
+        ...(pendientesLocal.length ? { pendientes_sqlite: pendientesLocal } : {}),
+        ...(pendientesRemoto.length ? { pendientes_postgres: pendientesRemoto } : {}),
         candidatos_unicos: compartidas,
         ambiguos: ambiguas,
+        conflictos_sync_id: conflictosSyncId,
         solo_sqlite: local.filter(f => !hashesRemotos.has(f.huella_contenido)),
         solo_postgres: remoto.filter(f => !hashesLocales.has(f.huella_contenido))
       };
-    }
 
+      registrarMapaIdentidades(tabla, entidad.pk, localRaw, remotoRaw, compartidas, mapasIdentidad);
+    }
     await pg.query("ROLLBACK");
     transaccion = false;
     await cerrarSQLite(sqlite);
@@ -354,5 +447,8 @@ module.exports = {
   agruparPorHuella,
   uuidPropuesto,
   validarDestinoSeguro,
+  claveFila,
+  registrarMapaIdentidades,
+  prepararFilasConDependencias,
   ENTIDADES
 };

@@ -41,9 +41,9 @@ La nube se considera una integración/proveedor reemplazable y opcional para el 
 
 ## Datos incluidos y excluidos
 
-Entidades candidatas a sincronización: plantillas, menús, fichas, etiquetas, relaciones ficha-etiqueta, relaciones entre fichas, configuración y metadatos multimedia.
+Entidades candidatas a sincronización: plantillas, menús, fichas, etiquetas, relaciones ficha-etiqueta, relaciones entre fichas y metadatos multimedia.
 
-Usuarios, credenciales, hashes de contraseñas, sesiones y tokens quedan excluidos de la replicación inicial. Los usuarios locales se administran en cada instalación mediante un procedimiento propio y seguro.
+La tabla `configuracion` queda fuera del protocolo: conserva sus claves y valores locales (incluidos cursores y ajustes propios de cada instalación). Usuarios, credenciales, hashes de contraseñas, sesiones y tokens también quedan excluidos de la replicación. Los usuarios locales se administran en cada instalación mediante un procedimiento propio y seguro.
 
 ## Etapas de implementación
 
@@ -99,16 +99,21 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 - El cliente SQLite consulta su outbox, envía hasta 100 eventos por intercambio, recibe cambios remotos y se reintenta cada 30 segundos cuando están configuradas `SYNC_REMOTE_URL` y `SYNC_SHARED_SECRET`.
 - Los eventos aplicados se registran con su UUID original para evitar ciclos y duplicaciones.
 - Los cambios concurrentes con versiones incompatibles se guardan en `sync_conflictos`; no se sobrescribe silenciosamente la fila local.
-- Los archivos multimedia se conservan en staging inmutable por UUID/versión, se suben a Supabase Storage y se descargan en cada nodo con verificación SHA-256.
+- Los registros de la tabla `multimedia` se conservan en staging inmutable por UUID/versión, se suben a Supabase Storage y se descargan en cada nodo con verificación SHA-256.
 - Los padres se resuelven por `sync_id`, nunca por IDs enteros locales.
+- **Bloqueo pendiente:** las imágenes de portada de menús y fichas se almacenan en las columnas `imagen` y todavía no usan el flujo de transferencia multimedia. En modo local pueden ser rutas de archivos locales; en modo Supabase pueden ser URLs públicas. No se debe considerar completa la sincronización offline de imágenes hasta implementar y probar la transferencia de estas portadas.
 
 ### Límites que siguen pendientes
 
 - La limpieza/garbage collection de objetos Storage antiguos todavía no está implementada: se conservan para no borrar archivos antes de que las réplicas reciban los eventos.
-- Hay herramientas de solo lectura para generar un manifiesto y un aplicador manual idempotente para candidatos aprobados. Todavía no se han ejecutado sobre copias reales; los registros con `sync_id` NULL no se deben sincronizar hasta completar esa revisión y aplicación en ambas copias.
-- Relaciones entre fichas y configuración todavía no forman parte del protocolo incremental.
+- El manifiesto de reconciliación genera candidatos de forma dependiente: menú después de plantilla, ficha después de menú, multimedia después de ficha y relaciones después de reconciliar todos sus extremos. `ficha_etiqueta` conserva su clave primaria compuesta.
+- El aplicador manual acepta únicamente candidatos aprobados, comprueba los padres y no sobrescribe `sync_id` existentes. Si las dos copias tienen UUID distintos para el mismo contenido, el manifiesto informa el conflicto.
+- La reconciliación histórica todavía no se ejecutó sobre copias reales; los registros con `sync_id` NULL no se deben sincronizar hasta completar la revisión y aplicación en ambas copias.
+- El manifiesto exige un campo `checksum_sha256` con formato de 64 caracteres hexadecimales para proponer multimedia, pero no verifica por sí mismo los bytes del archivo. La verificación binaria debe completarse antes de aprobar candidatos multimedia; el protocolo de transferencia sí comprueba el SHA-256 real al subir y descargar.
+- La tabla `configuracion` queda fuera del protocolo incremental por diseño.
+- Las imágenes de portada de menús y fichas requieren un flujo de archivos independiente; actualmente un evento puede propagar la referencia, pero no garantiza que el archivo exista en el otro nodo.
 - La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
-- La suite debe aprobar CI después de cada cambio del protocolo y se necesitan pruebas de integración con PostgreSQL descartable.
+- La suite de CI de la rama de trabajo aprobó las pruebas automatizadas, incluidas las de reconciliación en SQLite temporal. Todavía faltan pruebas de integración con PostgreSQL descartable y una validación controlada con copias reales.
 
 ### Configuración y despliegue
 
