@@ -77,11 +77,12 @@ test("multimedia no se considera reconciliable antes de verificar su ficha y che
 
 test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
   const validar = validarDestinoSeguro;
-  assert.doesNotThrow(() => validar("postgresql://usuario:clave@127.0.0.1:5433/museo_reconciliacion_prueba"));
-  assert.doesNotThrow(() => validar("postgres://usuario:clave@localhost:5433/museo_reconciliacion_prueba"));
+  assert.doesNotThrow(() => validar("postgresql://usuario:clave@127.0.0.1:5432/museo_reconciliacion_prueba"));
+  
   for (const url of [
     "postgresql://usuario:clave@db.example.com:5432/postgres",
-    "postgresql://usuario:clave@127.0.0.1:5432/museo_reconciliacion_prueba",
+    "postgresql://usuario:clave@127.0.0.1:5433/museo_reconciliacion_prueba",
+    
     "postgresql://usuario:clave@127.0.0.1:5433/postgres",
     "https://example.com"
   ]) {

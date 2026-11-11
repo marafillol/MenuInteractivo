@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const sqlite3 = require("sqlite3");
+const { validarDestinoPostgresSeguro } = require("../scripts/aplicar-manifiesto-reconciliacion");
 
 const proyecto = path.resolve(__dirname, "..");
 const UUIDS = {
@@ -119,5 +120,20 @@ test("rechaza aplicar un manifiesto sin doble confirmación de copia", () => {
         assert.match(resultado.stderr, /Aplicación bloqueada/);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
+    }
+});
+
+
+test("el aplicador PostgreSQL solo admite la copia local de reconciliación", () => {
+    assert.doesNotThrow(() => validarDestinoPostgresSeguro(
+        "postgresql://usuario:clave@127.0.0.1:5432/museo_reconciliacion_prueba"
+    ));
+    for (const url of [
+        "postgresql://usuario:clave@db.example.com:5432/postgres",
+        "postgresql://usuario:clave@127.0.0.1:5432/postgres",
+        "postgresql://usuario:clave@127.0.0.1:5433/postgres",
+        "https://example.com"
+    ]) {
+        assert.throws(() => validarDestinoPostgresSeguro(url), /Aplicación bloqueada|URL de PostgreSQL inválida/);
     }
 });
