@@ -84,10 +84,10 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
             entidades: {
                 plantilla: { candidatos_unicos: [candidato(UUIDS.plantilla, { id_plantilla: 1 }, { id_plantilla: 11 })] },
                 etiqueta: { candidatos_unicos: [candidato(UUIDS.etiqueta, { id_etiqueta: 1 }, { id_etiqueta: 14 })] },
-                menu: { candidatos_unicos: [candidato(UUIDS.menu, { id_menu: 1 }, { id_menu: 12 })] },
+                menu: { candidatos_unicos: [{ ...candidato(UUIDS.menu, { id_menu: 1 }, { id_menu: 12 }), portada: { estado: "sin_portada" } }] },
                 ficha: { candidatos_unicos: [
-                    candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 }),
-                    candidato(UUIDS.fichaDestino, { id_ficha: 2 }, { id_ficha: 16 })
+                    { ...candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 }), portada: { estado: "sin_portada" } },
+                    { ...candidato(UUIDS.fichaDestino, { id_ficha: 2 }, { id_ficha: 16 }), portada: { estado: "sin_portada" } }
                 ] },
                 ficha_etiqueta: { candidatos_unicos: [candidato(UUIDS.ficha_etiqueta, { id_ficha: 1, id_etiqueta: 1 }, { id_ficha: 13, id_etiqueta: 14 })] },
                 relacion_ficha: { candidatos_unicos: [candidato(UUIDS.relacion_ficha, { id_relacion: 1 }, { id_relacion: 15 })] }
