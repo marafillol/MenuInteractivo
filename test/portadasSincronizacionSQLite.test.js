@@ -108,7 +108,7 @@ test("prepara una portada local con storage_key, checksum y staging inmutable", 
             encoding: "utf8"
         });
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /multimedia\\/covers\\/menu\\//);
+        assert.match(operacion.stdout, /"eventos":4/);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
