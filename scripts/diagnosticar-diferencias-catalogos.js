@@ -23,7 +23,15 @@ const OUTPUT = process.env.RECONCILIACION_DIAGNOSTICO_SALIDA ||
 
 const TABLAS = {
   plantilla: { pk: "id_plantilla", ignorar: ["id_plantilla", "creado", "actualizado"], json: ["plantilla_json"], booleanos: ["activo"] },
-  etiqueta: { pk: "id_etiqueta", ignorar: ["id_etiqueta"], json: [], booleanos: ["activo"] }
+  etiqueta: { pk: "id_etiqueta", ignorar: ["id_etiqueta"], json: [], booleanos: ["activo"] },
+  // id_usuario se excluye expresamente: el diagnóstico no debe exponer
+  // asociaciones con cuentas ni comparar datos de usuarios.
+  ficha: {
+    pk: "id_ficha",
+    ignorar: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado", "sync_id", "sync_version", "sync_deleted_at"],
+    json: ["datos_json"],
+    booleanos: ["visible"]
+  }
 };
 
 function validarDestinoSeguro(connectionString) {
@@ -116,7 +124,7 @@ async function main() {
       modo: "solo_lectura",
       sqlite: path.basename(SQLITE_PATH),
       postgres: "museo_reconciliacion_prueba",
-      aviso: "No contiene valores de registros; solo tipos, longitudes y huellas SHA-256. activo normaliza 0/1 numérico o textual.",
+      aviso: "No contiene valores de registros; solo tipos, longitudes y huellas SHA-256. Excluye IDs de usuario, dependencias y rutas físicas. Normaliza JSON y booleanos 0/1.",
       tablas: {}
     };
 
