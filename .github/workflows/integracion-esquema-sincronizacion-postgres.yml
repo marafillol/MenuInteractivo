@@ -54,6 +54,8 @@ jobs:
         run: npm run sync:preparar
       - name: Verificar esquema, metadatos y secuencias
         run: node --test test/integracionEsquemaPostgresSync.test.js
+      - name: Probar intercambio HTTP bidireccional SQLite/PostgreSQL y multimedia
+        run: node --test test/integracionBidireccionalPostgresSQLite.test.js
 
 
   backfill-backup-real:
