@@ -27,7 +27,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
 
         const operacion = ejecutar(["-e", `
             const db = require("./src/database");
-            const { aplicarEvento } = require("./src/servicios/sincronizacion/protocolo");
+            const { aplicarEvento, procesarLote } = require("./src/servicios/sincronizacion/protocolo");
             const run = (sql, values = []) => new Promise((resolve, reject) =>
                 db.run(sql, values, error => error ? reject(error) : resolve())
             );
@@ -114,19 +114,19 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     throw new Error("No se aplicó la relación entre fichas");
                 }
 
-                // Un hijo recibido antes que su menú no se confirma ni consume su evento.
+                // El lote puede llegar con la ficha antes que su menú padre.
                 const fichaFueraDeOrden = evento(11, "ficha", "INSERT", uuid(8), 0, 1, {
                     menu_sync_id: uuid(9), titulo: "Hija fuera de orden",
                     resumen: null, texto: null, imagen: null, datos_json: "{}", visible: 1
                 });
-                await assert.rejects(aplicar(fichaFueraDeOrden), /Falta reconciliar la entidad padre/);
-                const noRecibida = await all("SELECT evento_id FROM sync_eventos WHERE evento_id = ?", [uuid(111)]);
-                assert.equal(noRecibida.length, 0);
                 const menuPadreTardio = evento(12, "menu", "INSERT", uuid(9), 0, 1, {
                     plantilla_sync_id: uuid(1), nombre: "Menú padre tardío", visible: 1
                 });
-                assert.equal((await aplicar(menuPadreTardio)).estado, "aplicado");
-                assert.equal((await aplicar(fichaFueraDeOrden)).estado, "aplicado");
+                const lote = await db.withTransaction(q => procesarLote(q, [
+                    fichaFueraDeOrden, menuPadreTardio
+                ]));
+                assert.deepEqual(lote.rechazados, []);
+                assert.deepEqual(lote.confirmados, [uuid(112), uuid(111)]);
                 const hijaGuardada = await all("SELECT titulo FROM ficha WHERE sync_id = ?", [uuid(8)]);
                 assert.equal(hijaGuardada[0].titulo, "Hija fuera de orden");
 
