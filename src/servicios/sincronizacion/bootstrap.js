@@ -114,13 +114,13 @@ function validarSnapshot(snapshot) {
         if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de menú históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
-        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Una portada de menú tiene metadatos de Storage inválidos.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
     for (const fila of snapshot.data.ficha) {
         comprobarPadre("ficha", fila.id_menu, "menu", "id_menu", "Una ficha");
-        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de fichas históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
         if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
