@@ -3,11 +3,13 @@ const IDENTIFICADORES_POSTGRES = Object.freeze([
   ["menu", "id_menu"],
   ["ficha", "id_ficha"],
   ["etiqueta", "id_etiqueta"],
+  ["relacion_ficha", "id_relacion"],
   ["multimedia", "id_multi"]
 ]);
 
 /**
- * Verifica las secuencias de las cinco PK autoincrementales sincronizables.
+ * Verifica y prepara las secuencias de las PK autoincrementales usadas
+ * por las entidades y relaciones del protocolo de sincronización.
  * Crea las faltantes, las asocia a sus columnas y las posiciona por encima
  * del mayor ID sin hacer retroceder una secuencia ya utilizada.
  */
