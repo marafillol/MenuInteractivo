@@ -14,7 +14,7 @@ const MIME_POR_EXTENSION = {
 };
 
 function normalizarRutaPortada(ruta) {
-    return String(ruta || "").replace(/\\\\/g, "/");
+    return String(ruta || "").split("\\").join("/");
 }
 
 function extensionSegura(archivo) {
