@@ -172,13 +172,13 @@ async function main() {
     if (u10.rowCount !== 1) throw new Error("No se pudo actualizar exactamente ficha 10; ROLLBACK.");
 
     const u28 = await pg.query(
-      "UPDATE public.ficha SET datos_json = $1::jsonb WHERE id_ficha = 28 AND datos_json = '{}'::jsonb",
+      "UPDATE public.ficha SET datos_json = $1 WHERE id_ficha = 28 AND datos_json::text = '{}'",
       [JSON.stringify(json28)]
     );
     if (u28.rowCount !== 1) throw new Error("No se pudo actualizar exactamente ficha 28; ROLLBACK.");
 
     const u30 = await pg.query(
-      "UPDATE public.ficha SET datos_json = $1::jsonb WHERE id_ficha = 30 AND datos_json = '{}'::jsonb",
+      "UPDATE public.ficha SET datos_json = $1 WHERE id_ficha = 30 AND datos_json::text = '{}'",
       [JSON.stringify(json30)]
     );
     if (u30.rowCount !== 1) throw new Error("No se pudo actualizar exactamente ficha 30; ROLLBACK.");
