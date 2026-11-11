@@ -31,6 +31,7 @@ jobs:
     env:
       MODO_SERVIDOR: supabase
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_reconciliacion_prueba
+      DATABASE_SSL: "false"
       SYNC_ALLOW_SCHEMA_MIGRATION: "true"
       SYNC_SCHEMA_CONFIRMATION: I_HAVE_A_BACKUP_AND_APPROVE
     steps:
