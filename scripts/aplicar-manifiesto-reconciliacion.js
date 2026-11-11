@@ -15,11 +15,11 @@ function validarDestinoPostgresSeguro(connectionString) {
     try { destino = new URL(String(connectionString || "")); }
     catch { throw new Error("URL de PostgreSQL inválida."); }
     const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
-    const puertoPermitido = ["5432", "5433"].includes(destino.port);
+    const puertoPermitido = destino.port === "5432";
     const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
     if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
         !hostPermitido || !puertoPermitido || !basePermitida) {
-        throw new Error("Aplicación bloqueada: solo se permite la copia local museo_reconciliacion_prueba en localhost:5432 o localhost:5433.");
+        throw new Error("Aplicación bloqueada: solo se permite la copia local museo_reconciliacion_prueba en localhost:5432.");
     }
 }
 function validarDestinoSqliteSeguro(ruta) {
