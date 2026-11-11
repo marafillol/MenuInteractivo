@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { randomUUID, createHash } = require("node:crypto");
 const { esModoLocal, esModoSupabase } = require("../../config/modoServidor");
-const { estaPreparado } = require("./esquema");
+const { estaPreparado, columnasDe } = require("./esquema");
 
 const MIME_POR_EXTENSION = {
     ".jpg": "image/jpeg",
@@ -36,6 +36,15 @@ async function prepararPortada(archivo, entidad) {
     }
     const tablas = entidad === "menu" ? ["menu", "plantilla"] : ["ficha", "menu"];
     if (!await estaPreparado(tablas)) return null;
+    const columnas = await columnasDe(entidad);
+    const nombres = new Set(columnas.map((columna) => columna.name));
+    const metadatosRequeridos = [
+        "imagen_storage_key", "imagen_checksum_sha256",
+        "imagen_mime_type", "imagen_tamano_bytes"
+    ];
+    if (!metadatosRequeridos.every((campo) => nombres.has(campo))) {
+        throw new Error("Falta preparar el esquema de metadatos de portadas antes de subir imágenes.");
+    }
 
     const extension = extensionSegura(archivo);
     const mimeType = MIME_POR_EXTENSION[extension];
