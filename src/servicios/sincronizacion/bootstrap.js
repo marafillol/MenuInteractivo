@@ -1,4 +1,4 @@
-const { esClaveHistoricaPermitida } = require("./resolverStorageHistorico");
+const { esClaveHistoricaPermitida, aplicarMapaSnapshot } = require("./resolverStorageHistorico");
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -175,8 +175,9 @@ async function crearSnapshot(consultar) {
         generado_en: new Date().toISOString(),
         data
     };
-    validarSnapshot(snapshot);
-    return snapshot;
+    const snapshotNormalizado = aplicarMapaSnapshot(snapshot);
+    validarSnapshot(snapshotNormalizado);
+    return snapshotNormalizado;
 }
 
 async function comprobarBaseLocalVacia(consultar) {
