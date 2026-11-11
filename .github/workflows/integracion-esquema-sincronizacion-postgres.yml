@@ -58,7 +58,7 @@ jobs:
         run: node --test test/integracionBidireccionalPostgresSQLite.test.js
 
 
-  backfill-backup-real:
+  backfill-backup-schema-real:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -84,7 +84,7 @@ jobs:
           cache: npm
       - name: Instalar dependencias
         run: npm ci
-      - name: Validar backfill con claves reales del backup
+      - name: Validar backfill sobre DDL original y claves extraídas del backup
         env:
           SYNC_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_backup_real_test
         run: node --test test/migracionIdentidadesSupabaseBackupReal.test.js
