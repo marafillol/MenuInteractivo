@@ -227,8 +227,15 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
             existia = false;
         }
         if (!existia) {
+            // Un corte del proceso puede dejar un temporal de un intento anterior.
+            // No se lo reutiliza ni se sobrescribe: se retira y se reintenta en el
+            // siguiente ciclo, manteniendo el destino final intacto.
             const temporal = destino + ".sync-tmp";
-            await fs.promises.writeFile(temporal, contenido, { flag: "wx" });
+            await fs.promises.writeFile(temporal, contenido, { flag: "wx" }).catch(async (error) => {
+                if (error.code !== "EEXIST") throw error;
+                await fs.promises.unlink(temporal).catch(() => {});
+                throw new Error("Se encontró una descarga temporal anterior de portada; se limpió para reintentar sin sobrescribir.");
+            });
             await fs.promises.rename(temporal, destino);
             archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
         }
