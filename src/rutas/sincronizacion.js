@@ -22,6 +22,16 @@ function credencialValida(req) {
     return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
 }
 
+function exigirCredencial(req, res, next) {
+    if (!esModoSupabase) {
+        return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
+    }
+    if (!credencialValida(req)) {
+        return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+    return next();
+}
+
 function storageKeyValida(storageKey) {
     if (typeof storageKey !== "string" || !storageKey.startsWith("multimedia/")) return false;
     const segmentos = storageKey.split("/");
@@ -30,7 +40,7 @@ function storageKeyValida(storageKey) {
     );
 }
 
-router.post("/media/upload", upload.single("file"), async (req, res) => {
+router.post("/media/upload", exigirCredencial, upload.single("file"), async (req, res) => {
     if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
     if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
 
