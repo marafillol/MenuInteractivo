@@ -54,9 +54,17 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
 
                 const menu = evento(2, "menu", "INSERT", uuid(2), 0, 1, {
                     plantilla_sync_id: uuid(1), nombre: "Menú compartido",
-                    descripcion: null, imagen: null, visible: 1
+                    descripcion: null, imagen: "https://storage.example/menu.png",
+                    imagen_storage_key: "multimedia/covers/menu/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.png",
+                    imagen_checksum_sha256: "a".repeat(64),
+                    imagen_mime_type: "image/png", imagen_tamano_bytes: 123,
+                    visible: 1
                 });
                 assert.equal((await aplicar(menu)).estado, "aplicado");
+                const portadaMenu = await all("SELECT imagen_storage_key, imagen_checksum_sha256, imagen_tamano_bytes FROM menu WHERE sync_id = ?", [uuid(2)]);
+                assert.equal(portadaMenu[0].imagen_storage_key, "multimedia/covers/menu/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.png");
+                assert.equal(portadaMenu[0].imagen_checksum_sha256, "a".repeat(64));
+                assert.equal(portadaMenu[0].imagen_tamano_bytes, 123);
 
                 const ficha = evento(3, "ficha", "INSERT", uuid(3), 0, 1, {
                     menu_sync_id: uuid(2), titulo: "Ficha compartida",
