@@ -7,6 +7,7 @@ const {
   prepararFilas,
   agruparPorHuella,
   uuidPropuesto,
+  validarDestinoSeguro,
   ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
 
@@ -72,4 +73,18 @@ test("multimedia no se considera reconciliable antes de verificar su ficha y che
   const multimedia = ENTIDADES.find(e => e.tabla === "multimedia");
   assert.equal(multimedia.requiereDependencia, true);
   assert.equal(multimedia.multimedia, true);
+});
+
+test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
+  const validar = validarDestinoSeguro;
+  assert.doesNotThrow(() => validar("postgresql://usuario:clave@127.0.0.1:5433/museo_reconciliacion_prueba"));
+  assert.doesNotThrow(() => validar("postgres://usuario:clave@localhost:5433/museo_reconciliacion_prueba"));
+  for (const url of [
+    "postgresql://usuario:clave@db.example.com:5432/postgres",
+    "postgresql://usuario:clave@127.0.0.1:5432/museo_reconciliacion_prueba",
+    "postgresql://usuario:clave@127.0.0.1:5433/postgres",
+    "https://example.com"
+  ]) {
+    assert.throws(() => validar(url), /Conexión bloqueada|URL de PostgreSQL inválida/);
+  }
 });
