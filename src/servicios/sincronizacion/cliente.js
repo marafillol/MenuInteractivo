@@ -505,5 +505,9 @@ function detenerSincronizacionAutomatica() {
 module.exports = {
     sincronizarUnaVez,
     iniciarSincronizacionAutomatica,
-    detenerSincronizacionAutomatica
+    detenerSincronizacionAutomatica,
+    obtenerRutaStagingPortada,
+    subirMultimediaPendiente,
+    prepararMultimediaEntrante,
+    limpiarStagingConfirmado
 };
