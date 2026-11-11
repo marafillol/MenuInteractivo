@@ -265,7 +265,7 @@ async function limpiarMultimediaHuerfana() {
         const archivos = await fs.promises.readdir(rutaCarpeta, { withFileTypes: true });
         for (const archivo of archivos) {
             if (!archivo.isFile() ||
-                !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-v[1-9][0-9]*\\.[a-z0-9]{1,10}$/i.test(archivo.name)) continue;
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-v[1-9][0-9]*\.[a-z0-9]{1,10}$/i.test(archivo.name)) continue;
             const ruta = path.resolve(rutaCarpeta, archivo.name);
             if (referenciados.has(ruta)) continue;
             await fs.promises.unlink(ruta);
