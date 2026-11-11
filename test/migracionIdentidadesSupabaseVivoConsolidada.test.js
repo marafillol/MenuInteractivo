@@ -11,7 +11,7 @@ function validarDestino(value) {
   const u = new URL(String(value || ''));
   assert.ok(['127.0.0.1','localhost'].includes(u.hostname));
   assert.equal(u.port, '5432');
-  assert.equal(u.pathname.slice(1), 'museo_backup_real_test');
+  assert.equal(u.pathname.slice(1), 'museo_backup_real_delta_test');
 }
 
 test('identidades consolidadas para 59 fichas y 39 asociaciones del Supabase vivo', {skip: !url}, async () => {
