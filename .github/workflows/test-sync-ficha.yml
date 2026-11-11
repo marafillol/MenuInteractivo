@@ -15,6 +15,7 @@ on:
     branches:
       - feature/sync-ficha-outbox
       - integration/sync-bidireccional-validacion
+      - fix/windows-cover-path-normalization
 
 jobs:
   tests:
