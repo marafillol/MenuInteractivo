@@ -19,7 +19,8 @@ async function asegurarSecuenciasIdentificadores({ run, all }) {
     const tablaSql = `public."${tabla}"`;
     const secuenciaSql = `public."${secuencia}"`;
 
-    await run(`CREATE SEQUENCE IF NOT EXISTS ${secuenciaSql} AS BIGINT`);
+    const tipoSecuencia = tabla === "relacion_ficha" ? "INTEGER" : "BIGINT";
+    await run(`CREATE SEQUENCE IF NOT EXISTS ${secuenciaSql} AS ${tipoSecuencia}`);
     await run(
       `ALTER TABLE ${tablaSql} ALTER COLUMN "${columna}" ` +
       `SET DEFAULT nextval('public."${secuencia}"'::regclass)`
