@@ -1,0 +1,41 @@
+name: pruebas-integridad-sqlite
+
+on:
+  push:
+    branches:
+      - fix/sqlite-integrity-hardening
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    env:
+      LOCAL_AUTH_SECRET: ci-solamente-no-usar-en-produccion-1234567890
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar suite completa
+        run: npm test
+      - name: Verificar sintaxis de cambios críticos
+        run: |
+          node --check src/database.js
+          node --check src/modelos/ficha.js
+          node --check src/modelos/menu.js
+          node --check src/modelos/plantilla.js
+          node --check src/modelos/etiquetaModelo.js
+          node --check src/controladores/fichas.js
+          node --check src/controladores/menus.js
+          node --check src/controladores/plantillas.js
+          node --check src/controladores/etiquetaControlador.js

@@ -33,8 +33,78 @@
 //
 
 const db = require("../database");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
+const { randomUUID, createHash } = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
+const { esModoLocal } = require("../config/modoServidor");
+const { registrarEvento } = require("../servicios/sincronizacion/outbox");
+const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
 
+function consultarPromesa(sql, valores = []) {
+    return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
+        error ? reject(error) : resolve(filas)
+    ));
+}
 
+async function outboxMultimediaDisponible() {
+    if (!await estaPreparado(["multimedia", "ficha"])) return false;
+    try {
+        const { columnasDe } = require("../servicios/sincronizacion/esquema");
+        const filas = await columnasDe("multimedia");
+        const nombres = new Set(filas.map((columna) => columna.name));
+        return ["checksum_sha256", "mime_type", "tamano_bytes", "storage_key"].every((nombre) => nombres.has(nombre));
+    } catch {
+        return false;
+    }
+}
+
+async function obtenerMetadatosArchivo(datos, syncId, anterior = {}, version = 1) {
+    const ruta = String(datos.ruta_archivo || "");
+    const raizProyecto = path.resolve(__dirname, "../..");
+    const rutaAbsoluta = path.resolve(raizProyecto, ruta);
+    const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
+    const relativa = path.relative(raizMultimedia, rutaAbsoluta);
+    const esArchivoLocalSeguro = Boolean(ruta) &&
+        !path.isAbsolute(ruta) &&
+        relativa !== "" &&
+        relativa !== ".." &&
+        !relativa.startsWith(".." + path.sep) &&
+        !path.isAbsolute(relativa);
+
+    if (!esArchivoLocalSeguro) {
+        return {
+            checksum_sha256: datos.checksum_sha256 ?? anterior.checksum_sha256 ?? null,
+            mime_type: datos.mime_type ?? anterior.mime_type ?? null,
+            tamano_bytes: datos.tamano_bytes ?? anterior.tamano_bytes ?? null,
+            storage_key: datos.storage_key ?? anterior.storage_key ?? null
+        };
+    }
+
+    const contenido = await fs.promises.readFile(rutaAbsoluta);
+    const extensionOriginal = path.extname(rutaAbsoluta).toLowerCase();
+    const extension = /^\.[a-z0-9]{1,10}$/.test(extensionOriginal) ? extensionOriginal : "";
+    const tipo = String(datos.tipo_multi || anterior.tipo_multi || "archivo")
+        .replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
+    let storageKey = null;
+
+    if (syncId) {
+        const carpetaPendiente = path.join(raizProyecto, "database", ".sync-pending", syncId);
+        await fs.promises.mkdir(carpetaPendiente, { recursive: true });
+        await fs.promises.writeFile(
+            path.join(carpetaPendiente, `v${version}${extension}`),
+            contenido
+        );
+        storageKey = `multimedia/${tipo}/${syncId}/v${version}${extension}`;
+    }
+
+    return {
+        checksum_sha256: createHash("sha256").update(contenido).digest("hex"),
+        mime_type: datos.mime_type ?? anterior.mime_type ?? null,
+        tamano_bytes: contenido.length,
+        storage_key: storageKey
+    };
+}
 
 
 
@@ -53,39 +123,16 @@ const db = require("../database");
 //
 
 
-const obtenerMultimedia = () => {
-    return new Promise((resolve, reject) => {
-        db.all(
-            `
-            SELECT
-                multimedia.*,
-                ficha.titulo AS ficha,
-                menu.nombre AS menu
-            FROM multimedia
-            LEFT JOIN ficha
-                ON multimedia.id_ficha = ficha.id_ficha
-            LEFT JOIN menu
-                ON ficha.id_menu = menu.id_menu
-            `,
-            [],
-            (error, filas) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(filas);
-                }
-            }
-        );
-    });
+const obtenerMultimedia = async () => {
+    const filtro = await outboxMultimediaDisponible() ? "WHERE multimedia.sync_deleted_at IS NULL" : "";
+    return new Promise((resolve, reject) => db.all(`
+        SELECT multimedia.*, ficha.titulo AS ficha, menu.nombre AS menu
+        FROM multimedia
+        LEFT JOIN ficha ON multimedia.id_ficha = ficha.id_ficha
+        LEFT JOIN menu ON ficha.id_menu = menu.id_menu
+        ${filtro}
+    `, [], (error, filas) => error ? reject(error) : resolve(filas)));
 };
-
-
-
-
-
-
-
-
 
 // =======================================================
 // CREAR MULTIMEDIA
@@ -106,75 +153,69 @@ const obtenerMultimedia = () => {
 // ID generado del nuevo registro.
 //
 
-const crear = (datos) => {
+const crear = async (datos) => {
+    if (!await outboxMultimediaDisponible()) {
+        return new Promise((resolve, reject) => db.run(`
+            INSERT INTO multimedia (
+                id_ficha, descripcion, ruta_archivo, tipo_multi, miniatura, activo, creado
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [
+            datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+            datos.tipo_multi, datos.miniatura, datos.activo, datos.creado
+        ], function(error) {
+            if (error) reject(error);
+            else resolve(this.lastID);
+        }));
+    }
 
-    return new Promise((resolve,reject)=>{
+    const dispositivoId = await obtenerIdDispositivo();
+    const syncId = randomUUID();
+    return db.withTransaction(async (consultar) => {
+        const ficha = await consultar("SELECT sync_id FROM ficha WHERE id_ficha = ?", [datos.id_ficha]);
+        const fichaSyncId = ficha.rows[0]?.sync_id;
+        const metadatos = await obtenerMetadatosArchivo(datos, fichaSyncId ? syncId : null, {}, 1);
+        if (!fichaSyncId) {
+            const local = await consultar(`
+                INSERT INTO multimedia (
+                    id_ficha, descripcion, ruta_archivo, tipo_multi, miniatura, activo, creado,
+                    checksum_sha256, mime_type, tamano_bytes, storage_key
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+                datos.tipo_multi, datos.miniatura, datos.activo, datos.creado,
+                metadatos.checksum_sha256, metadatos.mime_type,
+                metadatos.tamano_bytes, null
+            ]);
+            return local.lastID;
+        }
 
-
-        db.run(
-
-            `
-            INSERT INTO multimedia
-            (
-                id_ficha,
-                descripcion,
-                ruta_archivo,
-                tipo_multi,
-                miniatura,
-                activo,
-                creado
-            )
-
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            `,
-
-            [
-
-                datos.id_ficha,
-
-                datos.descripcion,
-
-                datos.ruta_archivo,
-
-                datos.tipo_multi,
-
-                datos.miniatura,
-
-                datos.activo,
-
-                datos.creado
-
-            ],
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }else{
-
-                    resolve(this.lastID);
-
-                }
-
+        const insercion = await consultar(`
+            INSERT INTO multimedia (
+                id_ficha, descripcion, ruta_archivo, tipo_multi, miniatura, activo, creado,
+                sync_id, sync_version, sync_deleted_at,
+                checksum_sha256, mime_type, tamano_bytes, storage_key
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?, ?)
+        `, [
+            datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+            datos.tipo_multi, datos.miniatura, datos.activo, datos.creado,
+            syncId, metadatos.checksum_sha256, metadatos.mime_type,
+            metadatos.tamano_bytes, metadatos.storage_key
+        ]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "multimedia", operacion: "INSERT",
+            syncId, versionBase: 0, versionResultado: 1,
+            payload: {
+                ficha_sync_id: fichaSyncId,
+                descripcion: datos.descripcion ?? null,
+                tipo_multi: datos.tipo_multi,
+                miniatura: datos.miniatura ?? null,
+                activo: datos.activo ?? 1,
+                ...metadatos
             }
-
-        );
-
-
+        });
+        return insercion.lastID;
     });
-
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // ACTUALIZAR MULTIMEDIA
@@ -194,90 +235,88 @@ const crear = (datos) => {
 // Si no encuentra el registro devuelve error.
 //
 
-const actualizar = (id, datos) => {
+const actualizar = async (id, datos) => {
+    if (!await outboxMultimediaDisponible()) {
+        return new Promise((resolve, reject) => db.run(`
+            UPDATE multimedia SET
+                id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
+                miniatura = ?, activo = ?, actualizado = ?
+            WHERE id_multi = ?
+        `, [
+            datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+            datos.tipo_multi, datos.miniatura, datos.activo, datos.actualizado, id
+        ], function(error) {
+            if (error) reject(error);
+            else if (this.changes === 0) reject(new Error("No se encontró la multimedia."));
+            else resolve();
+        }));
+    }
 
-    return new Promise((resolve,reject)=>{
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM multimedia WHERE id_multi = ?", [id]);
+        const anterior = consulta.rows[0];
+        if (!anterior || anterior.sync_deleted_at) throw new Error("No se encontró la multimedia.");
+        const ficha = await consultar("SELECT sync_id FROM ficha WHERE id_ficha = ?", [datos.id_ficha]);
+        const fichaSyncId = ficha.rows[0]?.sync_id;
+        if (anterior.sync_id && !fichaSyncId) {
+            throw new Error("No se puede mover multimedia sincronizada a una ficha sin identidad reconciliada.");
+        }
 
-
-        db.run(
-
-            `
-            UPDATE multimedia
-                SET
-                    id_ficha = ?,
-                    descripcion = ?,
-                    ruta_archivo = ?,
-                    tipo_multi = ?,
-                    miniatura = ?,
-                    activo = ?,
-                    actualizado = ?
-                WHERE id_multi = ?
-            `,
-
-            [
-
-                datos.id_ficha,
-
-                datos.descripcion,
-
-                datos.ruta_archivo,
-
-                datos.tipo_multi,
-
-                datos.miniatura,
-
-                datos.activo,
-
-                datos.actualizado,
-
-                id
-
-            ],
-
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-                else if(this.changes === 0){
-
-
-                    reject(
-                        new Error(
-                            "No se encontró la multimedia."
-                        )
-                    );
-
-
-                }
-                else{
-
-
-                    resolve();
-
-
-                }
-
+        if (!fichaSyncId) {
+            if (anterior.sync_id) {
+                throw new Error("No se puede modificar multimedia sincronizada hacia una ficha sin identidad reconciliada.");
             }
+            const metadatosLocales = await obtenerMetadatosArchivo(datos, null, anterior);
+            await consultar(`
+                UPDATE multimedia SET
+                    id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
+                    miniatura = ?, activo = ?, actualizado = ?,
+                    checksum_sha256 = ?, mime_type = ?, tamano_bytes = ?, storage_key = ?
+                WHERE id_multi = ?
+            `, [
+                datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+                datos.tipo_multi, datos.miniatura, datos.activo, datos.actualizado,
+                metadatosLocales.checksum_sha256, metadatosLocales.mime_type,
+                metadatosLocales.tamano_bytes, null, id
+            ]);
+            return;
+        }
 
-        );
+        const syncId = anterior.sync_id || randomUUID();
+        const versionBase = Number(anterior.sync_version || 1);
+        const versionResultado = anterior.sync_id ? versionBase + 1 : 1;
+        const metadatos = await obtenerMetadatosArchivo(datos, syncId, anterior, versionResultado);
+        await consultar(`
+            UPDATE multimedia SET
+                id_ficha = ?, descripcion = ?, ruta_archivo = ?, tipo_multi = ?,
+                miniatura = ?, activo = ?, actualizado = ?,
+                sync_id = ?, sync_version = ?, sync_deleted_at = NULL,
+                checksum_sha256 = ?, mime_type = ?, tamano_bytes = ?, storage_key = ?
+            WHERE id_multi = ?
+        `, [
+            datos.id_ficha, datos.descripcion, datos.ruta_archivo,
+            datos.tipo_multi, datos.miniatura, datos.activo, datos.actualizado,
+            syncId, versionResultado, metadatos.checksum_sha256,
+            metadatos.mime_type, metadatos.tamano_bytes, metadatos.storage_key, id
+        ]);
 
-
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "multimedia",
+            operacion: anterior.sync_id ? "UPDATE" : "INSERT",
+            syncId, versionBase: anterior.sync_id ? versionBase : 0,
+            versionResultado,
+            payload: {
+                ficha_sync_id: fichaSyncId,
+                descripcion: datos.descripcion ?? null,
+                tipo_multi: datos.tipo_multi,
+                miniatura: datos.miniatura ?? null,
+                activo: datos.activo ?? 1,
+                ...metadatos
+            }
+        });
     });
-
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // ELIMINAR MULTIMEDIA
@@ -293,63 +332,54 @@ const actualizar = (id, datos) => {
 // manejarse en otra capa (por ejemplo controlador).
 //
 
-const eliminar = (id) => {
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.run(
-
-            `
-            DELETE FROM multimedia
-            WHERE id_multi = ?
-            `,
-
-            [id],
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-                else if(this.changes === 0){
-
-
-                    reject(
-                        new Error(
-                            "No se encontró la multimedia."
-                        )
-                    );
-
-
-                }
-                else{
-
-
-                    resolve();
-
-
-                }
-
+const eliminar = async (id) => {
+    if (!await outboxMultimediaDisponible()) {
+        return new Promise((resolve, reject) => db.run(
+            "DELETE FROM multimedia WHERE id_multi = ?", [id],
+            function(error) {
+                if (error) reject(error);
+                else if (this.changes === 0) reject(new Error("No se encontró la multimedia."));
+                else resolve();
             }
+        ));
+    }
 
-        );
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM multimedia WHERE id_multi = ?", [id]);
+        const multimedia = consulta.rows[0];
+        if (!multimedia || multimedia.sync_deleted_at) throw new Error("No se encontró la multimedia.");
+        if (!multimedia.sync_id) {
+            await consultar("DELETE FROM multimedia WHERE id_multi = ?", [id]);
+            return;
+        }
 
+        const ficha = await consultar("SELECT sync_id FROM ficha WHERE id_ficha = ?", [multimedia.id_ficha]);
+        const fichaSyncId = ficha.rows[0]?.sync_id;
+        if (!fichaSyncId) {
+            throw new Error("No se puede eliminar multimedia sincronizada sin la identidad reconciliada de su ficha.");
+        }
 
+        const versionBase = Number(multimedia.sync_version || 1);
+        const versionResultado = versionBase + 1;
+        const eliminadoEn = new Date().toISOString();
+        await consultar(`
+            UPDATE multimedia SET activo = 0, sync_deleted_at = ?, sync_version = ?,
+                actualizado = ?
+            WHERE id_multi = ?
+        `, [eliminadoEn, versionResultado, eliminadoEn, id]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "multimedia", operacion: "DELETE",
+            syncId: multimedia.sync_id, versionBase, versionResultado,
+            payload: {
+                ficha_sync_id: fichaSyncId,
+                storage_key: multimedia.storage_key,
+                checksum_sha256: multimedia.checksum_sha256,
+                deleted_at: eliminadoEn
+            }
+        });
     });
-
 };
-
-
-
-
-
-
-
 
 // =======================================================
 // OBTENER MULTIMEDIA POR FICHA
@@ -365,7 +395,8 @@ const eliminar = (id) => {
 // Lista de multimedia perteneciente a esa ficha.
 //
 
-const obtenerPorFicha = (id_ficha) => {
+const obtenerPorFicha = async (id_ficha) => {
+    const filtro = await outboxMultimediaDisponible() ? "AND multimedia.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
         db.all(
             `
@@ -378,7 +409,7 @@ const obtenerPorFicha = (id_ficha) => {
                 ON multimedia.id_ficha = ficha.id_ficha
             LEFT JOIN menu
                 ON ficha.id_menu = menu.id_menu
-            WHERE multimedia.id_ficha = ?
+            WHERE multimedia.id_ficha = ? ${filtro}
             `,
             [id_ficha],
             (error, datos) => {
@@ -408,7 +439,8 @@ const obtenerPorFicha = (id_ficha) => {
 // Incluye el título de la ficha relacionada.
 //
 
-const obtenerPorId = (id) => {
+const obtenerPorId = async (id) => {
+    const filtro = await outboxMultimediaDisponible() ? "AND multimedia.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
         db.get(
             `
@@ -421,7 +453,7 @@ const obtenerPorId = (id) => {
                 ON multimedia.id_ficha = ficha.id_ficha
             LEFT JOIN menu
                 ON ficha.id_menu = menu.id_menu
-            WHERE multimedia.id_multi = ?
+            WHERE multimedia.id_multi = ? ${filtro}
             `,
             [id],
             (error, fila) => {

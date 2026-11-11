@@ -4,12 +4,14 @@ const assert = require("node:assert/strict");
 const usuarioPath = require.resolve("../src/modelos/usuario");
 const authConfigPath = require.resolve("../src/config/supabaseAuth");
 const controllerPath = require.resolve("../src/controladores/usuarios");
+const modoServidorPath = require.resolve("../src/config/modoServidor");
 
 test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) => {
     const anteriores = new Map([
         [usuarioPath, require.cache[usuarioPath]],
         [authConfigPath, require.cache[authConfigPath]],
-        [controllerPath, require.cache[controllerPath]]
+        [controllerPath, require.cache[controllerPath]],
+        [modoServidorPath, require.cache[modoServidorPath]]
     ]);
 
     const llamadas = [];
@@ -68,6 +70,10 @@ test("los endpoints administrativos de usuarios usan Supabase Auth", async (t) =
 
     require.cache[usuarioPath] = {
         id: usuarioPath, filename: usuarioPath, loaded: true, exports: usuarioFalso
+    };
+    require.cache[modoServidorPath] = {
+        id: modoServidorPath, filename: modoServidorPath, loaded: true,
+        exports: { modoServidor: "supabase", esModoLocal: false, esModoSupabase: true }
     };
     require.cache[authConfigPath] = {
         id: authConfigPath, filename: authConfigPath, loaded: true,

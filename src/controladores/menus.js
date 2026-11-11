@@ -1,6 +1,7 @@
 ﻿const Menu = require("../modelos/menu");
 const Ficha = require("../modelos/ficha");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
+const { prepararPortada, limpiarStagingPortada } = require("../servicios/sincronizacion/portadas");
 const cachePublico = require("../middleware/cachePublico");
 const limpiarArchivoSubido = async (ruta) => {
     if (!ruta) return;
@@ -39,6 +40,7 @@ const listarMenus = async(req,res)=>{
 
 const crearMenu = async(req,res)=>{
     let imagenSubida = null;
+    let portadaPreparada = null;
 
     try{
         const nombre = req.body.nombre?.trim();
@@ -51,13 +53,16 @@ const crearMenu = async(req,res)=>{
             return res.status(400).json({ error:"Debe seleccionar una plantilla." });
         }
 
-        imagenSubida = await subirArchivo(req.file, "menus");
+        const portada = req.file ? await prepararPortada(req.file, "menu") : null;
+        portadaPreparada = portada;
+        imagenSubida = portada?.imagen || await subirArchivo(req.file, "menus");
         const datosMenu = {
             nombre,
             descripcion: req.body.descripcion?.trim() || null,
             id_plantilla,
             visible: req.body.visible,
-            imagen: imagenSubida
+            imagen: imagenSubida,
+            ...(portada || {})
         };
 
         const id = await Menu.crear(datosMenu);
@@ -67,6 +72,7 @@ const crearMenu = async(req,res)=>{
         return res.json({ mensaje:"MenÃº creado correctamente", id_menu:id });
     }catch(error){
         await limpiarArchivoSubido(imagenSubida);
+        await limpiarStagingPortada(portadaPreparada);
         return res.status(500).json({ error:error.message });
     }
 };
@@ -99,6 +105,7 @@ const obtenerMenu = async(req,res)=>{
 
 const actualizarMenu = async(req,res)=>{
     let imagenNueva = null;
+    let portadaPreparada = null;
     
 
     try{
@@ -141,8 +148,11 @@ const actualizarMenu = async(req,res)=>{
         };
 
         if(req.file){
-            imagenNueva = await subirArchivo(req.file, "menus");
+            const portada = await prepararPortada(req.file, "menu");
+            portadaPreparada = portada;
+            imagenNueva = portada?.imagen || await subirArchivo(req.file, "menus");
             datos.imagen = imagenNueva;
+            if (portada) Object.assign(datos, portada);
         }
 
         await Menu.actualizar(req.params.id, datos);
@@ -154,6 +164,7 @@ const actualizarMenu = async(req,res)=>{
         if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
         }
+        await limpiarStagingPortada(portadaPreparada);
         return res.status(500).json({ error:error.message });
     }
 };
@@ -161,41 +172,23 @@ const actualizarMenu = async(req,res)=>{
 const eliminarMenu = async (req, res) => {
     try {
 
-        console.log("[ELIMINAR MENÃš] Controlador actualizado ejecutado");
         const id_menu = req.params.id;
+        const resultado = await Menu.eliminarSiVacio(id_menu);
 
-        const menu = await Menu.obtenerPorId(id_menu);
-
-        if (!menu) {
-            return res.status(404).json({
-                error: "No se encontrÃ³ el menÃº que intenta eliminar."
-            });
+        if (!resultado.encontrado) {
+            return res.status(404).json({ error: "No se encontró el menú que intenta eliminar." });
         }
-
-        const cantidad = await Menu.contarFichas(id_menu);
-
-        if (cantidad > 0) {
+        if (resultado.cantidad > 0) {
             const fichas = await Ficha.obtenerFichasPorMenu(id_menu);
-
             return res.status(400).json({
-                error: `No se puede eliminar el menÃº "${menu.nombre}" porque tiene ${cantidad} ficha(s) asociada(s).`,
-                menu: {
-                    id_menu: menu.id_menu,
-                    nombre: menu.nombre
-                },
-                fichas: fichas.map(ficha => ({
-                    id_ficha: ficha.id_ficha,
-                    titulo: ficha.titulo
-                }))
+                error: `No se puede eliminar el menú "${resultado.menu.nombre}" porque tiene ${resultado.cantidad} ficha(s) asociada(s).`,
+                menu: { id_menu: resultado.menu.id_menu, nombre: resultado.menu.nombre },
+                fichas: fichas.map(ficha => ({ id_ficha: ficha.id_ficha, titulo: ficha.titulo }))
             });
         }
 
-        await Menu.eliminar(id_menu);
         cachePublico.invalidar(["menus", "fichas"]);
-
-        return res.json({
-            mensaje: "MenÃº eliminado correctamente."
-        });
+        return res.json({ mensaje: "Menú eliminado correctamente." });
 
     } catch (error) {
         console.error("Error eliminando menÃº:", error);

@@ -1,0 +1,56 @@
+name: Integración de esquema de sincronización PostgreSQL
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-sync-schema:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: museo_reconciliacion_prueba
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d museo_reconciliacion_prueba"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      MODO_SERVIDOR: supabase
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_reconciliacion_prueba
+      DATABASE_SSL: "false"
+      SYNC_ALLOW_SCHEMA_MIGRATION: "true"
+      SYNC_SCHEMA_CONFIRMATION: I_HAVE_A_BACKUP_AND_APPROVE
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Crear esquema base descartable
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d museo_reconciliacion_prueba -v ON_ERROR_STOP=1 -f test/fixtures/esquema-postgres-sincronizacion.sql
+      - name: Preparar esquema de sincronización
+        run: npm run sync:preparar
+      - name: Verificar esquema, metadatos y secuencias
+        run: node --test test/integracionEsquemaPostgresSync.test.js
+      - name: Probar intercambio bidireccional SQLite/PostgreSQL y multimedia
+        run: node --test test/integracionBidireccionalPostgresSQLite.test.js

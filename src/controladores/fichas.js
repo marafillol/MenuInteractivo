@@ -1,9 +1,9 @@
 ﻿const Ficha = require("../modelos/ficha");
 const Multimedia = require("../modelos/multimedia");
-const RelacionFicha = require("../modelos/relacionFichaModelo");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 const cachePublico = require("../middleware/cachePublico");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
+const { prepararPortada, limpiarStagingPortada } = require("../servicios/sincronizacion/portadas");
 
 const limpiarArchivoSubido = async (ruta) => {
     if (!ruta) return;
@@ -138,8 +138,11 @@ const crearFicha = async(req,res)=>{
     }
 
     let imagenSubida = null;
+    let portadaPreparada = null;
     try{
-        imagenSubida = await subirArchivo(req.file, "fichas");
+        const portada = req.file ? await prepararPortada(req.file, "ficha") : null;
+        portadaPreparada = portada;
+        imagenSubida = portada?.imagen || await subirArchivo(req.file, "fichas");
         const datos = {
             id_menu: req.body.id_menu,
             titulo,
@@ -147,7 +150,8 @@ const crearFicha = async(req,res)=>{
             texto: req.body.texto,
             imagen: imagenSubida,
             datos_json: req.body.datos_json,
-            visible: req.body.visible
+            visible: req.body.visible,
+            ...(portada || {})
         };
 
         const id = await Ficha.crear(datos);
@@ -162,6 +166,7 @@ const crearFicha = async(req,res)=>{
         });
     }catch(error){
         await limpiarArchivoSubido(imagenSubida);
+        await limpiarStagingPortada(portadaPreparada);
         return res.status(500).json({ error:error.message });
     }
 };
@@ -177,7 +182,7 @@ const actualizarFicha = async(req,res)=>{
     }
 
     let imagenNueva = null;
-    
+    let portadaPreparada = null;
 
     try{
         const datos = {
@@ -195,8 +200,11 @@ const actualizarFicha = async(req,res)=>{
             if(!fichaActual){
                 return res.status(404).json({ error:"No se encontrÃ³ la ficha." });
             }
-            imagenNueva = await subirArchivo(req.file, "fichas");
+            const portada = await prepararPortada(req.file, "ficha");
+            portadaPreparada = portada;
+            imagenNueva = portada?.imagen || await subirArchivo(req.file, "fichas");
             datos.imagen = imagenNueva;
+            if (portada) Object.assign(datos, portada);
         }
 
         await Ficha.actualizar(req.params.id_ficha, datos);
@@ -213,6 +221,7 @@ const actualizarFicha = async(req,res)=>{
         if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
         }
+        await limpiarStagingPortada(portadaPreparada);
         console.error("Error actualizando ficha; cÃ³digo=", error.code || "sin_codigo");
         return res.status(500).json({ error:error.message });
     }
@@ -232,33 +241,20 @@ const eliminarFicha = async(req,res)=>{
 
         const id = req.params.id_ficha;
 
-        const cantidad =
-        await Ficha.contarMultimedia(id);
+        const resultado = await Ficha.eliminarCompleta(id);
 
-        if (cantidad > 0) {
+        if (!resultado.eliminada && resultado.multimedia > 0) {
             const archivos = await Multimedia.obtenerPorFicha(id);
             const ficha = await Ficha.obtenerPorId(id);
-
             return res.status(409).json({
-                error: `No se puede eliminar la ficha "${ficha?.titulo || "sin tÃ­tulo"}" porque tiene ${cantidad} archivo(s) multimedia asociado(s).`,
-                ficha: {
-                    id_ficha: id,
-                    titulo: ficha?.titulo || "Sin tÃ­tulo"
-                },
+                error: `No se puede eliminar la ficha "${ficha?.titulo || "sin título"}" porque tiene ${resultado.multimedia} archivo(s) multimedia asociado(s).`,
+                ficha: { id_ficha: id, titulo: ficha?.titulo || "Sin título" },
                 multimedia: archivos
             });
         }
-
-        // Eliminar relaciones ficha-ficha
-        await RelacionFicha.eliminarRelacionesFicha(id);
-
-
-        // Eliminar relaciones ficha-etiqueta
-        await FichaEtiqueta.eliminarRelacionesFicha(id);
-
-
-        // Eliminar la ficha
-        await Ficha.eliminar(id);
+        if (!resultado.eliminada) {
+            return res.status(404).json({ error: "No se encontró la ficha." });
+        }
 
         cachePublico.invalidar(["fichas"]);
 

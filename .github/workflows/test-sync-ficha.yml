@@ -1,0 +1,33 @@
+name: Validar outbox de fichas
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/sync-ficha-outbox
+      - fix/windows-cover-path-normalization
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Ejecutar pruebas
+        env:
+          MODO_SERVIDOR: local
+          LOCAL_AUTH_SECRET: ci-temporal-local-auth-secret-2026-123456789
+        run: npm test

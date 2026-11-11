@@ -23,6 +23,21 @@
 //
 
 const db = require("../database");
+const { estaPreparado } = require("../servicios/sincronizacion/esquema");
+const { randomUUID } = require("node:crypto");
+const { esModoLocal } = require("../config/modoServidor");
+const { registrarEvento } = require("../servicios/sincronizacion/outbox");
+const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
+
+function consultarPromesa(sql, valores = []) {
+    return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
+        error ? reject(error) : resolve(filas)
+    ));
+}
+
+async function outboxMenuDisponible() {
+    return estaPreparado(["menu","plantilla"]);
+}
 
 
 
@@ -39,33 +54,16 @@ const db = require("../database");
 // Lista completa de menús.
 //
 
-const obtenerMenus = () => {
-
+const obtenerMenus = async () => {
+    const filtro = await outboxMenuDisponible() ? "WHERE menu.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
-
-        db.all(
-            `
-            SELECT
-                menu.*,
-                plantilla.nombre AS nombre_plantilla
+        db.all(`
+            SELECT menu.*, plantilla.nombre AS nombre_plantilla
             FROM menu
-            LEFT JOIN plantilla
-                ON menu.id_plantilla = plantilla.id_plantilla
-            `,
-            [],
-            (error, filas) => {
-
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(filas);
-                }
-
-            }
-        );
-
+            LEFT JOIN plantilla ON menu.id_plantilla = plantilla.id_plantilla
+            ${filtro}
+        `, [], (error, filas) => error ? reject(error) : resolve(filas));
     });
-
 };
 
 
@@ -89,79 +87,90 @@ const obtenerMenus = () => {
 // la imagen anterior cuando no se envía una nueva.
 //
 
-const actualizar = (id, datos) => {
-
-    return new Promise((resolve,reject)=>{
-
-
-        console.log("Actualizando menú:", id, datos);
-
-
-
-        db.run(
-
-            `
-            UPDATE menu
-            SET
-                nombre = ?,
-                descripcion = ?,
-                imagen = COALESCE(?, imagen),
-                id_plantilla = ?,
-                visible = ?,
+const actualizar = async (id, datos) => {
+    const valores = [
+        datos.nombre, datos.descripcion, datos.imagen || null,
+        datos.id_plantilla, datos.visible, id
+    ];
+    const sql = `
+        UPDATE menu SET
+            nombre = ?, descripcion = ?, imagen = COALESCE(?, imagen),
+            id_plantilla = ?, visible = ?, actualizado = datetime('now','-3 hours')
+        WHERE id_menu = ?
+    `;
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    const sqlActualizar = tienePortada
+        ? `
+            UPDATE menu SET
+                nombre = ?, descripcion = ?, imagen = COALESCE(?, imagen),
+                id_plantilla = ?, visible = ?, imagen_storage_key = ?,
+                imagen_checksum_sha256 = ?, imagen_mime_type = ?, imagen_tamano_bytes = ?,
                 actualizado = datetime('now','-3 hours')
             WHERE id_menu = ?
-            `,
+        `
+        : sql;
+    const valoresActualizar = tienePortada
+        ? [...valores.slice(0, 5), datos.imagen_storage_key, datos.imagen_checksum_sha256,
+            datos.imagen_mime_type, datos.imagen_tamano_bytes, id]
+        : valores;
 
-            [
+    if (!await outboxMenuDisponible()) {
+        return new Promise((resolve, reject) => db.run(sql, valores, (error) =>
+            error ? reject(error) : resolve()
+        ));
+    }
 
-                datos.nombre,
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM menu WHERE id_menu = ?", [id]);
+        const anterior = consulta.rows[0];
+        if (!anterior || anterior.sync_deleted_at) return;
+        if (!anterior.sync_id) {
+            await consultar(sqlActualizar, valoresActualizar);
+            return;
+        }
 
-                datos.descripcion,
-
-                datos.imagen || null,
-
-                datos.id_plantilla,
-
-                datos.visible,
-
-                id
-
-            ],
-
-
-
-            function(error){
-
-
-                if(error){
-
-                    console.error(error);
-
-                    reject(error);
-
-                }
-
-                else{
-
-
-                    console.log("Filas modificadas:", this.changes);
-
-                    resolve();
-
-                }
-
-            }
-
+        const plantilla = await consultar(
+            "SELECT sync_id FROM plantilla WHERE id_plantilla = ?", [datos.id_plantilla]
         );
+        const plantillaSyncId = plantilla.rows[0]?.sync_id;
+        if (!plantillaSyncId) {
+            throw new Error("No se puede modificar un menú sincronizado hacia una plantilla sin identidad reconciliada.");
+        }
 
+        const versionBase = Number(anterior.sync_version || 1);
+        const versionResultado = versionBase + 1;
+        await consultar(`
+            UPDATE menu SET
+                nombre = ?, descripcion = ?, imagen = COALESCE(?, imagen),
+                id_plantilla = ?, visible = ?,
+                ${tienePortada ? "imagen_storage_key = ?, imagen_checksum_sha256 = ?, imagen_mime_type = ?, imagen_tamano_bytes = ?," : ""}
+                actualizado = datetime('now','-3 hours'), sync_version = ?
+            WHERE id_menu = ?
+        `, [
+            ...valores.slice(0, 5),
+            ...(tienePortada ? [datos.imagen_storage_key, datos.imagen_checksum_sha256,
+                datos.imagen_mime_type, datos.imagen_tamano_bytes] : []),
+            versionResultado, id
+        ]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "menu", operacion: "UPDATE",
+            syncId: anterior.sync_id, versionBase, versionResultado,
+            payload: {
+                plantilla_sync_id: plantillaSyncId,
+                nombre: datos.nombre, descripcion: datos.descripcion || null,
+                ...(tienePortada ? {
+                    imagen: datos.imagen,
+                    imagen_storage_key: datos.imagen_storage_key,
+                    imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                    imagen_mime_type: datos.imagen_mime_type,
+                    imagen_tamano_bytes: datos.imagen_tamano_bytes
+                } : {}),
+                visible: datos.visible ?? anterior.visible
+            }
+        });
     });
-
 };
-
-
-
-
-
 
 // =======================================================
 // ELIMINAR MENÚ
@@ -176,42 +185,15 @@ const actualizar = (id, datos) => {
 // - No eliminar si posee fichas asociadas.
 //
 
-const eliminar = (id) => {
-
-
-    return new Promise((resolve,reject)=>{
-
-
-        db.run(
-            `
-            DELETE FROM menu
-            WHERE id_menu = ?
-            `,
-            [id],
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve();
-
-                }
-
-            }
-
+const eliminar = async (id) => {
+    if (await outboxMenuDisponible()) {
+        return eliminarSiVacio(id);
+    }
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM menu WHERE id_menu = ?", [id], (error) =>
+            error ? reject(error) : resolve()
         );
-
-
     });
-
-
 };
 
 
@@ -236,87 +218,65 @@ const eliminar = (id) => {
 // ID generado del nuevo menú.
 //
 
-const crear = (datos)=>{
+const crear = async (datos) => {
+    const { nombre, descripcion, id_plantilla, visible, imagen } = datos;
+    const valores = [nombre, descripcion || null, imagen || null, id_plantilla || null, visible ?? 1];
+    const tienePortada = Boolean(datos.imagen_storage_key);
+    const columnasPortada = tienePortada
+        ? ", imagen_storage_key, imagen_checksum_sha256, imagen_mime_type, imagen_tamano_bytes"
+        : "";
+    const valoresPortada = tienePortada
+        ? [datos.imagen_storage_key, datos.imagen_checksum_sha256, datos.imagen_mime_type, datos.imagen_tamano_bytes]
+        : [];
+    const sql = `
+        INSERT INTO menu (nombre, descripcion, imagen, id_plantilla, visible${columnasPortada}, creado)
+        VALUES (?, ?, ?, ?, ?${tienePortada ? ", ?, ?, ?, ?" : ""}, datetime('now','-3 hours'))
+    `;
 
-    return new Promise((resolve,reject)=>{
+    if (!await outboxMenuDisponible()) {
+        return new Promise((resolve, reject) => db.run(sql, valores, function(error) {
+            if (error) reject(error);
+            else resolve(this.lastID);
+        }));
+    }
 
-
-        const {
-
-            nombre,
-
-            descripcion,
-
-            id_plantilla,
-
-            visible,
-
-            imagen
-
-        } = datos;
-
-
-
-        db.run(
-
-            `
-            INSERT INTO menu
-            (
-                nombre,
-                descripcion,
-                imagen,
-                id_plantilla,
-                visible,
-                creado
-            )
-
-            VALUES (?, ?, ?, ?, ?, datetime('now','-3 hours'))
-
-            `,
-
-            [
-
-                nombre,
-
-                descripcion || null,
-
-                imagen || null,
-
-                id_plantilla || null,
-
-                visible ?? 1
-
-            ],
-
-
-            function(error){
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve(this.lastID);
-
-                }
-
-            }
-
+    const dispositivoId = await obtenerIdDispositivo();
+    const syncId = randomUUID();
+    return db.withTransaction(async (consultar) => {
+        const plantilla = await consultar(
+            "SELECT sync_id FROM plantilla WHERE id_plantilla = ?", [id_plantilla]
         );
+        const plantillaSyncId = plantilla.rows[0]?.sync_id;
+        if (!plantillaSyncId) {
+            const insercionLocal = await consultar(sql, [...valores, ...valoresPortada]);
+            return insercionLocal.lastID;
+        }
 
-
+        const insercion = await consultar(`
+            INSERT INTO menu (
+                nombre, descripcion, imagen, id_plantilla, visible, creado,
+                sync_id, sync_version, sync_deleted_at${columnasPortada}
+            ) VALUES (?, ?, ?, ?, ?, datetime('now','-3 hours'), ?, 1, NULL${tienePortada ? ", ?, ?, ?, ?" : ""})
+        `, [...valores, syncId, ...valoresPortada]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "menu", operacion: "INSERT",
+            syncId, versionBase: 0, versionResultado: 1,
+            payload: {
+                plantilla_sync_id: plantillaSyncId, nombre,
+                descripcion: descripcion || null,
+                ...(tienePortada ? {
+                    imagen,
+                    imagen_storage_key: datos.imagen_storage_key,
+                    imagen_checksum_sha256: datos.imagen_checksum_sha256,
+                    imagen_mime_type: datos.imagen_mime_type,
+                    imagen_tamano_bytes: datos.imagen_tamano_bytes
+                } : { imagen: imagen || null }),
+                visible: visible ?? 1
+            }
+        });
+        return insercion.lastID;
     });
-
 };
-
-
-
-
-
 
 // =======================================================
 // OBTENER MENÚ POR ID
@@ -331,52 +291,18 @@ const crear = (datos)=>{
 // Información completa del menú.
 //
 
-const obtenerPorId = (id) => {
-
+const obtenerPorId = async (id) => {
+    const filtro = await outboxMenuDisponible() ? "AND menu.sync_deleted_at IS NULL" : "";
     return new Promise((resolve, reject) => {
-
-        db.get(
-
-            `
-
+        db.get(`
             SELECT
-                menu.*,
-                plantilla.nombre AS nombre_plantilla,
-                (
-                    SELECT COUNT(*)
-                    FROM ficha
-                    WHERE ficha.id_menu = menu.id_menu
-                ) AS cantidad_fichas
+                menu.*, plantilla.nombre AS nombre_plantilla,
+                (SELECT COUNT(*) FROM ficha WHERE ficha.id_menu = menu.id_menu) AS cantidad_fichas
             FROM menu
-            LEFT JOIN plantilla
-                ON menu.id_plantilla = plantilla.id_plantilla
-            WHERE menu.id_menu = ?
-
-            `,
-
-            [id],
-
-            (error, fila) => {
-
-
-                if(error){
-
-                    reject(error);
-
-                }
-
-                else{
-
-                    resolve(fila);
-
-                }
-
-            }
-
-        );
-
+            LEFT JOIN plantilla ON menu.id_plantilla = plantilla.id_plantilla
+            WHERE menu.id_menu = ? ${filtro}
+        `, [id], (error, fila) => error ? reject(error) : resolve(fila));
     });
-
 };
 
 
@@ -447,6 +373,61 @@ const contarFichas = (id_menu)=>{
 // desde los controladores.
 //
 
+const eliminarSiVacio = async (id) => {
+    if (!await outboxMenuDisponible()) {
+        return db.withTransaction(async (consultar) => {
+            const menu = await consultar("SELECT * FROM menu WHERE id_menu = ?", [id]);
+            if (!menu.rows.length) return { encontrado: false, cantidad: 0 };
+            const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM ficha WHERE id_menu = ?", [id]);
+            const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+            if (cantidad > 0) return { encontrado: true, menu: menu.rows[0], cantidad };
+            await consultar("DELETE FROM menu WHERE id_menu = ?", [id]);
+            return { encontrado: true, menu: menu.rows[0], cantidad: 0, eliminado: true };
+        });
+    }
+
+    const dispositivoId = await obtenerIdDispositivo();
+    return db.withTransaction(async (consultar) => {
+        const consulta = await consultar("SELECT * FROM menu WHERE id_menu = ?", [id]);
+        const menu = consulta.rows[0];
+        if (!menu || menu.sync_deleted_at) return { encontrado: false, cantidad: 0 };
+        const conteo = await consultar("SELECT COUNT(*) AS cantidad FROM ficha WHERE id_menu = ?", [id]);
+        const cantidad = Number(conteo.rows[0]?.cantidad || 0);
+        if (cantidad > 0) return { encontrado: true, menu, cantidad };
+
+        if (!menu.sync_id) {
+            await consultar("DELETE FROM menu WHERE id_menu = ?", [id]);
+            return { encontrado: true, menu, cantidad: 0, eliminado: true };
+        }
+
+        const plantilla = await consultar(
+            "SELECT sync_id FROM plantilla WHERE id_plantilla = ?", [menu.id_plantilla]
+        );
+        const plantillaSyncId = plantilla.rows[0]?.sync_id;
+        if (!plantillaSyncId) {
+            throw new Error("No se puede eliminar un menú sincronizado sin la identidad reconciliada de su plantilla.");
+        }
+
+        const versionBase = Number(menu.sync_version || 1);
+        const versionResultado = versionBase + 1;
+        const eliminadoEn = new Date().toISOString();
+        await consultar(`
+            UPDATE menu SET visible = 0, sync_deleted_at = ?, sync_version = ?,
+                actualizado = datetime('now','-3 hours')
+            WHERE id_menu = ?
+        `, [eliminadoEn, versionResultado, id]);
+        await registrarEvento(consultar, {
+            dispositivoId, entidad: "menu", operacion: "DELETE",
+            syncId: menu.sync_id, versionBase, versionResultado,
+            payload: {
+                plantilla_sync_id: plantillaSyncId,
+                nombre: menu.nombre, deleted_at: eliminadoEn
+            }
+        });
+        return { encontrado: true, menu, cantidad: 0, eliminado: true, pendienteSincronizacion: true };
+    });
+};
+
 module.exports = {
 
     obtenerMenus,
@@ -459,5 +440,6 @@ module.exports = {
 
     eliminar,
 
-    contarFichas
+    contarFichas,
+    eliminarSiVacio
 };
