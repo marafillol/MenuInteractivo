@@ -5,7 +5,7 @@ const {
   asegurarSecuenciasIdentificadores
 } = require("../src/servicios/sincronizacion/secuenciasPostgres");
 
-test("prepara secuencias para las cinco PK heredadas sin secuencia", async () => {
+test("verifica y prepara secuencias para las cinco PK sincronizables", async () => {
   const sentenciasRun = [];
   const sentenciasAll = [];
   await asegurarSecuenciasIdentificadores({
