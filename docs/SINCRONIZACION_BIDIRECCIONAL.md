@@ -115,14 +115,14 @@ El script scripts/preparar-esquema-sincronizacion.js agrega columnas y tablas au
 - La tabla `configuracion` queda fuera del protocolo incremental por diseño.
 - La transferencia de nuevas portadas está implementada en esta rama de trabajo; falta validar el backfill de portadas históricas y la recuperación de archivos antiguos.
 - La resolución de conflictos es de registro y detección; falta una interfaz/operación administrativa para resolverlos.
-- La suite de CI de la rama de trabajo aprobó las pruebas automatizadas, incluidas las de reconciliación en SQLite temporal. Todavía faltan pruebas de integración con PostgreSQL descartable y una validación controlada con copias reales.
+- La suite de CI aprobó las pruebas automatizadas, las pruebas de reconciliación en SQLite temporal y una integración de esquema contra PostgreSQL 17 descartable. Esta última crea una base museo_reconciliacion_prueba, ejecuta el preparador real y verifica tablas/columnas, secuencias, conservación de IDs históricos y exclusión de configuracion. No valida todavía el intercambio bidireccional completo ni la transferencia real de archivos entre dos copias.
 
 ### Configuración y despliegue
 
 - En el servidor remoto PostgreSQL: configurar `SYNC_SHARED_SECRET` con un secreto aleatorio de al menos 32 caracteres.
 - En cada instalación SQLite: configurar el mismo `SYNC_SHARED_SECRET` y `SYNC_REMOTE_URL` con la URL base del servidor remoto (por ejemplo `https://tu-servidor.example`).
 - Preparar el esquema por separado en copias descartables de SQLite y PostgreSQL mediante `npm run sync:preparar`, seleccionando explícitamente `MODO_SERVIDOR` y la base de pruebas correspondiente. El script exige `SYNC_ALLOW_SCHEMA_MIGRATION=true` y `SYNC_SCHEMA_CONFIRMATION=I_HAVE_A_BACKUP_AND_APPROVE`; en modo local también exige `DATABASE_SQLITE_PATH`.
-- El script de preparación agrega columnas/tablas; no ejecutarlo contra bases reales sin backup, aprobación y plan de reversión.
+- El script de preparación agrega columnas/tablas; no ejecutarlo contra bases reales sin backup, aprobación y plan de reversión. Para PostgreSQL local sin SSL puede configurarse DATABASE_SSL=false; el adaptador mantiene SSL habilitado por defecto para el entorno remoto.
 - No desplegar esta rama ni apuntar instalaciones reales al endpoint hasta completar la reconciliación inicial, multimedia, pruebas PostgreSQL y revisión de seguridad.
 
-La rama no está lista para producción ni para sincronizar los datos reales del museo. No se ejecutó ninguna migración contra Supabase ni se alteró `main`.
+La rama no está lista para producción ni para sincronizar los datos reales del museo. No se ejecutó ninguna migración contra Supabase ni se integró esta rama de sincronización en `main`.
