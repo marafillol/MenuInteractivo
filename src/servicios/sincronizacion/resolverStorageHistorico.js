@@ -118,6 +118,11 @@ function resolverReferenciaHistorica({ entidad, id, referencia, storageKey, chec
     if (!entrada) return null;
 
     const [referenciaOriginal, claveEsperada, hashEsperado, bytes, mimeType] = entrada;
+    // Las filas ya migradas a claves nuevas y con checksum válido conservan
+    // su identidad actual; el mapa solo completa metadatos legacy faltantes.
+    if (storageKey && storageKey.startsWith("multimedia/") && HASH_RE.test(String(checksumSha256 || ""))) {
+        return null;
+    }
     const claveDesdeUrl = typeof referencia === "string" && /^https?:\/\//i.test(referencia)
         ? extraerClaveUrl(referencia, datos)
         : null;
