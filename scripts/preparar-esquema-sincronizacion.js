@@ -80,6 +80,14 @@ async function main() {
     "CREATE TABLE IF NOT EXISTS sync_conflictos (conflicto_id TEXT PRIMARY KEY, entidad TEXT NOT NULL, sync_id TEXT NOT NULL, version_local_json TEXT NOT NULL, version_remota_json TEXT NOT NULL, detectado TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, resuelto INTEGER NOT NULL DEFAULT 0, resolucion TEXT)",
     "CREATE TABLE IF NOT EXISTS sync_conflictos (conflicto_id UUID PRIMARY KEY, entidad TEXT NOT NULL, sync_id UUID NOT NULL, version_local_json JSONB NOT NULL, version_remota_json JSONB NOT NULL, detectado TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, resuelto BOOLEAN NOT NULL DEFAULT FALSE, resolucion TEXT)"
   );
+  // Metadatos de portadas: la ruta local/URL no identifica por sí sola el archivo.
+  for (const tabla of ["menu", "ficha"]) {
+    await addColumn(tabla, "imagen_storage_key", "TEXT");
+    await addColumn(tabla, "imagen_checksum_sha256", "TEXT");
+    await addColumn(tabla, "imagen_mime_type", "TEXT");
+    await addColumn(tabla, "imagen_tamano_bytes", esModoSupabase ? "BIGINT" : "INTEGER");
+  }
+
   // Metadatos necesarios para verificar archivos multimedia sin copiar rutas locales.
   await addColumn("multimedia", "checksum_sha256", "TEXT");
   await addColumn("multimedia", "mime_type", "TEXT");
