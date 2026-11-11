@@ -92,7 +92,11 @@ const subirArchivoSincronizado = async (storageKey, contenido, mimeType, checksu
 };
 
 const descargarArchivoSincronizado = async (storageKey) => {
-    validarStorageKey(storageKey);
+    try {
+        validarStorageKey(storageKey);
+    } catch (error) {
+        if (!esStorageKeyHistorica(storageKey)) throw error;
+    }
     if (!supabase) throw new Error("El almacenamiento remoto no está configurado.");
     const { data, error } = await supabase.storage.from(bucket).download(storageKey);
     if (error || !data) throw new Error("No se pudo descargar el archivo sincronizado de Storage.");
