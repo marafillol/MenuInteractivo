@@ -133,6 +133,12 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
     );
     if (repetido.rows.length) return { estado: "duplicado" };
 
+    const versionBaseValidada = Number(evento.version_base ?? 0);
+    const versionResultadoValidada = Number(evento.version_resultado);
+    if (versionResultadoValidada !== versionBaseValidada + 1) {
+        throw new Error("La versión resultado debe ser exactamente la versión base más uno.");
+    }
+
     const payload = normalizarPayload(evento.payload_json ?? evento.payload);
     const tabla = definicion.tabla;
     const existenteResultado = await consultar(
