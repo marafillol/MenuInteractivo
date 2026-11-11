@@ -12,6 +12,7 @@ const UUIDS = {
     plantilla: "00000000-0000-5000-8000-000000000001",
     menu: "00000000-0000-5000-8000-000000000002",
     ficha: "00000000-0000-5000-8000-000000000003",
+    fichaDestino: "00000000-0000-5000-8000-000000000007",
     etiqueta: "00000000-0000-5000-8000-000000000004",
     ficha_etiqueta: "00000000-0000-5000-8000-000000000005",
     relacion_ficha: "00000000-0000-5000-8000-000000000006"
@@ -62,9 +63,10 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
                 await run("INSERT INTO plantilla (nombre, plantilla_json) VALUES (?, ?)", ["Plantilla", "{}"]);
                 await run("INSERT INTO menu (nombre, id_plantilla, visible) VALUES (?, ?, ?)", ["Menú", 1, 1]);
                 await run("INSERT INTO ficha (id_menu, titulo, visible) VALUES (?, ?, ?)", [1, "Ficha", 1]);
+                await run("INSERT INTO ficha (id_menu, titulo, visible) VALUES (?, ?, ?)", [1, "Ficha destino", 1]);
                 await run("INSERT INTO etiqueta (nombre, descripcion, activo) VALUES (?, ?, ?)", ["Historia", null, 1]);
                 await run("INSERT INTO ficha_etiqueta (id_ficha, id_etiqueta) VALUES (?, ?)", [1, 1]);
-                await run("INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)", [1, 1, "relacionada"]);
+                await run("INSERT INTO relacion_ficha (id_ficha_origen, id_ficha_destino, tipo_relacion) VALUES (?, ?, ?)", [1, 2, "relacionada"]);
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `], env);
@@ -83,7 +85,10 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
                 plantilla: { candidatos_unicos: [candidato(UUIDS.plantilla, { id_plantilla: 1 }, { id_plantilla: 11 })] },
                 etiqueta: { candidatos_unicos: [candidato(UUIDS.etiqueta, { id_etiqueta: 1 }, { id_etiqueta: 14 })] },
                 menu: { candidatos_unicos: [candidato(UUIDS.menu, { id_menu: 1 }, { id_menu: 12 })] },
-                ficha: { candidatos_unicos: [candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 })] },
+                ficha: { candidatos_unicos: [
+                    candidato(UUIDS.ficha, { id_ficha: 1 }, { id_ficha: 13 }),
+                    candidato(UUIDS.fichaDestino, { id_ficha: 2 }, { id_ficha: 16 })
+                ] },
                 ficha_etiqueta: { candidatos_unicos: [candidato(UUIDS.ficha_etiqueta, { id_ficha: 1, id_etiqueta: 1 }, { id_ficha: 13, id_etiqueta: 14 })] },
                 relacion_ficha: { candidatos_unicos: [candidato(UUIDS.relacion_ficha, { id_relacion: 1 }, { id_relacion: 15 })] }
             }
