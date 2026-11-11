@@ -63,6 +63,18 @@ function obtenerRutaStaging(evento) {
     return ruta;
 }
 
+function obtenerRutaStagingPortada(payload) {
+    const storageKey = String(payload.imagen_storage_key || "");
+    const coincidencia = storageKey.match(/^multimedia\/covers\/(menu|ficha)\/([0-9a-f-]{36})\.(jpg|jpeg|png|webp|gif|avif)$/i);
+    if (!coincidencia || !UUID_RE.test(coincidencia[2])) {
+        throw new Error("La clave de almacenamiento de la portada no es válida.");
+    }
+    const raiz = path.resolve(__dirname, "../../../database/.sync-pending-covers");
+    const ruta = path.resolve(raiz, coincidencia[2] + path.extname(storageKey));
+    if (!ruta.startsWith(raiz + path.sep)) throw new Error("La ruta de staging de portada no es válida.");
+    return ruta;
+}
+
 async function obtenerBytesPendientes(evento, ruta, payload) {
     try {
         return await fs.promises.readFile(ruta);
@@ -93,20 +105,33 @@ async function obtenerBytesPendientes(evento, ruta, payload) {
 }
 
 async function subirMultimediaPendiente(evento, url, secreto) {
-    if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return;
+    if (evento.operacion === "DELETE") return;
     const payload = obtenerPayload(evento);
-    const ruta = obtenerRutaStaging(evento);
-    const contenido = await obtenerBytesPendientes(evento, ruta, payload);
+    const esMultimedia = evento.entidad === "multimedia";
+    const esPortada = ["menu", "ficha"].includes(evento.entidad) && payload.imagen_storage_key;
+    if (!esMultimedia && !esPortada) return;
+
+    const storageKey = esPortada ? payload.imagen_storage_key : payload.storage_key;
+    const checksumEsperado = esPortada ? payload.imagen_checksum_sha256 : payload.checksum_sha256;
+    const mimeType = esPortada ? payload.imagen_mime_type : payload.mime_type;
+    const ruta = esPortada
+        ? obtenerRutaStagingPortada(payload)
+        : obtenerRutaStaging(evento);
+    const contenido = esPortada
+        ? await fs.promises.readFile(ruta)
+        : await obtenerBytesPendientes(evento, ruta, payload);
     const checksum = createHash("sha256").update(contenido).digest("hex");
-    if (checksum !== payload.checksum_sha256) {
-        throw new Error("El archivo multimedia pendiente no coincide con su checksum.");
+    if (checksum !== checksumEsperado) {
+        throw new Error(esPortada
+            ? "La portada pendiente no coincide con su checksum."
+            : "El archivo multimedia pendiente no coincide con su checksum.");
     }
     const formulario = new FormData();
-    formulario.append("storage_key", payload.storage_key);
-    formulario.append("checksum_sha256", payload.checksum_sha256);
-    formulario.append("mime_type", payload.mime_type || "application/octet-stream");
+    formulario.append("storage_key", storageKey);
+    formulario.append("checksum_sha256", checksumEsperado);
+    formulario.append("mime_type", mimeType || "application/octet-stream");
     formulario.append("file", new Blob([contenido], {
-        type: payload.mime_type || "application/octet-stream"
+        type: mimeType || "application/octet-stream"
     }), path.basename(ruta));
 
     const endpoint = url.replace(/\/exchange\/?$/i, "/media/upload");
@@ -116,16 +141,74 @@ async function subirMultimediaPendiente(evento, url, secreto) {
         body: formulario,
         signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(60000) : undefined
     });
-    if (!respuesta.ok) throw new Error(`No se pudo transferir multimedia (HTTP ${respuesta.status}).`);
+    if (!respuesta.ok) throw new Error(`No se pudo transferir el archivo (HTTP ${respuesta.status}).`);
 }
 
 async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos = []) {
-    if (evento.entidad !== "multimedia" || evento.operacion === "DELETE") return parsearPayload(evento);
+    if (evento.operacion === "DELETE") return parsearPayload(evento);
+    const payload = obtenerPayload(evento);
+    const esMultimedia = evento.entidad === "multimedia";
+    const esPortada = ["menu", "ficha"].includes(evento.entidad) && payload.imagen_storage_key;
+    if (!esMultimedia && !esPortada) return parsearPayload(evento);
+
+    if (esPortada) {
+        if (!/^[a-f0-9]{64}$/i.test(String(payload.imagen_checksum_sha256 || ""))) {
+            throw new Error("El checksum de la portada remota no tiene formato válido.");
+        }
+        const rutaStaging = obtenerRutaStagingPortada(payload);
+        const storageKey = payload.imagen_storage_key;
+        const extension = path.extname(storageKey);
+        const coincidencia = storageKey.match(/^multimedia\/covers\/(menu|ficha)\/([0-9a-f-]{36})\.(jpg|jpeg|png|webp|gif|avif)$/i);
+        if (!coincidencia || !UUID_RE.test(coincidencia[2])) {
+            throw new Error("La clave de almacenamiento de la portada remota no es válida.");
+        }
+        const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
+            "?key=" + encodeURIComponent(storageKey);
+        const respuesta = await fetch(endpoint, {
+            headers: { authorization: `Bearer ${secreto}` },
+            signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(60000) : undefined
+        });
+        if (!respuesta.ok) throw new Error(`No se pudo descargar la portada (HTTP ${respuesta.status}).`);
+        const contenido = Buffer.from(await respuesta.arrayBuffer());
+        const checksum = createHash("sha256").update(contenido).digest("hex");
+        if (checksum !== payload.imagen_checksum_sha256) {
+            throw new Error("El checksum de la portada recibida no coincide.");
+        }
+
+        const raizProyecto = path.resolve(__dirname, "../../../");
+        const carpeta = path.join(raizProyecto, "imagenes", evento.entidad === "menu" ? "menus" : "fichas");
+        await fs.promises.mkdir(carpeta, { recursive: true });
+        const nombre = `portada-${coincidencia[2]}${extension}`;
+        const destino = path.join(carpeta, nombre);
+        let existia = true;
+        try {
+            const actual = await fs.promises.readFile(destino);
+            if (createHash("sha256").update(actual).digest("hex") !== checksum) {
+                throw new Error("Ya existe una portada con el mismo nombre pero distinto contenido.");
+            }
+        } catch (error) {
+            if (error.code !== "ENOENT") throw error;
+            existia = false;
+        }
+        if (!existia) {
+            const temporal = destino + ".sync-tmp";
+            await fs.promises.writeFile(temporal, contenido, { flag: "wx" });
+            await fs.promises.rename(temporal, destino);
+            archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
+        }
+        return {
+            ...evento,
+            payload_json: {
+                ...payload,
+                imagen: path.relative(raizProyecto, destino).split(path.sep).join("/")
+            }
+        };
+    }
+
     if (!UUID_RE.test(String(evento.sync_id || "")) ||
         !Number.isSafeInteger(Number(evento.version_resultado)) || Number(evento.version_resultado) < 1) {
         throw new Error("La identidad o versión del archivo remoto no es válida.");
     }
-    const payload = obtenerPayload(evento);
     const endpoint = url.replace(/\/exchange\/?$/i, "/media/download") +
         "?key=" + encodeURIComponent(payload.storage_key || "");
     const respuesta = await fetch(endpoint, {
@@ -153,13 +236,15 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
         if (error.code !== "ENOENT") throw error;
         existia = false;
     }
-    await fs.promises.writeFile(temporal, contenido, { flag: "wx" }).catch(async (error) => {
-        if (error.code !== "EEXIST") throw error;
-        await fs.promises.unlink(temporal).catch(() => {});
-        throw new Error("Ya existe una descarga temporal para este archivo; se evita sobrescribirla.");
-    });
-    await fs.promises.rename(temporal, destino);
-    if (!existia) archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
+    if (!existia) {
+        await fs.promises.writeFile(temporal, contenido, { flag: "wx" }).catch(async (error) => {
+            if (error.code !== "EEXIST") throw error;
+            await fs.promises.unlink(temporal).catch(() => {});
+            throw new Error("Ya existe una descarga temporal para este archivo; se evita sobrescribirla.");
+        });
+        await fs.promises.rename(temporal, destino);
+        archivosNuevos.push({ evento_id: evento.evento_id, ruta: destino });
+    }
     return {
         ...evento,
         payload_json: {
@@ -172,18 +257,27 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
 async function limpiarStagingConfirmado(eventos, idsConfirmados) {
     const confirmados = new Set(idsConfirmados);
     for (const evento of eventos) {
-        if (!confirmados.has(evento.evento_id) ||
-            evento.entidad !== "multimedia" || evento.operacion === "DELETE") continue;
-        const ruta = obtenerRutaStaging(evento);
+        if (!confirmados.has(evento.evento_id) || evento.operacion === "DELETE") continue;
+        const payload = obtenerPayload(evento);
+        let ruta;
+        let carpeta;
+        if (evento.entidad === "multimedia") {
+            ruta = obtenerRutaStaging(evento);
+            carpeta = path.dirname(ruta);
+        } else if (["menu", "ficha"].includes(evento.entidad) && payload.imagen_storage_key) {
+            ruta = obtenerRutaStagingPortada(payload);
+            carpeta = path.dirname(ruta);
+        } else {
+            continue;
+        }
         try {
             await fs.promises.unlink(ruta);
-            await fs.promises.rmdir(path.dirname(ruta));
+            await fs.promises.rmdir(carpeta);
         } catch (error) {
             if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error.code)) throw error;
         }
     }
 }
-
 async function guardarConfirmaciones(ids) {
     if (!ids.length) return;
     await db.withTransaction(async (consultar) => {
