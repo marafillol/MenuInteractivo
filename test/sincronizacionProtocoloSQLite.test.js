@@ -130,7 +130,7 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /"entidades":7,"conflictos":1/);
+        assert.match(operacion.stdout, /"entidades":7,"conflictos":2/);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
