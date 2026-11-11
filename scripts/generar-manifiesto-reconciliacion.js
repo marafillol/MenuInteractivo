@@ -222,7 +222,7 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
     const idsPadres = [];
     for (const padre of entidad.padres || []) {
       const mapa = mapas[padre.tabla]?.[fuente];
-      const identidad = mapa?.get(JSON.stringify([fila[padre.fk]]));
+      const identidad = mapa?.get(JSON.stringify([normalizarClaveIdentidad(fila[padre.fk])]));
       if (!identidad) {
         pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
         break;
