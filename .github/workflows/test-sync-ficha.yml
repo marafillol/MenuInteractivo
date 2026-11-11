@@ -3,20 +3,15 @@ name: Validar outbox de fichas
 on:
   pull_request:
     branches:
-      - feature/sync-outbox-foundation
-      - feature/sync-ficha-outbox
-      - fix/sync-client-conflict-and-media-cleanup
-      - fix/ficha-delete-related-tombstones
-      - integration/sync-bidireccional-validacion
-      - feature/sync-menu-ficha-cover-images
-      - feature/reconciliacion-dependencias-relaciones
-      - fix/postgres-id-sequences-sync-preparer
-      - feature/modo-offline-local-sync-main
+      - main
   push:
     branches:
       - feature/sync-ficha-outbox
-      - integration/sync-bidireccional-validacion
       - fix/windows-cover-path-normalization
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
