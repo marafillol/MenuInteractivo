@@ -144,6 +144,35 @@ test("las relaciones se emparejan usando identidades de ambos extremos", () => {
   assert.equal(local.pendientes.length, 0);
 });
 
+
+test("no equipara portadas por ruta: exige checksum común y reporta portadas pendientes", () => {
+  const mapas = {};
+  const idPlantilla = "11111111-1111-5111-8111-111111111111";
+  registrarMapaIdentidades("plantilla", ["id_plantilla"],
+    [{ id_plantilla: 1 }], [{ id_plantilla: 9 }],
+    [{ claves_sqlite: [{ id_plantilla: 1 }], claves_postgres: [{ id_plantilla: 9 }], sync_id_propuesto: idPlantilla }],
+    mapas
+  );
+  const entidad = ENTIDADES.find(e => e.tabla === "menu");
+  const local = prepararFilasConDependencias(
+    [{ id_menu: 2, id_plantilla: 1, nombre: "Sala", visible: 1, imagen: "imagenes/menus/a.png", imagen_checksum_sha256: null }],
+    entidad, mapas, "sqlite"
+  );
+  const remoto = prepararFilasConDependencias(
+    [{ id_menu: 8, id_plantilla: 9, nombre: "Sala", visible: true, imagen: "https://cdn.example/b.png", imagen_checksum_sha256: null }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+  assert.equal(local.pendientesPortada.length, 1);
+  assert.equal(remoto.pendientesPortada.length, 1);
+
+  const checksumDistinto = prepararFilasConDependencias(
+    [{ id_menu: 8, id_plantilla: 9, nombre: "Sala", visible: true, imagen: "https://cdn.example/b.png", imagen_checksum_sha256: "a".repeat(64), imagen_tamano_bytes: 10 }],
+    entidad, mapas, "postgres"
+  );
+  assert.notEqual(local.filas[0].huella_contenido, checksumDistinto.filas[0].huella_contenido);
+});
+
 test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
   const validar = validarDestinoSeguro;
   assert.doesNotThrow(() => validar("postgresql://usuario:clave@127.0.0.1:5432/museo_reconciliacion_prueba"));
