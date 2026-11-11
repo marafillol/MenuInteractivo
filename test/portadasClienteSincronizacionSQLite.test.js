@@ -82,7 +82,13 @@ test("el cliente sube y descarga portadas verificando su SHA-256", () => {
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
-        fs.rmSync(path.join(proyecto, "imagenes", "menus"), { recursive: true, force: true });
-        fs.rmSync(path.join(proyecto, "database", ".sync-pending-covers"), { recursive: true, force: true });
+        const stage = path.join(proyecto, "database", ".sync-pending-covers", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.png");
+        const portada = path.join(proyecto, "imagenes", "menus", "portada-aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.png");
+        for (const ruta of [stage, portada]) {
+            try { fs.unlinkSync(ruta); } catch {}
+        }
+        for (const carpeta of [path.dirname(stage), path.dirname(portada)]) {
+            try { fs.rmdirSync(carpeta); } catch {}
+        }
     }
 });
