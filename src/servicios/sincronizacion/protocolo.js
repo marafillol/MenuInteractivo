@@ -147,7 +147,11 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
     // Solo el mismo evento_id demuestra que un reintento ya fue recibido.
     // Eventos distintos que intentan escribir una versión ya ocupada son conflicto.
     if (versionActual !== versionBase) {
-        return registrarConflicto(consultar, evento, actual, payload);
+        const conflicto = await registrarConflicto(consultar, evento, actual, payload);
+        // El conflicto también es una recepción procesada: guardar el evento
+        // hace idempotente el reintento si la respuesta HTTP se pierde.
+        if (registrarRecepcion) await guardarEventoRecibido(consultar, evento);
+        return conflicto;
     }
 
     if (evento.operacion === "DELETE") {
