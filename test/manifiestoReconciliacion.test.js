@@ -1,5 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const crypto = require("node:crypto");
 const {
   canonicalizar,
   normalizarRegistro,
@@ -10,9 +14,79 @@ const {
   validarDestinoSeguro,
   registrarMapaIdentidades,
   prepararFilasConDependencias,
+  enriquecerFilasMultimediaConArchivos,
   evaluarPortada,
   ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
+
+
+test("calcula checksum y tamaño multimedia desde archivos locales sin mutar filas originales", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  const relativa = path.join("imagenes", "multimedia", "imagen", "archivo.png");
+  const destino = path.join(raiz, relativa);
+  const bytes = Buffer.from("imagen de prueba");
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, bytes);
+  const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+  const fila = {
+    id_multi: 1,
+    id_ficha: 2,
+    ruta_archivo: relativa.split(path.sep).join("/"),
+    checksum_sha256: null,
+    tamano_bytes: null,
+    mime_type: null
+  };
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([fila], raiz);
+    assert.equal(resultado.filas.length, 1);
+    assert.equal(resultado.filas[0].checksum_sha256, hash);
+    assert.equal(resultado.filas[0].tamano_bytes, bytes.length);
+    assert.equal(resultado.filas[0].mime_type, "image/png");
+    assert.equal(resultado.filas[0].__integridad_archivo, "checksum_calculado_solo_lectura");
+    assert.equal(resultado.resumen.checksum_calculado_en_memoria, 1);
+    assert.equal(fila.checksum_sha256, null, "no debe mutar la fila original");
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
+
+test("bloquea multimedia cuyo checksum guardado no coincide con el archivo local", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  const relativa = "imagenes/multimedia/imagen/archivo.png";
+  const destino = path.join(raiz, ...relativa.split("/"));
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, Buffer.from("contenido real"));
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([{
+      id_multi: 7,
+      ruta_archivo: relativa,
+      checksum_sha256: "a".repeat(64),
+      tamano_bytes: 14
+    }], raiz);
+    assert.equal(resultado.filas[0].__integridad_archivo, "checksum_no_coincide");
+    assert.equal(resultado.resumen.checksum_no_coincide, 1);
+    assert.equal(resultado.filas[0].checksum_sha256, "a".repeat(64));
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
+
+test("marca multimedia sin archivo local como pendiente y no inventa checksum", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([{
+      id_multi: 9,
+      ruta_archivo: "imagenes/multimedia/imagen/no-existe.png",
+      checksum_sha256: null,
+      tamano_bytes: null
+    }], raiz);
+    assert.equal(resultado.filas[0].__integridad_archivo, "archivo_no_encontrado");
+    assert.equal(resultado.filas[0].checksum_sha256, null);
+    assert.equal(resultado.resumen.archivo_no_encontrado, 1);
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
 
 test("canonicaliza objetos independientemente del orden de sus claves", () => {
   assert.deepEqual(canonicalizar({ z: 1, a: { y: 2, b: 3 } }), {
@@ -24,6 +98,41 @@ test("normaliza JSON y booleanos entre representaciones SQLite y PostgreSQL", ()
   assert.deepEqual(
     normalizarRegistro("ficha", { datos_json: '{"b":2,"a":1}', visible: 1 }),
     normalizarRegistro("ficha", { datos_json: { a: 1, b: 2 }, visible: true })
+  );
+});
+
+test("normaliza activo legado como número o texto y descripcion vacía como NULL en catálogos", () => {
+  for (const tabla of ["plantilla", "etiqueta"]) {
+    assert.deepEqual(
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: "", activo: 1 }),
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: null, activo: "1" })
+    );
+    assert.deepEqual(
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: null, activo: 0 }),
+      normalizarRegistro(tabla, { nombre: "Catálogo", descripcion: "", activo: "0" })
+    );
+  }
+});
+
+test("normaliza descripción multimedia vacía como NULL sin ocultar contenido real", () => {
+  assert.deepEqual(
+    normalizarRegistro("multimedia", { descripcion: "", tipo_multi: "pdf", activo: 1 }),
+    normalizarRegistro("multimedia", { descripcion: null, tipo_multi: "pdf", activo: "1" })
+  );
+  assert.notDeepEqual(
+    normalizarRegistro("multimedia", { descripcion: "Documento" }),
+    normalizarRegistro("multimedia", { descripcion: "" })
+  );
+});
+
+test("normaliza resumen y texto vacíos como NULL al comparar fichas", () => {
+  assert.deepEqual(
+    normalizarRegistro("ficha", { titulo: "Sala", resumen: "", texto: "", visible: 1 }),
+    normalizarRegistro("ficha", { titulo: "Sala", resumen: null, texto: null, visible: "1" })
+  );
+  assert.notDeepEqual(
+    normalizarRegistro("ficha", { titulo: "Sala", texto: "Contenido conservado" }),
+    normalizarRegistro("ficha", { titulo: "Sala", texto: "" })
   );
 });
 
@@ -94,8 +203,8 @@ test("la huella multimedia ignora rutas y storage_key, pero conserva el checksum
   const idFicha = "11111111-1111-5111-8111-111111111111";
   const mapas = {
     ficha: {
-      sqlite: new Map([[JSON.stringify([1]), idFicha]]),
-      postgres: new Map([[JSON.stringify([9]), idFicha]])
+      sqlite: new Map([[JSON.stringify(["1"]), idFicha]]),
+      postgres: new Map([[JSON.stringify(["9"]), idFicha]])
     }
   };
   const entidad = ENTIDADES.find(e => e.tabla === "multimedia");
@@ -140,6 +249,28 @@ test("la huella multimedia ignora rutas y storage_key, pero conserva el checksum
   assert.notEqual(local.filas[0].huella_contenido, distinto.filas[0].huella_contenido);
 });
 
+
+test("resuelve dependencias cuando SQLite entrega IDs numéricos y PostgreSQL strings", () => {
+  const mapas = {};
+  const syncId = "11111111-1111-5111-8111-111111111111";
+  registrarMapaIdentidades("plantilla", ["id_plantilla"],
+    [{ id_plantilla: 1 }], [{ id_plantilla: "1" }],
+    [{ claves_sqlite: [{ id_plantilla: 1 }], claves_postgres: [{ id_plantilla: "1" }], sync_id_propuesto: syncId }],
+    mapas
+  );
+  const entidad = ENTIDADES.find(e => e.tabla === "menu");
+  const local = prepararFilasConDependencias(
+    [{ id_menu: 2, id_plantilla: 1, nombre: "Sala", visible: 1 }],
+    entidad, mapas, "sqlite"
+  );
+  const remoto = prepararFilasConDependencias(
+    [{ id_menu: "8", id_plantilla: "1", nombre: "Sala", visible: true }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.pendientes.length, 0);
+  assert.equal(remoto.pendientes.length, 0);
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+});
 
 test("genera candidatos hijos solo cuando sus padres tienen identidad compartida", () => {
   const mapas = {};

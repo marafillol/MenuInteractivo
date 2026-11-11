@@ -159,3 +159,24 @@ El aplicador:
 - No aplica relaciones, configuración, registros solo-locales o solo-remotos; esos casos requieren un plan específico.
 
 **No ejecutar estas herramientas contra producción ni contra Supabase real.** Todavía se necesita obtener copias consistentes, comparar los resultados, revisar manualmente cada candidato y conservar los manifiestos y backups usados.
+
+
+### Integridad multimedia desde archivos locales (solo lectura)
+
+El generador admite opcionalmente `RECONCILIACION_ARCHIVOS_ROOT`. Cuando se define, busca los archivos indicados por `ruta_archivo` o `storage_key` dentro de esa raíz, calcula SHA-256 y tamaño desde los bytes locales y completa esos valores **solo en memoria** para construir las huellas. No actualiza las tablas ni escribe metadatos.
+
+Ejemplo en PowerShell, desde la copia de pruebas:
+
+```powershell
+$env:RECONCILIACION_ARCHIVOS_ROOT = (Get-Location).Path
+$env:RECONCILIACION_SQLITE_PATH = "$PWD\database\museo.db"
+$env:RECONCILIACION_POSTGRES_URL = "postgresql://postgres:TU_PASSWORD@127.0.0.1:5432/museo_reconciliacion_prueba"
+$env:RECONCILIACION_SALIDA = "$PWD\manifiesto-reconciliacion-con-hashes.json"
+node .\scripts\generar-manifiesto-reconciliacion.js
+```
+
+El PostgreSQL debe ser exclusivamente la copia aislada `museo_reconciliacion_prueba` en `localhost:5432`; el script bloquea otros destinos. La raíz de archivos debe ser la carpeta del proyecto que contiene `imagenes\multimedia`. No apuntar a la carpeta de producción ni copiar credenciales de Supabase al `.env` de pruebas.
+
+El informe incluye `integridad_archivos` por origen (SQLite/PostgreSQL). Si un archivo no está disponible, su hash guardado no coincide o su tamaño difiere, el registro queda pendiente y no participa como candidato multimedia. Las rutas de Storage no se descargan ni consultan por red. Un archivo remoto que no exista en la raíz local requiere una verificación aparte.
+
+Los hashes calculados no se escriben en ninguna base. La asignación de `sync_id` sigue siendo una etapa separada, con revisión y aprobación manual.
