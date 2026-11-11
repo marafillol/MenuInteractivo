@@ -5,8 +5,10 @@ on:
     branches:
       - feature/sync-outbox-foundation
       - feature/sync-ficha-outbox
+      - integration/sync-bidireccional-validacion
       - fix/sync-client-conflict-and-media-cleanup
       - fix/ficha-delete-related-tombstones
+      - integration/sync-bidireccional-validacion
   push:
     branches:
       - feature/sync-ficha-outbox
