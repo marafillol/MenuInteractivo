@@ -40,6 +40,24 @@ El archivo de salida no se sobrescribe. Si ya existe, elegí otro nombre o mové
 
 Un checksum pendiente no se completa automáticamente. El informe sirve para revisar las coincidencias antes de preparar cualquier cambio manual en la copia de prueba.
 
+## Diagnóstico comparativo de metadatos
+
+Para comparar las columnas de las copias SQLite y PostgreSQL sin exportar sus valores,
+se puede ejecutar también:
+
+```powershell
+$env:RECONCILIACION_SQLITE_PATH = "$HOME\Downloads\museo_reconciliacion_prueba.sqlite"
+$env:RECONCILIACION_DIAGNOSTICO_SALIDA = "$PWD\diagnostico-catalogos-multimedia.json"
+node .\scripts\diagnosticar-diferencias-catalogos.js
+```
+
+El diagnóstico compara plantillas, etiquetas, fichas y multimedia. En multimedia excluye
+las claves y rutas físicas, pero calcula huellas de los campos descriptivos y de los
+metadatos disponibles (checksum SHA-256, MIME, tamaño y estado activo). El informe
+contiene tipos, longitudes y hashes; no contiene descripciones, rutas, claves de Storage
+ni bytes de archivos. No demuestra igualdad binaria cuando los checksums guardados son
+nulos o inválidos: para eso se requiere la auditoría de archivos y revisar los resultados
+`checksum_pendiente`.
 ## Protección del destino
 
 La herramienta rechaza cualquier destino distinto de `museo_reconciliacion_prueba` en `localhost:5432`, abre una transacción `READ ONLY` y comprueba la identidad efectiva de la conexión. También rechaza rutas absolutas, traversal y enlaces simbólicos que salgan de la carpeta permitida.
