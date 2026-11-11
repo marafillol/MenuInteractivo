@@ -84,8 +84,8 @@ function normalizar(tabla, campo, valor) {
     try { return canonico(JSON.parse(valor)); } catch { return valor; }
   }
   if (
-    ((tabla === "ficha" && ["resumen", "texto"].includes(campo)) ||
-      (tabla === "multimedia" && campo === "descripcion")) &&
+    ((["plantilla", "etiqueta", "multimedia"].includes(tabla) && campo === "descripcion") ||
+      (tabla === "ficha" && ["resumen", "texto"].includes(campo))) &&
     valor === ""
   ) {
     return null;
@@ -220,7 +220,11 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error("Diagnóstico detenido:", error.message);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch(error => {
+    console.error("Diagnóstico detenido:", error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { normalizar, resumen, resumenCampo, normalizarId, TABLAS };
