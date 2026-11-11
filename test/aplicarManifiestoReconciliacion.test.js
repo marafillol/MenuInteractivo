@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const sqlite3 = require("sqlite3");
-const { validarDestinoPostgresSeguro } = require("../scripts/aplicar-manifiesto-reconciliacion");
+const { validarDestinoPostgresSeguro, candidatosAprobados } = require("../scripts/aplicar-manifiesto-reconciliacion");
 
 const proyecto = path.resolve(__dirname, "..");
 const UUIDS = {
@@ -116,6 +116,26 @@ test("aplica solo candidatos aprobados, en orden de dependencias e idempotenteme
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
+});
+
+
+test("no aplica identidades de menú o ficha con portadas sin verificar", () => {
+    const manifiesto = {
+        formato: 2,
+        modo: "solo_lectura",
+        entidades: {
+            menu: {
+                candidatos_unicos: [{
+                    aprobado: true,
+                    sync_id_propuesto: UUIDS.menu,
+                    claves_sqlite: [{ id_menu: 1 }],
+                    claves_postgres: [{ id_menu: 11 }],
+                    portada: { estado: "conflicto_checksum_portada" }
+                }]
+            }
+        }
+    };
+    assert.throws(() => candidatosAprobados(manifiesto, "sqlite"), /portada.*verificarse/i);
 });
 
 test("rechaza aplicar un manifiesto sin doble confirmación de copia", () => {
