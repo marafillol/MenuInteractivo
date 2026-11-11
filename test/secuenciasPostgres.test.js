@@ -5,7 +5,7 @@ const {
   asegurarSecuenciasIdentificadores
 } = require("../src/servicios/sincronizacion/secuenciasPostgres");
 
-test("verifica y prepara secuencias para las cinco PK sincronizables", async () => {
+test("verifica y prepara secuencias para PK de entidades y relaciones sincronizables", async () => {
   const sentenciasRun = [];
   const sentenciasAll = [];
   await asegurarSecuenciasIdentificadores({
@@ -18,10 +18,11 @@ test("verifica y prepara secuencias para las cinco PK sincronizables", async () 
     ["menu", "id_menu"],
     ["ficha", "id_ficha"],
     ["etiqueta", "id_etiqueta"],
+    ["relacion_ficha", "id_relacion"],
     ["multimedia", "id_multi"]
   ]);
-  assert.equal(sentenciasRun.length, 15);
-  assert.equal(sentenciasAll.length, 5);
+  assert.equal(sentenciasRun.length, 18);
+  assert.equal(sentenciasAll.length, 6);
 
   for (const [tabla, columna] of IDENTIFICADORES_POSTGRES) {
     const secuencia = `${tabla}_${columna}_seq`;
