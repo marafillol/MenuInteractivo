@@ -55,7 +55,7 @@ function validarDestinoSeguro(connectionString) {
 const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
-  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "imagen_storage_key", "imagen_mime_type", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
+  { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
   { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_mime_type", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
@@ -149,6 +149,27 @@ function prepararFilas(filas, entidad) {
     } : {})
   }));
 }
+function evaluarPortada(local, remoto) {
+  const a = local?.portada || { existe: false, checksum: null, tamano_bytes: null };
+  const b = remoto?.portada || { existe: false, checksum: null, tamano_bytes: null };
+  if (!a.existe && !b.existe) return { estado: "sin_portada" };
+  if (a.checksum && b.checksum) {
+    if (a.checksum === b.checksum && a.tamano_bytes === b.tamano_bytes) {
+      return { estado: "portada_verificada_por_checksum", checksum_sha256: a.checksum };
+    }
+    return {
+      estado: "conflicto_checksum_portada",
+      checksum_sqlite: a.checksum,
+      checksum_postgres: b.checksum
+    };
+  }
+  return {
+    estado: a.existe !== b.existe ? "portada_presente_en_una_sola_copia" : "portada_pendiente_checksum",
+    checksum_sqlite: a.checksum,
+    checksum_postgres: b.checksum
+  };
+}
+
 function agruparPorHuella(filas) {
   const mapa = new Map();
   for (const fila of filas) {
@@ -224,6 +245,15 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
       huella_contenido: hash,
       ...(entidad.referencias ? {
         referencias: Object.fromEntries(entidad.referencias.map((campo) => [campo, fila[campo]]))
+      } : {}),
+      ...( ["menu", "ficha"].includes(entidad.tabla) ? {
+        portada: {
+          existe: Boolean(fila.imagen),
+          checksum: /^[a-f0-9]{64}$/i.test(String(fila.imagen_checksum_sha256 || ""))
+            ? String(fila.imagen_checksum_sha256).toLowerCase() : null,
+          tamano_bytes: Number.isSafeInteger(Number(fila.imagen_tamano_bytes))
+            ? Number(fila.imagen_tamano_bytes) : null
+        }
       } : {})
     });
   }
@@ -381,6 +411,9 @@ async function main() {
           compartidas.push({
             ...candidato,
             sync_id_propuesto: syncId,
+            ...( ["menu", "ficha"].includes(tabla) ? {
+              portada: evaluarPortada(filasLocal[0], filasRemotas[0])
+            } : {}),
             aprobado: false,
             estado: idsExistentes.length
               ? "candidato_completar_identidad_existente"
@@ -460,6 +493,7 @@ module.exports = {
   huella,
   prepararFilas,
   agruparPorHuella,
+  evaluarPortada,
   uuidPropuesto,
   validarDestinoSeguro,
   claveFila,
