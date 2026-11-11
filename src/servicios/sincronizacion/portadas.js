@@ -68,7 +68,7 @@ async function prepararPortada(archivo, entidad) {
             storageKey, buffer, mimeType, checksum
         );
     } else if (esModoLocal) {
-        imagen = String(archivo.path).replace(/\\/g, "/");
+        imagen = normalizarRutaPortada(archivo.path);
         const raiz = path.resolve(__dirname, "../../../database/.sync-pending-covers");
         await fs.promises.mkdir(raiz, { recursive: true });
         await fs.promises.writeFile(path.join(raiz, assetId + extension), buffer, { flag: "wx" });
