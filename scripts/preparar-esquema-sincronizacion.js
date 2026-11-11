@@ -26,11 +26,11 @@ function validarDestinoDePreparacion() {
   try { destino = new URL(String(process.env.DATABASE_URL || "")); }
   catch { throw new Error("Migración bloqueada: DATABASE_URL debe apuntar a la copia PostgreSQL local."); }
   const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
-  const puertoPermitido = ["5432", "5433"].includes(destino.port);
+  const puertoPermitido = destino.port === "5432";
   const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
   if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
       !hostPermitido || !puertoPermitido || !basePermitida) {
-    throw new Error("Migración bloqueada: solo se permite museo_reconciliacion_prueba en localhost:5432 o localhost:5433; no se admiten bases remotas.");
+    throw new Error("Migración bloqueada: solo se permite museo_reconciliacion_prueba en localhost:5432; no se admiten bases remotas.");
   }
 }
 validarDestinoDePreparacion();
