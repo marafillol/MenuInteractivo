@@ -41,7 +41,7 @@ test("calcula SHA-256 y tamaño desde los bytes reales", async () => {
         const resultado = await calcularArchivo(archivo, raiz);
         assert.equal(resultado.existe, true);
         assert.equal(resultado.checksum_sha256,
-            "f3e9d8f4c1d6f7f2a3d9b2d6e0a4f2c7");
+            "f3a7a67ab20351ddf47e87ecbf0e5a0868fc0e257d0aea65d018b0405b9a34f3");
     } finally {
         await fs.promises.rm(raiz, { recursive: true, force: true });
     }
