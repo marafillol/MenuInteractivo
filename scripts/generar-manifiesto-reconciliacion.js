@@ -417,5 +417,8 @@ module.exports = {
   agruparPorHuella,
   uuidPropuesto,
   validarDestinoSeguro,
+  claveFila,
+  registrarMapaIdentidades,
+  prepararFilasConDependencias,
   ENTIDADES
 };
