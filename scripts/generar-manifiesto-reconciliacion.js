@@ -118,7 +118,7 @@ function normalizarRegistro(tabla, registro) {
   // y la interfaz los presenta como cadena vacía. Para identificar la misma
   // ficha entre motores, "" y NULL se consideran equivalentes sin modificar
   // ninguna base ni ocultar diferencias cuando existe contenido real.
-  if (["plantilla", "etiqueta"].includes(tabla) && salida.descripcion === "") {
+  if (["plantilla", "etiqueta", "multimedia"].includes(tabla) && salida.descripcion === "") {
     salida.descripcion = null;
   }
   if (tabla === "ficha") {
