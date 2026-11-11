@@ -90,6 +90,56 @@ test("multimedia declara su ficha padre y exige checksum", () => {
   assert.equal(multimedia.padres[0].tabla, "ficha");
 });
 
+test("la huella multimedia ignora rutas y storage_key, pero conserva el checksum", () => {
+  const idFicha = "11111111-1111-5111-8111-111111111111";
+  const mapas = {
+    ficha: {
+      sqlite: new Map([[JSON.stringify([1]), idFicha]]),
+      postgres: new Map([[JSON.stringify([9]), idFicha]])
+    }
+  };
+  const entidad = ENTIDADES.find(e => e.tabla === "multimedia");
+  const base = {
+    descripcion: "Documento",
+    tipo_multi: "pdf",
+    miniatura: "📄",
+    activo: 1,
+    checksum_sha256: "a".repeat(64),
+    mime_type: "application/pdf",
+    tamano_bytes: 1024
+  };
+  const local = prepararFilasConDependencias([{
+    ...base,
+    id_multi: 4,
+    id_ficha: 1,
+    ruta_archivo: "imagenes/multimedia/manual.pdf",
+    storage_key: null,
+    sync_previous_path: null
+  }], entidad, mapas, "sqlite");
+  const remoto = prepararFilasConDependencias([{
+    ...base,
+    id_multi: 39,
+    id_ficha: 9,
+    ruta_archivo: "https://storage.example/manual.pdf",
+    storage_key: "multimedia/legacy/manual.pdf",
+    sync_previous_path: "imagenes/multimedia/manual-anterior.pdf"
+  }], entidad, mapas, "postgres");
+
+  assert.equal(local.filas.length, 1);
+  assert.equal(remoto.filas.length, 1);
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+
+  const distinto = prepararFilasConDependencias([{
+    ...base,
+    id_multi: 39,
+    id_ficha: 9,
+    ruta_archivo: "https://storage.example/manual.pdf",
+    storage_key: "multimedia/legacy/manual.pdf",
+    checksum_sha256: "b".repeat(64)
+  }], entidad, mapas, "postgres");
+  assert.notEqual(local.filas[0].huella_contenido, distinto.filas[0].huella_contenido);
+});
+
 
 test("genera candidatos hijos solo cuando sus padres tienen identidad compartida", () => {
   const mapas = {};
