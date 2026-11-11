@@ -138,18 +138,22 @@ test("la instantánea de bootstrap captura contenido, relaciones y cursor en una
 
   const db = require("../src/database");
   const { crearSnapshot } = require("../src/servicios/sincronizacion/bootstrap");
-  const snapshot = await db.withTransaction(crearSnapshot);
+  try {
+    const snapshot = await db.withTransaction(crearSnapshot);
 
-  assert.equal(snapshot.version, 1);
-  assert.equal(snapshot.cursor, 1);
-  assert.equal(snapshot.data.plantilla.length, 1);
-  assert.equal(snapshot.data.menu[0].sync_id, ids.menu);
-  assert.equal(snapshot.data.ficha[0].id_usuario, null);
-  assert.equal(snapshot.data.ficha_etiqueta[0].sync_id, ids.fichaEtiqueta);
-  assert.equal(snapshot.data.relacion_ficha[0].sync_id, ids.relacion);
-  assert.equal(snapshot.data.multimedia[0].storage_key, "multimedia/imagen/" + ids.multimedia + "/v1.png");
-  assert.equal(snapshot.data.multimedia[0].checksum_sha256, "a".repeat(64));
+    assert.equal(snapshot.version, 1);
+    assert.equal(snapshot.cursor, 1);
+    assert.equal(snapshot.data.plantilla.length, 1);
+    assert.equal(snapshot.data.menu[0].sync_id, ids.menu);
+    assert.equal(snapshot.data.ficha[0].id_usuario, null);
+    assert.equal(snapshot.data.ficha_etiqueta[0].sync_id, ids.fichaEtiqueta);
+    assert.equal(snapshot.data.relacion_ficha[0].sync_id, ids.relacion);
+    assert.equal(snapshot.data.multimedia[0].storage_key, "multimedia/imagen/" + ids.multimedia + "/v1.png");
+    assert.equal(snapshot.data.multimedia[0].checksum_sha256, "a".repeat(64));
 
-  const filas = await client.query("SELECT COUNT(*)::int AS cantidad FROM public.sync_eventos");
-  assert.equal(filas.rows[0].cantidad, 1, "la captura no debe escribir eventos en PostgreSQL");
+    const filas = await client.query("SELECT COUNT(*)::int AS cantidad FROM public.sync_eventos");
+    assert.equal(filas.rows[0].cantidad, 1, "la captura no debe escribir eventos en PostgreSQL");
+  } finally {
+    await new Promise((resolve, reject) => db.close((error) => error ? reject(error) : resolve()));
+  }
 });
