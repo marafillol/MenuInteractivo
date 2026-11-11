@@ -436,9 +436,76 @@ const eliminarCompleta = async (id) => {
         }
 
         if (outboxActiva && ficha.sync_id && menuSyncId) {
+            const eliminadoEn = new Date().toISOString();
+
+            // Las asociaciones se eliminan lógicamente antes que la ficha.
+            // Todo queda en esta misma transacción: si una identidad histórica
+            // falta o falla el outbox, no se borra parcialmente la ficha.
+            const relaciones = await consultar(`
+                SELECT rf.*, fo.sync_id AS origen_sync_id, fd.sync_id AS destino_sync_id
+                FROM relacion_ficha rf
+                LEFT JOIN ficha fo ON fo.id_ficha = rf.id_ficha_origen
+                LEFT JOIN ficha fd ON fd.id_ficha = rf.id_ficha_destino
+                WHERE (rf.id_ficha_origen = ? OR rf.id_ficha_destino = ?)
+                  AND rf.sync_deleted_at IS NULL
+            `, [id, id]);
+
+            for (const relacion of relaciones.rows) {
+                if (!relacion.sync_id || !relacion.origen_sync_id || !relacion.destino_sync_id) {
+                    throw new Error("No se puede eliminar la ficha: tiene relaciones históricas sin identidad sincronizada. Deben reconciliarse primero.");
+                }
+                const versionBaseRelacion = Number(relacion.sync_version || 1);
+                const versionResultadoRelacion = versionBaseRelacion + 1;
+                await consultar(`
+                    UPDATE relacion_ficha SET sync_deleted_at = ?, sync_version = ?
+                    WHERE id_relacion = ?
+                `, [eliminadoEn, versionResultadoRelacion, relacion.id_relacion]);
+                await registrarEvento(consultar, {
+                    dispositivoId, entidad: "relacion_ficha", operacion: "DELETE",
+                    syncId: relacion.sync_id,
+                    versionBase: versionBaseRelacion,
+                    versionResultado: versionResultadoRelacion,
+                    payload: {
+                        ficha_origen_sync_id: relacion.origen_sync_id,
+                        ficha_destino_sync_id: relacion.destino_sync_id,
+                        tipo_relacion: relacion.tipo_relacion,
+                        deleted_at: eliminadoEn
+                    }
+                });
+            }
+
+            const etiquetas = await consultar(`
+                SELECT fe.*, e.sync_id AS etiqueta_sync_id
+                FROM ficha_etiqueta fe
+                LEFT JOIN etiqueta e ON e.id_etiqueta = fe.id_etiqueta
+                WHERE fe.id_ficha = ? AND fe.sync_deleted_at IS NULL
+            `, [id]);
+
+            for (const asociacion of etiquetas.rows) {
+                if (!asociacion.sync_id || !asociacion.etiqueta_sync_id) {
+                    throw new Error("No se puede eliminar la ficha: tiene etiquetas asociadas sin identidad sincronizada. Deben reconciliarse primero.");
+                }
+                const versionBaseAsociacion = Number(asociacion.sync_version || 1);
+                const versionResultadoAsociacion = versionBaseAsociacion + 1;
+                await consultar(`
+                    UPDATE ficha_etiqueta SET sync_deleted_at = ?, sync_version = ?
+                    WHERE id_ficha = ? AND id_etiqueta = ?
+                `, [eliminadoEn, versionResultadoAsociacion, id, asociacion.id_etiqueta]);
+                await registrarEvento(consultar, {
+                    dispositivoId, entidad: "ficha_etiqueta", operacion: "DELETE",
+                    syncId: asociacion.sync_id,
+                    versionBase: versionBaseAsociacion,
+                    versionResultado: versionResultadoAsociacion,
+                    payload: {
+                        ficha_sync_id: ficha.sync_id,
+                        etiqueta_sync_id: asociacion.etiqueta_sync_id,
+                        deleted_at: eliminadoEn
+                    }
+                });
+            }
+
             const versionBase = Number(ficha.sync_version || 1);
             const versionResultado = versionBase + 1;
-            const eliminadoEn = new Date().toISOString();
             await consultar(`
                 UPDATE ficha
                 SET visible = 0, sync_deleted_at = ?, sync_version = ?,

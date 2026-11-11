@@ -21,6 +21,35 @@ const POSTGRES_URL = process.env.RECONCILIACION_POSTGRES_URL;
 const OUTPUT = process.env.RECONCILIACION_SALIDA ||
   path.resolve(process.cwd(), "manifiesto-reconciliacion.json");
 
+/**
+ * El generador solo puede consultar una copia PostgreSQL local restaurada
+ * para reconciliación. Bloquea explícitamente cualquier host o base remotos,
+ * incluida una URL de Supabase aunque sea de solo lectura.
+ */
+function validarDestinoSeguro(connectionString) {
+  let destino;
+  try {
+    destino = new URL(String(connectionString || ""));
+  } catch {
+    throw new Error("URL de PostgreSQL inválida.");
+  }
+  const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
+  const puertoPermitido = destino.port === "5433";
+  const basePermitida =
+    destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
+  if (
+    !hostPermitido ||
+    !puertoPermitido ||
+    !basePermitida ||
+    !["postgres:", "postgresql:"].includes(destino.protocol)
+  ) {
+    throw new Error(
+      "Conexión bloqueada: solo se permite la copia local " +
+      "museo_reconciliacion_prueba en localhost:5433."
+    );
+  }
+}
+
 // Los campos ID/FK y rutas físicas no se usan para comparar contenido.
 // Las dependencias se validarán en una etapa posterior con mapas aprobados.
 const ENTIDADES = [
@@ -133,7 +162,13 @@ async function main() {
   if (!SQLITE_PATH || !POSTGRES_URL) {
     throw new Error("Configurá RECONCILIACION_SQLITE_PATH y RECONCILIACION_POSTGRES_URL con copias descartables, nunca producción.");
   }
+  validarDestinoSeguro(POSTGRES_URL);
   if (!fs.existsSync(SQLITE_PATH)) throw new Error("No existe la copia SQLite indicada.");
+  const sqliteReal = fs.realpathSync(SQLITE_PATH);
+  const sqliteProduccion = path.resolve(process.cwd(), "database", "museo.db");
+  if (sqliteReal === sqliteProduccion) {
+    throw new Error("Conexión bloqueada: no se permite analizar la SQLite activa del proyecto; usá una copia descartable.");
+  }
   if (fs.existsSync(OUTPUT)) throw new Error("El archivo de salida ya existe; no se sobrescribe: " + OUTPUT);
 
   const sqlite = new sqlite3.Database(SQLITE_PATH, sqlite3.OPEN_READONLY);
@@ -318,5 +353,6 @@ module.exports = {
   prepararFilas,
   agruparPorHuella,
   uuidPropuesto,
+  validarDestinoSeguro,
   ENTIDADES
 };
