@@ -90,7 +90,7 @@ Estos UUID son candidatos; todavía no están persistidos. La migración SQL agr
 ## Orden de trabajo propuesto
 
 1. Comparar los conteos de `museo_reconciliacion_prueba` (restauración custom del 10/11) con el SQL plano. Si difieren, no usar este plan hasta identificar cuál respaldo es el vigente.
-2. Obtener una exportación completa y reciente de Storage que incluya bucket, clave de objeto, SHA-256 y tamaño. Debe cubrir los 41 activos/portadas no presentes en el ZIP actual y confirmar las claves de los 16 archivos encontrados.
+2. La exportación completa de Storage ya fue obtenida el 11/11: 113/113 objetos, SHA-256 y tamaños. Usar esa evidencia para probar un resolver de alias explícito; mantener los seis archivos históricos sin asignar hasta revisión.
 3. En una copia aislada del dump vigente, ejecutar `scripts/preparar-esquema-sincronizacion.js` con su protección de destino local y probar la migración candidata en modo rollback.
 4. Verificar que el snapshot generado desde esa copia pase `validarSnapshot` y que el bootstrap SQLite restaure filas, relaciones, cursor y archivos.
 5. Revisar el diff final de migración y obtener aprobación expresa antes de cualquier escritura real en Supabase.
