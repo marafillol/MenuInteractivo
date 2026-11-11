@@ -114,6 +114,17 @@ test("normaliza activo legado como número o texto y descripcion vacía como NUL
   }
 });
 
+test("normaliza resumen y texto vacíos como NULL al comparar fichas", () => {
+  assert.deepEqual(
+    normalizarRegistro("ficha", { titulo: "Sala", resumen: "", texto: "", visible: 1 }),
+    normalizarRegistro("ficha", { titulo: "Sala", resumen: null, texto: null, visible: "1" })
+  );
+  assert.notDeepEqual(
+    normalizarRegistro("ficha", { titulo: "Sala", texto: "Contenido conservado" }),
+    normalizarRegistro("ficha", { titulo: "Sala", texto: "" })
+  );
+});
+
 test("excluye IDs, dependencias y metadatos de sincronización de la huella", () => {
   const a = { id_ficha: 1, id_menu: 4, titulo: "Historia", sync_id: "a", sync_version: 1 };
   const b = { id_ficha: 99, id_menu: 8, titulo: "Historia", sync_id: "b", sync_version: 7 };
