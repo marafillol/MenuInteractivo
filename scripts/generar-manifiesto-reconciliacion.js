@@ -280,6 +280,7 @@ async function main() {
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
         "Menús, fichas y multimedia solo generan candidatos cuando la identidad de sus padres está disponible en ambas copias.",
         "Multimedia requiere una ficha padre reconciliada y un checksum_sha256 con formato hexadecimal de 64 caracteres; este manifiesto no verifica los bytes del archivo.",
+        "Las portadas de menú y ficha solo se consideran verificadas si ambas copias tienen checksum SHA-256; las referencias sin checksum se reportan por separado y no prueban igualdad binaria.",
         "Las relaciones se emparejan usando las identidades compartidas de todos sus extremos; ficha_etiqueta conserva su clave primaria compuesta.",
         "Los sync_id preexistentes se conservan como candidatos; identidades distintas entre copias se reportan como conflicto y nunca se sobrescriben.",
         "Rutas de archivos e imágenes no prueban igualdad binaria; multimedia requiere checksum SHA-256 aparte.",
@@ -408,8 +409,9 @@ async function main() {
           solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
           solo_postgres_por_contenido: remoto.filter(f => !hashesLocales.has(f.huella_contenido)).length
         },
-        estado: pendientesLocal.length || pendientesRemoto.length
-          ? "parcial; requiere_reconciliar_dependencias"
+        estado: pendientesLocal.length || pendientesRemoto.length ||
+          pendientesPortadaLocal.length || pendientesPortadaRemoto.length
+          ? "parcial; requiere_reconciliar_dependencias_o_portadas"
           : "candidatos_generados",
         ...(pendientesLocal.length ? { pendientes_sqlite: pendientesLocal } : {}),
         ...(pendientesRemoto.length ? { pendientes_postgres: pendientesRemoto } : {}),
