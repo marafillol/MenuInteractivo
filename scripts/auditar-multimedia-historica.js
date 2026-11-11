@@ -54,11 +54,18 @@ function resolverRutaSegura(raiz, rutaRelativa) {
     return destino;
 }
 
-async function calcularArchivo(ruta) {
+async function calcularArchivo(ruta, raiz) {
     try {
-        const stat = await fs.promises.stat(ruta);
+        const raizReal = await fs.promises.realpath(raiz);
+        const rutaReal = await fs.promises.realpath(ruta);
+        const relativa = path.relative(raizReal, rutaReal);
+        if (!relativa || relativa === ".." || relativa.startsWith(".." + path.sep) ||
+            path.isAbsolute(relativa)) {
+            return { existe: false, error: "La ruta resuelta queda fuera de la carpeta permitida." };
+        }
+        const stat = await fs.promises.stat(rutaReal);
         if (!stat.isFile()) return { existe: false, error: "La ruta no corresponde a un archivo." };
-        const contenido = await fs.promises.readFile(ruta);
+        const contenido = await fs.promises.readFile(rutaReal);
         return {
             existe: true,
             checksum_sha256: createHash("sha256").update(contenido).digest("hex"),
@@ -84,7 +91,7 @@ async function auditarRegistro(registro, raiz) {
     for (const candidato of candidatos) {
         const ruta = resolverRutaSegura(raiz, candidato.valor);
         if (!ruta) continue;
-        const resultado = await calcularArchivo(ruta);
+        const resultado = await calcularArchivo(ruta, raiz);
         if (resultado.existe) {
             archivo = resultado;
             origen = candidato.origen;
