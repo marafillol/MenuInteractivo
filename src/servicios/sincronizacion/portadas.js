@@ -3,6 +3,7 @@ const path = require("node:path");
 const { randomUUID, createHash } = require("node:crypto");
 const { esModoLocal, esModoSupabase } = require("../../config/modoServidor");
 const { estaPreparado, columnasDe } = require("./esquema");
+const { normalizarRutaPortada } = require("./portadasRuta");
 
 const MIME_POR_EXTENSION = {
     ".jpg": "image/jpeg",
@@ -64,7 +65,7 @@ async function prepararPortada(archivo, entidad) {
             storageKey, buffer, mimeType, checksum
         );
     } else if (esModoLocal) {
-        imagen = String(archivo.path).replace(/\\\\/g, "/");
+        imagen = normalizarRutaPortada(archivo.path);
         const raiz = path.resolve(__dirname, "../../../database/.sync-pending-covers");
         await fs.promises.mkdir(raiz, { recursive: true });
         await fs.promises.writeFile(path.join(raiz, assetId + extension), buffer, { flag: "wx" });
@@ -94,4 +95,4 @@ async function limpiarStagingPortada(portada) {
     }
 }
 
-module.exports = { prepararPortada, extensionSegura, leerArchivo, limpiarStagingPortada };
+module.exports = { prepararPortada, extensionSegura, leerArchivo, limpiarStagingPortada, normalizarRutaPortada };
