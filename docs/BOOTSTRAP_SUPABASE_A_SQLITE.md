@@ -93,3 +93,6 @@ La inicialización es explícita para que una SQLite histórica no se confunda c
 - No se probó contra Supabase real ni contra Storage de producción.
 - Las pruebas deben usar SQLite temporal y PostgreSQL descartable.
 - No fusionar ni desplegar hasta completar pruebas de integración y revisar el procedimiento operativo del servidor del museo.
+
+
+La inicialización debe realizarse antes de habilitar el equipo para recibir operaciones administrativas offline; el estado incompleto nunca autoriza el envío de su outbox.
