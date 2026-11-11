@@ -94,5 +94,11 @@ jobs:
         env:
           SYNC_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_backup_real_delta_test
         run: node --test test/migracionIdentidadesSupabaseVivoConsolidada.test.js
+      - name: Crear base descartable para migración dinámica
+        run: PGPASSWORD=postgres createdb -h 127.0.0.1 -U postgres museo_sync_dinamica_test
+      - name: Validar migración dinámica y altas posteriores
+        env:
+          SYNC_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/museo_sync_dinamica_test
+        run: node --test test/migracionSupabaseBidireccionalDinamica.test.js
       - name: Validar resolvedor histórico de Storage
         run: node --test test/resolverStorageHistorico.test.js
