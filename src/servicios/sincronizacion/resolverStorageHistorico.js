@@ -68,6 +68,10 @@ function extraerClaveUrl(referencia, datos = mapa) {
     return clave;
 }
 
+function esStorageKeyHistorica(storageKey, datos = mapa) {
+    return Object.values(datos.entries).some((entrada) => entrada[1] === storageKey);
+}
+
 function esClaveHistoricaPermitida(entidad, id, storageKey, datos = mapa) {
     const entrada = datos.entries[`${entidad}:${id}`];
     return Boolean(entrada && entrada[1] === storageKey);
