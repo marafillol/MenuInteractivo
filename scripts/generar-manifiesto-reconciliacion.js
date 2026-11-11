@@ -142,6 +142,7 @@ function tieneClaves(fila, claves) {
 function prepararFilas(filas, entidad) {
   return filas.map(fila => ({
     clave_local: Object.fromEntries(entidad.pk.map(k => [k, fila[k]])),
+    sync_id_existente: fila.sync_id || null,
     huella_contenido: entidad.relacion ? null : huella(entidad.tabla, fila, entidad.excluir),
     ...(entidad.referencias ? {
       referencias: Object.fromEntries(entidad.referencias.map(k => [k, fila[k]]))
@@ -214,6 +215,7 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
       : huella(entidad.tabla, registro, entidad.excluir);
     preparadas.push({
       clave_local: Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])),
+      sync_id_existente: fila.sync_id || null,
       huella_contenido: hash,
       ...(entidad.referencias ? {
         referencias: Object.fromEntries(entidad.referencias.map((campo) => [campo, fila[campo]]))
@@ -344,14 +346,14 @@ async function main() {
         };
         if (filasLocal.length === 1 && filasRemotas.length === 1) {
           const idsExistentes = [...new Set([
-            filasLocal[0].sync_id,
-            filasRemotas[0].sync_id
+            filasLocal[0].sync_id_existente,
+            filasRemotas[0].sync_id_existente
           ].filter(Boolean).map(String))];
           if (idsExistentes.length > 1) {
             conflictosSyncId.push({
               ...candidato,
-              sync_id_sqlite: filasLocal[0].sync_id,
-              sync_id_postgres: filasRemotas[0].sync_id,
+              sync_id_sqlite: filasLocal[0].sync_id_existente,
+              sync_id_postgres: filasRemotas[0].sync_id_existente,
               estado: "conflicto_identidades_existentes"
             });
             continue;
