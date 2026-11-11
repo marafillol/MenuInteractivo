@@ -2,9 +2,13 @@ const { AsyncLocalStorage } = require("node:async_hooks");
 const { Pool } = require("pg");
 const { traducirConsulta } = require("./databaseSqlCompat");
 const { performance } = require("node:perf_hooks");
+const sslDeshabilitado = ["false", "0", "disable", "off"].includes(
+    String(process.env.DATABASE_SSL || "").trim().toLowerCase()
+);
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    // PostgreSQL local de desarrollo/CI puede no ofrecer SSL; Supabase conserva SSL por defecto.
+    ssl: sslDeshabilitado ? false : { rejectUnauthorized: false },
     min: 3,
     max: 5,
     idleTimeoutMillis: 30000
