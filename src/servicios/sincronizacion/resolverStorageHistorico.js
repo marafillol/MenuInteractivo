@@ -155,5 +155,8 @@ validarMapaStorageHistorico();
 module.exports = {
     validarMapaStorageHistorico,
     extraerClaveUrl,
-    resolverReferenciaHistorica
+    resolverReferenciaHistorica,
+    esClaveHistoricaPermitida,
+    esStorageKeyHistorica,
+    aplicarMapaSnapshot
 };
