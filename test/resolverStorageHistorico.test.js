@@ -3,7 +3,10 @@ const assert = require("node:assert/strict");
 const {
     resolverReferenciaHistorica,
     extraerClaveUrl,
-    validarMapaStorageHistorico
+    validarMapaStorageHistorico,
+    aplicarMapaSnapshot,
+    esClaveHistoricaPermitida,
+    esStorageKeyHistorica
 } = require("../src/servicios/sincronizacion/resolverStorageHistorico");
 const mapa = require("../src/servicios/sincronizacion/mapaStorageHistorico.json");
 
