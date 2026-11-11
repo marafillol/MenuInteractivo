@@ -40,7 +40,7 @@ test("el manifiesto de filas no exporta valores completos", () => {
     [{ id_etiqueta: 3, nombre: "Reservado", descripcion: "Texto privado" }],
     { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] }
   );
-  assert.deepEqual(Object.keys(filas[0]).sort(), ["clave_local", "huella_contenido"]);
+  assert.deepEqual(Object.keys(filas[0]).sort(), ["clave_local", "huella_contenido", "sync_id_existente"]);
   assert.equal(JSON.stringify(filas).includes("Texto privado"), false);
 });
 
