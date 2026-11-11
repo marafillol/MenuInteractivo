@@ -168,8 +168,8 @@ test("la huella multimedia ignora rutas y storage_key, pero conserva el checksum
   const idFicha = "11111111-1111-5111-8111-111111111111";
   const mapas = {
     ficha: {
-      sqlite: new Map([[JSON.stringify([1]), idFicha]]),
-      postgres: new Map([[JSON.stringify([9]), idFicha]])
+      sqlite: new Map([[JSON.stringify(["1"]), idFicha]]),
+      postgres: new Map([[JSON.stringify(["9"]), idFicha]])
     }
   };
   const entidad = ENTIDADES.find(e => e.tabla === "multimedia");
