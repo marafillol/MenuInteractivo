@@ -7,9 +7,9 @@ const IDENTIFICADORES_POSTGRES = Object.freeze([
 ]);
 
 /**
- * El dump legado no incluye secuencias para cinco PK autoincrementales.
- * Crea las secuencias faltantes, las asocia a sus columnas y las posiciona
- * por encima del mayor ID sin hacer retroceder una secuencia ya utilizada.
+ * Verifica las secuencias de las cinco PK autoincrementales sincronizables.
+ * Crea las faltantes, las asocia a sus columnas y las posiciona por encima
+ * del mayor ID sin hacer retroceder una secuencia ya utilizada.
  */
 async function asegurarSecuenciasIdentificadores({ run, all }) {
   for (const [tabla, columna] of IDENTIFICADORES_POSTGRES) {
