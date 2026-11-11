@@ -36,6 +36,7 @@ function validarDestinoDePreparacion() {
 validarDestinoDePreparacion();
 
 const db = require("../src/database");
+const { asegurarSecuenciasIdentificadores } = require("../src/servicios/sincronizacion/secuenciasPostgres");
 
 // Solo entidades habilitadas en el protocolo reciben identidad compartida.
 // configuracion conserva su clave natural y queda fuera de esta migración.
@@ -62,6 +63,10 @@ async function addColumn(table, column, type) {
 async function ensureTable(sqlite, postgres) { await run(esModoSupabase ? postgres : sqlite); }
 async function main() {
   console.log(`Preparando metadatos en ${esModoSupabase ? "PostgreSQL" : "SQLite"}; no se sincronizan datos.`);
+  if (esModoSupabase) {
+    await asegurarSecuenciasIdentificadores({ run, all });
+    console.log("Secuencias de identificadores PostgreSQL verificadas y asociadas.");
+  }
   for (const [table] of entidades) {
     await addColumn(table, "sync_id", esModoSupabase ? "UUID" : "TEXT");
     await addColumn(table, "sync_version", "INTEGER NOT NULL DEFAULT 1");
