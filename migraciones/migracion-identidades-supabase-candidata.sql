@@ -25,6 +25,9 @@ ALTER TABLE public.multimedia ADD COLUMN IF NOT EXISTS sync_deleted_at timestamp
 ALTER TABLE public.relacion_ficha ADD COLUMN IF NOT EXISTS sync_id uuid;
 ALTER TABLE public.relacion_ficha ADD COLUMN IF NOT EXISTS sync_version integer NOT NULL DEFAULT 1;
 ALTER TABLE public.relacion_ficha ADD COLUMN IF NOT EXISTS sync_deleted_at timestamptz;
+ALTER TABLE public.ficha_etiqueta ADD COLUMN IF NOT EXISTS sync_id uuid;
+ALTER TABLE public.ficha_etiqueta ADD COLUMN IF NOT EXISTS sync_version integer NOT NULL DEFAULT 1;
+ALTER TABLE public.ficha_etiqueta ADD COLUMN IF NOT EXISTS sync_deleted_at timestamptz;
 
 DO $$ BEGIN
  IF (SELECT COUNT(*) FROM public.plantilla) <> 3 THEN RAISE EXCEPTION 'Conteo inesperado: plantilla'; END IF;
