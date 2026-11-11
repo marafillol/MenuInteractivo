@@ -258,7 +258,7 @@ const actualizar = async (id, datos) => {
                 ", sync_id = ?, sync_version = ?, sync_deleted_at = NULL WHERE id_ficha = ?"
             );
             await consultar(consultaFinal, [
-                ...valores.slice(0, datos.imagen ? 7 : 6),
+                ...valores.slice(0, -1),
                 syncId, versionResultado, id
             ]);
             await registrarEvento(consultar, {
