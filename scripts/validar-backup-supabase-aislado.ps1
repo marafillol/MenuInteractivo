@@ -30,7 +30,7 @@ BEGIN
 END $$;
 '@
 $tempCheck = Join-Path ([System.IO.Path]::GetTempPath()) ("museo-backup-check-" + [guid]::NewGuid().ToString('N') + ".sql")
-try { Set-Content -LiteralPath $tempCheck -Value $check -Encoding UTF8; Invoke-Psql @('-X','-h',$DbHost,'-p',$DbPort,'-U',$DbUser,'-d',$DbName,'-v','ON_ERROR_STOP=1','-f',$tempCheck) } finally { Remove-Item -LiteralPath $tempCheck -Force -ErrorAction SilentlyContinue }
+try { [System.IO.File]::WriteAllText($tempCheck, $check, [System.Text.UTF8Encoding]::new($false)); Invoke-Psql @('-X','-h',$DbHost,'-p',$DbPort,'-U',$DbUser,'-d',$DbName,'-v','ON_ERROR_STOP=1','-f',$tempCheck) } finally { Remove-Item -LiteralPath $tempCheck -Force -ErrorAction SilentlyContinue }
 # El backfill se prueba contra las filas restauradas dentro de una transacción que se revierte.
 $candidatePath = Join-Path $PSScriptRoot '..\migraciones\migracion-identidades-supabase-candidata.sql'
 $candidate = Get-Content -LiteralPath $candidatePath -Raw
@@ -49,7 +49,7 @@ END $$;
 ROLLBACK;
 '@
 $tempMigration = Join-Path ([System.IO.Path]::GetTempPath()) ("museo-backfill-check-" + [guid]::NewGuid().ToString('N') + ".sql")
-try { Set-Content -LiteralPath $tempMigration -Value ('BEGIN;' + [Environment]::NewLine + $candidate + [Environment]::NewLine + $assertions) -Encoding UTF8; Invoke-Psql @('-X','-h',$DbHost,'-p',$DbPort,'-U',$DbUser,'-d',$DbName,'-v','ON_ERROR_STOP=1','-f',$tempMigration) } finally { Remove-Item -LiteralPath $tempMigration -Force -ErrorAction SilentlyContinue }
+try { [System.IO.File]::WriteAllText($tempMigration, ('BEGIN;' + [Environment]::NewLine + $candidate + [Environment]::NewLine + $assertions), [System.Text.UTF8Encoding]::new($false)); Invoke-Psql @('-X','-h',$DbHost,'-p',$DbPort,'-U',$DbUser,'-d',$DbName,'-v','ON_ERROR_STOP=1','-f',$tempMigration) } finally { Remove-Item -LiteralPath $tempMigration -Force -ErrorAction SilentlyContinue }
 Write-Host 'VALIDACIÓN COMPLETA APROBADA.'
 Write-Host 'El dump completo quedó restaurado en la base local de pruebas.'
 Write-Host 'El backfill candidato se ejecutó contra todas las filas y se revirtió.'
