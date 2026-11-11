@@ -75,6 +75,9 @@ function normalizar(tabla, campo, valor) {
   if (TABLAS[tabla].json.includes(campo) && typeof valor === "string") {
     try { return canonico(JSON.parse(valor)); } catch { return valor; }
   }
+  if (tabla === "ficha" && ["resumen", "texto"].includes(campo) && valor === "") {
+    return null;
+  }
   return canonico(valor);
 }
 function resumen(valor) {
