@@ -33,7 +33,7 @@ test("convierte URL pública de Storage en clave local sin consultar la red", ()
     );
     assert.equal(obtenerRutaRelativaAuditable("http://proyecto.supabase.co/storage/v1/object/public/multimedia/foto.png"), null);
     assert.equal(obtenerRutaRelativaAuditable("https://otro.example/foto.png"), null);
-    assert.equal(obtenerRutaRelativaAuditable("https://proyecto.supabase.co/storage/v1/object/public/multimedia/%2e%2e/secreto.png"), "../secreto.png");
+    assert.equal(obtenerRutaRelativaAuditable("https://proyecto.supabase.co/storage/v1/object/public/multimedia/%2e%2e/secreto.png"), null);
 });
 
 test("rechaza rutas absolutas y traversal fuera de la raíz", () => {
