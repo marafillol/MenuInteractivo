@@ -7,6 +7,7 @@ const { secretoValido, ENTIDADES, procesarLote } = require("../servicios/sincron
 const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
 const { estaPreparado } = require("../servicios/sincronizacion/esquema");
 const { crearSnapshot } = require("../servicios/sincronizacion/bootstrap");
+const { esStorageKeyHistorica } = require("../servicios/sincronizacion/resolverStorageHistorico");
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -23,12 +24,15 @@ function credencialValida(req) {
     return Boolean(secreto && secreto.length >= 32 && secretoValido(token, secreto));
 }
 
-function storageKeyValida(storageKey) {
-    if (typeof storageKey !== "string" || !storageKey.startsWith("multimedia/")) return false;
-    const segmentos = storageKey.split("/");
-    return segmentos.length >= 3 && segmentos.every((segmento) =>
-        /^[a-zA-Z0-9._-]+$/.test(segmento) && segmento !== "." && segmento !== ".."
-    );
+function storageKeyValida(storageKey, permitirHistorico = false) {
+    if (typeof storageKey !== "string") return false;
+    if (storageKey.startsWith("multimedia/")) {
+        const segmentos = storageKey.split("/");
+        if (segmentos.length >= 3 && segmentos.every((segmento) =>
+            /^[a-zA-Z0-9._-]+$/.test(segmento) && segmento !== "." && segmento !== ".."
+        )) return true;
+    }
+    return permitirHistorico && esStorageKeyHistorica(storageKey);
 }
 
 router.post("/media/upload", upload.single("file"), async (req, res) => {
@@ -56,7 +60,7 @@ router.get("/media/download", async (req, res) => {
     if (!esModoSupabase) return res.status(404).json({ error: "El almacenamiento remoto no está activo." });
     if (!credencialValida(req)) return res.status(401).json({ error: "Credencial de sincronización inválida." });
     const storageKey = String(req.query?.key || "");
-    if (!storageKeyValida(storageKey)) {
+    if (!storageKeyValida(storageKey, true)) {
         return res.status(400).json({ error: "La clave multimedia no es válida." });
     }
     try {
