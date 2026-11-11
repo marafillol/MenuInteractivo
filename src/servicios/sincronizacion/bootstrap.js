@@ -60,12 +60,15 @@ function validarHash(valor) {
     return typeof valor === "string" && /^[a-f0-9]{64}$/i.test(valor);
 }
 
-function validarStorageKey(valor) {
-    if (typeof valor !== "string" || !valor.startsWith("multimedia/")) return false;
-    const partes = valor.split("/");
-    return partes.length >= 3 && partes.every((parte) =>
-        /^[a-zA-Z0-9._-]+$/.test(parte) && parte !== "." && parte !== ".."
-    );
+function validarStorageKey(valor, entidad, id) {
+    if (typeof valor !== "string") return false;
+    if (valor.startsWith("multimedia/")) {
+        const partes = valor.split("/");
+        if (partes.length >= 3 && partes.every((parte) =>
+            /^[a-zA-Z0-9._-]+$/.test(parte) && parte !== "." && parte !== ".."
+        )) return true;
+    }
+    return esClaveHistoricaPermitida(entidad, id, valor);
 }
 
 function validarSnapshot(snapshot) {
@@ -117,10 +120,10 @@ function validarSnapshot(snapshot) {
     }
     for (const fila of snapshot.data.ficha) {
         comprobarPadre("ficha", fila.id_menu, "menu", "id_menu", "Una ficha");
-        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen && (!validarStorageKey(fila.imagen_storage_key, "menu", fila.id_menu) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Hay portadas de fichas históricas sin clave de Storage y checksum verificables.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
-        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key) || !validarHash(fila.imagen_checksum_sha256))) {
+        if (!fila.sync_deleted_at && fila.imagen_storage_key && (!validarStorageKey(fila.imagen_storage_key, "ficha", fila.id_ficha) || !validarHash(fila.imagen_checksum_sha256))) {
             throw errorBootstrap("Una portada de ficha tiene metadatos de Storage inválidos.", "SNAPSHOT_MULTIMEDIA_INCOMPLETO");
         }
     }
