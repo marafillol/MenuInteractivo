@@ -124,23 +124,27 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
                     menu_sync_id: uuid(2), titulo: "Otro evento sobre versión ocupada", visible: 1
                 });
                 assert.equal((await aplicar(mismoResultadoOtraOperacion)).estado, "conflicto");
+                const borradoAusente = evento(10, "ficha", "DELETE", uuid(44), 0, 1, {});
+                assert.equal((await aplicar(borradoAusente)).estado, "conflicto");
+                assert.equal((await aplicar(borradoAusente)).estado, "duplicado",
+                    "un DELETE de una fila ausente tampoco debe duplicar conflictos al reintentar");
                 const original = await all("SELECT titulo, sync_version FROM ficha WHERE sync_id = ?", [uuid(3)]);
                 const conflictos = await all("SELECT entidad, sync_id, resuelto FROM sync_conflictos");
                 if (original[0].titulo !== "Ficha compartida" || original[0].sync_version !== 1) {
                     throw new Error("El conflicto sobrescribió el contenido local");
                 }
-                if (conflictos.length !== 2 || conflictos.some(conflicto => conflicto.entidad !== "ficha")) {
+                if (conflictos.length !== 3 || conflictos.some(conflicto => conflicto.entidad !== "ficha")) {
                     throw new Error("El conflicto no quedó registrado");
                 }
                 const recibidos = await all("SELECT COUNT(*) AS cantidad FROM sync_eventos");
-                if (recibidos[0].cantidad !== 9) throw new Error("No se registraron también las dos recepciones en conflicto");
+                if (recibidos[0].cantidad !== 10) throw new Error("No se registraron también las dos recepciones en conflicto");
 
                 process.stdout.write(JSON.stringify({ entidades: 7, conflictos: conflictos.length }) + "\\n");
                 await new Promise((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
             })().catch(error => { console.error(error); process.exitCode = 1; });
         `]);
         assert.equal(operacion.status, 0, operacion.stderr || operacion.stdout);
-        assert.match(operacion.stdout, /"entidades":7,"conflictos":2/);
+        assert.match(operacion.stdout, /"entidades":7,"conflictos":3/);
     } finally {
         fs.rmSync(directorio, { recursive: true, force: true });
     }
