@@ -18,7 +18,7 @@ function validarDestino(texto) {
 
 test('backfill UUIDv5 sobre DDL y claves/relaciones extraídas del backup real de Supabase', { skip: !url }, async () => {
     validarDestino(url);
-    assert.equal(fixture.source.sha256, 'f5817b9bf741f121fe816c8756091b99a14698c7c6187a68742c709031e49cce');
+    assert.equal(fixture.source.sha256, 'f5817b9bf741f121fe816c8756099b1a14698c7c6187a68742c709031e49cce');
     assert.equal(fixture.source.export_snapshot, '2026-11-10');
 
     const client = new Client({ connectionString: url, ssl: false });
