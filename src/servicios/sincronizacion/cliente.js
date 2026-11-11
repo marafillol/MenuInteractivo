@@ -104,6 +104,33 @@ async function obtenerBytesPendientes(evento, ruta, payload) {
     return contenido;
 }
 
+async function obtenerBytesPortadaPendiente(evento, payload, rutaStaging) {
+    try {
+        return await fs.promises.readFile(rutaStaging);
+    } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+    }
+
+    const rutaLocal = String(payload.imagen || "");
+    if (!rutaLocal || path.isAbsolute(rutaLocal) || /^https?:\/\//i.test(rutaLocal)) {
+        throw new Error("No existe staging ni una ruta local segura para recuperar la portada pendiente.");
+    }
+    const raizProyecto = path.resolve(__dirname, "../../../");
+    const carpetaPermitida = path.join(raizProyecto, "imagenes", evento.entidad === "menu" ? "menus" : "fichas");
+    const absoluta = path.resolve(raizProyecto, rutaLocal);
+    const relativa = path.relative(carpetaPermitida, absoluta);
+    if (relativa === "" || relativa === ".." || relativa.startsWith(".." + path.sep) ||
+        path.isAbsolute(relativa)) {
+        throw new Error("La ruta local de la portada queda fuera de su carpeta permitida.");
+    }
+    const contenido = await fs.promises.readFile(absoluta);
+    await fs.promises.mkdir(path.dirname(rutaStaging), { recursive: true });
+    await fs.promises.writeFile(rutaStaging, contenido, { flag: "wx" }).catch((error) => {
+        if (error.code !== "EEXIST") throw error;
+    });
+    return contenido;
+}
+
 async function subirMultimediaPendiente(evento, url, secreto) {
     if (evento.operacion === "DELETE") return;
     const payload = obtenerPayload(evento);
@@ -118,7 +145,7 @@ async function subirMultimediaPendiente(evento, url, secreto) {
         ? obtenerRutaStagingPortada(payload)
         : obtenerRutaStaging(evento);
     const contenido = esPortada
-        ? await fs.promises.readFile(ruta)
+        ? await obtenerBytesPortadaPendiente(evento, payload, ruta)
         : await obtenerBytesPendientes(evento, ruta, payload);
     const checksum = createHash("sha256").update(contenido).digest("hex");
     if (checksum !== checksumEsperado) {
