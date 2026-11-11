@@ -59,6 +59,18 @@ Las cinco filas multimedia con URLs públicas contienen claves extraíbles de la
 
 Se generó un inventario detallado por registro con ruta, estado, hash y tamaño. Se entrega como adjunto de auditoría para no incorporar al repositorio rutas históricas de archivos ni información innecesaria.
 
+## Herramienta para completar la auditoría de Storage
+
+Se agregó `scripts/auditar-storage-supabase-readonly.js` para ejecutar desde la máquina que ya tiene el `.env` local. La herramienta consulta únicamente `storage.from(bucket).list()` y `download()`: no hace upload, update, remove ni consulta/modifica PostgreSQL. Descarga los objetos de forma secuencial, calcula SHA-256 y tamaño desde los bytes, guarda un manifiesto y genera un ZIP con la estructura `almacenamiento/<bucket>/<clave>`. Si algún objeto falla, deja el error en el manifiesto y termina con código distinto de cero.
+
+Ejecución desde la raíz del proyecto, donde está el `.env` con las variables existentes (no compartir ese archivo ni sus valores):
+
+```powershell
+node .\scripts\auditar-storage-supabase-readonly.js
+```
+
+El resultado queda en una carpeta nueva `backups\supabase-storage-audit-*` y en un ZIP hermano. El bucket se toma de `SUPABASE_BUCKET` o, si falta, usa `multimedia`.
+
 ## Identidades compartidas candidatas
 
 Se prepararon 122 identidades UUIDv5 deterministas para las siete entidades del protocolo:
