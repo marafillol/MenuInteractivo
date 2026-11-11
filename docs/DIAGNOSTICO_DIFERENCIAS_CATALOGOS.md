@@ -1,6 +1,6 @@
-# Diagnóstico de diferencias en plantilla y etiqueta
+# Diagnóstico de diferencias entre SQLite y PostgreSQL
 
-Este diagnóstico compara, por clave primaria, los campos de las tablas `plantilla` y `etiqueta` entre una copia SQLite y la copia PostgreSQL aislada.
+Este diagnóstico compara campos de `plantilla`, `etiqueta`, `ficha` y `multimedia` entre una copia SQLite y la copia PostgreSQL aislada. La clave primaria se usa para localizar filas dentro de cada copia; por sí sola no demuestra que ambas filas tengan una identidad de sincronización compartida.
 
 ## Garantías
 
@@ -34,3 +34,24 @@ Al terminar, compartir el archivo `diagnostico-catalogos-20261111.json`. No comp
 - `solo_sqlite` / `solo_postgres` como estado de registro: esa clave primaria no aparece en la otra copia.
 
 Una diferencia de hash no demuestra por sí sola pérdida de datos. No aplicar cambios ni reconciliar automáticamente a partir de este informe.
+
+
+## Hallazgos del diagnóstico del 11/11/2026
+
+En el informe ampliado de esa fecha, las diferencias de contenido detectadas en fichas fueron:
+
+| Clave local | Campo | SQLite | PostgreSQL | Estado |
+|---|---|---:|---:|---|
+| ficha 10 | `texto` | 1414 caracteres | cadena vacía | Diferencia real |
+| ficha 28 | `datos_json` | JSON de 33 bytes | objeto vacío `{}` | Diferencia real |
+| ficha 30 | `datos_json` | JSON de 63 bytes | objeto vacío `{}` | Diferencia real |
+
+Los títulos comparados en esas filas tienen huellas coincidentes. Esto ayuda a orientar la revisión, pero los IDs numéricos no reemplazan la aprobación de una identidad compartida. El informe no exporta el contenido de esos campos; conserva únicamente tipos, longitudes y huellas SHA-256.
+
+Las demás diferencias de `resumen` en fichas incluidas en ese diagnóstico eran cadenas vacías frente a `NULL`, que la normalización documentada considera equivalentes. Las diferencias reales de los tres campos de la tabla anterior no se normalizan ni se descartan.
+
+## Precaución sobre la migración histórica
+
+El importador histórico `scripts/migrar-supabase.js` inserta filas y usa `ON CONFLICT (...) DO NOTHING`. Por lo tanto, volver a ejecutar ese importador no actualiza una fila que ya existe en PostgreSQL. Esto es un posible motivo por el que una copia PostgreSQL conserve contenido anterior, pero el código por sí solo no demuestra que esa sea la causa de estas tres diferencias.
+
+No corregirlas con una importación masiva ni con un `UPDATE` automático. Primero hay que revisar el contenido original y establecer qué copia es la fuente aprobada para cada campo. Hasta entonces, las tres diferencias deben permanecer como pendientes de revisión manual.
