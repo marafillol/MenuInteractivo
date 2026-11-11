@@ -26,7 +26,8 @@ test("verifica y prepara secuencias para PK de entidades y relaciones sincroniza
 
   for (const [tabla, columna] of IDENTIFICADORES_POSTGRES) {
     const secuencia = `${tabla}_${columna}_seq`;
-    assert.ok(sentenciasRun.some(sql => sql.includes(`CREATE SEQUENCE IF NOT EXISTS public."${secuencia}"`)));
+    const tipoSecuencia = tabla === "relacion_ficha" ? "INTEGER" : "BIGINT";
+    assert.ok(sentenciasRun.some(sql => sql.includes(`CREATE SEQUENCE IF NOT EXISTS public."${secuencia}" AS ${tipoSecuencia}`)));
     assert.ok(sentenciasRun.some(sql => sql.includes(`ALTER TABLE public."${tabla}" ALTER COLUMN "${columna}" SET DEFAULT`)));
     assert.ok(sentenciasRun.some(sql => sql.includes(`OWNED BY public."${tabla}"."${columna}"`)));
     const ajuste = sentenciasAll.find(sql => sql.includes(`public."${secuencia}"`));
