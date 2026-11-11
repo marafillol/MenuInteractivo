@@ -48,6 +48,9 @@ async function prepararPortada(archivo, entidad) {
 
     const extension = extensionSegura(archivo);
     const mimeType = MIME_POR_EXTENSION[extension];
+    if (archivo.mimetype && archivo.mimetype !== mimeType) {
+        throw new Error("El tipo MIME de la portada no coincide con su extensión.");
+    }
     const buffer = await leerArchivo(archivo);
     if (!buffer.length) throw new Error("La imagen de portada está vacía.");
     const assetId = randomUUID();
