@@ -26,6 +26,13 @@ ALTER SEQUENCE public.multimedia_id_multi_seq OWNED BY public.multimedia.id_mult
 ALTER SEQUENCE public.plantilla_id_plantilla_seq OWNED BY public.plantilla.id_plantilla;
 ALTER SEQUENCE public.relacion_ficha_id_relacion_seq OWNED BY public.relacion_ficha.id_relacion;
 ALTER SEQUENCE public.usuario_id_usuario_seq OWNED BY public.usuario.id_usuario;
+ALTER TABLE ONLY public.etiqueta ALTER COLUMN id_etiqueta SET DEFAULT nextval('public.etiqueta_id_etiqueta_seq'::regclass);
+ALTER TABLE ONLY public.ficha ALTER COLUMN id_ficha SET DEFAULT nextval('public.ficha_id_ficha_seq'::regclass);
+ALTER TABLE ONLY public.menu ALTER COLUMN id_menu SET DEFAULT nextval('public.menu_id_menu_seq'::regclass);
+ALTER TABLE ONLY public.multimedia ALTER COLUMN id_multi SET DEFAULT nextval('public.multimedia_id_multi_seq'::regclass);
+ALTER TABLE ONLY public.plantilla ALTER COLUMN id_plantilla SET DEFAULT nextval('public.plantilla_id_plantilla_seq'::regclass);
+ALTER TABLE ONLY public.relacion_ficha ALTER COLUMN id_relacion SET DEFAULT nextval('public.relacion_ficha_id_relacion_seq'::regclass);
+ALTER TABLE ONLY public.usuario ALTER COLUMN id_usuario SET DEFAULT nextval('public.usuario_id_usuario_seq'::regclass);
 ALTER TABLE ONLY public.configuracion_backup_tilde ADD CONSTRAINT configuracion_backup_tilde_pkey PRIMARY KEY (clave);
 ALTER TABLE ONLY public.configuracion ADD CONSTRAINT configuracion_pkey PRIMARY KEY (clave);
 ALTER TABLE ONLY public.etiqueta ADD CONSTRAINT etiqueta_pkey PRIMARY KEY (id_etiqueta);
@@ -52,3 +59,14 @@ CREATE INDEX idx_multimedia_ficha_activo ON public.multimedia USING btree (id_fi
 CREATE INDEX idx_relacion_ficha_destino ON public.relacion_ficha USING btree (id_ficha_destino);
 CREATE INDEX idx_relacion_ficha_origen ON public.relacion_ficha USING btree (id_ficha_origen);
 CREATE UNIQUE INDEX usuario_supabase_uid_unique ON public.usuario USING btree (supabase_uid);
+
+ALTER TABLE public.configuracion ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.configuracion_backup_tilde ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.etiqueta ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ficha ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ficha_etiqueta ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.menu ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.multimedia ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plantilla ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.relacion_ficha ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.usuario ENABLE ROW LEVEL SECURITY;
