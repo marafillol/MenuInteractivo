@@ -66,7 +66,7 @@ function parseJson(value) {
   try { return JSON.parse(value); } catch { return value; }
 }
 function igualJson(a, b) {
-  return JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+  return JSON.stringify(canon(parseJson(a))) === JSON.stringify(canon(parseJson(b)));
 }
 function canon(value) {
   if (Array.isArray(value)) return value.map(canon);
