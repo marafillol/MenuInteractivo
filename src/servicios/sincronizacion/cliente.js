@@ -243,6 +243,38 @@ async function limpiarDescargasNoAplicadas(archivos, idsNoAplicados) {
     }
 }
 
+// Solo recolecta archivos generados por el cliente de sincronización
+// (UUID-vN.ext). Nunca toca URLs, rutas heredadas ni archivos subidos manualmente.
+async function limpiarMultimediaHuerfana() {
+    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
+    const filas = await all("SELECT ruta_archivo FROM multimedia WHERE ruta_archivo IS NOT NULL");
+    const referenciados = new Set(filas.map((fila) =>
+        path.resolve(raizProyecto, String(fila.ruta_archivo))
+    ));
+    let carpetas;
+    try { carpetas = await fs.promises.readdir(raizMultimedia, { withFileTypes: true }); }
+    catch (error) {
+        if (error.code === "ENOENT") return 0;
+        throw error;
+    }
+    let eliminados = 0;
+    for (const carpeta of carpetas) {
+        if (!carpeta.isDirectory() || !/^[a-z0-9_-]+$/i.test(carpeta.name)) continue;
+        const rutaCarpeta = path.join(raizMultimedia, carpeta.name);
+        const archivos = await fs.promises.readdir(rutaCarpeta, { withFileTypes: true });
+        for (const archivo of archivos) {
+            if (!archivo.isFile() ||
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-v[1-9][0-9]*\\.[a-z0-9]{1,10}$/i.test(archivo.name)) continue;
+            const ruta = path.resolve(rutaCarpeta, archivo.name);
+            if (referenciados.has(ruta)) continue;
+            await fs.promises.unlink(ruta);
+            eliminados++;
+        }
+    }
+    return eliminados;
+}
+
 async function aplicarEventosEntrantes(eventos, cursor) {
     return db.withTransaction(async (consultar) => {
         const resultado = await procesarLote(
@@ -333,12 +365,14 @@ async function sincronizarUnaVez() {
         .filter((item) => item.estado === "conflicto")
         .map((item) => item.evento_id);
     await limpiarDescargasNoAplicadas(archivosNuevos, idsEnConflicto);
+    const multimediaHuerfanaEliminada = await limpiarMultimediaHuerfana();
 
     return {
         estado: "sincronizado",
         enviados: datos.acknowledged.length,
         recibidos: datos.events.length,
         conflictos: (datos.rejected || []).filter((item) => item.estado === "conflicto").length,
+        multimediaHuerfanaEliminada,
         cursor: Number(datos.next_cursor)
     };
 }
