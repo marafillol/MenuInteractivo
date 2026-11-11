@@ -41,7 +41,7 @@ function validarDestino(connectionString) {
   if (
     !["127.0.0.1", "localhost"].includes(url.hostname) ||
     url.port !== "5432" ||
-    url.pathname.replace(/^\\/+/, "") !== "museo_reconciliacion_prueba" ||
+    url.pathname.replace(/^\/+/, "") !== "museo_reconciliacion_prueba" ||
     !["postgres:", "postgresql:"].includes(url.protocol) ||
     decodeURIComponent(url.username) !== "postgres"
   ) {
