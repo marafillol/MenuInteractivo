@@ -19,7 +19,6 @@ function validarMapaStorageHistorico(datos = mapa) {
         throw new Error("El mapa histórico de Storage tiene un formato inválido.");
     }
 
-    const claves = new Set();
     for (const [identidad, entrada] of Object.entries(datos.entries)) {
         if (!/^(multimedia|ficha|menu):[1-9][0-9]*$/.test(identidad) ||
             !Array.isArray(entrada) || entrada.length !== 5) {
@@ -32,11 +31,6 @@ function validarMapaStorageHistorico(datos = mapa) {
             typeof mimeType !== "string" || !mimeType.includes("/")) {
             throw new Error("El mapa histórico contiene metadatos multimedia inválidos.");
         }
-        if (claves.has(storageKey)) {
-            // Un mismo objeto puede ser compartido por dos entidades; el control de
-            // identidad se hace por entidad/ID, no se prohíben claves repetidas.
-        }
-        claves.add(storageKey);
     }
     return true;
 }
