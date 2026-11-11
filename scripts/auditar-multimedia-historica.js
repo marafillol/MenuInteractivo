@@ -31,7 +31,7 @@ function validarDestinoSeguro(connectionString) {
     }
     const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
     const puertoPermitido = destino.port === "5432";
-    const basePermitida = destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
+    const basePermitida = destino.pathname.replace(/^[/]+/, "") === "museo_reconciliacion_prueba";
     if (!hostPermitido || !puertoPermitido || !basePermitida ||
         !["postgres:", "postgresql:"].includes(destino.protocol)) {
         throw new Error(
