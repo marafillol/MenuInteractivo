@@ -196,9 +196,12 @@ async function main() {
         }
 
         const consulta = await client.query(`
-            SELECT id_multi, id_ficha, sync_id, ruta_archivo, storage_key,
-                   checksum_sha256, tamano_bytes
-            FROM public.multimedia
+            SELECT id_multi, id_ficha, ruta_archivo,
+                   to_jsonb(m)->>'sync_id' AS sync_id,
+                   to_jsonb(m)->>'storage_key' AS storage_key,
+                   to_jsonb(m)->>'checksum_sha256' AS checksum_sha256,
+                   to_jsonb(m)->>'tamano_bytes' AS tamano_bytes
+            FROM public.multimedia AS m
             ORDER BY id_multi
         `);
         const registros = [];
