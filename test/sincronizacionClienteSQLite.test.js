@@ -43,6 +43,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
             const uuid = n => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
             (async () => {
                 await db.preparar();
+                await run("INSERT INTO configuracion (clave, valor) VALUES (?, ?)", ["sync.bootstrap.estado", "completo"]);
                 const deviceId = await obtenerIdDispositivo();
                 await run("INSERT INTO plantilla (nombre, plantilla_json, sync_id) VALUES (?, ?, ?)", [
                     "Plantilla local", "{}", uuid(1)

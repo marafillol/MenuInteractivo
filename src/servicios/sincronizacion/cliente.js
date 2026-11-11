@@ -6,6 +6,7 @@ const { esModoLocal } = require("../../config/modoServidor");
 const { obtenerIdDispositivo } = require("./dispositivo");
 const { ENTIDADES, procesarLote } = require("./protocolo");
 const { estaPreparado } = require("./esquema");
+const { validarSnapshot, comprobarBaseLocalVacia, aplicarSnapshot, CLAVE_ESTADO } = require("./bootstrap");
 
 const CLAVE_CURSOR = "sync.cursor.supabase";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -417,8 +418,76 @@ async function aplicarEventosEntrantes(eventos, cursor) {
     });
 }
 
+async function leerEstadoInicializacion() {
+    const filas = await all("SELECT valor FROM configuracion WHERE clave = ?", [CLAVE_ESTADO]);
+    return filas[0]?.valor || null;
+}
+
+function obtenerUrlBootstrap(url = obtenerUrlIntercambio()) {
+    if (!url) return null;
+    return url.replace(/\\/exchange\\/?$/i, "/bootstrap/snapshot");
+}
+
+async function inicializarDesdeServidor() {
+    if (!esModoLocal) throw new Error("La inicialización offline solo se ejecuta desde SQLite local.");
+    const url = obtenerUrlIntercambio();
+    const secreto = process.env.SYNC_SHARED_SECRET;
+    if (!url || !secreto || secreto.length < 32) {
+        throw new Error("Faltan SYNC_REMOTE_URL o SYNC_SHARED_SECRET para inicializar la copia offline.");
+    }
+    if (await leerEstadoInicializacion() === "completo") return { estado: "ya_inicializado" };
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        throw new Error("El esquema local de sincronización todavía no está preparado.");
+    }
+    await db.withTransaction(comprobarBaseLocalVacia);
+
+    const respuesta = await fetch(obtenerUrlBootstrap(url), {
+        method: "POST",
+        headers: { authorization: "Bearer " + secreto, "content-type": "application/json" },
+        body: "{}",
+        signal: typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(120000) : undefined
+    });
+    const datos = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+        const error = new Error(datos.error || ("No se pudo obtener la instantánea (HTTP " + respuesta.status + ")."));
+        error.code = datos.code || "BOOTSTRAP_REMOTO_ERROR";
+        throw error;
+    }
+    validarSnapshot(datos);
+    const archivosNuevos = [];
+    const idsDescargados = [];
+    try {
+        for (const tabla of ["menu", "ficha", "multimedia"]) {
+            for (const fila of datos.data[tabla]) {
+                if (fila.sync_deleted_at) continue;
+                const tienePortada = ["menu", "ficha"].includes(tabla) && fila.imagen_storage_key;
+                const esArchivo = tabla === "multimedia";
+                if (!tienePortada && !esArchivo) continue;
+                const evento = {
+                    evento_id: "bootstrap-" + tabla + "-" + fila.sync_id,
+                    entidad: tabla,
+                    operacion: "INSERT",
+                    sync_id: fila.sync_id,
+                    version_resultado: Number(fila.sync_version),
+                    payload_json: { ...fila }
+                };
+                const preparado = await prepararMultimediaEntrante(evento, url, secreto, archivosNuevos);
+                if (tabla === "multimedia") fila.ruta_archivo = preparado.payload_json.ruta_archivo;
+                else fila.imagen = preparado.payload_json.imagen;
+                idsDescargados.push(evento.evento_id);
+            }
+        }
+        const resultado = await aplicarSnapshot(db, datos);
+        return { ...resultado, archivosPreparados: idsDescargados.length, generadoEn: datos.generado_en || null };
+    } catch (error) {
+        await limpiarDescargasNoAplicadas(archivosNuevos, archivosNuevos.map((archivo) => archivo.evento_id));
+        throw error;
+    }
+}
+
 async function sincronizarUnaVez() {
     if (!esModoLocal) throw new Error("El cliente de sincronización solo se ejecuta desde SQLite local.");
+    if (await leerEstadoInicializacion() !== "completo") return { estado: "inicializacion_pendiente" };
     const url = obtenerUrlIntercambio();
     const secreto = process.env.SYNC_SHARED_SECRET;
     if (!url || !secreto || secreto.length < 32) {
@@ -531,6 +600,7 @@ function detenerSincronizacionAutomatica() {
 
 module.exports = {
     sincronizarUnaVez,
+    inicializarDesdeServidor,
     iniciarSincronizacionAutomatica,
     detenerSincronizacionAutomatica,
     obtenerRutaStagingPortada,

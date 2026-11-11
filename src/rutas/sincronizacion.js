@@ -6,6 +6,7 @@ const db = require("../database");
 const { secretoValido, ENTIDADES, procesarLote } = require("../servicios/sincronizacion/protocolo");
 const { obtenerIdDispositivo } = require("../servicios/sincronizacion/dispositivo");
 const { estaPreparado } = require("../servicios/sincronizacion/esquema");
+const { TABLAS, validarSnapshot } = require("../servicios/sincronizacion/bootstrap");
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -65,6 +66,57 @@ router.get("/media/download", async (req, res) => {
         return res.send(archivo);
     } catch {
         return res.status(404).json({ error: "No se encontró el archivo multimedia remoto." });
+    }
+});
+
+router.post("/bootstrap/snapshot", async (req, res) => {
+    if (!esModoSupabase) {
+        return res.status(404).json({ error: "La instantánea remota no está activa en este nodo." });
+    }
+    if (!credencialValida(req)) {
+        return res.status(401).json({ error: "Credencial de sincronización inválida." });
+    }
+    if (!await estaPreparado(Object.keys(ENTIDADES))) {
+        return res.status(503).json({ error: "El esquema de sincronización todavía no está preparado en el servidor." });
+    }
+
+    try {
+        const snapshot = await db.withTransaction(async (consultar) => {
+            // El bloqueo impide escrituras de contenido/outbox durante la captura.
+            // La instantánea y el cursor quedan así asociados al mismo punto lógico.
+            await consultar("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+            await consultar(
+                `LOCK TABLE ${[...TABLAS, "sync_eventos"].join(", ")} IN SHARE MODE`
+            );
+
+            const data = {};
+            for (const tabla of TABLAS) {
+                const resultado = await consultar(`SELECT * FROM ${tabla} ORDER BY 1`);
+                data[tabla] = resultado.rows.map((fila) => {
+                    // Los usuarios y sus IDs locales no forman parte de la réplica de contenido.
+                    if (tabla === "ficha") return { ...fila, id_usuario: null };
+                    return fila;
+                });
+            }
+            const cursorResultado = await consultar(
+                "SELECT COALESCE(MAX(id_evento), 0)::bigint AS cursor FROM sync_eventos"
+            );
+            const resultado = {
+                version: 1,
+                cursor: Number(cursorResultado.rows[0]?.cursor || 0),
+                generado_en: new Date().toISOString(),
+                data
+            };
+            validarSnapshot(resultado);
+            return resultado;
+        });
+        return res.json(snapshot);
+    } catch (error) {
+        if (["SNAPSHOT_INCOMPLETO", "SNAPSHOT_MULTIMEDIA_INCOMPLETO"].includes(error.code)) {
+            return res.status(409).json({ error: error.message, code: error.code });
+        }
+        console.error("[sync] No se pudo generar la instantánea; código=", error.code || "sin_codigo");
+        return res.status(503).json({ error: "No se pudo generar una instantánea consistente." });
     }
 });
 
