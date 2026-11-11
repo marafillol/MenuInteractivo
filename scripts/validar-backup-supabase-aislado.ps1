@@ -2,7 +2,8 @@
 param([Parameter(Mandatory = $true)][string]$BackupPath)
 $ErrorActionPreference = 'Stop'
 $ExpectedSha256 = 'f5817b9bf741f121fe816c8756091b99a14698c7c6187a68742c709031e49cce'
-$DbHost = '127.0.0.1'; $DbPort = '5432'; $DbName = 'museo_reconciliacion_prueba'; $DbUser = 'postgres'
+$DbHost = '127.0.0.1'; $DbPort = '5432'; $DbName = 'museo_reconciliacion_backup_prueba'; $DbUser = 'postgres'
+if ($DbHost -ne '127.0.0.1' -or $DbPort -ne '5432' -or $DbName -ne 'museo_reconciliacion_backup_prueba') { throw 'Destino fuera de la lista permitida. No se continúa.' }
 $PsqlExe = (Get-Command psql -ErrorAction SilentlyContinue).Source
 if (-not $PsqlExe) {
     $candidatePsql = 'C:\Program Files\PostgreSQL\18\bin\psql.exe'
