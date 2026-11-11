@@ -331,6 +331,7 @@ async function main() {
       const gruposRemoto = agruparPorHuella(remoto);
       const compartidas = [];
       const ambiguas = [];
+      const conflictosSyncId = [];
       for (const [hash, filasLocal] of gruposLocal) {
         const filasRemotas = gruposRemoto.get(hash);
         if (!filasRemotas) continue;
@@ -342,11 +343,35 @@ async function main() {
           cantidad_postgres: filasRemotas.length
         };
         if (filasLocal.length === 1 && filasRemotas.length === 1) {
+          const idsExistentes = [...new Set([
+            filasLocal[0].sync_id,
+            filasRemotas[0].sync_id
+          ].filter(Boolean).map(String))];
+          if (idsExistentes.length > 1) {
+            conflictosSyncId.push({
+              ...candidato,
+              sync_id_sqlite: filasLocal[0].sync_id,
+              sync_id_postgres: filasRemotas[0].sync_id,
+              estado: "conflicto_identidades_existentes"
+            });
+            continue;
+          }
+          const syncId = idsExistentes[0] || uuidPropuesto(tabla, hash);
+          if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(syncId)) {
+            conflictosSyncId.push({
+              ...candidato,
+              sync_id_existente: syncId,
+              estado: "sync_id_existente_invalido"
+            });
+            continue;
+          }
           compartidas.push({
             ...candidato,
-            sync_id_propuesto: uuidPropuesto(tabla, hash),
+            sync_id_propuesto: syncId,
             aprobado: false,
-            estado: "candidato_revision_manual"
+            estado: idsExistentes.length
+              ? "candidato_completar_identidad_existente"
+              : "candidato_revision_manual"
           });
         } else {
           ambiguas.push({ ...candidato, estado: "ambiguo_por_duplicidad" });
@@ -363,6 +388,7 @@ async function main() {
           postgres: remotoRaw.length,
           candidatos_unicos: compartidas.length,
           grupos_ambiguos: ambiguas.length,
+          conflictos_sync_id: conflictosSyncId.length,
           pendientes_dependencia_sqlite: pendientesLocal.length,
           pendientes_dependencia_postgres: pendientesRemoto.length,
           solo_sqlite_por_contenido: local.filter(f => !hashesRemotos.has(f.huella_contenido)).length,
@@ -375,6 +401,7 @@ async function main() {
         ...(pendientesRemoto.length ? { pendientes_postgres: pendientesRemoto } : {}),
         candidatos_unicos: compartidas,
         ambiguos: ambiguas,
+        conflictos_sync_id: conflictosSyncId,
         solo_sqlite: local.filter(f => !hashesRemotos.has(f.huella_contenido)),
         solo_postgres: remoto.filter(f => !hashesLocales.has(f.huella_contenido))
       };
