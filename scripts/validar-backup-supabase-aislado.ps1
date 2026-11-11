@@ -3,14 +3,19 @@ param([Parameter(Mandatory = $true)][string]$BackupPath)
 $ErrorActionPreference = 'Stop'
 $ExpectedSha256 = 'f5817b9bf741f121fe816c8756091b99a14698c7c6187a68742c709031e49cce'
 $DbHost = '127.0.0.1'; $DbPort = '5432'; $DbName = 'museo_reconciliacion_prueba'; $DbUser = 'postgres'
-function Invoke-Psql { param([string[]]$Arguments); & psql @Arguments; if ($LASTEXITCODE -ne 0) { throw "psql terminó con código $LASTEXITCODE. No se continúa." } }
+$PsqlExe = (Get-Command psql -ErrorAction SilentlyContinue).Source
+if (-not $PsqlExe) {
+    $candidatePsql = 'C:\Program Files\PostgreSQL\18\bin\psql.exe'
+    if (Test-Path -LiteralPath $candidatePsql) { $PsqlExe = $candidatePsql }
+}
+function Invoke-Psql { param([string[]]$Arguments); & $PsqlExe @Arguments; if ($LASTEXITCODE -ne 0) { throw "psql terminó con código $LASTEXITCODE. No se continúa." } }
 if (-not (Test-Path -LiteralPath $BackupPath -PathType Leaf)) { throw "No existe el archivo SQL indicado: $BackupPath" }
 $BackupPath = (Resolve-Path -LiteralPath $BackupPath).Path
 $actualHash = (Get-FileHash -LiteralPath $BackupPath -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actualHash -ne $ExpectedSha256) { throw "SHA-256 inesperado. Esperado $ExpectedSha256; recibido $actualHash. No se restaura." }
-if (-not (Get-Command psql -ErrorAction SilentlyContinue)) { throw "No se encontró psql en PATH." }
+if (-not $PsqlExe) { throw "No se encontró psql en PATH ni en PostgreSQL 18 instalado en C:\Program Files\PostgreSQL\18\bin." }
 Write-Host ("Destino permitido: {0}:{1}/{2}" -f $DbHost,$DbPort,$DbName)
-$existing = & psql -X -h $DbHost -p $DbPort -U $DbUser -d $DbName -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM pg_catalog.pg_tables WHERE schemaname = 'public';"
+$existing = & $PsqlExe -X -h $DbHost -p $DbPort -U $DbUser -d $DbName -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM pg_catalog.pg_tables WHERE schemaname = 'public';"
 if ($LASTEXITCODE -ne 0) { throw "No se pudo consultar la base local autorizada." }
 if ([int]$existing -ne 0) { throw "La base $DbName ya contiene tablas públicas ($existing). No se borra ni sobrescribe nada." }
 Write-Host "Restaurando el SQL completo (solo en la base local vacía)..."
