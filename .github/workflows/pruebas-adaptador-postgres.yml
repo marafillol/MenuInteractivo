@@ -15,8 +15,8 @@ jobs:
   pruebas:
     runs-on: ubuntu-latest
     env:
-      # Estas pruebas validan la integración Supabase; los tests locales configuran su modo explícitamente.
-      MODO_SERVIDOR: supabase
+      # Clave ficticia exclusiva de CI para cargar los módulos del modo local durante las pruebas.
+      LOCAL_AUTH_SECRET: ci-local-auth-secret-no-utilizar-fuera-de-pruebas-2026
     steps:
       - name: Obtener código
         uses: actions/checkout@v4
