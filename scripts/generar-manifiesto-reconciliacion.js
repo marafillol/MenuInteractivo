@@ -114,10 +114,17 @@ function normalizarRegistro(tabla, registro) {
     if (salida[campo] === 1 || salida[campo] === "1") salida[campo] = true;
   }
 
-  // En estos catálogos descripcion es opcional. La interfaz la presenta
-  // como cadena vacía tanto si llega "" como si llega NULL.
+  // Los textos opcionales vacíos se almacenan como NULL al crear fichas
+  // y la interfaz los presenta como cadena vacía. Para identificar la misma
+  // ficha entre motores, "" y NULL se consideran equivalentes sin modificar
+  // ninguna base ni ocultar diferencias cuando existe contenido real.
   if (["plantilla", "etiqueta"].includes(tabla) && salida.descripcion === "") {
     salida.descripcion = null;
+  }
+  if (tabla === "ficha") {
+    for (const campo of ["resumen", "texto"]) {
+      if (salida[campo] === "") salida[campo] = null;
+    }
   }
 
   return canonicalizar(salida);
