@@ -1,13 +1,13 @@
 const mapa = require("./mapaStorageHistorico.json");
 
 const HASH_RE = /^[a-f0-9]{64}$/i;
-const KEY_SEGMENT_RE = /^[a-zA-Z0-9._-]+$/;
+const KEY_SEGMENT_RE = /^[a-zA-Z0-9._ -]+$/;
 
 function esClaveSegura(clave) {
     if (typeof clave !== "string" || !clave || clave.startsWith("/") || clave.includes("\\")) return false;
     const partes = clave.split("/");
     return partes.length >= 2 && partes.every((parte) =>
-        parte && parte !== "." && parte !== ".." && KEY_SEGMENT_RE.test(parte)
+        parte && parte !== "." && parte !== ".." && parte.trim() === parte && KEY_SEGMENT_RE.test(parte)
     );
 }
 
