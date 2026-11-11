@@ -27,7 +27,7 @@ function validarDestinoDePreparacion() {
   catch { throw new Error("Migración bloqueada: DATABASE_URL debe apuntar a la copia PostgreSQL local."); }
   const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
   const puertoPermitido = destino.port === "5432";
-    const basePermitida = destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
+  const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
   if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
       !hostPermitido || !puertoPermitido || !basePermitida) {
     throw new Error("Migración bloqueada: solo se permite museo_reconciliacion_prueba en localhost:5432; no se admiten bases remotas.");
@@ -37,10 +37,14 @@ validarDestinoDePreparacion();
 
 const db = require("../src/database");
 
+// Solo entidades habilitadas en el protocolo reciben identidad compartida.
+// configuracion conserva su clave natural y queda fuera de esta migración.
+// ficha_etiqueta y relacion_ficha sí necesitan metadatos para sus eventos,
+// aunque sus identidades se resuelven después de reconciliar sus extremos.
 const entidades = [
   ["plantilla", "id_plantilla"], ["menu", "id_menu"], ["ficha", "id_ficha"],
   ["etiqueta", "id_etiqueta"], ["ficha_etiqueta", null], ["relacion_ficha", "id_relacion"],
-  ["multimedia", "id_multi"], ["configuracion", "clave"]
+  ["multimedia", "id_multi"]
 ];
 const run = (sql, values = []) => new Promise((resolve, reject) =>
   db.run(sql, values, function (error) { error ? reject(error) : resolve(this); }));
