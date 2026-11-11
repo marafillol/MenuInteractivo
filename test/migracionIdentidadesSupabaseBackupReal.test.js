@@ -66,7 +66,7 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
         }
         for (const [id, origen, destino] of fixture.relacion_ficha_rows) {
             await client.query(
-                'INSERT INTO public.relacion_ficha (id_relacion, id_ficha_origen, id_ficha_destino) VALUES ($1, $2, $3)',
+                'UPDATE public.relacion_ficha SET id_ficha_origen = $2, id_ficha_destino = $3 WHERE id_relacion = $1',
                 [id, origen, destino]
             );
         }
