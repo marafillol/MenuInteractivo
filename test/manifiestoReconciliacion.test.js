@@ -63,16 +63,28 @@ test("propone un UUID estable por entidad y huella de contenido", () => {
 });
 
 
-test("no habilita candidatos de menú, ficha o multimedia sin reconciliar dependencias", () => {
-  for (const tabla of ["menu", "ficha", "multimedia"]) {
-    assert.equal(ENTIDADES.find(e => e.tabla === tabla).requiereDependencia, true);
-  }
+test("declara dependencias para entidades hijas y relaciones", () => {
+  const padres = (tabla) => ENTIDADES.find(e => e.tabla === tabla).padres;
+  assert.deepEqual(padres("menu"), [{ tabla: "plantilla", fk: "id_plantilla" }]);
+  assert.deepEqual(padres("ficha"), [{ tabla: "menu", fk: "id_menu" }]);
+  assert.deepEqual(padres("multimedia"), [{ tabla: "ficha", fk: "id_ficha" }]);
+  assert.equal(padres("ficha_etiqueta").length, 2);
+  assert.equal(padres("relacion_ficha").length, 2);
 });
 
-test("multimedia no se considera reconciliable antes de verificar su ficha y checksum", () => {
+test("las relaciones usan sus extremos y no IDs numéricos como identidad", () => {
+  const etiquetas = ENTIDADES.find(e => e.tabla === "ficha_etiqueta");
+  const relaciones = ENTIDADES.find(e => e.tabla === "relacion_ficha");
+  assert.deepEqual(etiquetas.pk, ["id_ficha", "id_etiqueta"]);
+  assert.equal(etiquetas.relacion, true);
+  assert.equal(relaciones.relacion, true);
+  assert.deepEqual(relaciones.referencias, ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"]);
+});
+
+test("multimedia declara su ficha padre y exige checksum", () => {
   const multimedia = ENTIDADES.find(e => e.tabla === "multimedia");
-  assert.equal(multimedia.requiereDependencia, true);
   assert.equal(multimedia.multimedia, true);
+  assert.equal(multimedia.padres[0].tabla, "ficha");
 });
 
 test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
