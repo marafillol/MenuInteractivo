@@ -21,7 +21,7 @@ Esta auditoría describe el estado observado el 2026-11-11; no debe interpretars
 | relacion_ficha | 1 | 1 | 0 |
 | ficha_etiqueta | 34 | 39 | +5 |
 
-La comparación de claves primarias y relaciones del backup encontró que todas las claves históricas esperadas siguen presentes. Las diferencias son aditivas: cuatro fichas nuevas (IDs 89, 90, 91 y 92) y cinco asociaciones ficha-etiqueta adicionales. Las fichas nuevas pertenecen al menú 1, están visibles y tienen fechas de creación del 11/11/2026. No se asignaron identidades UUID a estos registros.
+La comparación de claves primarias y relaciones del backup encontró que todas las claves históricas esperadas siguen presentes. Las diferencias son aditivas: cuatro fichas nuevas (IDs 89, 90, 91 y 92) y cinco asociaciones ficha-etiqueta adicionales. Las fichas nuevas pertenecen al menú 1, están visibles y tienen fechas de creación del 11/11/2026. Las cinco asociaciones observadas son 33→6, 89→10, 90→7, 91→6 y 92→7; las cuatro últimas son las nuevas respecto del backup. No se asignaron identidades UUID a estos registros.
 
 ## Integridad referencial observada
 
