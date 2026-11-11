@@ -102,3 +102,43 @@ Estos UUID son candidatos; todavía no están persistidos. La migración SQL agr
 - `migracion-identidades-supabase-candidata.sql`: migración candidata que termina en `ROLLBACK`.
 
 **No ejecutar contra Supabase de producción. No cambiar el `ROLLBACK` a `COMMIT` sin revisión y autorización separadas.**
+
+## Addendum — auditoría real de Storage (11/11/2026)
+
+Se incorporó una exportación de solo lectura ejecutada desde el entorno local autorizado contra el bucket `multimedia` del proyecto esperado. La exportación contiene 113/113 objetos descargados, 0 errores y 55.096.780 bytes. El manifiesto incluye SHA-256 calculado desde los bytes descargados.
+
+### Reconciliación de las 21 filas multimedia
+
+Las 21 filas de `public.multimedia` del SQL plano se resolvieron contra objetos actuales:
+
+- 16 rutas locales tienen igualdad binaria SHA-256 con los archivos correspondientes del ZIP histórico y con un objeto actual de Storage. En 14 casos el nombre histórico y la clave actual difieren por espacios/paréntesis convertidos en guiones bajos; la correspondencia se acepta por hash, no por normalización textual sola.
+- 5 URLs públicas tenían sus claves extraíbles de la URL y los objetos existen exactamente en Storage. Esos bytes no estaban en el ZIP histórico, pero sí en la exportación actual.
+
+Esto reemplaza el estado preliminar anterior que dejaba las claves de los 16 objetos pendientes de confirmar. No se modificaron las rutas almacenadas en PostgreSQL.
+
+### Portadas
+
+- 34/55 fichas tienen una referencia exacta a un objeto bajo `migracion/fichas/`; cada una tiene una contraparte de contenido idéntico bajo `imagenes/fichas/`.
+- 2/3 menús tienen una ruta de imagen exacta en Storage. El menú 23 no tiene imagen en el campo del SQL.
+- Se conservan ambas copias de las portadas; no se eligió una ubicación canónica ni se eliminó nada.
+
+### Seis archivos del ZIP histórico sin correspondencia
+
+Los seis archivos históricos sin coincidencia SHA-256 en la exportación actual no aparecen referenciados por nombre en el SQL plano ni en los respaldos SQLite examinados. Una búsqueda perceptual exploratoria no dio evidencia suficientemente fuerte para asignarlos a objetos actuales. Se mantienen como activos históricos sin asignar; no se recomienda volver a subirlos ni asociarlos a registros sin revisión humana.
+
+### Metadata MIME
+
+94/113 objetos tienen MIME declarado distinto del tipo detectado por firma binaria. El grupo mayoritario son 87 objetos declarados `text/plain`; hay siete discrepancias adicionales entre tipos declarados y firmas reales. Se propone para cargas futuras detectar el tipo por magic bytes. Para objetos existentes, cualquier corrección deberá ser metadata-only, ensayada en entorno no productivo y validada con un nuevo SHA-256. No se deben reemplazar bytes ni renombrar claves.
+
+### Política de normalización
+
+- Mantener las claves actuales de Storage como identificadores físicos.
+- Resolver rutas antiguas mediante un mapa explícito de alias, respaldado por hash cuando corresponda.
+- No aplicar normalización genérica de espacios/guiones que pueda producir colisiones.
+- Preservar las referencias de portadas y las copias duplicadas hasta una migración coordinada.
+- Mantener los seis archivos históricos sin asignar.
+- No hacer escrituras en Supabase Storage ni PostgreSQL sin aprobación expresa y un plan de rollback.
+
+El informe detallado de correspondencias, inventario, duplicados, MIME y pendientes se adjunta en la conversación como `reconciliacion_storage_supabase_2026-11-11.xlsx`. El documento `docs/RECONCILIACION_STORAGE_SUPABASE_20261111.md` contiene el resumen técnico de esta reconciliación.
+
+**Esta auditoría es de solo lectura. No se modificaron Supabase, Storage, SQLite ni Render.**
