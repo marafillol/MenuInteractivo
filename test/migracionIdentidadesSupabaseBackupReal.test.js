@@ -16,7 +16,7 @@ function validarDestino(texto) {
     assert.equal(destino.pathname.replace(/^\/+/, ''), 'museo_backup_real_test', 'Solo base museo_backup_real_test.');
 }
 
-test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Supabase', { skip: !url }, async () => {
+test('backfill UUIDv5 sobre DDL y claves/relaciones extraídas del backup real de Supabase', { skip: !url }, async () => {
     validarDestino(url);
     assert.equal(fixture.source.sha256, 'f5817b9bf741f121fe816c8756091b99a14698c7c6187a68742c709031e49cce');
     assert.equal(fixture.source.export_snapshot, '2026-11-10');
@@ -54,13 +54,6 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
                 [idFicha, idEtiqueta]
             );
         }
-        for (const [id, origen, destino] of fixture.relacion_ficha_rows) {
-            await client.query(
-                'UPDATE public.relacion_ficha SET id_ficha_origen = $2, id_ficha_destino = $3 WHERE id_relacion = $1',
-                [id, origen, destino]
-            );
-        }
-
         const conteosReales = {};
         for (const tabla of [...Object.keys(fixture.tables), 'ficha_etiqueta']) {
             const { rows } = await client.query(`SELECT COUNT(*)::int AS n FROM public.${tabla}`);
