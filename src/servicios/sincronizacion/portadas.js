@@ -13,6 +13,10 @@ const MIME_POR_EXTENSION = {
     ".avif": "image/avif"
 };
 
+function normalizarRutaPortada(ruta) {
+    return String(ruta || "").replace(/\\\\/g, "/");
+}
+
 function extensionSegura(archivo) {
     const extension = path.extname(String(archivo?.originalname || "")).toLowerCase();
     if (!Object.prototype.hasOwnProperty.call(MIME_POR_EXTENSION, extension)) {
@@ -94,4 +98,4 @@ async function limpiarStagingPortada(portada) {
     }
 }
 
-module.exports = { prepararPortada, extensionSegura, leerArchivo, limpiarStagingPortada };
+module.exports = { prepararPortada, extensionSegura, leerArchivo, limpiarStagingPortada, normalizarRutaPortada };
