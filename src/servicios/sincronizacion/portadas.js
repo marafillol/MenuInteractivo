@@ -3,6 +3,7 @@ const path = require("node:path");
 const { randomUUID, createHash } = require("node:crypto");
 const { esModoLocal, esModoSupabase } = require("../../config/modoServidor");
 const { estaPreparado, columnasDe } = require("./esquema");
+const { normalizarRutaPortada } = require("./portadasRuta");
 
 const MIME_POR_EXTENSION = {
     ".jpg": "image/jpeg",
@@ -12,10 +13,6 @@ const MIME_POR_EXTENSION = {
     ".gif": "image/gif",
     ".avif": "image/avif"
 };
-
-function normalizarRutaPortada(ruta) {
-    return String(ruta || "").split("\\").join("/");
-}
 
 function extensionSegura(archivo) {
     const extension = path.extname(String(archivo?.originalname || "")).toLowerCase();
