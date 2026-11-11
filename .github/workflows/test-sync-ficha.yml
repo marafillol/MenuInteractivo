@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - feature/sync-outbox-foundation
+      - feature/sync-ficha-outbox
   push:
     branches:
       - feature/sync-ficha-outbox
