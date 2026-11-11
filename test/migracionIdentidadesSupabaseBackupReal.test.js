@@ -49,14 +49,26 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
             );
         `);
 
-        for (const tabla of ['plantilla', 'menu', 'ficha', 'etiqueta', 'multimedia', 'relacion_ficha']) {
-            const columna = {
-                plantilla: 'id_plantilla', menu: 'id_menu', ficha: 'id_ficha',
-                etiqueta: 'id_etiqueta', multimedia: 'id_multi', relacion_ficha: 'id_relacion'
-            }[tabla];
-            for (const id of fixture.tables[tabla]) {
-                await client.query(`INSERT INTO public.${tabla} (${columna}) VALUES ($1)`, [id]);
-            }
+        for (const id of fixture.tables.plantilla) {
+            await client.query('INSERT INTO public.plantilla (id_plantilla) VALUES ($1)', [id]);
+        }
+        for (const [id, idPlantilla] of fixture.foreign_keys.menu_plantilla) {
+            await client.query('INSERT INTO public.menu (id_menu, id_plantilla) VALUES ($1, $2)', [id, idPlantilla]);
+        }
+        for (const [id, idMenu] of fixture.foreign_keys.ficha_menu) {
+            await client.query('INSERT INTO public.ficha (id_ficha, id_menu) VALUES ($1, $2)', [id, idMenu]);
+        }
+        for (const id of fixture.tables.etiqueta) {
+            await client.query('INSERT INTO public.etiqueta (id_etiqueta) VALUES ($1)', [id]);
+        }
+        for (const [id, idFicha] of fixture.foreign_keys.multimedia_ficha) {
+            await client.query('INSERT INTO public.multimedia (id_multi, id_ficha) VALUES ($1, $2)', [id, idFicha]);
+        }
+        for (const [id, origen, destino] of fixture.relacion_ficha_rows) {
+            await client.query(
+                'INSERT INTO public.relacion_ficha (id_relacion, id_ficha_origen, id_ficha_destino) VALUES ($1, $2, $3)',
+                [id, origen, destino]
+            );
         }
         for (const [idFicha, idEtiqueta] of fixture.ficha_etiqueta) {
             await client.query(
@@ -77,6 +89,10 @@ test('backfill UUIDv5 sobre claves y relaciones extraídas del backup real de Su
             conteosReales[tabla] = rows[0].n;
             assert.equal(rows[0].n, plan.conteos[tabla], `conteo del backup: ${tabla}`);
         }
+
+        assert.equal(fixture.foreign_keys.menu_plantilla.length, plan.conteos.menu);
+        assert.equal(fixture.foreign_keys.ficha_menu.length, plan.conteos.ficha);
+        assert.equal(fixture.foreign_keys.multimedia_ficha.length, plan.conteos.multimedia);
 
         const sql = fs.readFileSync(sqlPath, 'utf8');
         assert.match(sql.trim(), /ROLLBACK;$/);
