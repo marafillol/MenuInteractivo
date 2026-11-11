@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { createHash } = require("node:crypto");
 const { esModoSupabase } = require("./modoServidor");
+const { esStorageKeyHistorica } = require("../servicios/sincronizacion/resolverStorageHistorico");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
 const urlProyectoConfigurada = process.env.SUPABASE_URL;
