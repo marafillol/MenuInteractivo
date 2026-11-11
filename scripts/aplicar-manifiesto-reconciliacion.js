@@ -16,7 +16,7 @@ function validarDestinoPostgresSeguro(connectionString) {
     catch { throw new Error("URL de PostgreSQL inválida."); }
     const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
     const puertoPermitido = destino.port === "5432";
-    const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
+    const basePermitida = destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
     if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
         !hostPermitido || !puertoPermitido || !basePermitida) {
         throw new Error("Aplicación bloqueada: solo se permite la copia local museo_reconciliacion_prueba en localhost:5432.");
