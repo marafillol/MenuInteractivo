@@ -9,7 +9,8 @@ Este diagnóstico compara, por clave primaria, los campos de las tablas `plantil
 - PostgreSQL inicia una transacción `BEGIN READ ONLY`.
 - No modifica datos, no asigna identificadores y no contacta Supabase ni Render.
 - El informe no contiene valores de los registros: únicamente nombres de campos, claves primarias, tipos, longitudes y SHA-256.
-- Para `activo` normaliza 0/1 a booleano; para `plantilla_json` compara también una representación JSON con claves ordenadas.
+- Para `activo` normaliza 0/1 a booleano; para `plantilla_json` y `datos_json` compara JSON con claves ordenadas.
+- En `plantilla`, `etiqueta` y `multimedia`, las descripciones vacías (`""`) se consideran equivalentes a `NULL`; en `ficha`, se aplica lo mismo a `resumen` y `texto`. Los textos con contenido real siguen comparándose por separado.
 
 ## Ejecución en PowerShell
 
