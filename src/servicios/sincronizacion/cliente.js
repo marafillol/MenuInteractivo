@@ -467,7 +467,8 @@ async function inicializarDesdeServidor() {
         error.code = datos.code || "BOOTSTRAP_REMOTO_ERROR";
         throw error;
     }
-    datos = aplicarMapaSnapshot(datos);\n    validarSnapshot(datos);
+    datos = aplicarMapaSnapshot(datos);
+    validarSnapshot(datos);
     const archivosNuevos = [];
     const idsDescargados = [];
     try {
