@@ -56,7 +56,7 @@ const ENTIDADES = [
   { tabla: "plantilla", pk: ["id_plantilla"], excluir: ["id_plantilla", "creado", "actualizado"] },
   { tabla: "etiqueta", pk: ["id_etiqueta"], excluir: ["id_etiqueta"] },
   { tabla: "menu", pk: ["id_menu"], excluir: ["id_menu", "id_plantilla", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "plantilla", fk: "id_plantilla" }] },
-  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_mime_type", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
+  { tabla: "ficha", pk: ["id_ficha"], excluir: ["id_ficha", "id_menu", "id_usuario", "imagen", "imagen_storage_key", "imagen_checksum_sha256", "imagen_mime_type", "imagen_tamano_bytes", "creado", "actualizado"], padres: [{ tabla: "menu", fk: "id_menu" }] },
   { tabla: "ficha_etiqueta", pk: ["id_ficha", "id_etiqueta"], relacion: true, referencias: ["id_ficha", "id_etiqueta"], padres: [{ tabla: "ficha", fk: "id_ficha" }, { tabla: "etiqueta", fk: "id_etiqueta" }] },
   { tabla: "relacion_ficha", pk: ["id_relacion"], relacion: true, referencias: ["id_ficha_origen", "id_ficha_destino", "tipo_relacion"], padres: [{ tabla: "ficha", fk: "id_ficha_origen" }, { tabla: "ficha", fk: "id_ficha_destino" }] },
   { tabla: "multimedia", pk: ["id_multi"], excluir: ["id_multi", "id_ficha", "ruta_archivo", "miniatura", "creado", "actualizado"], multimedia: true, padres: [{ tabla: "ficha", fk: "id_ficha" }] },
@@ -153,7 +153,7 @@ function evaluarPortada(local, remoto) {
   const a = local?.portada || { existe: false, checksum: null, tamano_bytes: null };
   const b = remoto?.portada || { existe: false, checksum: null, tamano_bytes: null };
   if (!a.existe && !b.existe) return { estado: "sin_portada" };
-  if (a.checksum && b.checksum) {
+  if (a.checksum && b.checksum && a.tamano_bytes && b.tamano_bytes) {
     if (a.checksum === b.checksum && a.tamano_bytes === b.tamano_bytes) {
       return { estado: "portada_verificada_por_checksum", checksum_sha256: a.checksum };
     }
@@ -251,7 +251,8 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
           existe: Boolean(fila.imagen),
           checksum: /^[a-f0-9]{64}$/i.test(String(fila.imagen_checksum_sha256 || ""))
             ? String(fila.imagen_checksum_sha256).toLowerCase() : null,
-          tamano_bytes: Number.isSafeInteger(Number(fila.imagen_tamano_bytes))
+          tamano_bytes: fila.imagen_tamano_bytes !== null && fila.imagen_tamano_bytes !== undefined &&
+            Number.isSafeInteger(Number(fila.imagen_tamano_bytes)) && Number(fila.imagen_tamano_bytes) > 0
             ? Number(fila.imagen_tamano_bytes) : null
         }
       } : {})
