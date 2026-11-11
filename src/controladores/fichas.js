@@ -3,7 +3,7 @@ const Multimedia = require("../modelos/multimedia");
 const FichaEtiqueta = require("../modelos/fichaEtiquetaModelo");
 const cachePublico = require("../middleware/cachePublico");
 const { subirArchivo, eliminarArchivo } = require("../config/almacenamientoSupabase");
-const { prepararPortada } = require("../servicios/sincronizacion/portadas");
+const { prepararPortada, limpiarStagingPortada } = require("../servicios/sincronizacion/portadas");
 
 const limpiarArchivoSubido = async (ruta) => {
     if (!ruta) return;
@@ -138,8 +138,10 @@ const crearFicha = async(req,res)=>{
     }
 
     let imagenSubida = null;
+    let portadaPreparada = null;
     try{
         const portada = req.file ? await prepararPortada(req.file, "ficha") : null;
+        portadaPreparada = portada;
         imagenSubida = portada?.imagen || await subirArchivo(req.file, "fichas");
         const datos = {
             id_menu: req.body.id_menu,
@@ -164,6 +166,7 @@ const crearFicha = async(req,res)=>{
         });
     }catch(error){
         await limpiarArchivoSubido(imagenSubida);
+        await limpiarStagingPortada(portadaPreparada);
         return res.status(500).json({ error:error.message });
     }
 };
@@ -179,7 +182,7 @@ const actualizarFicha = async(req,res)=>{
     }
 
     let imagenNueva = null;
-    
+    let portadaPreparada = null;
 
     try{
         const datos = {
@@ -198,6 +201,7 @@ const actualizarFicha = async(req,res)=>{
                 return res.status(404).json({ error:"No se encontrÃ³ la ficha." });
             }
             const portada = await prepararPortada(req.file, "ficha");
+            portadaPreparada = portada;
             imagenNueva = portada?.imagen || await subirArchivo(req.file, "fichas");
             datos.imagen = imagenNueva;
             if (portada) Object.assign(datos, portada);
@@ -217,6 +221,7 @@ const actualizarFicha = async(req,res)=>{
         if(imagenNueva){
             await limpiarArchivoSubido(imagenNueva);
         }
+        await limpiarStagingPortada(portadaPreparada);
         console.error("Error actualizando ficha; cÃ³digo=", error.code || "sin_codigo");
         return res.status(500).json({ error:error.message });
     }
