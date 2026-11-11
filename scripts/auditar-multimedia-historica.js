@@ -43,7 +43,7 @@ function validarDestinoSeguro(connectionString) {
 function obtenerRutaRelativaAuditable(valor) {
     const texto = String(valor || "").trim();
     if (!texto) return null;
-    if (!/^https:\/\//i.test(texto)) return texto;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(texto)) return texto;
 
     try {
         const url = new URL(texto);
@@ -52,7 +52,7 @@ function obtenerRutaRelativaAuditable(valor) {
         if (url.protocol !== "https:" || posicion < 0) return null;
         const objeto = decodeURIComponent(url.pathname.slice(posicion + marcador.length));
         const segmentos = objeto.split("/");
-        if (!objeto || objeto.startsWith("/") || objeto.includes("\\0") ||
+        if (!objeto || objeto.startsWith("/") || objeto.includes("\0") ||
             segmentos.some(segmento => !segmento || segmento === "." || segmento === "..")) return null;
         return objeto;
     } catch {
