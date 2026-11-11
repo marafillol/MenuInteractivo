@@ -81,4 +81,17 @@ async function prepararPortada(archivo, entidad) {
     };
 }
 
-module.exports = { prepararPortada, extensionSegura, leerArchivo };
+async function limpiarStagingPortada(portada) {
+    if (!portada?.imagen_storage_key) return;
+    const nombre = path.basename(String(portada.imagen_storage_key));
+    if (!/^[0-9a-f-]{36}\.(jpg|jpeg|png|webp|gif|avif)$/i.test(nombre)) return;
+    const raiz = path.resolve(__dirname, "../../../database/.sync-pending-covers");
+    try {
+        await fs.promises.unlink(path.join(raiz, nombre));
+        try { await fs.promises.rmdir(raiz); } catch {}
+    } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+    }
+}
+
+module.exports = { prepararPortada, extensionSegura, leerArchivo, limpiarStagingPortada };
