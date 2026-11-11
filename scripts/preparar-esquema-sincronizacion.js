@@ -27,7 +27,7 @@ function validarDestinoDePreparacion() {
   catch { throw new Error("Migración bloqueada: DATABASE_URL debe apuntar a la copia PostgreSQL local."); }
   const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
   const puertoPermitido = destino.port === "5432";
-  const basePermitida = destino.pathname.replace(/^\\/+/, "") === "museo_reconciliacion_prueba";
+    const basePermitida = destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
   if (!["postgres:", "postgresql:"].includes(destino.protocol) ||
       !hostPermitido || !puertoPermitido || !basePermitida) {
     throw new Error("Migración bloqueada: solo se permite museo_reconciliacion_prueba en localhost:5432; no se admiten bases remotas.");
