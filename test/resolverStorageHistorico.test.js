@@ -175,3 +175,14 @@ test("el bootstrap valida claves Storage legacy solo cuando coinciden con el map
     normalizado.data.multimedia[0].storage_key = "imagenes/multimedia/otro.png";
     assert.throws(() => validarSnapshot(normalizado), /clave de Storage y checksum verificables/);
 });
+
+test("preserva claves modernas con checksum aunque el ID exista en el mapa legacy", () => {
+    const resultado = resolverReferenciaHistorica({
+        entidad: "multimedia",
+        id: 48,
+        referencia: "referencia-historica-ya-superada",
+        storageKey: "multimedia/imagen/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/v1.png",
+        checksumSha256: "a".repeat(64)
+    });
+    assert.equal(resultado, null);
+});
