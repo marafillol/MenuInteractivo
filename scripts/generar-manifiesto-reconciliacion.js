@@ -186,8 +186,16 @@ function agruparPorHuella(filas) {
   }
   return mapa;
 }
+function normalizarClaveIdentidad(valor) {
+  // PostgreSQL suele devolver BIGINT como string y SQLite como number.
+  // Canonicalizamos enteros decimales sin ceros iniciales para emparejar
+  // la misma clave primaria sin confundir claves textuales como "001".
+  if (typeof valor === "number" && Number.isSafeInteger(valor)) return String(valor);
+  if (typeof valor === "string" && /^-?(0|[1-9]\\d*)$/.test(valor)) return valor;
+  return valor;
+}
 function claveFila(fila, pk) {
-  return JSON.stringify(pk.map((campo) => fila[campo]));
+  return JSON.stringify(pk.map((campo) => normalizarClaveIdentidad(fila[campo])));
 }
 
 function registrarMapaIdentidades(tabla, pk, filasLocal, filasRemoto, candidatos, mapas) {
@@ -594,6 +602,7 @@ module.exports = {
   uuidPropuesto,
   validarDestinoSeguro,
   claveFila,
+  normalizarClaveIdentidad,
   registrarMapaIdentidades,
   prepararFilasConDependencias,
   enriquecerFilasMultimediaConArchivos,
