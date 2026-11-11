@@ -6,6 +6,7 @@ const path = require("node:path");
 const {
     validarDestinoSeguro,
     resolverRutaSegura,
+    obtenerRutaRelativaAuditable,
     calcularArchivo,
     auditarRegistro
 } = require("../scripts/auditar-multimedia-historica");
@@ -23,6 +24,16 @@ test("solo permite museo_reconciliacion_prueba en localhost:5432", () => {
     assert.throws(() =>
         validarDestinoSeguro("postgresql://postgres:pass@127.0.0.1:5432/postgres")
     );
+});
+
+test("convierte URL pública de Storage en clave local sin consultar la red", () => {
+    assert.equal(
+        obtenerRutaRelativaAuditable("https://proyecto.supabase.co/storage/v1/object/public/multimedia/multimedia/imagen/foto%20uno.png"),
+        "multimedia/imagen/foto uno.png"
+    );
+    assert.equal(obtenerRutaRelativaAuditable("http://proyecto.supabase.co/storage/v1/object/public/multimedia/foto.png"), null);
+    assert.equal(obtenerRutaRelativaAuditable("https://otro.example/foto.png"), null);
+    assert.equal(obtenerRutaRelativaAuditable("https://proyecto.supabase.co/storage/v1/object/public/multimedia/%2e%2e/secreto.png"), "../secreto.png");
 });
 
 test("rechaza rutas absolutas y traversal fuera de la raíz", () => {
