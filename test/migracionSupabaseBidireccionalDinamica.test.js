@@ -50,6 +50,21 @@ test('migración dinámica asigna UUIDv5 a filas históricas y altas nuevas, con
     assert.match(sql.trim(), /ROLLBACK;$/);
     await client.query(sql.slice(0, sql.lastIndexOf('ROLLBACK;')) + 'COMMIT;');
 
+    // Simula una carga nueva posterior a la migración: el flujo actualizado
+    // debe persistir identidad y metadatos desde el momento de la subida.
+    await client.query(`
+      INSERT INTO public.multimedia (
+        id_multi, id_ficha, ruta_archivo, tipo_multi, activo,
+        sync_id, sync_version, checksum_sha256, mime_type, tamano_bytes,
+        storage_key, sync_previous_path
+      ) VALUES (
+        900, 900, 'https://example.invalid/new.png', 'imagen', 1,
+        extensions.uuid_generate_v5('473fa076-fa8c-5182-a396-f772c5a8fca1'::uuid, 'multimedia:900'),
+        1, repeat('a', 64), 'image/png', 1234,
+        'multimedia/imagen/new-sync-id/v1.png', NULL
+      )
+    `);
+
     const expected = {
       plantilla: fixture.tables.plantilla.length,
       menu: fixture.tables.menu.length,
