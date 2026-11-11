@@ -221,7 +221,7 @@ async function procesarLote(consultar, eventos, opciones) {
                 confirmados.push(evento.evento_id);
             }
             if (resultado.estado !== "aplicado" && resultado.estado !== "duplicado") {
-                rechazados.push({ evento_id: evento.evento_id, ...resultado });
+                rechazados.push({ evento_id: evento.evento_id, entidad: evento.entidad, sync_id: evento.sync_id, ...resultado });
             }
         } catch (error) {
             rechazados.push({ evento_id: evento.evento_id, estado: "error", motivo: error.message });
