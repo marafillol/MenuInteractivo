@@ -100,6 +100,7 @@ function normalizarRegistro(tabla, registro) {
   }
 
   const camposBooleanos = {
+    plantilla: ["activo"],
     menu: ["visible"],
     ficha: ["visible"],
     etiqueta: ["activo"],
@@ -107,8 +108,18 @@ function normalizarRegistro(tabla, registro) {
   }[tabla] || [];
 
   for (const campo of camposBooleanos) {
-    if (salida[campo] === 0 || salida[campo] === 1) salida[campo] = Boolean(salida[campo]);
+    // SQLite entrega INTEGER; PostgreSQL puede entregar el mismo 0/1
+    // como texto según el tipo legado de la columna.
+    if (salida[campo] === 0 || salida[campo] === "0") salida[campo] = false;
+    if (salida[campo] === 1 || salida[campo] === "1") salida[campo] = true;
   }
+
+  // En estos catálogos descripcion es opcional. La interfaz la presenta
+  // como cadena vacía tanto si llega "" como si llega NULL.
+  if (["plantilla", "etiqueta"].includes(tabla) && salida.descripcion === "") {
+    salida.descripcion = null;
+  }
+
   return canonicalizar(salida);
 }
 function uuidPropuesto(tabla, hash) {
