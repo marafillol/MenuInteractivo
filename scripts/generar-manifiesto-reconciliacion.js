@@ -15,9 +15,15 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const sqlite3 = require("sqlite3");
 const { Client } = require("pg");
+const {
+  calcularArchivo,
+  obtenerRutaRelativaAuditable,
+  resolverRutaSegura
+} = require("./auditar-multimedia-historica");
 
 const SQLITE_PATH = process.env.RECONCILIACION_SQLITE_PATH;
 const POSTGRES_URL = process.env.RECONCILIACION_POSTGRES_URL;
+const ARCHIVOS_ROOT = process.env.RECONCILIACION_ARCHIVOS_ROOT;
 const OUTPUT = process.env.RECONCILIACION_SALIDA ||
   path.resolve(process.cwd(), "manifiesto-reconciliacion.json");
 
@@ -120,7 +126,7 @@ function uuidPropuesto(tabla, hash) {
 }
 
 function huella(tabla, registro, excluir) {
-  const ignorar = new Set([...excluir, ...METADATOS_SYNC]);
+  const ignorar = new Set([...excluir, ...METADATOS_SYNC, "__integridad_archivo"]);
   const normalizado = normalizarRegistro(tabla, registro);
   const contenido = Object.fromEntries(
     Object.entries(normalizado).filter(([campo]) => !ignorar.has(campo))
@@ -216,7 +222,10 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
       idsPadres.push(identidad);
     }
     if (idsPadres.length !== (entidad.padres || []).length) continue;
-    if (entidad.multimedia && !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))) {
+    if (entidad.multimedia && (
+      !/^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || "")) ||
+      ["checksum_no_coincide", "tamano_no_coincide"].includes(fila.__integridad_archivo)
+    )) {
       pendientes.push(Object.fromEntries(entidad.pk.map((campo) => [campo, fila[campo]])));
       continue;
     }
@@ -261,11 +270,88 @@ function prepararFilasConDependencias(filas, entidad, mapas, fuente) {
   return { filas: preparadas, pendientes, pendientesPortada };
 }
 
+
+function mimeDesdeRuta(valor) {
+  const extension = path.extname(String(valor || "")).toLowerCase();
+  return ({
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".webp": "image/webp", ".gif": "image/gif", ".mp4": "video/mp4",
+    ".pdf": "application/pdf", ".ogg": "audio/ogg", ".mp3": "audio/mpeg",
+    ".wav": "audio/wav"
+  })[extension] || null;
+}
+
+/**
+ * Completa metadatos multimedia solo en memoria desde archivos locales.
+ * Nunca escribe en SQLite ni PostgreSQL.
+ */
+async function enriquecerFilasMultimediaConArchivos(filas, raizArchivos) {
+  if (!raizArchivos) return { filas, resumen: { modo: "sin_raiz_archivos", total: filas.length } };
+  if (!fs.existsSync(raizArchivos) || !fs.statSync(raizArchivos).isDirectory()) {
+    throw new Error("RECONCILIACION_ARCHIVOS_ROOT debe ser una carpeta local existente.");
+  }
+  const raiz = fs.realpathSync(raizArchivos);
+  const resumen = {
+    modo: "solo_lectura", total: filas.length, archivo_encontrado: 0,
+    checksum_calculado_en_memoria: 0, checksum_verificado: 0,
+    checksum_no_coincide: 0, tamano_no_coincide: 0, archivo_no_encontrado: 0
+  };
+  const resultado = [];
+  for (const original of filas) {
+    const fila = { ...original };
+    let archivo = null;
+    let rutaUsada = null;
+    for (const candidato of [fila.ruta_archivo, fila.storage_key]) {
+      const relativa = obtenerRutaRelativaAuditable(candidato);
+      const ruta = resolverRutaSegura(raiz, relativa);
+      if (!ruta) continue;
+      const calculado = await calcularArchivo(ruta, raiz);
+      if (calculado.existe) { archivo = calculado; rutaUsada = relativa; break; }
+    }
+    const checksumGuardado = /^[a-f0-9]{64}$/i.test(String(fila.checksum_sha256 || ""))
+      ? String(fila.checksum_sha256).toLowerCase() : null;
+    const tamanoGuardado = Number.isSafeInteger(Number(fila.tamano_bytes)) && Number(fila.tamano_bytes) > 0
+      ? Number(fila.tamano_bytes) : null;
+    if (!archivo) {
+      fila.__integridad_archivo = checksumGuardado ? "checksum_existente_sin_archivo_local" : "archivo_no_encontrado";
+      if (!checksumGuardado) resumen.archivo_no_encontrado += 1;
+      resultado.push(fila);
+      continue;
+    }
+    resumen.archivo_encontrado += 1;
+    if (checksumGuardado && checksumGuardado !== archivo.checksum_sha256) {
+      fila.__integridad_archivo = "checksum_no_coincide";
+      resumen.checksum_no_coincide += 1;
+      resultado.push(fila);
+      continue;
+    }
+    if (tamanoGuardado && tamanoGuardado !== archivo.tamano_bytes) {
+      fila.__integridad_archivo = "tamano_no_coincide";
+      resumen.tamano_no_coincide += 1;
+      resultado.push(fila);
+      continue;
+    }
+    if (!checksumGuardado) {
+      fila.checksum_sha256 = archivo.checksum_sha256;
+      resumen.checksum_calculado_en_memoria += 1;
+    } else resumen.checksum_verificado += 1;
+    if (!tamanoGuardado) fila.tamano_bytes = archivo.tamano_bytes;
+    if (!fila.mime_type) fila.mime_type = mimeDesdeRuta(rutaUsada);
+    fila.__integridad_archivo = checksumGuardado
+      ? "checksum_verificado_con_archivo" : "checksum_calculado_solo_lectura";
+    resultado.push(fila);
+  }
+  return { filas: resultado, resumen };
+}
+
 async function main() {
   if (!SQLITE_PATH || !POSTGRES_URL) {
     throw new Error("Configurá RECONCILIACION_SQLITE_PATH y RECONCILIACION_POSTGRES_URL con copias descartables, nunca producción.");
   }
   validarDestinoSeguro(POSTGRES_URL);
+  if (ARCHIVOS_ROOT && (!fs.existsSync(ARCHIVOS_ROOT) || !fs.statSync(ARCHIVOS_ROOT).isDirectory())) {
+    throw new Error("RECONCILIACION_ARCHIVOS_ROOT debe ser una carpeta local existente.");
+  }
   if (!fs.existsSync(SQLITE_PATH)) throw new Error("No existe la copia SQLite indicada.");
   const sqliteReal = fs.realpathSync(SQLITE_PATH);
   const sqliteProduccion = path.resolve(process.cwd(), "database", "museo.db");
@@ -302,7 +388,8 @@ async function main() {
       modo: "solo_lectura",
       fuentes: {
         sqlite: { archivo: path.basename(SQLITE_PATH), version: sqliteVersion[0]?.version },
-        postgres: { database: pgInfo[0]?.database, schema: pgInfo[0]?.schema }
+        postgres: { database: pgInfo[0]?.database, schema: pgInfo[0]?.schema },
+        ...(ARCHIVOS_ROOT ? { archivos_root: path.basename(fs.realpathSync(ARCHIVOS_ROOT)) } : {})
       },
       reglas: [
         "Las huellas excluyen claves primarias y foráneas numéricas cuando están definidas como dependencias.",
@@ -310,7 +397,7 @@ async function main() {
         "Los metadatos sync_id, sync_version y sync_deleted_at no participan en las huellas.",
         "Las huellas compartidas son candidatos, nunca aprobaciones automáticas.",
         "Menús, fichas y multimedia solo generan candidatos cuando la identidad de sus padres está disponible en ambas copias.",
-        "Multimedia requiere una ficha padre reconciliada y un checksum_sha256 con formato hexadecimal de 64 caracteres; este manifiesto no verifica los bytes del archivo.",
+        "Multimedia requiere una ficha padre reconciliada y un checksum_sha256 válido. Si se indica RECONCILIACION_ARCHIVOS_ROOT, calcula o verifica SHA-256 y tamaño desde archivos locales, solo en memoria y sin modificar bases.",
         "Las portadas de menú y ficha solo se consideran verificadas si ambas copias tienen checksum SHA-256; las referencias sin checksum se reportan por separado y no prueban igualdad binaria.",
         "Las relaciones se emparejan usando las identidades compartidas de todos sus extremos; ficha_etiqueta conserva su clave primaria compuesta.",
         "Los sync_id preexistentes se conservan como candidatos; identidades distintas entre copias se reportan como conflicto y nunca se sobrescriben.",
@@ -325,12 +412,20 @@ async function main() {
     const mapasIdentidad = {};
     for (const entidad of ENTIDADES) {
       const tabla = entidad.tabla;
-      const localRaw = entidad.soloConteo
+      let localRaw = entidad.soloConteo
         ? await allSQLite(sqlite, 'SELECT COUNT(*) AS cantidad FROM "' + tabla + '"')
         : await allSQLite(sqlite, 'SELECT * FROM "' + tabla + '"');
-      const remotoRaw = entidad.soloConteo
+      let remotoRaw = entidad.soloConteo
         ? await allPostgres(pg, 'SELECT COUNT(*) AS cantidad FROM public."' + tabla + '"')
         : await allPostgres(pg, 'SELECT * FROM public."' + tabla + '"');
+      let auditoriaArchivos = null;
+      if (entidad.multimedia && ARCHIVOS_ROOT) {
+        const localAuditoria = await enriquecerFilasMultimediaConArchivos(localRaw, ARCHIVOS_ROOT);
+        const postgresAuditoria = await enriquecerFilasMultimediaConArchivos(remotoRaw, ARCHIVOS_ROOT);
+        localRaw = localAuditoria.filas;
+        remotoRaw = postgresAuditoria.filas;
+        auditoriaArchivos = { sqlite: localAuditoria.resumen, postgres: postgresAuditoria.resumen };
+      }
 
       if (!entidad.soloConteo) {
         for (const [origen, filas] of [["SQLite", localRaw], ["PostgreSQL", remotoRaw]]) {
@@ -429,6 +524,7 @@ async function main() {
       const hashesLocales = new Set(gruposLocal.keys());
       informe.entidades[tabla] = {
         clave_primaria: entidad.pk,
+        ...(auditoriaArchivos ? { integridad_archivos: auditoriaArchivos } : {}),
         ...(entidad.excluir ? { campos_excluidos_de_huella: entidad.excluir } : {}),
         conteos: {
           sqlite: localRaw.length,
@@ -500,5 +596,6 @@ module.exports = {
   claveFila,
   registrarMapaIdentidades,
   prepararFilasConDependencias,
+  enriquecerFilasMultimediaConArchivos,
   ENTIDADES
 };
