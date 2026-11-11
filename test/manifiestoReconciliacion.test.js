@@ -8,6 +8,8 @@ const {
   agruparPorHuella,
   uuidPropuesto,
   validarDestinoSeguro,
+  registrarMapaIdentidades,
+  prepararFilasConDependencias,
   ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
 
@@ -85,6 +87,61 @@ test("multimedia declara su ficha padre y exige checksum", () => {
   const multimedia = ENTIDADES.find(e => e.tabla === "multimedia");
   assert.equal(multimedia.multimedia, true);
   assert.equal(multimedia.padres[0].tabla, "ficha");
+});
+
+
+test("genera candidatos hijos solo cuando sus padres tienen identidad compartida", () => {
+  const mapas = {};
+  const idPlantilla = "11111111-1111-5111-8111-111111111111";
+  registrarMapaIdentidades("plantilla", ["id_plantilla"],
+    [{ id_plantilla: 1 }], [{ id_plantilla: 9 }],
+    [{ claves_sqlite: [{ id_plantilla: 1 }], claves_postgres: [{ id_plantilla: 9 }], sync_id_propuesto: idPlantilla }],
+    mapas
+  );
+  const entidad = ENTIDADES.find(e => e.tabla === "menu");
+  const local = prepararFilasConDependencias(
+    [{ id_menu: 2, id_plantilla: 1, nombre: "Sala", visible: 1 }],
+    entidad, mapas, "sqlite"
+  );
+  const remoto = prepararFilasConDependencias(
+    [{ id_menu: 8, id_plantilla: 9, nombre: "Sala", visible: true }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.pendientes.length, 0);
+  assert.equal(remoto.pendientes.length, 0);
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+
+  const sinPadre = prepararFilasConDependencias(
+    [{ id_menu: 3, id_plantilla: 77, nombre: "Sin padre", visible: 1 }],
+    entidad, mapas, "sqlite"
+  );
+  assert.equal(sinPadre.filas.length, 0);
+  assert.deepEqual(sinPadre.pendientes, [{ id_menu: 3 }]);
+});
+
+test("las relaciones se emparejan usando identidades de ambos extremos", () => {
+  const mapas = {};
+  const idFichaA = "11111111-1111-5111-8111-111111111111";
+  const idFichaB = "22222222-2222-5222-8222-222222222222";
+  registrarMapaIdentidades("ficha", ["id_ficha"],
+    [{ id_ficha: 1 }, { id_ficha: 2 }],
+    [{ id_ficha: 10 }, { id_ficha: 20 }],
+    [
+      { claves_sqlite: [{ id_ficha: 1 }], claves_postgres: [{ id_ficha: 10 }], sync_id_propuesto: idFichaA },
+      { claves_sqlite: [{ id_ficha: 2 }], claves_postgres: [{ id_ficha: 20 }], sync_id_propuesto: idFichaB }
+    ], mapas
+  );
+  const entidad = ENTIDADES.find(e => e.tabla === "relacion_ficha");
+  const local = prepararFilasConDependencias(
+    [{ id_relacion: 4, id_ficha_origen: 1, id_ficha_destino: 2, tipo_relacion: "relacionada" }],
+    entidad, mapas, "sqlite"
+  );
+  const remoto = prepararFilasConDependencias(
+    [{ id_relacion: 14, id_ficha_origen: 10, id_ficha_destino: 20, tipo_relacion: "relacionada" }],
+    entidad, mapas, "postgres"
+  );
+  assert.equal(local.filas[0].huella_contenido, remoto.filas[0].huella_contenido);
+  assert.equal(local.pendientes.length, 0);
 });
 
 test("bloquea destinos PostgreSQL remotos y solo admite la copia local aislada", () => {
