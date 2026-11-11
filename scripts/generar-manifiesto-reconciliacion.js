@@ -34,7 +34,7 @@ function validarDestinoSeguro(connectionString) {
     throw new Error("URL de PostgreSQL inválida.");
   }
   const hostPermitido = ["127.0.0.1", "localhost"].includes(destino.hostname);
-  const puertoPermitido = ["5432", "5433"].includes(destino.port);
+  const puertoPermitido = destino.port === "5432";
   const basePermitida =
     destino.pathname.replace(/^\/+/, "") === "museo_reconciliacion_prueba";
   if (
@@ -45,7 +45,7 @@ function validarDestinoSeguro(connectionString) {
   ) {
     throw new Error(
       "Conexión bloqueada: solo se permite la copia local " +
-      "museo_reconciliacion_prueba en localhost:5432 o localhost:5433."
+      "museo_reconciliacion_prueba en localhost:5432."
     );
   }
 }
