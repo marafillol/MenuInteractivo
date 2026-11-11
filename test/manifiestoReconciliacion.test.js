@@ -1,5 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const crypto = require("node:crypto");
 const {
   canonicalizar,
   normalizarRegistro,
@@ -10,9 +14,79 @@ const {
   validarDestinoSeguro,
   registrarMapaIdentidades,
   prepararFilasConDependencias,
+  enriquecerFilasMultimediaConArchivos,
   evaluarPortada,
   ENTIDADES
 } = require("../scripts/generar-manifiesto-reconciliacion");
+
+
+test("calcula checksum y tamaño multimedia desde archivos locales sin mutar filas originales", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  const relativa = path.join("imagenes", "multimedia", "imagen", "archivo.png");
+  const destino = path.join(raiz, relativa);
+  const bytes = Buffer.from("imagen de prueba");
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, bytes);
+  const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+  const fila = {
+    id_multi: 1,
+    id_ficha: 2,
+    ruta_archivo: relativa.split(path.sep).join("/"),
+    checksum_sha256: null,
+    tamano_bytes: null,
+    mime_type: null
+  };
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([fila], raiz);
+    assert.equal(resultado.filas.length, 1);
+    assert.equal(resultado.filas[0].checksum_sha256, hash);
+    assert.equal(resultado.filas[0].tamano_bytes, bytes.length);
+    assert.equal(resultado.filas[0].mime_type, "image/png");
+    assert.equal(resultado.filas[0].__integridad_archivo, "checksum_calculado_solo_lectura");
+    assert.equal(resultado.resumen.checksum_calculado_en_memoria, 1);
+    assert.equal(fila.checksum_sha256, null, "no debe mutar la fila original");
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
+
+test("bloquea multimedia cuyo checksum guardado no coincide con el archivo local", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  const relativa = "imagenes/multimedia/imagen/archivo.png";
+  const destino = path.join(raiz, ...relativa.split("/"));
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, Buffer.from("contenido real"));
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([{
+      id_multi: 7,
+      ruta_archivo: relativa,
+      checksum_sha256: "a".repeat(64),
+      tamano_bytes: 14
+    }], raiz);
+    assert.equal(resultado.filas[0].__integridad_archivo, "checksum_no_coincide");
+    assert.equal(resultado.resumen.checksum_no_coincide, 1);
+    assert.equal(resultado.filas[0].checksum_sha256, "a".repeat(64));
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
+
+test("marca multimedia sin archivo local como pendiente y no inventa checksum", async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "museo-manifiesto-media-"));
+  try {
+    const resultado = await enriquecerFilasMultimediaConArchivos([{
+      id_multi: 9,
+      ruta_archivo: "imagenes/multimedia/imagen/no-existe.png",
+      checksum_sha256: null,
+      tamano_bytes: null
+    }], raiz);
+    assert.equal(resultado.filas[0].__integridad_archivo, "archivo_no_encontrado");
+    assert.equal(resultado.filas[0].checksum_sha256, null);
+    assert.equal(resultado.resumen.archivo_no_encontrado, 1);
+  } finally {
+    fs.rmSync(raiz, { recursive: true, force: true });
+  }
+});
 
 test("canonicaliza objetos independientemente del orden de sus claves", () => {
   assert.deepEqual(canonicalizar({ z: 1, a: { y: 2, b: 3 } }), {
