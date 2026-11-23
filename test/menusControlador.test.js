@@ -56,6 +56,15 @@ const MenuMock = {
     async eliminar(id) {
         state.idEliminado = id;
         if (state.error) throw state.error;
+    },
+
+    async eliminarSiVacio(id) {
+        state.idEliminado = id;
+        if (state.error) throw state.error;
+        if (state.menuNoExiste) return { encontrado: false, cantidad: 0 };
+        return state.cantidadFichas > 0
+            ? { encontrado: true, menu: { ...state.menu, id_menu: Number(id) }, cantidad: state.cantidadFichas }
+            : { encontrado: true, menu: { ...state.menu, id_menu: Number(id) }, cantidad: 0, eliminado: true };
     }
 };
 
@@ -375,7 +384,7 @@ test("eliminar menú rechaza la operación si tiene fichas", async () => {
     await controller.eliminarMenu({ params: { id: "3" } }, res);
 
     assert.equal(res.statusCode, 400);
-    assert.equal(state.idEliminado, null);
+    assert.equal(state.idEliminado, "3");
 });
 
 test("eliminar menú sin fichas elimina y responde correctamente", async () => {
@@ -401,8 +410,8 @@ test("eliminar menú responde 500 si falla el borrado", async () => {
     const res = crearRespuesta();
 
     // El conteo funciona; simulamos que el borrado falla.
-    const originalEliminar = MenuMock.eliminar;
-    MenuMock.eliminar = async () => {
+    const originalEliminar = MenuMock.eliminarSiVacio;
+    MenuMock.eliminarSiVacio = async () => {
         throw new Error("fallo al borrar");
     };
 
@@ -410,6 +419,6 @@ test("eliminar menú responde 500 si falla el borrado", async () => {
         await controller.eliminarMenu({ params: { id: "3" } }, res);
         assert.equal(res.statusCode, 500);
     } finally {
-        MenuMock.eliminar = originalEliminar;
+        MenuMock.eliminarSiVacio = originalEliminar;
     }
 });

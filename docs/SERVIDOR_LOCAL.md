@@ -66,3 +66,18 @@ Probá periódicamente restaurar una copia en otra carpeta antes de depender de 
 ## Render y Supabase
 
 Para la versión online, configurá `MODO_SERVIDOR=supabase` junto con las variables de Supabase actuales. El modo local ignora esas variables y no realiza conexiones externas.
+
+## Cambios realizados sin Internet
+
+En modo local, las altas, ediciones y eliminaciones se guardan primero en `database/museo.db`. Por eso el panel administrativo sigue siendo utilizable aunque se corte la conexión y los cambios no se pierden al reiniciar el servidor.
+
+El proyecto incorpora una cola de sincronización para enviar esos cambios al servidor online cuando Internet vuelve. Antes de activarla con los datos reales hay una preparación única y controlada: las bases local y remota existentes deben reconciliar sus registros históricos para asignarles la misma identidad de sincronización. Ese paso se realiza sobre copias de respaldo, nunca directamente sobre la única base del museo.
+
+Cuando esa preparación haya sido verificada, se agregan estas variables privadas al `.env` de la PC local:
+
+```env
+SYNC_REMOTE_URL=https://tu-servicio.onrender.com
+SYNC_SHARED_SECRET=un-secreto-largo-igual-en-ambos-servidores
+```
+
+El mismo `SYNC_SHARED_SECRET` se configura como variable de entorno privada en Render. La aplicación intentará sincronizar cada 30 segundos sin bloquear el uso local. Los usuarios y contraseñas locales no se copian: cada instalación conserva sus propias cuentas administrativas.

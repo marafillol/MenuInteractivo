@@ -22,7 +22,7 @@ const app = express();
 
 app.use(cors());
 
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 
 // =======================================================
@@ -181,6 +181,10 @@ require("./rutas/public/etiquetas");
 // =======================================================
 
 
+if (!esModoLocal) {
+    app.use("/api/sync/v1", require("./rutas/sincronizacion"));
+}
+
 const authRoutes = require("./rutas/auth");
 
 app.use("/api/auth", authRoutes);
@@ -332,6 +336,11 @@ async function iniciarServidor() {
         }
 
         // La caché pública se utiliza en ambos modos; sus modelos consultan el adaptador activo.
+        if (esModoLocal) {
+            const clienteSync = require("./servicios/sincronizacion/cliente");
+            clienteSync.iniciarSincronizacionAutomatica();
+        }
+
         const cachePublica = require("./servicios/cachePublica");
         await cachePublica.actualizarCachePublica();
         cachePublica.iniciarActualizacionPeriodica();

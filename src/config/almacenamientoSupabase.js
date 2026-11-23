@@ -1,6 +1,7 @@
 const { createClient } = require("@supabase/supabase-js");
 const fs = require("fs");
 const path = require("path");
+const { createHash } = require("node:crypto");
 const { esModoSupabase } = require("./modoServidor");
 
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
@@ -52,6 +53,49 @@ const subirArchivo = async (archivo, carpeta) => {
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(ruta);
     return data.publicUrl;
+};
+
+const validarStorageKey = (storageKey) => {
+    if (typeof storageKey !== "string" || !storageKey.startsWith("multimedia/")) {
+        throw new Error("La clave de almacenamiento no es válida.");
+    }
+    const segmentos = storageKey.split("/");
+    if (segmentos.length < 3 || segmentos.some((segmento) =>
+        !/^[a-zA-Z0-9._-]+$/.test(segmento) || segmento === "." || segmento === ".."
+    )) {
+        throw new Error("La clave de almacenamiento no es válida.");
+    }
+    return storageKey;
+};
+
+const obtenerUrlPublica = (storageKey) => {
+    validarStorageKey(storageKey);
+    if (!supabase) throw new Error("El almacenamiento remoto no está configurado.");
+    return supabase.storage.from(bucket).getPublicUrl(storageKey).data.publicUrl;
+};
+
+const subirArchivoSincronizado = async (storageKey, contenido, mimeType, checksumEsperado) => {
+    validarStorageKey(storageKey);
+    if (!supabase) throw new Error("El almacenamiento remoto no está configurado.");
+    const buffer = Buffer.isBuffer(contenido) ? contenido : Buffer.from(contenido);
+    const checksum = createHash("sha256").update(buffer).digest("hex");
+    if (checksum !== checksumEsperado) {
+        throw new Error("El checksum del archivo no coincide con el manifiesto de sincronización.");
+    }
+    const { error } = await supabase.storage.from(bucket).upload(storageKey, buffer, {
+        contentType: mimeType || "application/octet-stream",
+        upsert: true
+    });
+    if (error) throw new Error("No se pudo guardar el archivo sincronizado en Storage.");
+    return obtenerUrlPublica(storageKey);
+};
+
+const descargarArchivoSincronizado = async (storageKey) => {
+    validarStorageKey(storageKey);
+    if (!supabase) throw new Error("El almacenamiento remoto no está configurado.");
+    const { data, error } = await supabase.storage.from(bucket).download(storageKey);
+    if (error || !data) throw new Error("No se pudo descargar el archivo sincronizado de Storage.");
+    return Buffer.from(await data.arrayBuffer());
 };
 
 // Elimina únicamente objetos cuya URL pertenece al proyecto y al bucket
@@ -125,5 +169,8 @@ const eliminarArchivo = async (rutaPublica) => {
 module.exports = {
     estaConfigurado,
     subirArchivo,
+    subirArchivoSincronizado,
+    descargarArchivoSincronizado,
+    obtenerUrlPublica,
     eliminarArchivo
 };
