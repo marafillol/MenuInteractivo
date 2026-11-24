@@ -17,6 +17,23 @@
         if (toquesSalida >= 5) salirPantallaCompleta();
     });
 
+    let temporizadorSalidaLogo = null;
+    const cancelarSalidaLogo = () => {
+        if (temporizadorSalidaLogo) clearTimeout(temporizadorSalidaLogo);
+        temporizadorSalidaLogo = null;
+    };
+
+    // Mantener cinco segundos el logo de Malvinas es la salida principal del
+    // tótem. Usamos delegación porque el explorador se renderiza dinámicamente.
+    document.addEventListener("pointerdown", (evento) => {
+        if (!evento.target.closest(".logo-barra")) return;
+        cancelarSalidaLogo();
+        temporizadorSalidaLogo = setTimeout(salirPantallaCompleta, 5000);
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((evento) =>
+        document.addEventListener(evento, cancelarSalidaLogo)
+    );
+
     document.addEventListener("keydown", (evento) => {
         if (evento.ctrlKey && evento.shiftKey && evento.key.toLowerCase() === "q") {
             evento.preventDefault();
