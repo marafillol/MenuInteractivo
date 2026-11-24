@@ -24,6 +24,16 @@
         }
     });
 
+    // El acceso directo del tótem usa ?totem=1. Los navegadores solo permiten
+    // entrar a pantalla completa luego de una interacción real del visitante.
+    if (new URLSearchParams(window.location.search).has("totem")) {
+        document.addEventListener("pointerdown", () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.().catch(() => {});
+            }
+        }, { once: true });
+    }
+
     // 1. Asegurar que exista un .totem-wrapper que envuelva todo el contenido del body
     let wrapper = document.querySelector('.totem-wrapper');
     if (!wrapper) {
