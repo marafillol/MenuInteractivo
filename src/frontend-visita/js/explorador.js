@@ -963,7 +963,7 @@ function renderizarResultados(resultados, opciones = {}) {
         contenedor.innerHTML = `
             <div class="estado-explorador">
                 <span>
-                    No se encontraron expedientes.
+                    No se encontraron fichas.
                 </span>
             </div>
         `;
@@ -1170,7 +1170,7 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
         "pieFicha";
 
     pie.textContent =
-        "CONSULTAR EXPEDIENTE";
+        "VER FICHA";
 
     tarjeta.appendChild(pie);
     // Texto curvo inferior: solamente para fichas circulares
@@ -1180,7 +1180,7 @@ function crearTarjetaDesdeFicha(ficha, indice = Infinity) {
         )
     ) {
         const textoInferior = crearTextoCurvo(
-            "CONSULTAR EXPEDIENTE",
+            "VER FICHA",
             `consulta-${ficha.id_ficha}`,
             "inferior"
         );
@@ -1284,7 +1284,7 @@ function obtenerNombreFicha(ficha) {
         return String(ficha.titulo).trim();
     }
 
-    return `Expediente Nº ${ficha.id_ficha}`;
+    return `Ficha Nº ${ficha.id_ficha}`;
 
 }
 
