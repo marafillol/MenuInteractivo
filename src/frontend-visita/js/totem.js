@@ -1,4 +1,29 @@
 (async function() {
+    const salidaTotem = document.getElementById("salidaTotem");
+    let toquesSalida = 0;
+    let ultimoToqueSalida = 0;
+
+    const salirPantallaCompleta = async () => {
+        toquesSalida = 0;
+        if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen().catch(() => {});
+        }
+    };
+
+    salidaTotem?.addEventListener("pointerdown", () => {
+        const ahora = Date.now();
+        toquesSalida = ahora - ultimoToqueSalida < 1500 ? toquesSalida + 1 : 1;
+        ultimoToqueSalida = ahora;
+        if (toquesSalida >= 5) salirPantallaCompleta();
+    });
+
+    document.addEventListener("keydown", (evento) => {
+        if (evento.ctrlKey && evento.shiftKey && evento.key.toLowerCase() === "q") {
+            evento.preventDefault();
+            salirPantallaCompleta();
+        }
+    });
+
     // 1. Asegurar que exista un .totem-wrapper que envuelva todo el contenido del body
     let wrapper = document.querySelector('.totem-wrapper');
     if (!wrapper) {
