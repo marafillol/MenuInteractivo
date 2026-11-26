@@ -1,5 +1,9 @@
+import {
+    obtenerClienteSupabase,
+    obtenerConfiguracionAutenticacion
+} from "./supabaseClient.js";
 
-import { obtenerClienteSupabase } from "./supabaseClient.js";
+const CLAVE_TOKEN_LOCAL = "menu_interactivo_token_local";
 
 const esPanel = window.location.pathname.endsWith("panel.html");
 
@@ -7,16 +11,23 @@ window.supabaseAuthReady = (async () => {
     if (!esPanel) return null;
 
     try {
-        const cliente = await obtenerClienteSupabase();
+        const configuracion = await obtenerConfiguracionAutenticacion();
+        let cliente = null;
+        let token = null;
 
-        // Esperar a que Supabase restaure la sesión guardada.
-        const { data, error } = await cliente.auth.getSession();
+        if (configuracion.modo === "local") {
+            token = localStorage.getItem(CLAVE_TOKEN_LOCAL);
+        } else {
+            cliente = await obtenerClienteSupabase();
 
-        if (error) {
-            throw error;
+            const { data, error } = await cliente.auth.getSession();
+
+            if (error) throw error;
+
+            token = data?.session?.access_token;
         }
 
-        if (!data?.session?.access_token) {
+        if (!token) {
             window.authRedirigiendoLogin = true;
             window.location.replace("index.html");
             return null;
@@ -24,7 +35,7 @@ window.supabaseAuthReady = (async () => {
 
         const respuesta = await fetch("/api/usuarios/me", {
             headers: {
-                Authorization: `Bearer ${data.session.access_token}`
+                Authorization: `Bearer ${token}`
             }
         });
 
@@ -33,11 +44,16 @@ window.supabaseAuthReady = (async () => {
         if (!respuesta.ok) {
             window.errorInicializacionAuth = {
                 status: respuesta.status,
-                mensaje: perfil?.error || "No se pudo verificar la sesion."
+                mensaje: perfil?.error || "No se pudo verificar la sesión."
             };
 
             if (respuesta.status === 401) {
-                await cliente.auth.signOut();
+                if (configuracion.modo === "local") {
+                    localStorage.removeItem(CLAVE_TOKEN_LOCAL);
+                } else {
+                    await cliente.auth.signOut();
+                }
+
                 window.authRedirigiendoLogin = true;
                 window.location.replace("index.html");
                 return null;
@@ -60,7 +76,7 @@ window.supabaseAuthReady = (async () => {
 
         window.errorInicializacionAuth = {
             status: null,
-            mensaje: "No se pudo conectar con el servidor para verificar la sesion."
+            mensaje: "No se pudo conectar con el servidor para verificar la sesión."
         };
 
         return {
@@ -76,10 +92,23 @@ window.obtenerTokenSupabase = async function () {
         const perfil = await window.supabaseAuthReady;
 
         if (!perfil || perfil.__errorInicializacionAuth) {
-            const mensaje = window.errorInicializacionAuth?.mensaje || "No se pudo verificar la sesion. Intenta nuevamente.";
+            const mensaje = window.errorInicializacionAuth?.mensaje
+                || "No se pudo verificar la sesión. Intenta nuevamente.";
 
             throw new Error(mensaje);
         }
+    }
+
+    const configuracion = await obtenerConfiguracionAutenticacion();
+
+    if (configuracion.modo === "local") {
+        const token = localStorage.getItem(CLAVE_TOKEN_LOCAL);
+
+        if (!token) {
+            throw new Error("No hay una sesión local activa.");
+        }
+
+        return token;
     }
 
     const cliente = await obtenerClienteSupabase();
@@ -99,6 +128,14 @@ window.obtenerTokenSupabase = async function () {
 };
 
 window.cerrarSesionSupabase = async function () {
+    const configuracion = await obtenerConfiguracionAutenticacion();
+
+    if (configuracion.modo === "local") {
+        localStorage.removeItem(CLAVE_TOKEN_LOCAL);
+        await fetch("/api/auth/logout", { method: "POST" });
+        return;
+    }
+
     const cliente = await obtenerClienteSupabase();
     const { error } = await cliente.auth.signOut();
 

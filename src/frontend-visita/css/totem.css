@@ -10,6 +10,20 @@
     box-sizing: border-box;
 }
 
+/* Punto de salida reservado al personal: no es visible para visitantes. */
+.salida-totem-secreta {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 52px;
+    height: 52px;
+    z-index: 2147483647;
+    opacity: 0;
+    border: 0;
+    padding: 0;
+    cursor: default;
+}
+
 /* =====================================================
    ESTADOS VERTICALES (Derecha e Izquierda)
    ===================================================== */

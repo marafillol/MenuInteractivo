@@ -733,7 +733,7 @@ function pintarTitulo(ficha) {
 
     elemento.textContent =
         ficha.titulo ||
-        "EXPEDIENTE SIN TÍTULO";
+        "FICHA SIN TÍTULO";
 
 
     const numero =
@@ -2591,7 +2591,7 @@ function mostrarHistoriaCarga() {
     estado.innerHTML = `
         <span class="historia-estado-icono">◌</span>
         <span class="historia-estado-texto">
-            CONSULTANDO EXPEDIENTE...
+            CARGANDO FICHA...
         </span>
     `;
 
@@ -2625,7 +2625,7 @@ function mostrarHistoriaError() {
     estado.innerHTML = `
         <span class="historia-estado-icono">✕</span>
         <span class="historia-estado-texto">
-            NO FUE POSIBLE CONSULTAR EL EXPEDIENTE.
+            NO FUE POSIBLE CARGAR LA FICHA.
         </span>
     `;
 

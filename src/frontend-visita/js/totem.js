@@ -1,4 +1,56 @@
 (async function() {
+    const salidaTotem = document.getElementById("salidaTotem");
+    let toquesSalida = 0;
+    let ultimoToqueSalida = 0;
+
+    const salirPantallaCompleta = async () => {
+        toquesSalida = 0;
+        if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen().catch(() => {});
+        }
+    };
+
+    salidaTotem?.addEventListener("pointerdown", () => {
+        const ahora = Date.now();
+        toquesSalida = ahora - ultimoToqueSalida < 1500 ? toquesSalida + 1 : 1;
+        ultimoToqueSalida = ahora;
+        if (toquesSalida >= 5) salirPantallaCompleta();
+    });
+
+    let temporizadorSalidaLogo = null;
+    const cancelarSalidaLogo = () => {
+        if (temporizadorSalidaLogo) clearTimeout(temporizadorSalidaLogo);
+        temporizadorSalidaLogo = null;
+    };
+
+    // Mantener cinco segundos el logo de Malvinas es la salida principal del
+    // tótem. Usamos delegación porque el explorador se renderiza dinámicamente.
+    document.addEventListener("pointerdown", (evento) => {
+        if (!evento.target.closest(".logo-barra")) return;
+        cancelarSalidaLogo();
+        temporizadorSalidaLogo = setTimeout(salirPantallaCompleta, 5000);
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((evento) =>
+        document.addEventListener(evento, cancelarSalidaLogo)
+    );
+
+    document.addEventListener("keydown", (evento) => {
+        if (evento.ctrlKey && evento.shiftKey && evento.key.toLowerCase() === "q") {
+            evento.preventDefault();
+            salirPantallaCompleta();
+        }
+    });
+
+    // El acceso directo del tótem usa ?totem=1. Los navegadores solo permiten
+    // entrar a pantalla completa luego de una interacción real del visitante.
+    if (new URLSearchParams(window.location.search).has("totem")) {
+        document.addEventListener("pointerdown", () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.().catch(() => {});
+            }
+        }, { once: true });
+    }
+
     // 1. Asegurar que exista un .totem-wrapper que envuelva todo el contenido del body
     let wrapper = document.querySelector('.totem-wrapper');
     if (!wrapper) {

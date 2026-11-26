@@ -162,6 +162,43 @@ const crearUsuario = (datos)=>{
 
 };
 
+const crearUsuarioLocal = (datos) => {
+
+    return new Promise((resolve, reject) => {
+
+        db.run(
+            `
+            INSERT INTO usuario
+            (
+                nombre,
+                email,
+                rol,
+                activo,
+                password_hash
+            )
+            VALUES
+            (?,?,?,?,?)
+            `,
+            [
+                datos.nombre,
+                datos.email,
+                datos.rol,
+                datos.activo,
+                datos.password_hash
+            ],
+            function(error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve({ id_usuario: this.lastID });
+                }
+            }
+        );
+
+    });
+
+};
+
 
 // ======================================
 // OBTENER USUARIO POR SUPABASE UID
@@ -276,6 +313,30 @@ const eliminarUsuario = (id_usuario)=>{
 
         );
 
+
+    });
+
+};
+
+const actualizarPasswordHash = (id_usuario, password_hash) => {
+
+    return new Promise((resolve, reject) => {
+
+        db.run(
+            `
+            UPDATE usuario
+            SET password_hash = ?, actualizado = datetime('now','-3 hours')
+            WHERE id_usuario = ?
+            `,
+            [password_hash, id_usuario],
+            function(error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            }
+        );
 
     });
 
@@ -400,10 +461,12 @@ module.exports = {
     obtenerPorEmail,
     obtenerUsuarios,
     crearUsuario,
+    crearUsuarioLocal,
     obtenerPorId,
     vincularSupabaseUID,
     actualizarUsuario,
     eliminarUsuario,
+    actualizarPasswordHash,
     existeSupabaseUID,
     obtenerPorSupabaseUID,
     contarAdministradoresActivos

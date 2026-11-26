@@ -792,13 +792,13 @@ function crearTarjetaFicha(
 
 
     pie.className = "pieFicha";
-    pie.textContent = "CONSULTAR EXPEDIENTE";
+    pie.textContent = "VER FICHA";
 
     tarjeta.appendChild(pie);
 
     // Texto curvo inferior
     const textoInferior = crearTextoCurvo(
-        "CONSULTAR EXPEDIENTE",
+        "VER FICHA",
         `consulta-${ficha.id_ficha}`,
         "inferior"
     );

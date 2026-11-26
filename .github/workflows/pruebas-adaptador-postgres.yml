@@ -14,6 +14,11 @@ permissions:
 jobs:
   pruebas:
     runs-on: ubuntu-latest
+    env:
+      # Entorno ficticio: las pruebas stubbean los servicios y no conectan a bases reales.
+      MODO_SERVIDOR: supabase
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/museo_ci
+      LOCAL_AUTH_SECRET: ci-local-auth-secret-no-utilizar-fuera-de-pruebas-2026
     steps:
       - name: Obtener código
         uses: actions/checkout@v4

@@ -157,31 +157,25 @@ const actualizarMenu = async(req,res)=>{
         return res.status(500).json({ error:error.message });
     }
 };
-
 const eliminarMenu = async (req, res) => {
     try {
-
-        console.log("[ELIMINAR MENÃš] Controlador actualizado ejecutado");
         const id_menu = req.params.id;
+        const resultado = await Menu.eliminarSiVacio(id_menu);
 
-        const menu = await Menu.obtenerPorId(id_menu);
-
-        if (!menu) {
+        if (!resultado.encontrado) {
             return res.status(404).json({
-                error: "No se encontrÃ³ el menÃº que intenta eliminar."
+                error: "No se encontró el menú que intenta eliminar."
             });
         }
 
-        const cantidad = await Menu.contarFichas(id_menu);
-
-        if (cantidad > 0) {
+        if (resultado.cantidad > 0) {
             const fichas = await Ficha.obtenerFichasPorMenu(id_menu);
 
             return res.status(400).json({
-                error: `No se puede eliminar el menÃº "${menu.nombre}" porque tiene ${cantidad} ficha(s) asociada(s).`,
+                error: `No se puede eliminar el menú "${resultado.menu.nombre}" porque tiene ${resultado.cantidad} ficha(s) asociada(s).`,
                 menu: {
-                    id_menu: menu.id_menu,
-                    nombre: menu.nombre
+                    id_menu: resultado.menu.id_menu,
+                    nombre: resultado.menu.nombre
                 },
                 fichas: fichas.map(ficha => ({
                     id_ficha: ficha.id_ficha,
@@ -190,18 +184,17 @@ const eliminarMenu = async (req, res) => {
             });
         }
 
-        await Menu.eliminar(id_menu);
         cachePublico.invalidar(["menus", "fichas"]);
 
         return res.json({
-            mensaje: "MenÃº eliminado correctamente."
+            mensaje: "Menú eliminado correctamente."
         });
 
     } catch (error) {
-        console.error("Error eliminando menÃº:", error);
+        console.error("Error eliminando menú:", error);
 
         return res.status(500).json({
-            error: "OcurriÃ³ un error al intentar eliminar el menÃº."
+            error: "Ocurrió un error al intentar eliminar el menú."
         });
     }
 };

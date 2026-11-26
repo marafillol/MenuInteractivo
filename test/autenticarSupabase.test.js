@@ -4,12 +4,14 @@ const assert = require("node:assert/strict");
 const middlewarePath = require.resolve("../src/middleware/autenticarSupabase");
 const usuarioPath = require.resolve("../src/modelos/usuario");
 const authConfigPath = require.resolve("../src/config/supabaseAuth");
+const modoServidorPath = require.resolve("../src/config/modoServidor");
 
 async function ejecutarMiddleware({ configurado = true, verificacionConfigurada = true, authorization, authResult, usuario } = {}) {
     const anteriores = new Map([
         [middlewarePath, require.cache[middlewarePath]],
         [usuarioPath, require.cache[usuarioPath]],
-        [authConfigPath, require.cache[authConfigPath]]
+        [authConfigPath, require.cache[authConfigPath]],
+        [modoServidorPath, require.cache[modoServidorPath]]
     ]);
     let tokenVerificado = null;
     let nextLlamado = false;
@@ -32,6 +34,10 @@ async function ejecutarMiddleware({ configurado = true, verificacionConfigurada 
                     : usuario;
             }
         }
+    };
+    require.cache[modoServidorPath] = {
+        id: modoServidorPath, filename: modoServidorPath, loaded: true,
+        exports: { modoServidor: "supabase", esModoLocal: false, esModoSupabase: true }
     };
     require.cache[authConfigPath] = {
         id: authConfigPath, filename: authConfigPath, loaded: true,

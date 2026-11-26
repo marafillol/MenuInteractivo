@@ -11,6 +11,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const db = require("./database");
+const { esModoLocal, modoServidor } = require("./config/modoServidor");
 
 const app = express();
 
@@ -20,7 +22,7 @@ const app = express();
 
 app.use(cors());
 
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 
 // =======================================================
@@ -58,6 +60,10 @@ app.use(
     )
 );
 
+
+// Recursos incluidos con el proyecto para funcionar sin CDN.
+app.use("/proveedores/lucide", express.static(path.join(__dirname, "../node_modules/lucide/dist/umd")));
+app.use("/proveedores/cropperjs", express.static(path.join(__dirname, "../node_modules/cropperjs/dist")));
 
 // RECURSOS PÚBLICOS
 app.use(
@@ -175,6 +181,14 @@ require("./rutas/public/etiquetas");
 // =======================================================
 
 
+if (!esModoLocal) {
+    app.use("/api/sync/v1", require("./rutas/sincronizacion"));
+}
+
+const authRoutes = require("./rutas/auth");
+
+app.use("/api/auth", authRoutes);
+
 app.use(
     "/api/dashboard",
     dashboardRoutes
@@ -265,6 +279,7 @@ app.use(
 // Configuración pública mínima para inicializar Supabase Auth en el navegador.
 // La clave de servicio nunca se envía al cliente.
 app.get("/api/public/auth-config", (req, res) => {
+    if (esModoLocal) return res.json({ modo: "local" });
     const { obtenerConfiguracionPublica } = require("./config/supabaseAuth");
     const configuracion = obtenerConfiguracionPublica();
     if (!configuracion) {
@@ -273,6 +288,13 @@ app.get("/api/public/auth-config", (req, res) => {
         });
     }
     return res.json(configuracion);
+});
+
+app.get("/health", (req, res) => {
+    db.get("SELECT 1 AS disponible", [], (error) => {
+        if (error) return res.status(503).json({ servidor: false, baseDeDatos: false, modo: modoServidor });
+        return res.json({ servidor: true, baseDeDatos: true, modo: modoServidor });
+    });
 });
 
 // =======================================================
@@ -313,12 +335,20 @@ async function iniciarServidor() {
             );
         }
 
+        // La caché pública se utiliza en ambos modos.
+        // Preparar los datos antes de aceptar peticiones.
         const cachePublica = require("./servicios/cachePublica");
 
-        // Preparar los datos antes de aceptar peticiones.
         await cachePublica.actualizarCachePublica();
 
+        // Iniciar la sincronización automática únicamente en modo local.
+        if (esModoLocal) {
+            const clienteSync = require("./servicios/sincronizacion/cliente");
+            clienteSync.iniciarSincronizacionAutomatica();
+        }
+
         // Renovar los datos en segundo plano.
+        cachePublica.iniciarActualizacionPeriodica();
         cachePublica.iniciarActualizacionPeriodica();
     } catch (error) {
         console.error(

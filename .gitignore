@@ -9,3 +9,11 @@ public/uploads/
 # Credenciales privadas de Firebase: mantenerlas excluidas aunque el proyecto migre de proveedor
 src/firebase/serviceAccountKey.json
 museo-malvinas-firebase-adminsdk-*.json
+
+# Archivos de trabajo y multimedia generados durante la sincronización
+/database/.sync-pending/
+/database/museo.db-wal
+/database/museo.db-shm
+/imagenes/multimedia/
+/imagenes/importadas-supabase/
+/backups-local/

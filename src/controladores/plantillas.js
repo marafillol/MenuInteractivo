@@ -189,54 +189,35 @@ const actualizarPlantilla = async(req,res)=>{
 // ELIMINAR PLANTILLA
 // ======================================
 
-const eliminarPlantilla = async(req,res)=>{
+const eliminarPlantilla = async (req, res) => {
+    try {
+        const resultado = await Plantilla.eliminarSiNoUtilizada(req.params.id);
 
-    try{
-
-        const id = req.params.id;
-
-
-        const menus =
-        await Plantilla.contarMenus(id);
-
-
-        if(menus > 0){
-
-            return res.status(400).json({
-
-                error:
-                "No se puede eliminar la plantilla porque estÃ¡ siendo utilizada por un menÃº."
-
+        if (!resultado.encontrada) {
+            return res.status(404).json({
+                error: "Plantilla no encontrada."
             });
-
         }
 
+        if (resultado.cantidad > 0) {
+            return res.status(400).json({
+                error: "No se puede eliminar la plantilla porque está siendo utilizada por un menú."
+            });
+        }
 
-        await Plantilla.eliminar(id);
         cachePublico.invalidar(["fichas", "menus"]);
 
-
-        res.json({
-
-            mensaje:
-            "Plantilla eliminada correctamente"
-
+        return res.json({
+            mensaje: "Plantilla eliminada correctamente"
         });
 
-
-    }
-    catch(error){
-
+    } catch (error) {
         console.error("ERROR ELIMINAR PLANTILLA:", error);
 
-        res.status(500).json({
-
-            error:error.message
-
+        return res.status(500).json({
+            error: error.message
         });
-
     }
-
 };
 
 
