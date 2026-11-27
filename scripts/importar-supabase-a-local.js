@@ -7,9 +7,14 @@ const sqlite3 = require("sqlite3").verbose();
 const { createClient } = require("@supabase/supabase-js");
 
 const raiz = path.resolve(__dirname, "..");
-const rutaSQLite = path.join(raiz, "database", "museo.db");
+const rutaSQLite = process.env.DATABASE_SQLITE_PATH
+    ? path.resolve(process.env.DATABASE_SQLITE_PATH)
+    : path.join(raiz, "database", "museo.db");
 const carpetaRespaldo = path.join(raiz, "backups-local");
 const bucket = process.env.SUPABASE_BUCKET || "multimedia";
+const carpetaMultimedia = process.env.IMPORTAR_SUPABASE_MEDIA_DIR
+    ? path.resolve(process.env.IMPORTAR_SUPABASE_MEDIA_DIR)
+    : path.join(raiz, "imagenes", "importadas-supabase");
 const tablas = [
     "usuario", "plantilla", "menu", "ficha", "etiqueta",
     "ficha_etiqueta", "relacion_ficha", "multimedia", "configuracion"
@@ -65,10 +70,18 @@ function obtenerRutaStorage(valor) {
 }
 
 function destinoLocal(rutaStorage) {
-    const relativa = rutaStorage.split("/").filter(Boolean).map((parte) => partSeguro(parte)).join(path.sep);
-    const base = path.join(raiz, "imagenes", "importadas-supabase");
+    const relativa = rutaStorage.split("/")
+        .filter(Boolean)
+        .map((parte) => partSeguro(parte))
+        .join(path.sep);
+
+    const base = carpetaMultimedia;
     const destino = path.resolve(base, relativa);
-    if (!destino.startsWith(base + path.sep)) throw new Error("Ruta multimedia remota inválida.");
+
+    if (destino !== base && !destino.startsWith(base + path.sep)) {
+        throw new Error("Ruta multimedia remota inválida.");
+    }
+
     return destino;
 }
 

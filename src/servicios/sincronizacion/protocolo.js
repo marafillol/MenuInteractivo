@@ -4,11 +4,6 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 
 const ENTIDADES = {
 
-    usuario: {
-        tabla: "usuario",
-        campos: ["supabase_uid", "nombre", "email", "rol", "activo", "creado", "actualizado"],
-        requeridos: ["supabase_uid", "nombre", "email", "rol"]
-    },
     plantilla: {
         tabla: "plantilla",
         campos: ["nombre", "descripcion", "plantilla_json", "activo"],
@@ -130,7 +125,8 @@ async function aplicarEvento(consultar, evento, { registrarRecepcion = true } = 
         !Number.isSafeInteger(Number(evento.version_resultado)) ||
         Number(evento.version_resultado) < 1 ||
         !Number.isSafeInteger(Number(evento.version_base ?? 0)) ||
-        Number(evento.version_base ?? 0) < 0) {
+        Number(evento.version_base ?? 0) < 0 ||
+        Number(evento.version_resultado) !== Number(evento.version_base ?? 0) + 1) {
         throw new Error("Sobre de sincronización inválido.");
     }
 

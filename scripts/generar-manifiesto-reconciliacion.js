@@ -52,6 +52,7 @@ function canonicalizar(valor) {
 // Homogeneizamos esos tipos antes de calcular la huella.
 function normalizarRegistro(tabla, registro) {
   const salida = { ...registro };
+
   const camposJson = {
     plantilla: ["plantilla_json"],
     ficha: ["datos_json"]
@@ -59,12 +60,16 @@ function normalizarRegistro(tabla, registro) {
 
   for (const campo of camposJson) {
     if (typeof salida[campo] === "string") {
-      try { salida[campo] = JSON.parse(salida[campo]); }
-      catch { /* JSON inválido se conserva literalmente para que difiera */ }
+      try {
+        salida[campo] = JSON.parse(salida[campo]);
+      } catch {
+        // JSON inválido se conserva literalmente.
+      }
     }
   }
 
   const camposBooleanos = {
+    plantilla: ["activo"],
     menu: ["visible"],
     ficha: ["visible"],
     etiqueta: ["activo"],
@@ -72,10 +77,19 @@ function normalizarRegistro(tabla, registro) {
   }[tabla] || [];
 
   for (const campo of camposBooleanos) {
-    if (salida[campo] === 0 || salida[campo] === 1) salida[campo] = Boolean(salida[campo]);
+    if (
+      salida[campo] === 0 ||
+      salida[campo] === 1 ||
+      salida[campo] === "0" ||
+      salida[campo] === "1"
+    ) {
+      salida[campo] = salida[campo] === 1 || salida[campo] === "1";
+    }
   }
+
   return canonicalizar(salida);
 }
+
 function uuidPropuesto(tabla, hash) {
   const bytes = crypto.createHash("sha1")
     .update("museo-malvinas-sync:" + tabla + ":" + hash)

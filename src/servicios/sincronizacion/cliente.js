@@ -176,17 +176,27 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
     };
 }
 
-async function limpiarStagingConfirmado(eventos, idsConfirmados) {
+async function limpiarStagingConfirmado(eventos, idsConfirmados, idsEnConflicto = []) {
     const confirmados = new Set(idsConfirmados);
+    const conflictos = new Set(idsEnConflicto);
+
     for (const evento of eventos) {
-        if (!confirmados.has(evento.evento_id) ||
-            evento.entidad !== "multimedia" || evento.operacion === "DELETE") continue;
+        if (
+            !confirmados.has(evento.evento_id) ||
+            conflictos.has(evento.evento_id) ||
+            evento.entidad !== "multimedia" ||
+            evento.operacion === "DELETE"
+        ) continue;
+
         const ruta = obtenerRutaStaging(evento);
+
         try {
             await fs.promises.unlink(ruta);
             await fs.promises.rmdir(path.dirname(ruta));
         } catch (error) {
-            if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error.code)) throw error;
+            if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error.code)) {
+                throw error;
+            }
         }
     }
 }
@@ -367,7 +377,15 @@ async function sincronizarUnaVez() {
 
     await persistirConflictosRemotos(datos.rejected || [], pendientes);
     await guardarConfirmaciones(datos.acknowledged);
-    await limpiarStagingConfirmado(pendientes, datos.acknowledged);
+    const idsEnConflictoRemotos = datos.rejected
+        .filter(item => item?.estado === "conflicto")
+        .map(item => item.evento_id);
+
+    await limpiarStagingConfirmado(
+        pendientes,
+        datos.acknowledged,
+        idsEnConflictoRemotos
+    );
     const eventosEntrantes = [];
     const archivosNuevos = [];
     let resultadoEntrante;

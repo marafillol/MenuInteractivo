@@ -94,10 +94,11 @@ router.post("/exchange", async (req, res) => {
         !ENTIDADES[evento?.entidad] ||
         !UUID_RE.test(String(evento?.evento_id || "")) ||
         !UUID_RE.test(String(evento?.sync_id || "")) ||
-        !Number.isSafeInteger(Number(evento?.version_resultado)) ||
+        !Number.isSafeInteger(Number(evento.version_resultado)) ||
         Number(evento.version_resultado) < 1 ||
-        !Number.isSafeInteger(Number(evento?.version_base ?? 0)) ||
-        Number(evento.version_base ?? 0) < 0
+        !Number.isSafeInteger(Number(evento.version_base ?? 0)) ||
+        Number(evento.version_base ?? 0) < 0 ||
+        Number(evento.version_resultado) !== Number(evento.version_base ?? 0) + 1
     )) {
         return res.status(400).json({ error: "El lote contiene eventos no válidos o de otro dispositivo." });
     }

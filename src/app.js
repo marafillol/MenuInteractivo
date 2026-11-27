@@ -343,8 +343,24 @@ async function iniciarServidor() {
 
         // Iniciar la sincronización automática únicamente en modo local.
         if (esModoLocal) {
-            const clienteSync = require("./servicios/sincronizacion/cliente");
-            clienteSync.iniciarSincronizacionAutomatica();
+            const marcaInicializacion = await new Promise((resolve, reject) => {
+                db.get(
+                    "SELECT valor FROM configuracion WHERE clave = ?",
+                    ["sync.initial_import_completed"],
+                    (error, fila) => {
+                        if (error) return reject(error);
+                        resolve(fila?.valor || null);
+                    }
+                );
+            });
+
+            if (marcaInicializacion) {
+                const clienteSync = require("./servicios/sincronizacion/cliente");
+                clienteSync.iniciarSincronizacionAutomatica();
+                console.log("Sincronización automática habilitada: base inicializada.");
+            } else {
+                console.log("Sincronización automática omitida: falta la marca de inicialización local.");
+            }
         }
 
         // Renovar los datos en segundo plano.

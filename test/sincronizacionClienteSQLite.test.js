@@ -124,7 +124,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                                 device_id: uuid(999),
                                 acknowledged: solicitud.cuerpo.events.map(evento => evento.evento_id),
                                 rejected: [{
-                                    evento_id: solicitud.cuerpo.events[0].evento_id,
+                                    evento_id: solicitud.cuerpo.events[1].evento_id,
                                     estado: "conflicto",
                                     conflicto_id: uuid(990),
                                     motivo: "Conflicto de versión de prueba"
@@ -173,10 +173,14 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 const conflictos = await all("SELECT entidad, sync_id, resuelto, version_remota_json FROM sync_conflictos");
                 if (salida[0].aplicado !== 1 || entrada[0].checksum_sha256 !== checksumEntrada ||
                     plantilla[0].nombre !== "Plantilla recibida" || cursor[0].valor !== "8" ||
-                    conflictos.length !== 1 || conflictos[0].entidad !== "plantilla" ||
+                    conflictos.length !== 1 || conflictos[0].entidad !== "multimedia" ||
                     conflictos[0].resuelto !== 0 ||
                     !conflictos[0].version_remota_json.includes("Conflicto de versión de prueba")) {
                     throw new Error("El cliente no persistió el intercambio completo");
+                }
+
+                if (!fs.existsSync(path.join(staging, "v1.png"))) {
+                    throw new Error("Se eliminó el archivo multimedia que tenía un conflicto pendiente");
                 }
                 const rutaEntrada = path.resolve(process.env.SYNC_DATA_ROOT, entrada[0].ruta_archivo);
                 if (!fs.readFileSync(rutaEntrada).equals(bytesEntrada)) {
