@@ -17,3 +17,20 @@ museo-malvinas-firebase-adminsdk-*.json
 /imagenes/multimedia/
 /imagenes/importadas-supabase/
 /backups-local/
+
+# Respaldos locales y exportaciones de bases de datos
+/database/museo-antes-de-quitar-firebase.db
+/database/museo-antes-migracion-usuario.db
+/database/museo-antes-implementacion-sync.db
+/database/museo-antes-implementacion-sync.db-shm
+/database/museo-antes-implementacion-sync.db-wal
+/database/respaldo-supabase-antes-sync.json
+
+# Scripts temporales de diagnóstico y respaldo
+/exportar-supabase-temporal.js
+/respaldo-museo-temporal.js
+/verificar-postgres-temporal.js
+/verificar-respaldo-temporal.js
+
+# Diagnosticos locales temporales
+/revisar-indices-usuario.js

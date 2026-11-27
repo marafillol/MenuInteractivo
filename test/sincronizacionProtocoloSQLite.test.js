@@ -15,13 +15,17 @@ test("el protocolo aplica eventos por UUID, evita duplicados y registra conflict
         ...process.env,
         MODO_SERVIDOR: "local",
         LOCAL_AUTH_SECRET: "clave-temporal-protocolo-sync-2026",
-        DATABASE_SQLITE_PATH: rutaDb
+        DATABASE_SQLITE_PATH: rutaDb,
+        SYNC_ALLOW_SCHEMA_MIGRATION: "true",
+        SYNC_SCHEMA_CONFIRMATION: "I_HAVE_A_BACKUP_AND_APPROVE",
     };
     const ejecutar = (args) => spawnSync(process.execPath, args, {
         cwd: proyecto, env, encoding: "utf8"
     });
 
     try {
+        const esquemaSync = ejecutar(["scripts/preparar-esquema-sincronizacion.js"]);
+        assert.equal(esquemaSync.status, 0, esquemaSync.stderr || esquemaSync.stdout);
         const esquema = ejecutar(["scripts/preparar-outbox-fichas-local.js"]);
         assert.equal(esquema.status, 0, esquema.stderr || esquema.stdout);
 

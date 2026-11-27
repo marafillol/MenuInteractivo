@@ -3,6 +3,12 @@ const { randomUUID, timingSafeEqual } = require("node:crypto");
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const ENTIDADES = {
+
+    usuario: {
+        tabla: "usuario",
+        campos: ["supabase_uid", "nombre", "email", "rol", "activo", "creado", "actualizado"],
+        requeridos: ["supabase_uid", "nombre", "email", "rol"]
+    },
     plantilla: {
         tabla: "plantilla",
         campos: ["nombre", "descripcion", "plantilla_json", "activo"],
@@ -82,9 +88,18 @@ async function buscarIdPadre(consultar, padre, syncId) {
     }
     return id;
 }
+function obtenerIdConflicto(eventoId) {
+    const hash = require("node:crypto")
+        .createHash("sha256")
+        .update(String(eventoId))
+        .digest("hex");
+
+    // Identificador determinístico con formato UUID.
+    return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-${((parseInt(hash[16], 16) & 3) | 8).toString(16)}${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
 
 async function registrarConflicto(consultar, evento, actual, payload) {
-    const conflictoId = randomUUID();
+    const conflictoId = obtenerIdConflicto(evento.evento_id);
     await consultar(`
         INSERT INTO sync_conflictos (
             conflicto_id, entidad, sync_id, version_local_json,

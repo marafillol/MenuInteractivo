@@ -16,13 +16,18 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
         LOCAL_AUTH_SECRET: "clave-temporal-cliente-sync-2026-123456",
         DATABASE_SQLITE_PATH: rutaDb,
         SYNC_REMOTE_URL: "https://servidor-prueba.invalid",
-        SYNC_SHARED_SECRET: "secreto-temporal-cliente-sync-2026-123456789"
+        SYNC_SHARED_SECRET: "secreto-temporal-cliente-sync-2026-123456789",
+        SYNC_DATA_ROOT: path.join(directorio, "datos"),
+        SYNC_ALLOW_SCHEMA_MIGRATION: "true",
+        SYNC_SCHEMA_CONFIRMATION: "I_HAVE_A_BACKUP_AND_APPROVE",
     };
     const ejecutar = (args) => spawnSync(process.execPath, args, {
         cwd: proyecto, env, encoding: "utf8"
     });
 
     try {
+        const esquemaSync = ejecutar(["scripts/preparar-esquema-sincronizacion.js"]);
+        assert.equal(esquemaSync.status, 0, esquemaSync.stderr || esquemaSync.stdout);
         const esquema = ejecutar(["scripts/preparar-outbox-fichas-local.js"]);
         assert.equal(esquema.status, 0, esquema.stderr || esquema.stdout);
 
@@ -58,7 +63,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 const checksumSalida = crypto.createHash("sha256").update(bytesSalida).digest("hex");
                 const syncMediaSalida = uuid(20);
                 const claveSalida = "multimedia/imagen/" + syncMediaSalida + "/v1.png";
-                const staging = path.join(process.cwd(), "database", ".sync-pending", syncMediaSalida);
+                const staging = path.join(process.env.SYNC_DATA_ROOT, "database", ".sync-pending", syncMediaSalida);
                 await fs.promises.mkdir(staging, { recursive: true });
                 await fs.promises.writeFile(path.join(staging, "v1.png"), bytesSalida);
 
@@ -80,7 +85,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                     });
                 });
 
-                const carpetaMedia = path.join(process.cwd(), "imagenes", "multimedia", "imagen");
+                const carpetaMedia = path.join(process.env.SYNC_DATA_ROOT, "imagenes", "multimedia", "imagen");
                 await fs.promises.mkdir(carpetaMedia, { recursive: true });
                 const archivoHuerfano = path.join(carpetaMedia, uuid(55) + "-v1.png");
                 await fs.promises.writeFile(archivoHuerfano, "archivo sin registro");
@@ -153,7 +158,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                 const resultado = await cliente.sincronizarUnaVez();
                 if (resultado.enviados !== 2 || resultado.recibidos !== 2 || resultado.conflictos !== 1 ||
                     resultado.multimediaHuerfanaEliminada !== 1 || resultado.cursor !== 8) {
-                    throw new Error("Resumen del intercambio incorrecto");
+                    throw new Error("Resumen del intercambio incorrecto: " + JSON.stringify(resultado));
                 }
                 const subida = llamadas.find(item => item.tipo === "upload");
                 const descarga = llamadas.find(item => item.tipo === "download");
@@ -173,7 +178,7 @@ test("el cliente envía eventos, transfiere multimedia, recibe archivos y persis
                     !conflictos[0].version_remota_json.includes("Conflicto de versión de prueba")) {
                     throw new Error("El cliente no persistió el intercambio completo");
                 }
-                const rutaEntrada = path.resolve(process.cwd(), entrada[0].ruta_archivo);
+                const rutaEntrada = path.resolve(process.env.SYNC_DATA_ROOT, entrada[0].ruta_archivo);
                 if (!fs.readFileSync(rutaEntrada).equals(bytesEntrada)) {
                     throw new Error("El archivo recibido no coincide con su checksum");
                 }

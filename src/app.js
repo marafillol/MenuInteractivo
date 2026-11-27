@@ -349,7 +349,7 @@ async function iniciarServidor() {
 
         // Renovar los datos en segundo plano.
         cachePublica.iniciarActualizacionPeriodica();
-        cachePublica.iniciarActualizacionPeriodica();
+
     } catch (error) {
         console.error(
             "No se pudo preparar la caché pública:",

@@ -13,6 +13,13 @@ const LIMITE_LOTE = 100;
 let temporizador = null;
 let enCurso = false;
 
+
+function obtenerRaizDatos() {
+    return path.resolve(
+        process.env.SYNC_DATA_ROOT || path.resolve(__dirname, "../../../")
+    );
+}
+
 function all(sql, valores = []) {
     return new Promise((resolve, reject) => db.all(sql, valores, (error, filas) =>
         error ? reject(error) : resolve(filas || [])
@@ -57,7 +64,7 @@ function obtenerRutaStaging(evento) {
     const payload = obtenerPayload(evento);
     const extension = path.extname(String(payload.storage_key || ""));
     if (!/^\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión del archivo pendiente no es válida.");
-    const raiz = path.resolve(__dirname, "../../../database/.sync-pending");
+    const raiz = path.join(obtenerRaizDatos(), "database", ".sync-pending");
     const ruta = path.resolve(raiz, evento.sync_id, `v${evento.version_resultado}${extension}`);
     if (!ruta.startsWith(raiz + path.sep)) throw new Error("La ruta de staging multimedia no es válida.");
     return ruta;
@@ -74,7 +81,7 @@ async function obtenerBytesPendientes(evento, ruta, payload) {
     // se recupera el archivo actual solo si su checksum coincide exactamente.
     const filas = await all("SELECT ruta_archivo FROM multimedia WHERE sync_id = ?", [evento.sync_id]);
     const rutaLocal = String(filas[0]?.ruta_archivo || "");
-    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizProyecto = obtenerRaizDatos();
     const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
     const absoluta = path.resolve(raizProyecto, rutaLocal);
     const relativa = path.relative(raizMultimedia, absoluta);
@@ -142,7 +149,7 @@ async function prepararMultimediaEntrante(evento, url, secreto, archivosNuevos =
     const tipo = String(payload.tipo_multi || "archivo").replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "archivo";
     const extension = path.extname(String(payload.storage_key || ""));
     if (!/^\.[a-z0-9]{1,10}$/i.test(extension)) throw new Error("La extensión multimedia recibida no es válida.");
-    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizProyecto = obtenerRaizDatos();
     const carpeta = path.join(raizProyecto, "imagenes", "multimedia", tipo);
     await fs.promises.mkdir(carpeta, { recursive: true });
     const nombre = `${evento.sync_id}-v${evento.version_resultado}${extension}`;
@@ -210,7 +217,8 @@ async function persistirConflictosRemotos(rechazados, eventosEnviados) {
                 [evento.sync_id]
             );
             const hash = createHash("sha256").update(String(evento.evento_id)).digest("hex").slice(0, 32);
-            const conflictoId = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+            const variante = ((parseInt(hash[16], 16) & 3) | 8).toString(16);
+            const conflictoId = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-${variante}${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
             await consultar(`
                 INSERT INTO sync_conflictos (
                     conflicto_id, entidad, sync_id, version_local_json,
@@ -246,7 +254,7 @@ async function limpiarDescargasNoAplicadas(archivos, idsNoAplicados) {
 // Solo recolecta archivos generados por el cliente de sincronización
 // (UUID-vN.ext). Nunca toca URLs, rutas heredadas ni archivos subidos manualmente.
 async function limpiarMultimediaHuerfana() {
-    const raizProyecto = path.resolve(__dirname, "../../../");
+    const raizProyecto = obtenerRaizDatos();
     const raizMultimedia = path.join(raizProyecto, "imagenes", "multimedia");
     const filas = await all("SELECT ruta_archivo FROM multimedia WHERE ruta_archivo IS NOT NULL");
     const referenciados = new Set(filas.map((fila) =>
@@ -341,9 +349,20 @@ async function sincronizarUnaVez() {
         throw new Error(`El servidor de sincronización respondió HTTP ${respuesta.status}.`);
     }
     const datos = await respuesta.json();
-    if (!Array.isArray(datos.acknowledged) || !Array.isArray(datos.events) ||
+    if (!Array.isArray(datos.acknowledged) || !Array.isArray(datos.rejected) ||
+        !Array.isArray(datos.events) ||
         !Number.isSafeInteger(Number(datos.next_cursor))) {
         throw new Error("La respuesta del servidor de sincronización está incompleta.");
+    }
+
+    const idsPendientes = new Set(pendientes.map((evento) => evento.evento_id));
+    const idsConfirmados = new Set(datos.acknowledged);
+
+    if (
+        datos.acknowledged.some((id) => typeof id !== "string" || !idsPendientes.has(id)) ||
+        idsConfirmados.size !== datos.acknowledged.length
+    ) {
+        throw new Error("El servidor confirmó eventos que no corresponden al lote enviado.");
     }
 
     await persistirConflictosRemotos(datos.rejected || [], pendientes);

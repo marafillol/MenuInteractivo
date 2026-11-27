@@ -15,7 +15,8 @@ const db = require("../src/database");
 const entidades = [
   ["plantilla", "id_plantilla"], ["menu", "id_menu"], ["ficha", "id_ficha"],
   ["etiqueta", "id_etiqueta"], ["ficha_etiqueta", null], ["relacion_ficha", "id_relacion"],
-  ["multimedia", "id_multi"], ["configuracion", "clave"]
+  ["multimedia", "id_multi"], ["configuracion", "clave"],
+  ["usuario", "id_usuario"]
 ];
 const run = (sql, values = []) => new Promise((resolve, reject) =>
   db.run(sql, values, function (error) { error ? reject(error) : resolve(this); }));
