@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const { createClient } = require("@supabase/supabase-js");
@@ -9,24 +10,22 @@ const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPAB
 const estaSupabaseAuthConfigurado = Boolean(supabaseUrl && serviceRoleKey);
 const estaSupabaseVerificacionConfigurada = Boolean(supabaseUrl && publishableKey);
 
+const opcionesAuth = {
+    auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false
+    }
+};
+
+// Cliente independiente para verificar sesiones existentes.
 const clienteSupabaseVerificacion = estaSupabaseVerificacionConfigurada
-    ? createClient(supabaseUrl, publishableKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-            detectSessionInUrl: false
-        }
-    })
+    ? createClient(supabaseUrl, publishableKey, opcionesAuth)
     : null;
 
+// Cliente administrativo. No se utiliza para iniciar sesión de usuarios.
 const clienteSupabaseAdmin = estaSupabaseAuthConfigurado
-    ? createClient(supabaseUrl, serviceRoleKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-            detectSessionInUrl: false
-        }
-    })
+    ? createClient(supabaseUrl, serviceRoleKey, opcionesAuth)
     : null;
 
 const obtenerClienteSupabaseVerificacion = () => {
@@ -37,7 +36,47 @@ const obtenerClienteSupabaseVerificacion = () => {
         error.status = 503;
         throw error;
     }
+
     return clienteSupabaseVerificacion;
+};
+
+// Autenticación remota aislada: un cliente nuevo por cada intento.
+const autenticarCredencialesSupabase = async (email, password) => {
+    if (!estaSupabaseVerificacionConfigurada) {
+        const error = new Error(
+            "La autenticación remota no está configurada."
+        );
+        error.status = 503;
+        throw error;
+    }
+
+    const cliente = createClient(
+        supabaseUrl,
+        publishableKey,
+        opcionesAuth
+    );
+
+    const { data, error } = await cliente.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) {
+        const fallo = new Error(
+            "No se pudieron verificar las credenciales con Supabase."
+        );
+
+        fallo.status = Number(error.status) >= 500 ? 503 : 401;
+        throw fallo;
+    }
+
+    if (!data?.user || !data?.session) {
+        const fallo = new Error("Supabase no devolvió una sesión válida.");
+        fallo.status = 401;
+        throw fallo;
+    }
+
+    return data.user;
 };
 
 const obtenerClienteSupabaseAdmin = () => {
@@ -48,6 +87,7 @@ const obtenerClienteSupabaseAdmin = () => {
         error.status = 503;
         throw error;
     }
+
     return clienteSupabaseAdmin;
 };
 
@@ -55,6 +95,7 @@ const obtenerConfiguracionPublica = () => {
     if (!supabaseUrl || !publishableKey) {
         return null;
     }
+
     return {
         url: supabaseUrl,
         publishableKey
@@ -66,6 +107,7 @@ module.exports = {
     estaSupabaseVerificacionConfigurada,
     clienteSupabaseVerificacion,
     obtenerClienteSupabaseVerificacion,
+    autenticarCredencialesSupabase,
     clienteSupabaseAdmin,
     obtenerClienteSupabaseAdmin,
     obtenerConfiguracionPublica
